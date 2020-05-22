@@ -1,0 +1,65 @@
+{
+  "name": "sharinghood-server",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "nodemon src/index.js",
+    "client": "cd ../client && yarn start",
+    "server": "nodemon src/index.js",
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
+  },
+  "main": "index.js",
+  "license": "MIT",
+  "eslintConfig": {
+    "extends": [
+      "airbnb-base"
+    ],
+    "env": {
+      "node": true,
+      "es6": true
+    },
+    "rules": {
+      "no-console": "off",
+      "object-curly-newline": "off",
+      "comma-dangle": "off",
+      "no-underscore-dangle": [
+        "error",
+        {
+          "allow": [
+            "_id",
+            "_doc"
+          ]
+        }
+      ],
+      "camelcase": [
+        "error",
+        {
+          "allow": [
+            "secure_url "
+          ]
+        }
+      ]
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "singleQuote": true,
+    "arrowParens": "always"
+  },
+  "dependencies": {
+    "apollo-server": "^2.13.1",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.21.0",
+    "dotenv": "^8.2.0",
+    "graphql": "^15.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.15",
+    "mongoose": "^5.9.13"
+  },
+  "devDependencies": {
+    "concurrently": "^5.2.0",
+    "eslint": "^7.0.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "nodemon": "^2.0.3"
+  }
+}

@@ -1,0 +1,39 @@
+const { Schema, model } = require('mongoose');
+
+const requestSchema = new Schema(
+  {
+    desc: {
+      type: String,
+      required: true,
+    },
+    picture: {
+      type: String,
+      required: true,
+    },
+    dateNeed: {
+      type: Date,
+      required: true,
+    },
+    dateReturn: {
+      type: Date,
+      required: true,
+    },
+    creator: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    community: {
+      type: Schema.Types.ObjectId,
+      ref: 'Community',
+    },
+    threads: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Thread',
+      },
+    ],
+  },
+  { timestamps: true }
+);
+
+module.exports = model('Request', requestSchema);

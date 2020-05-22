@@ -11,7 +11,7 @@
    server ~.env~
    #+begin_src bash
    JWT_SECRET=
-   MONGO_DB_PATH=
+   MONGO_PATH=
    CLOUDINARY_CLOUD_NAME=
    CLOUDINARY_API_KEY=
    CLOUDINARY_SECRET_KEY=
@@ -28,7 +28,7 @@
    |    3 | Declined |
   
 * Server
-   Explore Sharinghood's GraphQL API via [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQl Playground]] on ~http://localhost:4000/graphql~
+   Explore Sharinghood's GraphQL API on [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQl Playground]] at ~http://localhost:4000/graphql~
 ** Query
     ~post~ - Get a specific post
     | Arguments | Required | Type | Description            |

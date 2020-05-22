@@ -1,37 +1,43 @@
 * Sharinghood
-** Getting started
-*** Installation
-    #+begin_src bash
-    cd client && yarn && cd ../server && yarn
-    #+end_src
-*** Running
-    #+begin_src bash
-    cd server && yarn dev
-    #+end_src
-*** Enviourment
-    - Server
-      #+begin_src json
-      {
-        "env": {
-          "JWT_SECRET": "",
-          "MONGO_PATH": "",
-          "CLOUDINARY_CLOUD_NAME": "",
-          "CLOUDINARY_API_KEY": "",
-          "CLOUDINARY_SECRET_KEY": ""
-        }
-      }
-      #+end_src
-    - Client
-      #+begin_src bash
-      REACT_APP_GRAPHQL_ENDPOINT_WS=ws://localhost:4000/graphql
-      REACT_APP_GRAPHQL_ENDPOINT_HTTP=http://localhost:4000
-      #+end_src
-** Documentation
-*** Booking Status
-    - Shared Items Booking Status Reference Table
-      | Code | Status   |
-      |------+----------|
-      |    0 | Pending  |
-      |    1 | Accepted |
-      |    2 | Amended  |
-      |    3 | Declined |
+** Quick Overview
+   #+begin_src bash
+   cd server && yarn dev
+   #+end_src
+   client ~.env~
+   #+begin_src bash
+   REACT_APP_GRAPHQL_ENDPOINT_WS=
+   REACT_APP_GRAPHQL_ENDPOINT_HTTP=
+   #+end_src
+   server ~.env~
+   #+begin_src bash
+   JWT_SECRET=
+   MONGO_DB_USER=
+   MONGO_DB_PASSWORD=
+   MONGO_DB_PATH=
+   CLOUDINARY_CLOUD_NAME=
+   CLOUDINARY_API_KEY=
+   CLOUDINARY_SECRET_KEY=
+   #+end_src
+
+* Client
+** Booking Status
+   item booking status code reference 
+   | Code | Status   |
+   |------+----------|
+   |    0 | Pending  |
+   |    1 | Accepted |
+   |    2 | Amended  |
+   |    3 | Declined |
+  
+* Server
+   Explore Sharinghood's GraphQL API via [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQl Playground]] on ~http://localhost:4000/graphql~
+** Query
+    ~post~ - Get a specific post
+    | Arguments | Required | Type | Description            |
+    |-----------+----------+------+------------------------|
+    | ~postId~  | true     | ~ID~ | Select a specific post |
+
+    ~posts~ - Get all the posts from a given community
+    | Arguments     | Required | Type | Description                      |
+    |---------------+----------+------+----------------------------------|
+    | ~communityId~ | false    | ~ID~ | Select from a specific community |

@@ -10,7 +10,7 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: async ({ req, connection }) => {
-    // Subscription const
+    // Subscription context
     if (connection) {
       const user = tokenPayload(connection.context.authToken);
       return { user };

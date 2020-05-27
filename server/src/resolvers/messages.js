@@ -10,9 +10,7 @@ const messagesResolvers = {
     newChatMessage: {
       subscribe: withFilter(
         () => pubsub.asyncIterator(NEW_CHAT_MESSAGE),
-        (payload, args) => {
-          return payload.chatId === args.chatId;
-        }
+        (payload, args) => payload.chatId === args.chatId
       ),
     },
   },
@@ -50,7 +48,6 @@ const messagesResolvers = {
           chatId,
           newChatMessage: message,
         });
-        // return messageControllers.addMessage(args);
 
         return result;
       } catch (err) {

@@ -2,10 +2,7 @@ const jwt = require('jsonwebtoken');
 
 function tokenPayload(token) {
   try {
-    if (token) {
-      return jwt.verify(token, process.env.JWT_SECRET);
-    }
-    return null;
+    return token ? jwt.verify(token, process.env.JWT_SECRET) : null;
   } catch (err) {
     return null;
   }

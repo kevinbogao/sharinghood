@@ -50,7 +50,7 @@ const CREATE_MESSAGE = gql`
 function ChatDetails({ chatId }) {
   const [text, setText] = useState('');
   const { subscribeToMore, loading, error, data } = useQuery(GET_CHAT, {
-    fetchPolicy: 'cache-and-network',
+    // fetchPolicy: 'cache-and-network',
     skip: !chatId,
     variables: { chatId },
     onError: ({ message }) => {

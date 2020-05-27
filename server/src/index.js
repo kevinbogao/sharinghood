@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { ApolloServer } = require('apollo-server');
+const { ApolloServer, AuthenticationError } = require('apollo-server');
 const mongoose = require('mongoose');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
@@ -9,15 +9,29 @@ const tokenPayload = require('./middleware/tokenPayload');
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ req, connection }) => {
+  context: async ({ req, connection }) => {
+    // Subscription const
     if (connection) {
-      return null;
-    } else {
-      const tokenWithBearer = req.headers.authorization || '';
-      const token = tokenWithBearer.split(' ')[1];
-      const user = tokenPayload(token);
+      const user = tokenPayload(connection.context.authToken);
       return { user };
     }
+
+    // Query & Mutation context
+    const tokenWithBearer = req.headers.authorization || '';
+    const token = tokenWithBearer.split(' ')[1];
+    const user = tokenPayload(token);
+    return { user };
+  },
+  subscriptions: {
+    onConnect: async ({ authToken }) => {
+      // Validate user token & throw err if not valid
+      if (authToken) {
+        const user = tokenPayload(authToken);
+        if (!user) throw new AuthenticationError('Not Authenticated');
+        return { user };
+      }
+      throw new AuthenticationError('Not Authenticated');
+    },
   },
   introspection: true,
   playground: true,

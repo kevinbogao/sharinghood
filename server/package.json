@@ -34,7 +34,10 @@
         "error",
         {
           "allow": [
-            "secure_url "
+            "secure_url",
+            "cloud_name",
+            "api_key",
+            "api_secret"
           ]
         }
       ]

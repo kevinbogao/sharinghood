@@ -10,10 +10,11 @@ const notificationsResolvers = {
       const { userId, communityId } = user;
 
       try {
-        const currentUser = await User.findById(userId);
-        const community = await Community.findById(communityId);
-
         // Get notifications from user & community
+        const [currentUser, community] = await Promise.all([
+          User.findById(userId),
+          Community.findById(communityId),
+        ]);
         const notifications = await Notification.find({
           _id: {
             $in: [...currentUser.notifications, ...community.notifications],

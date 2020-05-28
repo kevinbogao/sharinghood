@@ -46,6 +46,7 @@ const server = new ApolloServer({
       useUnifiedTopology: true,
       useCreateIndex: true,
     });
+    mongoose.set('debug', true);
     // Server listener
     const { url, subscriptionsUrl } = await server.listen();
     console.log(`Server ready at ${url}`);

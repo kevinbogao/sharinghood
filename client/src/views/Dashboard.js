@@ -80,7 +80,7 @@ function Dashboard() {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [pickupDate, setPickupDate] = useState(new Date());
   const { loading, error, data } = useQuery(GET_BOOKINGS, {
-    fetchPolicy: 'network-only',
+    // fetchPolicy: 'network-only',
     onError: ({ message }) => {
       console.log(message);
     },

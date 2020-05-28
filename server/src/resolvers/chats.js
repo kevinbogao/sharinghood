@@ -1,4 +1,5 @@
 const { AuthenticationError } = require('apollo-server');
+const mongoose = require('mongoose');
 const Chat = require('../models/chat');
 const User = require('../models/user');
 
@@ -8,11 +9,24 @@ const chatsResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        const chat = await Chat.findById(chatId).populate('messages');
-        return chat;
+        // Get messages from given chat
+        const chat = await Chat.aggregate([
+          {
+            $match: { _id: mongoose.Types.ObjectId(chatId) },
+          },
+          {
+            $lookup: {
+              from: 'messages',
+              localField: 'messages',
+              foreignField: '_id',
+              as: 'messages',
+            },
+          },
+        ]);
+
+        return chat[0];
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
     chats: async (_, __, { user }) => {
@@ -20,19 +34,51 @@ const chatsResolvers = {
       const { userId } = user;
 
       try {
-        const currentUser = await User.findById(userId);
+        // Get all chat participanted by given user
+        const userChats = await User.aggregate([
+          {
+            $match: { _id: mongoose.Types.ObjectId(userId) },
+          },
+          {
+            $lookup: {
+              from: 'chats',
+              let: { chats: '$chats' },
+              pipeline: [
+                { $match: { $expr: { $in: ['$_id', '$$chats'] } } },
+                {
+                  $lookup: {
+                    from: 'users',
+                    let: { participants: '$participants' },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              {
+                                $in: ['$_id', '$$participants'],
+                              },
+                              {
+                                $ne: ['$_id', mongoose.Types.ObjectId(userId)],
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                    as: 'participants',
+                  },
+                },
+                { $sort: { updatedAt: -1 } },
+              ],
+              as: 'chats',
+            },
+          },
+          {
+            $project: { chats: 1 },
+          },
+        ]);
 
-        // Sort chats by last updated
-        const chats = await Chat.find({
-          _id: { $in: currentUser.chats },
-        })
-          .populate({
-            path: 'participants',
-            match: { _id: { $ne: userId } },
-          })
-          .sort({ updatedAt: -1 });
-
-        return chats;
+        return userChats[0].chats;
       } catch (err) {
         return err;
       }
@@ -55,16 +101,17 @@ const chatsResolvers = {
             participants: [userId, recipientId],
           });
 
-          // Save chat
-          const result = await chat.save();
+          // Save chat && get chat creator & recipient
+          const [result, creator, recipient] = await Promise.all([
+            chat.save(),
+            User.findById(userId),
+            User.findById(recipientId),
+          ]);
 
-          // Save to users
-          const creator = await User.findById(userId);
-          const recipient = await User.findById(recipientId);
+          // Add chat to creator & recipient
           creator.chats.push(chat);
           recipient.chats.push(chat);
-          await creator.save();
-          await recipient.save();
+          await Promise.all([creator.save(), recipient.save()]);
 
           // Populate new chat participants
           const createdChat = await Chat.populate(result, {
@@ -77,8 +124,7 @@ const chatsResolvers = {
 
         return existingChat;
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
   },

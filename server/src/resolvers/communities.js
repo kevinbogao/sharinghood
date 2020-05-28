@@ -30,17 +30,6 @@ const communitiesResolvers = {
         throw err;
       }
     },
-    getMembers: async (_, { communityId }) => {
-      try {
-        const result = await Community.findById(communityId).populate(
-          'members'
-        );
-        return result;
-      } catch (err) {
-        console.log(err);
-        throw err;
-      }
-    },
   },
   Mutation: {
     createCommunity: async (_, { communityInput: { name, code, zipCode } }) => {

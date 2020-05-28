@@ -24,12 +24,15 @@ const usersResolvers = {
     ) => {
       try {
         const existingUser = await User.findOne({ email });
-        if (existingUser) {
-          throw new Error('User exist already');
-        }
+        if (existingUser) throw new Error('User exist already');
 
-        const hashedPassword = await bcryptjs.hash(password, 12);
-        const imgUrl = await uploadImg(picture);
+        // Hash password & upload image to Cloudinary
+        const [hashedPassword, imgUrl] = await Promise.all([
+          bcryptjs.hash(password, 12),
+          uploadImg(picture),
+        ]);
+
+        // Create new user object
         const user = new User({
           name,
           email,
@@ -40,19 +43,24 @@ const usersResolvers = {
           community: communityId,
           password: hashedPassword,
         });
-        const result = await user.save();
 
-        const community = await Community.findById(communityId);
+        // Save user and get community
+        const [result, community] = await Promise.all([
+          await user.save(),
+          Community.findById(communityId),
+        ]);
+
         // Unlikely case
         if (!community) {
           throw new Error('Community does not exist!');
         }
+
+        // Add user to community & save as creator if true
         community.members.push(user);
-        if (isCreator) {
-          community.creator = user;
-        }
+        if (isCreator) community.creator = user;
         await community.save();
 
+        // Sign user access token
         const token = jwt.sign(
           {
             userId: result.id,
@@ -72,15 +80,16 @@ const usersResolvers = {
           communityId: result.community,
         };
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
     login: async (_, { email, password }) => {
       try {
+        // Get user
         const user = await User.findOne({ email });
         if (!user) throw new AuthenticationError('User does not exist');
 
+        // Check user password
         const isEqual = await bcryptjs.compare(password, user.password);
         if (!isEqual) throw new AuthenticationError('Password is incorrect');
 
@@ -95,6 +104,7 @@ const usersResolvers = {
           { expiresIn: '30d' }
         );
 
+        // Sign user access token
         return {
           token,
           tokenExpiration: 1,
@@ -103,8 +113,7 @@ const usersResolvers = {
           communityId: user.community,
         };
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
   },

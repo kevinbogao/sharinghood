@@ -184,7 +184,6 @@ const typeDefs = gql`
 
     # Community
     community(communityId: ID): Community
-    getMembers(communityId: ID!): Community
 
     # Post
     post(postId: ID!): Post!

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Post = require('../models/post');
 const User = require('../models/user');
 const Thread = require('../models/thread');
+const Booking = require('../models/booking');
 const Community = require('../models/community');
 const Notification = require('../models/notification');
 const uploadImg = require('../middleware/uploadImg');
@@ -171,7 +172,7 @@ const postsResolvers = {
             { $pull: { posts: postId } }
           ),
           Thread.deleteMany({ _id: threads }),
-          Thread.deleteMany({ _id: bookings }),
+          Booking.deleteMany({ _id: bookings }),
         ]);
 
         return post;

@@ -22,8 +22,7 @@ const messagesResolvers = {
         const messages = await Message.find({ chat: chatId });
         return messages;
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
   },
@@ -33,13 +32,20 @@ const messagesResolvers = {
       const { userId } = user;
 
       try {
+        // Create new message document
         const message = new Message({
           text,
           sender: userId,
           chat: chatId,
         });
-        const result = await message.save();
-        const chat = await Chat.findById(chatId);
+
+        // Save message & get message parent
+        const [result, chat] = await Promise.all([
+          message.save(),
+          Chat.findById(chatId),
+        ]);
+
+        // Save messageId to chat
         chat.messages.push(message);
         await chat.save();
 
@@ -51,8 +57,7 @@ const messagesResolvers = {
 
         return result;
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
   },

@@ -1,30 +1,30 @@
 const { ForbiddenError } = require('apollo-server');
+const mongoose = require('mongoose');
 const Community = require('../models/community');
 
 const communitiesResolvers = {
   Query: {
     community: async (_, __, { user: { communityId } }) => {
       try {
-        const community = await Community.findById(communityId).populate({
-          path: 'members',
-        });
+        const community = await Community.aggregate([
+          {
+            $match: { _id: mongoose.Types.ObjectId(communityId) },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'members',
+              foreignField: '_id',
+              as: 'members',
+            },
+          },
+        ]);
 
-        if (!community) {
+        if (!community.length) {
           throw new ForbiddenError("Community doesn't exist");
         }
 
-        return community;
-      } catch (err) {
-        console.log(err);
-        throw err;
-      }
-    },
-    getMembers: async (_, { communityId }) => {
-      try {
-        const result = await Community.findById(communityId).populate(
-          'members'
-        );
-        return result;
+        return community[0];
       } catch (err) {
         console.log(err);
         throw err;

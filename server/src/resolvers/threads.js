@@ -16,48 +16,44 @@ const threadsResolvers = {
       const { userId, userName } = user;
 
       try {
-        const thread = new Thread({
-          content,
-          poster: userId,
-        });
+        // Create & save thread && get parent (post or request)
+        const [thread, parent] = await Promise.all([
+          Thread.create({
+            content,
+            poster: userId,
+          }),
+          isPost ? Post.findById(parentId) : Request.findById(parentId),
+        ]);
 
-        // Save thread
-        const result = await thread.save();
-
-        // Get post/request
-        const parent = isPost
-          ? await Post.findById(parentId)
-          : await Request.findById(parentId);
-
-        // Add thread id to post/request
+        // Add threadId to post/request
         parent.threads.push(thread);
         await parent.save();
 
-        // Create notification
+        // Create notification object if poster in user & get user
         if (userId !== recipientId) {
-          const notification = await Notification.create({
-            onType: isPost ? 0 : 1,
-            onDocId: parent.id,
-            content: `${userName} has commented on your ${
-              isPost ? 'post' : 'request'
-            }`,
-            recipient: recipientId,
-            creator: userId,
-            isRead: false,
-          });
+          const [notification, recipient] = await Promise.all([
+            Notification.create({
+              onType: isPost ? 0 : 1,
+              onDocId: parent.id,
+              content: `${userName} has commented on your ${
+                isPost ? 'post' : 'request'
+              }`,
+              recipient: recipientId,
+              creator: userId,
+              isRead: false,
+            }),
+            User.findOne({ _id: recipientId }),
+          ]);
 
-          // Save notification to user
-          const recipient = await User.findById(recipientId);
+          // Save notification to recipient
           recipient.notifications.push(notification);
           await recipient.save();
         }
 
-        const savedResult = await Thread.findById(result.id).populate('poster');
-
-        return savedResult;
+        return thread;
       } catch (err) {
         console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
   },

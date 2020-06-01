@@ -12,7 +12,7 @@ function CommunityExists({
 }) {
   let name;
   let apartment;
-  const [picture, setPicture] = useState(null);
+  const [image, setImage] = useState(null);
   const [error, setError] = useState({});
 
   function validate() {
@@ -35,7 +35,10 @@ function CommunityExists({
           <div className="community-members">
             {members.map((member) => (
               <div key={member._id}>
-                <img src={member.picture} alt="member's profile" />
+                <img
+                  src={JSON.parse(member.image).secure_url}
+                  alt="member's profile"
+                />
               </div>
             ))}
           </div>
@@ -51,7 +54,7 @@ function CommunityExists({
               pathname: '/register',
               state: {
                 name: name.value,
-                picture: picture || profileImg,
+                image: image || profileImg,
                 communityId,
                 apartment: apartment.value,
                 isCreator,
@@ -75,7 +78,7 @@ function CommunityExists({
         </p>
         <div className="image-upload">
           <label htmlFor="file-input">
-            <img alt="profile pic" src={picture || uploadImg} />
+            <img alt="profile pic" src={image || uploadImg} />
           </label>
           <input
             id="file-input"
@@ -85,7 +88,7 @@ function CommunityExists({
               const reader = new FileReader();
               reader.readAsDataURL(e.target.files[0]);
               reader.onload = () => {
-                setPicture(reader.result);
+                setImage(reader.result);
               };
             }}
           />
@@ -166,7 +169,7 @@ CommunityExists.propTypes = {
       members: PropTypes.arrayOf(
         PropTypes.shape({
           _id: PropTypes.string.isRequired,
-          picture: PropTypes.string.isRequired,
+          image: PropTypes.string.isRequired,
         }),
       ),
       isCreator: PropTypes.bool.isRequired,

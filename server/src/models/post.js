@@ -14,7 +14,7 @@ const postSchema = new Schema(
       type: Number,
       required: true,
     },
-    picture: {
+    image: {
       type: String,
       required: true,
     },

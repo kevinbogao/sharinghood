@@ -14,7 +14,7 @@ const usersResolvers = {
           name,
           email,
           password,
-          picture,
+          image,
           apartment,
           communityId,
           isNotified,
@@ -23,36 +23,44 @@ const usersResolvers = {
       }
     ) => {
       try {
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-          throw new Error('User exist already');
-        }
+        const existingUser = await User.findOne({ email }).lean();
+        if (existingUser) throw new Error('User exist already');
 
-        const hashedPassword = await bcryptjs.hash(password, 12);
-        const imgUrl = await uploadImg(picture);
+        // Hash password & upload image to Cloudinary
+        const [hashedPassword, imgData] = await Promise.all([
+          bcryptjs.hash(password, 12),
+          uploadImg(image),
+        ]);
+
+        // Create new user object
         const user = new User({
           name,
           email,
           isCreator,
           apartment,
           isNotified,
-          picture: imgUrl,
+          image: imgData,
           community: communityId,
           password: hashedPassword,
         });
-        const result = await user.save();
 
-        const community = await Community.findById(communityId);
+        // Save user and get community
+        const [result, community] = await Promise.all([
+          await user.save(),
+          Community.findById(communityId),
+        ]);
+
         // Unlikely case
         if (!community) {
           throw new Error('Community does not exist!');
         }
+
+        // Add user to community & save as creator if true
         community.members.push(user);
-        if (isCreator) {
-          community.creator = user;
-        }
+        if (isCreator) community.creator = user;
         await community.save();
 
+        // Sign user access token
         const token = jwt.sign(
           {
             userId: result.id,
@@ -73,20 +81,23 @@ const usersResolvers = {
         };
       } catch (err) {
         console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
     login: async (_, { email, password }) => {
       try {
-        const user = await User.findOne({ email });
+        // Get user
+        const user = await User.findOne({ email }).lean();
         if (!user) throw new AuthenticationError('User does not exist');
 
+        // Check user password
         const isEqual = await bcryptjs.compare(password, user.password);
         if (!isEqual) throw new AuthenticationError('Password is incorrect');
 
+        // Sign user access token
         const token = jwt.sign(
           {
-            userId: user.id,
+            userId: user._id,
             userName: user.name,
             email: user.email,
             communityId: user.community,
@@ -98,13 +109,12 @@ const usersResolvers = {
         return {
           token,
           tokenExpiration: 1,
-          userId: user.id,
+          userId: user._id,
           userName: user.name,
           communityId: user.community,
         };
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
   },

@@ -34,7 +34,7 @@ const GET_POSTS = gql`
     posts {
       _id
       title
-      picture
+      image
       creator {
         _id
         name
@@ -49,13 +49,13 @@ const GET_POST = gql`
       _id
       title
       desc
-      picture
+      image
       condition
       isGiveaway
       creator {
         _id
         name
-        picture
+        image
         apartment
         createdAt
       }
@@ -72,7 +72,7 @@ const GET_POST = gql`
       members {
         _id
         name
-        picture
+        image
       }
     }
   }
@@ -296,7 +296,7 @@ function PostDetails({ match, history }) {
           .filter((member) => member._id === data.userId)
           .map((member) => (
             <Fragment key={member._id}>
-              <img src={member.picture} alt="" />
+              <img src={JSON.parse(member.image).secure_url} alt="" />
               <div className="new-thread-content">
                 <span className="prev-p">{member.name}</span>
                 <input

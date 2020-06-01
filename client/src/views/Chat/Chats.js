@@ -13,7 +13,7 @@ const GET_CHATS = gql`
       participants {
         _id
         name
-        picture
+        image
       }
       updatedAt
     }
@@ -22,7 +22,7 @@ const GET_CHATS = gql`
       members {
         _id
         name
-        picture
+        image
       }
     }
   }
@@ -64,7 +64,10 @@ function Chats() {
                 setSelectedUser(chat.participants[0]._id);
               }}
             >
-              <img src={chat.participants[0].picture} alt="Community member" />
+              <img
+                src={JSON.parse(chat.participants[0].image).secure_url}
+                alt="Community member"
+              />
               {chat.participants[0]._id === selectedUser ? (
                 <p>{chat.participants[0].name}</p>
               ) : (

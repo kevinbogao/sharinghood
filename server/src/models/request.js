@@ -2,11 +2,15 @@ const { Schema, model } = require('mongoose');
 
 const requestSchema = new Schema(
   {
+    title: {
+      type: String,
+      unique: true,
+    },
     desc: {
       type: String,
       required: true,
     },
-    picture: {
+    image: {
       type: String,
       required: true,
     },

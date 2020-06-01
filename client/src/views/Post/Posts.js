@@ -9,7 +9,7 @@ const GET_POSTS = gql`
     posts {
       _id
       title
-      picture
+      image
       creator {
         _id
         name
@@ -36,10 +36,10 @@ function Posts() {
           <Link
             to={{
               pathname: `/shared/${post._id}`,
-              state: { picture: post.picture },
+              state: { image: post.image },
             }}
           >
-            <img alt="item" src={post.picture} />
+            <img alt="item" src={JSON.parse(post.image).secure_url} />
             <div className="item-info">
               <p className="item-title">{post.title}</p>
               <p>by {post.creator.name}</p>

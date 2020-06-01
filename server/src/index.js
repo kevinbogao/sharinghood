@@ -48,7 +48,7 @@ const server = new ApolloServer({
       sslValidate: false,
     });
     // Log query
-    mongoose.set('debug', true);
+    // mongoose.set('debug', true);
     // Server listener
     const { url, subscriptionsUrl } = await server.listen();
     console.log(`Server ready at ${url}`);

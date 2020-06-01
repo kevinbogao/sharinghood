@@ -104,8 +104,8 @@ const postsResolvers = {
         // Upload image to Cloudinary
         const imgData = await uploadImg(image);
 
-        // Create a new post object
-        const post = new Post({
+        // Create & save post
+        const post = await Post.create({
           desc,
           title,
           condition,
@@ -115,35 +115,28 @@ const postsResolvers = {
           community: communityId,
         });
 
-        // Save post & find creator
-        const [result, creator] = await Promise.all([
-          post.save(),
-          User.findById(userId),
-        ]);
-
         // Create & save notification && find creator's community
         const [notification, community] = await Promise.all([
           Notification.create({
             onType: 0,
-            onDocId: result.id,
+            onDocId: post._id,
             content: `${userName} shared ${title} in your community`,
             creator: userId,
             isRead: false,
           }),
-          Community.findById(creator.community),
+          Community.findById(communityId),
         ]);
 
-        // Save postId & notificationId to community && postId to creator
+        // Save postId & notificationId to community
         community.posts.push(post);
         community.notifications.push(notification);
-        creator.createdPosts.push(post);
-        await Promise.all([community.save(), creator.save()]);
+        await community.save();
 
         return {
-          ...result._doc,
+          ...post._doc,
           creator: {
-            _id: creator._id,
-            name: creator.name,
+            _id: userId,
+            name: userName,
           },
         };
       } catch (err) {
@@ -153,7 +146,7 @@ const postsResolvers = {
     },
     deletePost: async (_, { postId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { userId, communityId } = user;
+      const { communityId } = user;
 
       try {
         // Find post
@@ -162,11 +155,10 @@ const postsResolvers = {
         // Save thread ids array
         const { threads, bookings } = post;
 
-        // Delete Post; delete postId from user, community && delete
-        // all post threads & bookings
+        // Delete post, postId from community && delete post threads
+        // & notifications
         await Promise.all([
           post.remove(),
-          User.updateOne({ _id: userId }, { $pull: { createdPosts: postId } }),
           Community.updateOne(
             { _id: communityId },
             { $pull: { posts: postId } }

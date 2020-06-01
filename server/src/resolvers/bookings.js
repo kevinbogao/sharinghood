@@ -86,19 +86,16 @@ const bookingsResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Create booking object
-        const booking = new Booking({
-          status,
-          dateNeed,
-          dateReturn,
-          post: postId,
-          booker: userId,
-          patcher: userId,
-        });
-
         // Save booking && find post, owner & booker
-        const [result, post, owner, booker] = await Promise.all([
-          booking.save(),
+        const [booking, post, owner, booker] = await Promise.all([
+          Booking.create({
+            status,
+            dateNeed,
+            dateReturn,
+            post: postId,
+            booker: userId,
+            patcher: userId,
+          }),
           Post.findById(postId),
           User.findById(ownerId),
           User.findById(userId),
@@ -117,13 +114,14 @@ const bookingsResolvers = {
         // Save booking to post, owner & booker && save notification
         // to owner
         post.bookings.push(booking);
-        owner.bookings.push(booking);
         booker.bookings.push(booking);
+        owner.bookings.push(booking);
         owner.notifications.push(notification);
         await Promise.all([post.save(), booker.save(), owner.save()]);
 
-        return result;
+        return booking;
       } catch (err) {
+        console.log(err);
         throw new Error(err);
       }
     },

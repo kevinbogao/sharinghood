@@ -1,6 +1,5 @@
 const { AuthenticationError } = require('apollo-server');
 const mongoose = require('mongoose');
-const User = require('../models/user');
 const Thread = require('../models/thread');
 const Request = require('../models/request');
 const Community = require('../models/community');
@@ -99,8 +98,8 @@ const requestsResolvers = {
         // Upload image to Cloudinary
         const imgData = await uploadImg(image);
 
-        // Create a new request object
-        const request = new Request({
+        // Create and save request
+        const request = await Request.create({
           title,
           desc,
           dateNeed,
@@ -110,62 +109,46 @@ const requestsResolvers = {
           community: communityId,
         });
 
-        // Save request & find creator
-        const [result, creator] = await Promise.all([
-          request.save(),
-          User.findById(userId),
-        ]);
-
         // Create & save notification && find creator's community
         const [notification, community] = await Promise.all([
           Notification.create({
             onType: 1,
-            onDocId: result.id,
+            onDocId: request._id,
             content: `${userName} made a requested for ${title} in your community`,
             creator: userId,
             isRead: false,
           }),
-          Community.findById(creator.community),
+          Community.findById(communityId),
         ]);
 
-        // Save requestId & notificationId to community && postId to creator
+        // Save requestId & notificationId to community
         community.requests.push(request);
         community.notifications.push(notification);
-        creator.createdRequests.push(request);
-        await Promise.all([community.save(), creator.save()]);
+        await community.save();
 
         return {
-          ...result._doc,
+          ...request._doc,
           creator: {
-            _id: creator._id,
-            name: creator.name,
+            _id: userId,
+            name: userName,
           },
         };
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
     deleteRequest: async (_, { requestId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { userId, communityId } = user;
+      const { communityId } = user;
 
       try {
+        // Find request & get request's threads
         const request = await Request.findById(requestId);
         const { threads } = request;
 
-        // Delete Post; delete postId from user, community && delete
-        // all post threads & bookings
+        // Delete request, requestId from community & delete request threads
         await Promise.all([
           request.remove(),
-          User.updateOne(
-            { _id: userId },
-            {
-              $pull: {
-                createRequest: requestId,
-              },
-            }
-          ),
           Community.updateOne(
             { _id: communityId },
             {

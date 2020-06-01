@@ -14,7 +14,7 @@ const usersResolvers = {
           name,
           email,
           password,
-          picture,
+          image,
           apartment,
           communityId,
           isNotified,
@@ -27,9 +27,9 @@ const usersResolvers = {
         if (existingUser) throw new Error('User exist already');
 
         // Hash password & upload image to Cloudinary
-        const [hashedPassword, imgUrl] = await Promise.all([
+        const [hashedPassword, imgData] = await Promise.all([
           bcryptjs.hash(password, 12),
-          uploadImg(picture),
+          uploadImg(image),
         ]);
 
         // Create new user object
@@ -39,7 +39,7 @@ const usersResolvers = {
           isCreator,
           apartment,
           isNotified,
-          picture: imgUrl,
+          image: imgData,
           community: communityId,
           password: hashedPassword,
         });
@@ -80,6 +80,7 @@ const usersResolvers = {
           communityId: result.community,
         };
       } catch (err) {
+        console.log(err);
         throw new Error(err);
       }
     },

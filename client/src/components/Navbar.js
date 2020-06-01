@@ -26,7 +26,7 @@ const GET_COMMUNITY = gql`
       members {
         _id
         name
-        picture
+        image
       }
     }
   }

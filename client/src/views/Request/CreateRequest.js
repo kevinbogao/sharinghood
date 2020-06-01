@@ -12,7 +12,7 @@ const CREATE_REQUEST = gql`
     createRequest(requestInput: $requestInput) {
       _id
       desc
-      picture
+      image
       dateNeed
       creator {
         _id
@@ -27,7 +27,7 @@ const GET_REQUESTS = gql`
     requests {
       _id
       desc
-      picture
+      image
       dateNeed
       creator {
         _id
@@ -38,8 +38,8 @@ const GET_REQUESTS = gql`
 `;
 
 function CreateRequest({ history }) {
-  let desc;
-  const [picture, setPicture] = useState(null);
+  let title, desc;
+  const [image, setImage] = useState(null);
   const [dateNeed, setDateNeed] = useState(new Date());
   const [dateReturn, setDateReturn] = useState(new Date());
   const [error, setError] = useState({});
@@ -66,8 +66,9 @@ function CreateRequest({ history }) {
 
   function validate() {
     const errors = {};
+    if (!title.value) errors.title = 'Please enter a title';
     if (!desc.value) errors.desc = 'Please enter a description';
-    if (!picture) errors.picture = 'Please upload a picture of the item';
+    if (!image) errors.image = 'Please upload a picture of the item';
     setError(errors);
     return errors;
   }
@@ -82,8 +83,9 @@ function CreateRequest({ history }) {
             createRequest({
               variables: {
                 requestInput: {
+                  title: title.value,
                   desc: desc.value,
-                  picture,
+                  image,
                   dateNeed,
                   dateReturn,
                 },
@@ -94,7 +96,7 @@ function CreateRequest({ history }) {
       >
         <div className="image-upload">
           <label htmlFor="file-input">
-            <img alt="profile pic" src={picture || uploadImg} />
+            <img alt="profile pic" src={image || uploadImg} />
           </label>
           <input
             id="file-input"
@@ -104,12 +106,19 @@ function CreateRequest({ history }) {
               const reader = new FileReader();
               reader.readAsDataURL(e.target.files[0]);
               reader.onload = () => {
-                setPicture(reader.result);
+                setImage(reader.result);
               };
             }}
           />
         </div>
-        {error.picture && <InlineError text={error.picture} />}
+        {error.image && <InlineError text={error.image} />}
+        <input
+          className="prev-input desc"
+          name="title"
+          placeholder="Title"
+          ref={(node) => (title = node)}
+        />
+        {error.title && <InlineError text={error.title} />}
         <input
           className="prev-input desc"
           placeholder="Description"

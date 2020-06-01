@@ -11,7 +11,7 @@ function Threads({ threads, members }) {
               .filter((member) => member._id === thread.poster._id)
               .map((member) => (
                 <Fragment key={member._id}>
-                  <img src={member.picture} alt="Member" />
+                  <img src={JSON.parse(member.image).secure_url} alt="Member" />
                   <div className="thread-content">
                     <span className="prev-p">{member.name}</span>
                     <p>{thread.content}</p>
@@ -79,7 +79,7 @@ Threads.propTypes = {
     PropTypes.shape({
       _id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
-      picture: PropTypes.string.isRequired,
+      image: PropTypes.string.isRequired,
     }),
   ).isRequired,
 };

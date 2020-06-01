@@ -8,12 +8,12 @@ function ItemDetails({ item, children }) {
       <div className="item-content">
         <div className="item-info">
           <div className="item-img">
-            <img src={item.picture} alt="" />
+            <img src={JSON.parse(item.image).secure_url} alt="" />
           </div>
           {children}
         </div>
         <div className="item-creator">
-          <img src={item.creator.picture} alt="" />
+          <img src={JSON.parse(item.creator.image).secure_url} alt="" />
           <div className="creator-info">
             <p className="prev-p name">{item.creator.name}</p>
             <h6>Find me: {item.creator.apartment}</h6>
@@ -165,10 +165,10 @@ function ItemDetails({ item, children }) {
 
 ItemDetails.propTypes = {
   item: PropTypes.shape({
-    picture: PropTypes.string.isRequired,
+    image: PropTypes.string.isRequired,
     creator: PropTypes.shape({
       name: PropTypes.string.isRequired,
-      picture: PropTypes.string.isRequired,
+      image: PropTypes.string.isRequired,
       apartment: PropTypes.string.isRequired,
       createdAt: PropTypes.string.isRequired,
     }).isRequired,

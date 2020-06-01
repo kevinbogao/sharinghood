@@ -89,7 +89,7 @@ const requestsResolvers = {
   Mutation: {
     createRequest: async (
       _,
-      { requestInput: { desc, picture, dateNeed, dateReturn } },
+      { requestInput: { title, desc, image, dateNeed, dateReturn } },
       { user }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
@@ -97,14 +97,15 @@ const requestsResolvers = {
 
       try {
         // Upload image to Cloudinary
-        const imgUrl = await uploadImg(picture);
+        const imgData = await uploadImg(image);
 
         // Create a new request object
         const request = new Request({
+          title,
           desc,
           dateNeed,
           dateReturn,
-          picture: imgUrl,
+          image: imgData,
           creator: userId,
           community: communityId,
         });
@@ -120,7 +121,7 @@ const requestsResolvers = {
           Notification.create({
             onType: 1,
             onDocId: result.id,
-            content: `${userName} made a requested for ${desc} in your community`,
+            content: `${userName} made a requested for ${title} in your community`,
             creator: userId,
             isRead: false,
           }),

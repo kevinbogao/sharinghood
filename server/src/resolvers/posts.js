@@ -94,7 +94,7 @@ const postsResolvers = {
   Mutation: {
     createPost: async (
       _,
-      { postInput: { title, desc, picture, condition, isGiveaway } },
+      { postInput: { title, desc, image, condition, isGiveaway } },
       { user }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
@@ -102,7 +102,7 @@ const postsResolvers = {
 
       try {
         // Upload image to Cloudinary
-        const imgUrl = await uploadImg(picture);
+        const imgData = await uploadImg(image);
 
         // Create a new post object
         const post = new Post({
@@ -110,7 +110,7 @@ const postsResolvers = {
           title,
           condition,
           isGiveaway,
-          picture: imgUrl,
+          image: imgData,
           creator: userId,
           community: communityId,
         });

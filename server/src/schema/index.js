@@ -7,7 +7,7 @@ const typeDefs = gql`
     name: String
     email: String
     password: String
-    picture: String
+    image: String
     apartment: String
     isNotified: Boolean
     isAdmin: Boolean
@@ -18,7 +18,7 @@ const typeDefs = gql`
     name: String!
     email: String!
     password: String!
-    picture: String!
+    image: String!
     apartment: String!
     communityId: ID!
     isNotified: Boolean!
@@ -58,7 +58,7 @@ const typeDefs = gql`
     _id: ID!
     title: String
     desc: String
-    picture: String
+    image: String
     condition: Int
     isGiveaway: Boolean
     creator: User
@@ -69,7 +69,7 @@ const typeDefs = gql`
   input PostInput {
     title: String!
     desc: String!
-    picture: String!
+    image: String!
     condition: Int!
     isGiveaway: Boolean!
   }
@@ -77,8 +77,9 @@ const typeDefs = gql`
   ### Request
   type Request {
     _id: ID!
+    title: String
     desc: String
-    picture: String
+    image: String
     dateNeed: String
     dateReturn: String
     creator: User
@@ -87,8 +88,9 @@ const typeDefs = gql`
   }
 
   input RequestInput {
+    title: String!
     desc: String!
-    picture: String!
+    image: String!
     dateNeed: String!
     dateReturn: String!
   }

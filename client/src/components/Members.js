@@ -10,7 +10,7 @@ const GET_MEMBERS = gql`
       members {
         _id
         name
-        picture
+        image
       }
     }
   }
@@ -59,7 +59,7 @@ function Members() {
                   {isExpanded && (
                     <span className="icon-tooltip">{member.name}</span>
                   )}
-                  <img src={member.picture} alt="" />
+                  <img src={JSON.parse(member.image).secure_url} alt="" />
                 </div>
               ))}
         </div>

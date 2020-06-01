@@ -18,7 +18,7 @@ const REGISTER = gql`
 
 function Register({
   location: {
-    state: { name, picture, communityId, apartment, isCreator },
+    state: { name, image, communityId, apartment, isCreator },
   },
   history,
 }) {
@@ -83,7 +83,7 @@ function Register({
                   name,
                   email: email.value,
                   password: password.value,
-                  picture,
+                  image,
                   apartment,
                   communityId,
                   isNotified: isNotified.checked,
@@ -199,7 +199,7 @@ Register.propTypes = {
   location: PropTypes.shape({
     state: PropTypes.shape({
       name: PropTypes.string.isRequired,
-      picture: PropTypes.string.isRequired,
+      image: PropTypes.string.isRequired,
       communityId: PropTypes.string.isRequired,
       apartment: PropTypes.string.isRequired,
       isCreator: PropTypes.bool.isRequired,

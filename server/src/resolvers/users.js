@@ -23,7 +23,7 @@ const usersResolvers = {
       }
     ) => {
       try {
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email }).lean();
         if (existingUser) throw new Error('User exist already');
 
         // Hash password & upload image to Cloudinary
@@ -87,16 +87,17 @@ const usersResolvers = {
     login: async (_, { email, password }) => {
       try {
         // Get user
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).lean();
         if (!user) throw new AuthenticationError('User does not exist');
 
         // Check user password
         const isEqual = await bcryptjs.compare(password, user.password);
         if (!isEqual) throw new AuthenticationError('Password is incorrect');
 
+        // Sign user access token
         const token = jwt.sign(
           {
-            userId: user.id,
+            userId: user._id,
             userName: user.name,
             email: user.email,
             communityId: user.community,
@@ -105,11 +106,10 @@ const usersResolvers = {
           { expiresIn: '30d' }
         );
 
-        // Sign user access token
         return {
           token,
           tokenExpiration: 1,
-          userId: user.id,
+          userId: user._id,
           userName: user.name,
           communityId: user.community,
         };

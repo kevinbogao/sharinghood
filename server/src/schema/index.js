@@ -181,9 +181,6 @@ const typeDefs = gql`
 
   ### Query
   type Query {
-    # User
-    login(email: String!, password: String!): Auth!
-
     # Community
     community(communityId: ID): Community
 

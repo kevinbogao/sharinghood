@@ -33,8 +33,6 @@ const server = new ApolloServer({
       throw new AuthenticationError('Not Authenticated');
     },
   },
-  introspection: true,
-  playground: true,
 });
 
 // Start server

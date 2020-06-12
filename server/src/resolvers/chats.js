@@ -95,15 +95,13 @@ const chatsResolvers = {
           participants: { $all: [userId, recipientId] },
         });
 
-        // Create chat if !exist
+        // If chat does not exist
         if (!existingChat) {
-          const chat = new Chat({
-            participants: [userId, recipientId],
-          });
-
-          // Save chat && get chat creator & recipient
-          const [result, creator, recipient] = await Promise.all([
-            chat.save(),
+          // Create & save chat && get chat creator & recipient
+          const [chat, creator, recipient] = await Promise.all([
+            Chat.create({
+              participants: [userId, recipientId],
+            }),
             User.findById(userId),
             User.findById(recipientId),
           ]);
@@ -114,7 +112,7 @@ const chatsResolvers = {
           await Promise.all([creator.save(), recipient.save()]);
 
           // Populate new chat participants
-          const createdChat = await Chat.populate(result, {
+          const createdChat = await Chat.populate(chat, {
             path: 'participants',
             match: { _id: { $ne: userId } },
           });

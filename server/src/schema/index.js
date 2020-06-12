@@ -183,6 +183,7 @@ const typeDefs = gql`
   type Query {
     # Community
     community(communityId: ID): Community
+    findCommunity(communityCode: String!): Community
 
     # Post
     post(postId: ID!): Post!
@@ -214,7 +215,6 @@ const typeDefs = gql`
     register(userInput: UserInput!): Auth!
 
     # Community
-    community(communityCode: String!): Community
     createCommunity(communityInput: CommunityInput!): Community!
 
     # Post

@@ -32,21 +32,18 @@ const usersResolvers = {
           uploadImg(image),
         ]);
 
-        // Create new user object
-        const user = new User({
-          name,
-          email,
-          isCreator,
-          apartment,
-          isNotified,
-          image: imgData,
-          community: communityId,
-          password: hashedPassword,
-        });
-
-        // Save user and get community
-        const [result, community] = await Promise.all([
-          await user.save(),
+        // Create & save new user && get community
+        const [user, community] = await Promise.all([
+          User.create({
+            name,
+            email,
+            isCreator,
+            apartment,
+            isNotified,
+            image: imgData,
+            community: communityId,
+            password: hashedPassword,
+          }),
           Community.findById(communityId),
         ]);
 
@@ -63,10 +60,10 @@ const usersResolvers = {
         // Sign user access token
         const token = jwt.sign(
           {
-            userId: result.id,
-            userName: result.name,
-            email: result.email,
-            communityId: result.community,
+            userId: user.id,
+            userName: user.name,
+            email: user.email,
+            communityId: user.community,
           },
           process.env.JWT_SECRET,
           { expiresIn: '30d' }
@@ -75,9 +72,9 @@ const usersResolvers = {
         return {
           token,
           tokenExpiration: 1,
-          userId: result.id,
-          userName: result.name,
-          communityId: result.community,
+          userId: user.id,
+          userName: user.name,
+          communityId: user.community,
         };
       } catch (err) {
         console.log(err);

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link, Redirect } from 'react-router-dom';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { gql, useQuery, useLazyQuery } from '@apollo/client';
 import InlineError from '../components/InlineError';
 import vase from '../assets/images/vase.png';
 
@@ -11,9 +11,9 @@ const GET_SESSION = gql`
   }
 `;
 
-const COMMUNITY = gql`
-  mutation Community($communityCode: String!) {
-    community(communityCode: $communityCode) {
+const FIND_COMMUNITY = gql`
+  query FindCommunity($communityCode: String!) {
+    findCommunity(communityCode: $communityCode) {
       _id
       name
       members {
@@ -31,14 +31,14 @@ function Home({ history }) {
   const {
     data: { token },
   } = useQuery(GET_SESSION);
-  const [community] = useMutation(COMMUNITY, {
-    onCompleted: ({ community }) => {
+  const [findCommunity] = useLazyQuery(FIND_COMMUNITY, {
+    onCompleted: ({ findCommunity }) => {
       history.push({
         pathname: '/community/find',
         state: {
-          communityId: community._id,
-          communityName: community.name,
-          members: community.members,
+          communityId: findCommunity._id,
+          communityName: findCommunity.name,
+          members: findCommunity.members,
           isCreator: false,
         },
       });
@@ -99,7 +99,7 @@ function Home({ history }) {
                 e.preventDefault();
                 const errors = validate();
                 if (Object.keys(errors).length === 0) {
-                  community({
+                  findCommunity({
                     variables: {
                       communityCode: code.value,
                     },

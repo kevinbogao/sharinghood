@@ -6,6 +6,7 @@ const communitiesResolvers = {
   Query: {
     community: async (_, __, { user: { communityId } }) => {
       try {
+        // Find community by id & populate users
         const community = await Community.aggregate([
           {
             $match: { _id: mongoose.Types.ObjectId(communityId) },
@@ -30,31 +31,45 @@ const communitiesResolvers = {
         throw err;
       }
     },
-  },
-  Mutation: {
-    createCommunity: async (_, { communityInput: { name, code, zipCode } }) => {
-      const community = new Community({ name, code, zipCode });
-
+    findCommunity: async (_, { communityCode }) => {
       try {
-        const existingCode = await Community.findOne({ code });
-        if (existingCode) {
-          throw new ForbiddenError('Community code exists already');
-        }
-        const result = await community.save();
-        return result;
+        // Find community and populate users
+        const community = await Community.aggregate([
+          { $match: { code: communityCode } },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'members',
+              foreignField: '_id',
+              as: 'members',
+            },
+          },
+        ]);
+
+        return community[0];
       } catch (err) {
         console.log(err);
         throw err;
       }
     },
-    community: async (_, { communityCode }) => {
+  },
+  Mutation: {
+    createCommunity: async (_, { communityInput: { name, code, zipCode } }) => {
       try {
-        const community = await Community.findOne({
-          code: communityCode,
-        }).populate('members');
-        if (!community) {
-          throw new ForbiddenError("Community doesn't exist");
+        // Check if community code exists
+        const existingCode = await Community.findOne({ code });
+
+        if (existingCode) {
+          throw new ForbiddenError('Community code exists already');
         }
+
+        // Create & save community
+        const community = await Community.create({
+          name,
+          code,
+          zipCode,
+        });
+
         return community;
       } catch (err) {
         console.log(err);

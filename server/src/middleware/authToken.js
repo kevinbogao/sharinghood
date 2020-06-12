@@ -1,25 +1,10 @@
 const { sign, verify } = require('jsonwebtoken');
 
-// function generateToken(user, isAccessToken) {
-//   return sign(
-//     {
-//       userId: user._id,
-//       ...(isAccessToken && {
-//         userName: user.name,
-//         email: user.email,
-//         communityId: user.community,
-//       }),
-//     },
-//     process.env.JWT_SECRET,
-//     { expiresIn: isAccessToken ? '1h' : '7d' }
-//   );
-// }
-
 function generateTokens(user, res) {
   // Save refreshToken as cookie
   res.cookie(
     'refreshToken',
-    sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' }),
+    sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '10s' }),
     { httpOnly: true }
   );
 
@@ -36,7 +21,7 @@ function generateTokens(user, res) {
   );
 }
 
-function varifyToken(token) {
+function verifyToken(token) {
   try {
     return token ? verify(token, process.env.JWT_SECRET) : null;
   } catch (err) {
@@ -44,4 +29,4 @@ function varifyToken(token) {
   }
 }
 
-module.exports = { generateTokens, varifyToken };
+module.exports = { generateTokens, verifyToken };

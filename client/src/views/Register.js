@@ -1,18 +1,13 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useMutation, useApolloClient } from '@apollo/client';
+import jwtDecode from 'jwt-decode';
 import Loading from '../components/Loading';
 import InlineError from '../components/InlineError';
 
 const REGISTER = gql`
   mutation Register($userInput: UserInput!) {
-    register(userInput: $userInput) {
-      token
-      tokenExpiration
-      userId
-      userName
-      communityId
-    }
+    register(userInput: $userInput)
   }
 `;
 
@@ -32,21 +27,17 @@ function Register({
     onError: ({ message }) => {
       console.log(message);
     },
-    onCompleted: ({ register: { token, userId, userName, communityId } }) => {
-      localStorage.setItem('@sharinghood:token', token);
-      localStorage.setItem('@sharinghood:userId', userId);
-      localStorage.setItem('@sharinghood:userName', userName);
-      localStorage.setItem('@sharinghood:communityId', communityId);
+    onCompleted: ({ register }) => {
+      localStorage.setItem('@sharinghood:accessToken', register);
+      const tokenPayload = jwtDecode(register);
       client.writeQuery({
         query: gql`
           {
-            token
-            userId
-            userName
-            communityId
+            accessToken
+            tokenPayload
           }
         `,
-        data: { token, userId, userName, communityId },
+        data: { accessToken: register, tokenPayload },
       });
       history.push('/find');
     },

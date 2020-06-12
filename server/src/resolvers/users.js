@@ -4,7 +4,7 @@ const User = require('../models/user');
 const Community = require('../models/community');
 const uploadImg = require('../middleware/uploadImg');
 const parseCookie = require('../middleware/parseCookie');
-const { generateTokens, varifyToken } = require('../middleware/authToken');
+const { generateTokens, verifyToken } = require('../middleware/authToken');
 
 const usersResolvers = {
   Mutation: {
@@ -76,16 +76,8 @@ const usersResolvers = {
         if (isCreator) community.creator = user;
         await community.save();
 
-        // Sign accessToken & sent refreshToken as cookie
-        const accessToken = generateTokens(user, res);
-
-        return {
-          token: accessToken,
-          tokenExpiration: 1,
-          userId: user.id,
-          userName: user.name,
-          communityId: user.community,
-        };
+        // Sign accessToken & sent refreshToken as cookie and return accessToken
+        return generateTokens(user, res);
       } catch (err) {
         console.log(err);
         throw new Error(err);
@@ -106,22 +98,22 @@ const usersResolvers = {
         const { refreshToken } = parseCookie(cookie);
 
         // Get userId from token
-        const { userId } = varifyToken(refreshToken);
+        const { userId } = verifyToken(refreshToken);
 
-        // If token is valid
+        // If refreshToken is valid
         if (userId) {
           // Find user by id
           const user = await User.findOne({ _id: userId }).lean();
 
-          // Refresh accessToken & refreshToken
-          const accessToken = generateTokens(user, res);
-
-          return { isRefreshed: true, accessToken };
+          // Refresh accessToken & refreshToken and return to client
+          return generateTokens(user, res);
         }
 
-        return { isRefreshed: false };
+        // Return empty string on invalid refreshToken
+        return '';
       } catch (err) {
-        return { isRefreshed: false };
+        // Return empty string on error
+        return '';
       }
     },
   },

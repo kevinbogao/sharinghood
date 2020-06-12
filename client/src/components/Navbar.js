@@ -113,13 +113,13 @@ function Navbar() {
                   client.writeQuery({
                     query: gql`
                       {
-                        token
+                        accessToken
                         tokenPayload
                       }
                     `,
-                    data: { token: null, tokenPayload: null },
+                    data: { accessToken: null, tokenPayload: null },
                   });
-                  localStorage.removeItem('@sharinghood:token');
+                  localStorage.removeItem('@sharinghood:accessToken');
                 }}
               />
             </div>

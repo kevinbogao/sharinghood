@@ -2,22 +2,22 @@ import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
 
-const GET_TOKEN = gql`
+const GET_ACCESS_TOKEN = gql`
   {
-    token @client
+    accessToken @client
   }
 `;
 
 function ProtectedRoute({ component: Component, ...rest }) {
   const {
-    data: { token },
-  } = useQuery(GET_TOKEN);
+    data: { accessToken },
+  } = useQuery(GET_ACCESS_TOKEN);
 
   return (
     <Route
       {...rest}
       render={(props) =>
-        !!token ? (
+        !!accessToken ? (
           <Component {...props} />
         ) : (
           <Redirect

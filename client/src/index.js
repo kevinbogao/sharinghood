@@ -17,8 +17,8 @@ import * as serviceWorker from './serviceWorker';
 
 require('dotenv').config();
 
-// Get token from localhost
-const token = localStorage.getItem('@sharinghood:token');
+// Get accessToken from localStorage
+const accessToken = localStorage.getItem('@sharinghood:accessToken');
 
 // Create an http link
 const httpLink = new HttpLink({
@@ -27,11 +27,11 @@ const httpLink = new HttpLink({
 
 // Auth headers
 const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem('@sharinghood:token');
+  const accessToken = localStorage.getItem('@sharinghood:accessToken');
   return {
     headers: {
       ...headers,
-      authorization: token ? `Bearer ${token}` : '',
+      authorization: accessToken ? `Bearer ${accessToken}` : '',
     },
   };
 });
@@ -42,7 +42,7 @@ const wsLink = new WebSocketLink({
   options: {
     reconnect: true,
     connectionParams: {
-      authToken: token,
+      authToken: accessToken,
     },
   },
 });
@@ -80,13 +80,13 @@ const client = new ApolloClient({
 cache.writeQuery({
   query: gql`
     query {
-      token
+      accessToken
       tokenPayload
     }
   `,
   data: {
-    token: localStorage.getItem('@sharinghood:token'),
-    tokenPayload: token ? jwtDecode(token) : null,
+    accessToken: localStorage.getItem('@sharinghood:accessToken'),
+    tokenPayload: accessToken ? jwtDecode(accessToken) : null,
   },
 });
 

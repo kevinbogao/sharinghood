@@ -6,9 +6,9 @@ import jwtDecode from 'jwt-decode';
 import InlineError from '../components/InlineError';
 import Loading from '../components/Loading';
 
-const GET_TOKEN = gql`
+const GET_ACCESS_TOKEN = gql`
   {
-    token @client
+    accessToken @client
   }
 `;
 
@@ -24,20 +24,20 @@ function Login({ location, history }) {
   const [error, setError] = useState({});
   const { from } = location.state || { from: { pathname: '/' } };
   const {
-    data: { token },
-  } = useQuery(GET_TOKEN);
+    data: { accessToken },
+  } = useQuery(GET_ACCESS_TOKEN);
   const [login, { loading: mutationLoading }] = useMutation(LOGIN, {
     onCompleted: ({ login }) => {
-      localStorage.setItem('@sharinghood:token', login);
+      localStorage.setItem('@sharinghood:accessToken', login);
       const tokenPayload = jwtDecode(login);
       client.writeQuery({
         query: gql`
           {
-            token
+            accessToken
             tokenPayload
           }
         `,
-        data: { token: login, tokenPayload },
+        data: { accessToken: login, tokenPayload },
       });
       history.push('/find');
     },
@@ -56,7 +56,7 @@ function Login({ location, history }) {
     return errors;
   }
 
-  return token ? (
+  return accessToken ? (
     <Redirect to={from} />
   ) : (
     <div className="login-control">

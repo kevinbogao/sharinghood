@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Redirect, Link } from 'react-router-dom';
 import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
+import jwtDecode from 'jwt-decode';
 import InlineError from '../components/InlineError';
 import Loading from '../components/Loading';
 
@@ -13,13 +14,7 @@ const GET_TOKEN = gql`
 
 const LOGIN = gql`
   mutation Login($email: String!, $password: String!) {
-    login(email: $email, password: $password) {
-      token
-      tokenExpiration
-      userId
-      userName
-      communityId
-    }
+    login(email: $email, password: $password)
   }
 `;
 
@@ -32,21 +27,17 @@ function Login({ location, history }) {
     data: { token },
   } = useQuery(GET_TOKEN);
   const [login, { loading: mutationLoading }] = useMutation(LOGIN, {
-    onCompleted: ({ login: { token, userId, userName, communityId } }) => {
-      localStorage.setItem('@sharinghood:token', token);
-      localStorage.setItem('@sharinghood:userId', userId);
-      localStorage.setItem('@sharinghood:userName', userName);
-      localStorage.setItem('@sharinghood:communityId', communityId);
+    onCompleted: ({ login }) => {
+      localStorage.setItem('@sharinghood:token', login);
+      const tokenPayload = jwtDecode(login);
       client.writeQuery({
         query: gql`
           {
             token
-            userId
-            userName
-            communityId
+            tokenPayload
           }
         `,
-        data: { token, userId, userName, communityId },
+        data: { token: login, tokenPayload },
       });
       history.push('/find');
     },

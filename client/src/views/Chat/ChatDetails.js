@@ -17,7 +17,7 @@ const GET_CHAT = gql`
         createdAt
       }
     }
-    userId @client
+    tokenPayload @client
   }
 `;
 
@@ -99,7 +99,9 @@ function ChatDetails({ chatId }) {
             <div
               key={message._id}
               className={
-                message.sender._id === data.userId ? 'send' : 'received'
+                message.sender._id === data.tokenPayload.userId
+                  ? 'send'
+                  : 'received'
               }
             >
               <p>{message.text}</p>

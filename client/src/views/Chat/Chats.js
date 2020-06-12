@@ -17,7 +17,7 @@ const GET_CHATS = gql`
       }
       updatedAt
     }
-    userId @client
+    tokenPayload @client
     community @client {
       members {
         _id
@@ -102,7 +102,7 @@ function Chats() {
           <ChatDetails chatId={selectedChat} />
         ) : (
           <CreateChat
-            userId={data.userId}
+            userId={data.tokenPayload.userId}
             chats={data.chats}
             community={data.community}
             setSelectedChat={setSelectedChat}

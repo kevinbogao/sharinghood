@@ -4,7 +4,11 @@ const User = require('../models/user');
 const Community = require('../models/community');
 const uploadImg = require('../middleware/uploadImg');
 const parseCookie = require('../middleware/parseCookie');
-const { generateTokens, varifyToken } = require('../middleware/authToken');
+const {
+  generateToken,
+  generateTokens,
+  varifyToken,
+} = require('../middleware/authToken');
 
 const usersResolvers = {
   Mutation: {
@@ -18,8 +22,22 @@ const usersResolvers = {
         const isEqual = await bcryptjs.compare(password, user.password);
         if (!isEqual) throw new AuthenticationError('Password is incorrect');
 
-        // Sign accessToken & sent refreshToken as cookie and return accessToken
-        return generateTokens(user, res);
+        // Sign accessToken & sent refreshToken as cookie
+        const accessToken = generateToken(user, true);
+        res.cookie('refreshToken', generateToken(user, false), {
+          httpOnly: true,
+        });
+
+        const something = generateTokens(user, res);
+        console.log(something);
+
+        return {
+          token: accessToken,
+          tokenExpiration: 1,
+          userId: user._id,
+          userName: user.name,
+          communityId: user.community,
+        };
       } catch (err) {
         console.log(err);
         throw new Error(err);
@@ -77,7 +95,10 @@ const usersResolvers = {
         await community.save();
 
         // Sign accessToken & sent refreshToken as cookie
-        const accessToken = generateTokens(user, res);
+        const accessToken = generateToken(user, true);
+        res.cookie('refreshToken', generateToken(user, false), {
+          httpOnly: true,
+        });
 
         return {
           token: accessToken,
@@ -113,8 +134,13 @@ const usersResolvers = {
           // Find user by id
           const user = await User.findOne({ _id: userId }).lean();
 
-          // Refresh accessToken & refreshToken
-          const accessToken = generateTokens(user, res);
+          // refresh accessToken & refreshToken
+          const accessToken = generateToken(user, true);
+          res.cookie('refreshToken', generateToken(user, false), {
+            httpOnly: true,
+          });
+          const something = generateTokens(user, res);
+          console.log(something);
 
           return { isRefreshed: true, accessToken };
         }

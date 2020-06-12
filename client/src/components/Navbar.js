@@ -8,9 +8,7 @@ import hamburger from '../assets/images/hamburger.png';
 
 const GET_SESSION = gql`
   {
-    token @client
-    userId @client
-    communityId @client
+    tokenPayload @client
   }
 `;
 
@@ -39,10 +37,10 @@ function Navbar() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const {
-    data: { token, userId },
+    data: { tokenPayload },
   } = useQuery(GET_SESSION);
   const { data } = useQuery(GET_COMMUNITY, {
-    skip: !token,
+    skip: !tokenPayload,
   });
 
   function handleClickOutside(e) {
@@ -85,14 +83,14 @@ function Navbar() {
       </div>
       <div className="nav-logo">
         <h1>
-          <Link to={token ? '/find' : '/'}>
+          <Link to={tokenPayload ? '/find' : '/'}>
             {data ? data.community.name : 'Sharinghood'}
           </Link>
         </h1>
       </div>
       <div className="nav-user">
         <div className="nav-user-content">
-          {token ? (
+          {tokenPayload ? (
             <div className="nav-icons">
               <FontAwesomeIcon
                 className="nav-icon"
@@ -116,18 +114,12 @@ function Navbar() {
                     query: gql`
                       {
                         token
-                        userId
+                        tokenPayload
                       }
                     `,
-                    data: {
-                      token: null,
-                      userId: null,
-                    },
+                    data: { token: null, tokenPayload: null },
                   });
                   localStorage.removeItem('@sharinghood:token');
-                  localStorage.removeItem('@sharinghood:userId');
-                  localStorage.removeItem('@sharinghood:userName');
-                  localStorage.removeItem('@sharinghood:communityId');
                 }}
               />
             </div>
@@ -157,7 +149,7 @@ function Navbar() {
         <NavLink className="nav-menu-item" to="/chats" onClick={toggleMenu}>
           Messages
         </NavLink>
-        {data && data.community.creator._id === userId && (
+        {data && data.community.creator._id === tokenPayload.userId && (
           <div className="nav-menu-item invite">
             <NavLink
               className="invite-btn"

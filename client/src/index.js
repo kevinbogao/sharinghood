@@ -11,6 +11,7 @@ import {
 import { getMainDefinition } from '@apollo/client/utilities';
 import { WebSocketLink } from '@apollo/link-ws';
 import { setContext } from 'apollo-link-context';
+import jwtDecode from 'jwt-decode';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
@@ -80,16 +81,12 @@ cache.writeQuery({
   query: gql`
     query {
       token
-      userId
-      userName
-      communityId
+      tokenPayload
     }
   `,
   data: {
     token: localStorage.getItem('@sharinghood:token'),
-    userId: localStorage.getItem('@sharinghood:userId'),
-    userName: localStorage.getItem('@sharinghood:userName'),
-    communityId: localStorage.getItem('@sharinghood:communityId'),
+    tokenPayload: token ? jwtDecode(token) : null,
   },
 });
 

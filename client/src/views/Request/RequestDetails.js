@@ -64,7 +64,7 @@ const GET_REQUEST = gql`
         }
       }
     }
-    userId @client
+    tokenPayload @client
     community @client {
       members {
         _id
@@ -154,7 +154,7 @@ function RequestDetails({ match, history }) {
     `Error! ${error.message}`
   ) : (
     <div className="item-control">
-      <ItemDetails item={data.request} userId={data.userId}>
+      <ItemDetails item={data.request} userId={data.tokenPayload.userId}>
         <div className="item-desc">
           <h3>{data.request.title}</h3>
           <p className="prev-p">{data.request.desc}</p>
@@ -170,7 +170,7 @@ function RequestDetails({ match, history }) {
               Needed until: {moment(+data.request.dateReturn).format('MMM DD')}
             </span>
           </div>
-          {data.request.creator._id === data.userId ? (
+          {data.request.creator._id === data.tokenPayload.userId ? (
             <button
               type="button"
               className="item-btn delete"
@@ -229,7 +229,7 @@ function RequestDetails({ match, history }) {
       />
       <div className="new-thread-control">
         {data.community.members
-          .filter((member) => member._id === data.userId)
+          .filter((member) => member._id === data.tokenPayload.userId)
           .map((member) => (
             <Fragment key={member._id}>
               <img src={JSON.parse(member.image).secure_url} alt="" />

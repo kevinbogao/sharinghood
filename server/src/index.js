@@ -9,7 +9,7 @@ const tokenPayload = require('./middleware/tokenPayload');
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: async ({ req, connection }) => {
+  context: async ({ res, req, connection }) => {
     // Subscription context
     if (connection) {
       const user = tokenPayload(connection.context.authToken);
@@ -20,7 +20,7 @@ const server = new ApolloServer({
     const tokenWithBearer = req.headers.authorization || '';
     const token = tokenWithBearer.split(' ')[1];
     const user = tokenPayload(token);
-    return { user };
+    return { user, res, req };
   },
   subscriptions: {
     onConnect: async ({ authToken }) => {

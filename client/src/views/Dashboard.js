@@ -51,8 +51,7 @@ const GET_BOOKINGS = gql`
         _id
       }
     }
-    userId @client
-    userName @client
+    tokenPayload @client
   }
 `;
 
@@ -117,7 +116,9 @@ function Dashboard() {
         </thead>
         <tbody>
           {data.bookings
-            .filter((booking) => booking.booker._id === data.userId)
+            .filter(
+              (booking) => booking.booker._id === data.tokenPayload.userId,
+            )
             .map((booking) => (
               <tr key={booking._id}>
                 <td className="title">
@@ -153,7 +154,7 @@ function Dashboard() {
                               bookingInput: {
                                 status: 1,
                                 postId: booking.post._id,
-                                notifyContent: `${data.userName} has accepted your suggested pickup time for ${booking.post.title}`,
+                                notifyContent: `${data.tokenPayload.userName} has accepted your suggested pickup time for ${booking.post.title}`,
                                 notifyRecipientId: booking.post.creator._id,
                               },
                             },
@@ -173,7 +174,7 @@ function Dashboard() {
                               bookingInput: {
                                 status: 3,
                                 postId: booking.post._id,
-                                notifyContent: `${data.userName} has decline your suggested pickup time for ${booking.post.title}`,
+                                notifyContent: `${data.tokenPayload.userName} has decline your suggested pickup time for ${booking.post.title}`,
                                 notifyRecipientId: booking.post.creator._id,
                               },
                             },
@@ -202,7 +203,9 @@ function Dashboard() {
         </thead>
         <tbody>
           {data.bookings
-            .filter((booking) => booking.booker._id !== data.userId)
+            .filter(
+              (booking) => booking.booker._id !== data.tokenPayload.userId,
+            )
             .map((booking) => (
               <tr key={booking._id}>
                 <td className="title">
@@ -294,7 +297,7 @@ function Dashboard() {
                         status: 1,
                         postId: booking.post._id,
                         pickupTime: pickupDate,
-                        notifyContent: `${data.userName} has accepted your booking on ${booking.post.title}`,
+                        notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${booking.post.title}`,
                         notifyRecipientId: booking.booker._id,
                       },
                     },
@@ -331,7 +334,7 @@ function Dashboard() {
                       bookingInput: {
                         status: 3,
                         postId: booking.post._id,
-                        notifyContent: `${data.userName} has declined your booking on ${booking.post.title}`,
+                        notifyContent: `${data.tokenPayload.userName} has declined your booking on ${booking.post.title}`,
                         notifyRecipientId: booking.booker._id,
                       },
                     },
@@ -371,7 +374,7 @@ function Dashboard() {
                         status: 2,
                         postId: booking.post._id,
                         pickupTime: pickupDate,
-                        notifyContent: `${data.userName} has suggested a new date for your booking on ${booking.post.title}`,
+                        notifyContent: `${data.tokenPayload.userName} has suggested a new date for your booking on ${booking.post.title}`,
                         notifyRecipientId: booking.booker._id,
                       },
                     },

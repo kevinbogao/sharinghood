@@ -67,7 +67,7 @@ const GET_POST = gql`
         }
       }
     }
-    userId @client
+    tokenPayload @client
     community @client {
       members {
         _id
@@ -183,7 +183,7 @@ function PostDetails({ match, history }) {
     `Error! ${error.message}`
   ) : (
     <div className="item-control">
-      <ItemDetails item={data.post} userId={data.userId} L6>
+      <ItemDetails item={data.post} userId={data.tokenPayload.userId}>
         <div className="item-desc">
           <h3>{data.post.title}</h3>
           <p className="prev-p">{data.post.desc}</p>
@@ -200,7 +200,7 @@ function PostDetails({ match, history }) {
               <span>This is a give away</span>
             </div>
           )}
-          {data.post.creator._id === data.userId ? (
+          {data.post.creator._id === data.tokenPayload.userId ? (
             <button
               type="button"
               className="item-btn delete"
@@ -293,7 +293,7 @@ function PostDetails({ match, history }) {
       <Threads threads={data.post.threads} members={data.community.members} />
       <div className="new-thread-control">
         {data.community.members
-          .filter((member) => member._id === data.userId)
+          .filter((member) => member._id === data.tokenPayload.userId)
           .map((member) => (
             <Fragment key={member._id}>
               <img src={JSON.parse(member.image).secure_url} alt="" />

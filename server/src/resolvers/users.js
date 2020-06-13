@@ -1,12 +1,30 @@
 const { AuthenticationError } = require('apollo-server');
-const jwt = require('jsonwebtoken');
 const bcryptjs = require('bcryptjs');
 const User = require('../models/user');
 const Community = require('../models/community');
 const uploadImg = require('../middleware/uploadImg');
+const parseCookie = require('../middleware/parseCookie');
+const { generateTokens, verifyToken } = require('../middleware/authToken');
 
 const usersResolvers = {
   Mutation: {
+    login: async (_, { email, password }, { res }) => {
+      try {
+        // Get user
+        const user = await User.findOne({ email }).lean();
+        if (!user) throw new AuthenticationError('User does not exist');
+
+        // Check user password
+        const isEqual = await bcryptjs.compare(password, user.password);
+        if (!isEqual) throw new AuthenticationError('Password is incorrect');
+
+        // Sign accessToken & sent refreshToken as cookie and return accessToken
+        return generateTokens(user, res);
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
     register: async (
       _,
       {
@@ -20,7 +38,8 @@ const usersResolvers = {
           isNotified,
           isCreator,
         },
-      }
+      },
+      { res }
     ) => {
       try {
         const existingUser = await User.findOne({ email }).lean();
@@ -57,61 +76,46 @@ const usersResolvers = {
         if (isCreator) community.creator = user;
         await community.save();
 
-        // Sign user access token
-        const token = jwt.sign(
-          {
-            userId: user.id,
-            userName: user.name,
-            email: user.email,
-            communityId: user.community,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: '30d' }
-        );
-
-        return {
-          token,
-          tokenExpiration: 1,
-          userId: user.id,
-          userName: user.name,
-          communityId: user.community,
-        };
+        // Sign accessToken & sent refreshToken as cookie and return accessToken
+        return generateTokens(user, res);
       } catch (err) {
         console.log(err);
         throw new Error(err);
       }
     },
-    login: async (_, { email, password }) => {
+    tokenRefresh: async (
+      _,
+      __,
+      {
+        req: {
+          headers: { cookie },
+        },
+        res,
+      }
+    ) => {
       try {
-        // Get user
-        const user = await User.findOne({ email }).lean();
-        if (!user) throw new AuthenticationError('User does not exist');
+        // Parse cookie string to cookies object
+        const { refreshToken } = parseCookie(cookie);
 
-        // Check user password
-        const isEqual = await bcryptjs.compare(password, user.password);
-        if (!isEqual) throw new AuthenticationError('Password is incorrect');
+        // Get userId from token
+        const { userId } = verifyToken(refreshToken);
 
-        // Sign user access token
-        const token = jwt.sign(
-          {
-            userId: user._id,
-            userName: user.name,
-            email: user.email,
-            communityId: user.community,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: '30d' }
-        );
+        console.log(userId);
 
-        return {
-          token,
-          tokenExpiration: 1,
-          userId: user._id,
-          userName: user.name,
-          communityId: user.community,
-        };
+        // If refreshToken is valid
+        if (userId) {
+          // Find user by id
+          const user = await User.findOne({ _id: userId }).lean();
+
+          // Refresh accessToken & refreshToken and return to client
+          return generateTokens(user, res);
+        }
+
+        // Return empty string on invalid refreshToken
+        return '';
       } catch (err) {
-        throw new Error(err);
+        // Return empty string on error
+        return '';
       }
     },
   },

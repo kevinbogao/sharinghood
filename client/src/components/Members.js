@@ -5,7 +5,7 @@ import { faAngleDoubleLeft } from '@fortawesome/free-solid-svg-icons';
 
 const GET_MEMBERS = gql`
   {
-    userId @client
+    tokenPayload @client
     community @client {
       members {
         _id
@@ -53,7 +53,7 @@ function Members() {
         <div className="members-icon">
           {data &&
             data.community.members
-              .filter((member) => member._id !== data.userId)
+              .filter((member) => member._id !== data.tokenPayload.userId)
               .map((member) => (
                 <div key={member._id} className="member-icon">
                   {isExpanded && (

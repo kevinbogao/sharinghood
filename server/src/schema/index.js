@@ -25,14 +25,6 @@ const typeDefs = gql`
     isCreator: Boolean!
   }
 
-  type Auth {
-    token: String!
-    tokenExpiration: Int!
-    userId: ID!
-    userName: String!
-    communityId: ID!
-  }
-
   ### Community
   type Community {
     _id: ID!
@@ -158,8 +150,6 @@ const typeDefs = gql`
     notifyRecipientId: ID
   }
 
-  # union Result = Post | Request | Booking | Chat
-
   type Notification {
     _id: ID!
     onType: Int
@@ -211,8 +201,9 @@ const typeDefs = gql`
   ### Mutation
   type Mutation {
     # User
-    login(email: String!, password: String!): Auth!
-    register(userInput: UserInput!): Auth!
+    login(email: String!, password: String!): String!
+    register(userInput: UserInput!): String!
+    tokenRefresh: String!
 
     # Community
     createCommunity(communityInput: CommunityInput!): Community!

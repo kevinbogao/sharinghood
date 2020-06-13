@@ -5,9 +5,9 @@ import { gql, useQuery, useLazyQuery } from '@apollo/client';
 import InlineError from '../components/InlineError';
 import vase from '../assets/images/vase.png';
 
-const GET_SESSION = gql`
+const GET_ACCESS_TOKEN = gql`
   {
-    token @client
+    accessToken @client
   }
 `;
 
@@ -29,8 +29,8 @@ function Home({ history }) {
   const [isCreate, setIsCreate] = useState(false);
   const [error, setError] = useState({});
   const {
-    data: { token },
-  } = useQuery(GET_SESSION);
+    data: { accessToken },
+  } = useQuery(GET_ACCESS_TOKEN);
   const [findCommunity] = useLazyQuery(FIND_COMMUNITY, {
     onCompleted: ({ findCommunity }) => {
       history.push({
@@ -58,7 +58,7 @@ function Home({ history }) {
     return errors;
   }
 
-  return token ? (
+  return accessToken ? (
     <Redirect to="/find" />
   ) : (
     <div className="home-control">

@@ -3,35 +3,40 @@ const { ApolloServer, AuthenticationError } = require('apollo-server');
 const mongoose = require('mongoose');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
-const tokenPayload = require('./middleware/tokenPayload');
+const { verifyToken } = require('./middleware/authToken');
 
 // Create Apollo server
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: async ({ req, connection }) => {
+  context: async ({ res, req, connection }) => {
     // Subscription context
     if (connection) {
-      const user = tokenPayload(connection.context.authToken);
+      const user = verifyToken(connection.context.authToken);
       return { user };
     }
 
     // Query & Mutation context
     const tokenWithBearer = req.headers.authorization || '';
     const token = tokenWithBearer.split(' ')[1];
-    const user = tokenPayload(token);
-    return { user };
+    const user = verifyToken(token);
+    return { user, res, req };
   },
   subscriptions: {
     onConnect: async ({ authToken }) => {
       // Validate user token & throw err if not valid
       if (authToken) {
-        const user = tokenPayload(authToken);
+        const user = verifyToken(authToken);
         if (!user) throw new AuthenticationError('Not Authenticated');
         return { user };
       }
       throw new AuthenticationError('Not Authenticated');
     },
+  },
+  // cors: true,
+  cors: {
+    origin: 'http://localhost:3000',
+    credentials: true,
   },
 });
 

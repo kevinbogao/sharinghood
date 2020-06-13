@@ -4,7 +4,7 @@ function generateTokens(user, res) {
   // Save refreshToken as cookie
   res.cookie(
     'refreshToken',
-    sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '10s' }),
+    sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' }),
     { httpOnly: true }
   );
 

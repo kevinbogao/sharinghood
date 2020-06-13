@@ -17,7 +17,7 @@
     tslib "^1.10.0"
     zen-observable "^0.8.14"
 
-"@apollo/client@^3.0.0-rc.4":
+"@apollo/client@^3.0.0-beta.48", "@apollo/client@^3.0.0-rc.4":
   version "3.0.0-rc.4"
   resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.0.0-rc.4.tgz#20f621c5213550c1f6c3ab0018959c41b07ea246"
   integrity sha512-hIs+C+i+qVQCkYbXUA0f+df2hC+0I8u5P38B4Ax5gOKh2gT1ZuYoFgz2EWrVZJf4fW6OUxqXLrPRnlG/SLq0rg==
@@ -31,6 +31,14 @@
     ts-invariant "^0.4.4"
     tslib "^1.10.0"
     zen-observable "^0.8.14"
+
+"@apollo/link-error@^2.0.0-beta.3":
+  version "2.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@apollo/link-error/-/link-error-2.0.0-beta.3.tgz#80182f2be07980921fe441a8d66c08914f5a9b56"
+  integrity sha512-blNBBi9+4SEfb4Bhn8cYqGFhb0C7MjqLiRwNdUqwGefl1w+G8Ze8pCLHAyPxXLcslirtht9LY0i6ZOpCzSXHCg==
+  dependencies:
+    "@apollo/client" "^3.0.0-beta.23"
+    tslib "^1.9.3"
 
 "@apollo/link-ws@^2.0.0-beta.3":
   version "2.0.0-beta.3"
@@ -2112,6 +2120,13 @@ apollo-link-context@^1.0.20:
   dependencies:
     apollo-link "^1.2.14"
     tslib "^1.9.3"
+
+apollo-link-token-refresh@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/apollo-link-token-refresh/-/apollo-link-token-refresh-0.3.1.tgz#85be840abe98e53451b7ddc3960a44557b2bd7fb"
+  integrity sha512-OpZfHtuVAydlwHimdPRZCMb7XmWRkqliG3IMtGQhrPoqYR3x20aXb5Q9bpsHgQ3nI51o/1QLA3/kM3rss/O8Zw==
+  dependencies:
+    "@apollo/client" "^3.0.0-beta.48"
 
 apollo-link@^1.2.14:
   version "1.2.14"

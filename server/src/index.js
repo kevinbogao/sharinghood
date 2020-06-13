@@ -33,6 +33,11 @@ const server = new ApolloServer({
       throw new AuthenticationError('Not Authenticated');
     },
   },
+  // cors: true,
+  cors: {
+    origin: 'http://localhost:3000',
+    credentials: true,
+  },
 });
 
 // Start server

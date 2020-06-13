@@ -7,14 +7,17 @@ import {
   InMemoryCache,
   split,
   ApolloProvider,
+  ApolloLink,
 } from '@apollo/client';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { WebSocketLink } from '@apollo/link-ws';
 import { setContext } from 'apollo-link-context';
+import { TokenRefreshLink } from 'apollo-link-token-refresh';
 import jwtDecode from 'jwt-decode';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+// Dotenv config
 require('dotenv').config();
 
 // Get accessToken from localStorage
@@ -23,6 +26,7 @@ const accessToken = localStorage.getItem('@sharinghood:accessToken');
 // Create an http link
 const httpLink = new HttpLink({
   uri: process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP,
+  credentials: 'include',
 });
 
 // Auth headers
@@ -48,7 +52,7 @@ const wsLink = new WebSocketLink({
 });
 
 // Split links
-const link = split(
+const splitLink = split(
   ({ query }) => {
     const definition = getMainDefinition(query);
     return (
@@ -65,15 +69,59 @@ const cache = new InMemoryCache();
 
 // Init apollo client
 const client = new ApolloClient({
-  link,
-  cache,
-  resolvers: {
-    Query: {
-      contacts: () => {
-        console.log('something');
+  link: ApolloLink.from([
+    new TokenRefreshLink({
+      accessTokenField: 'accessToken',
+      isTokenValidOrUndefined: () => {
+        if (!accessToken) return true;
+
+        try {
+          // Get expiration data on accessToken
+          const { exp } = jwtDecode(accessToken);
+
+          // Check if accessToken if expired return false if not
+          // else return true
+          if (Date.now() >= exp * 1000) return false;
+          return true;
+        } catch (err) {
+          return false;
+        }
       },
-    },
-  },
+      fetchAccessToken: () => {
+        // Fetch refreshToken from graphql endpoint
+        const response = fetch('http://localhost:4000', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `
+              mutation {
+                tokenRefresh
+              }
+            `,
+          }),
+        });
+
+        // Return response
+        return response;
+      },
+      handleResponse: () => async (response) => {
+        // Get response data
+        const { data } = await response.json();
+
+        // Save accessToken to localStorage if it is returned from server
+        if (data.tokenRefresh) {
+          localStorage.setItem('@sharinghood:accessToken', data.tokenRefresh);
+        }
+      },
+      handleError: (err) => {
+        console.warn('Your refresh token is invalid. Try to relogin');
+        console.error(err);
+      },
+    }),
+    splitLink,
+  ]),
+  cache,
 });
 
 // Init cache values

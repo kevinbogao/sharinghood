@@ -100,6 +100,8 @@ const usersResolvers = {
         // Get userId from token
         const { userId } = verifyToken(refreshToken);
 
+        console.log(userId);
+
         // If refreshToken is valid
         if (userId) {
           // Find user by id

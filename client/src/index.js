@@ -115,7 +115,7 @@ const client = new ApolloClient({
         }
       },
       handleError: (err) => {
-        console.warn('Your refresh token is invalid. Try to relogin');
+        console.warn('Your refresh token is invalid. Try to re-login');
         console.error(err);
       },
     }),

@@ -97,10 +97,8 @@ const usersResolvers = {
         // Parse cookie string to cookies object
         const { refreshToken } = parseCookie(cookie);
 
-        // Get userId from token
+        // Validate token & get userId if token is valid
         const { userId } = verifyToken(refreshToken);
-
-        console.log(userId);
 
         // If refreshToken is valid
         if (userId) {

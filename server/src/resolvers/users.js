@@ -6,6 +6,9 @@ const uploadImg = require('../middleware/uploadImg');
 const parseCookie = require('../middleware/parseCookie');
 const { generateTokens, verifyToken } = require('../middleware/authToken');
 
+// const sendMail = require('../middleware/sendMail');
+const newCommunityMail = require('../middleware/sendMail/newCommunityMail');
+
 const usersResolvers = {
   Mutation: {
     login: async (_, { email, password }, { res }) => {
@@ -132,6 +135,28 @@ const usersResolvers = {
         // Return empty string on error
         return '';
       }
+    },
+    sentMail: async () => {
+      const name = 'Kevin';
+      const communityUrl = 'http://localhost:3000/community/1';
+
+      // const info = await newAccountMail(
+      //   'https://sharinghood.de',
+      //   'Internal Testing',
+      //   'k_gao@aol.com',
+      //   `Welcome ${name} to Internal Testing Community!`
+      // );
+
+      const info = await newCommunityMail(
+        communityUrl,
+        'k_gao@aol.com',
+        `Welcome ${name} to Internal Testing Community!`
+      );
+
+      console.log(info);
+      // const info = await sendMail();
+      // console.log(info);
+      // return true;
     },
   },
 };

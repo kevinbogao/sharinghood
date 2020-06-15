@@ -99,6 +99,8 @@ const requestsResolvers = {
         // Upload image to Cloudinary
         const imgData = await uploadImg(image);
 
+        console.log(imgData);
+
         // Create and save request
         const request = await Request.create({
           title,
@@ -119,33 +121,26 @@ const requestsResolvers = {
             creator: userId,
             isRead: false,
           }),
-          Community.findById(communityId).populate({
-            path: 'members', // populate community members
-            match: { _id: { $ne: userId } }, // Exclude user
-            select: 'email', // Only return member's email
-          }),
+          Community.findById(communityId),
         ]);
 
         // Save requestId & notificationId to community
         community.requests.push(request);
         community.notifications.push(notification);
+        await community.save();
 
-        // Parse array of members object into array of emails
-        const emails = community.members.map((member) => member.email);
+        // // Send email
+        // const info = await newRequestMail(
+        //   userName,
+        //   title,
+        //   imgData.secure_url,
+        //   `http://localhost:3000/requests/${request._id}`,
+        //   dateNeed,
+        //   'k_gao@aol.com, kevinngao@gmail.com',
+        //   `${userName} requested ${title} in your community.`
+        // );
 
-        // Save community & sent email
-        await Promise.all([
-          community.save(),
-          newRequestMail(
-            userName,
-            title,
-            JSON.parse(imgData).secure_url,
-            `http://localhost:3000/requests/${request._id}`,
-            dateNeed,
-            emails,
-            `${userName} requested ${title} in your community.`
-          ),
-        ]);
+        // console.log(info);
 
         return {
           ...request._doc,

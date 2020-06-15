@@ -263,6 +263,9 @@ const typeDefs = gql`
 
     # Notification
     updateNotification(notificationInput: NotificationInput!): Notification
+
+    sentMail: Boolean
+    getEmails(communityId: ID!): Boolean
   }
 
   type Subscription {

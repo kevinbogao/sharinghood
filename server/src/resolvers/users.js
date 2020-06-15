@@ -139,7 +139,7 @@ const usersResolvers = {
     },
     sentMail: async () => {
       const name = 'Kevin';
-      const communityUrl = 'http://localhost:3000/community/1';
+      // const communityUrl = 'http://localhost:3000/community/1';
       const bookingsUrl = `${process.env.DOMAIN}/bookings`;
 
       // const info = await newAccountMail(

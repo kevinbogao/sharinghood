@@ -4,6 +4,7 @@ const User = require('../models/user');
 const Post = require('../models/post');
 const Booking = require('../models/booking');
 const Notification = require('../models/notification');
+const updateBookingMail = require('../middleware/sendMail/updateBookingMail');
 
 const bookingsResolvers = {
   Query: {
@@ -160,11 +161,20 @@ const bookingsResolvers = {
         });
 
         // Update booking && save booking & add notification to recipient
+        // Sent booking update email to recipient
         booking.status = status;
         booking.pickupTime = pickupTime || booking.pickupTime;
         booking.patcher = userId;
         recipient.notifications.push(notification);
-        await Promise.all([booking.save(), recipient.save()]);
+        await Promise.all([
+          booking.save(),
+          recipient.save(),
+          updateBookingMail(
+            `${process.env.DOMAIN}/bookings`,
+            recipient.email,
+            notifyContent
+          ),
+        ]);
 
         return booking;
       } catch (err) {

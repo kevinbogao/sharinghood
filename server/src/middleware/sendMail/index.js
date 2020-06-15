@@ -4,8 +4,8 @@ async function sendMail(to, subject, text, html) {
   const transport = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'sharinghood@gmail.com',
-      pass: '6minutes',
+      user: process.env.GMAIL_USERNAME,
+      pass: process.env.GMAIL_PASSWORD,
     },
   });
 

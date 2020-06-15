@@ -140,7 +140,7 @@ const requestsResolvers = {
             userName,
             title,
             JSON.parse(imgData).secure_url,
-            `http://localhost:3000/requests/${request._id}`,
+            `${process.env.DOMAIN}/requests/${request._id}`,
             dateNeed,
             emails,
             `${userName} requested ${title} in your community.`

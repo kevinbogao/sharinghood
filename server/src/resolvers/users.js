@@ -7,7 +7,8 @@ const parseCookie = require('../middleware/parseCookie');
 const { generateTokens, verifyToken } = require('../middleware/authToken');
 
 // const sendMail = require('../middleware/sendMail');
-const newCommunityMail = require('../middleware/sendMail/newCommunityMail');
+// const newCommunityMail = require('../middleware/sendMail/newCommunityMail');
+const updateBookingMail = require('../middleware/sendMail/updateBookingMail');
 
 const usersResolvers = {
   Mutation: {
@@ -139,6 +140,7 @@ const usersResolvers = {
     sentMail: async () => {
       const name = 'Kevin';
       const communityUrl = 'http://localhost:3000/community/1';
+      const bookingsUrl = `${process.env.DOMAIN}/bookings`;
 
       // const info = await newAccountMail(
       //   'https://sharinghood.de',
@@ -147,10 +149,12 @@ const usersResolvers = {
       //   `Welcome ${name} to Internal Testing Community!`
       // );
 
-      const info = await newCommunityMail(
-        communityUrl,
+      console.log(bookingsUrl);
+
+      const info = await updateBookingMail(
+        bookingsUrl,
         'k_gao@aol.com',
-        `Welcome ${name} to Internal Testing Community!`
+        `Booking ${name} to Internal Testing Community!`
       );
 
       console.log(info);

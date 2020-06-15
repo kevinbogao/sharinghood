@@ -10,8 +10,6 @@ async function newRequestMail(
   subject,
   text = ''
 ) {
-  console.log(itemImageUrl);
-
   const html = `
     <!DOCTYPE html>
     <html style="margin: 0; padding: 0;">
@@ -188,12 +186,8 @@ async function newRequestMail(
     </html>
   `;
 
-  console.log(html);
-
   // Get status & return status
   const info = await sendMail(to, subject, text, html);
-
-  console.log(info);
   return info;
 }
 

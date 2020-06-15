@@ -62,6 +62,7 @@ const usersResolvers = {
           User.create({
             name,
             email,
+            isCreator,
             apartment,
             isNotified,
             image: imgData,

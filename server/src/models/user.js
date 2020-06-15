@@ -44,16 +44,12 @@ const userSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Community',
     },
+    lastLogin: Date,
     isNotified: {
       type: Boolean,
       required: true,
     },
     isAdmin: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
-    isCreator: {
       type: Boolean,
       required: true,
       default: false,

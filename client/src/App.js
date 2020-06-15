@@ -8,7 +8,9 @@ import Chats from './views/Chat/Chats';
 import Navbar from './components/Navbar';
 import Register from './views/Register';
 import Requests from './views/Request/Requests';
+import Bookings from './views/Bookings';
 import Dashboard from './views/Dashboard';
+import DashboardDetails from './views/DashboardDetails';
 import CreatePost from './views/Post/CreatePost';
 import PostDetails from './views/Post/PostDetails';
 import CreateRequest from './views/Request/CreateRequest';
@@ -32,7 +34,13 @@ function App() {
           <ProtectedRoute path="/find" component={Posts} />
           <ProtectedRoute path="/chats" component={Chats} />
           <ProtectedRoute path="/share" component={CreatePost} />
-          <ProtectedRoute path="/dashboard" component={Dashboard} />
+          <ProtectedRoute path="/bookings" component={Bookings} />
+          <ProtectedRoute exact path="/dashboard" component={Dashboard} />
+          <ProtectedRoute
+            exact
+            path="/dashboard/:id"
+            component={DashboardDetails}
+          />
           <ProtectedRoute path="/request" component={CreateRequest} />
           <ProtectedRoute path="/shared/:id" component={PostDetails} />
           <ProtectedRoute exact path="/requests" component={Requests} />

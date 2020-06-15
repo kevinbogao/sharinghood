@@ -15,6 +15,7 @@ function generateTokens(user, res) {
       userName: user.name,
       email: user.email,
       communityId: user.community,
+      ...(user.isAdmin && { isAdmin: true }),
     },
     process.env.JWT_SECRET,
     { expiresIn: '1h' }

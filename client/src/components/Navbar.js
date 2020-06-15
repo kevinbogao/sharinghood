@@ -143,12 +143,21 @@ function Navbar() {
         <NavLink className="nav-menu-item" to="/share" onClick={toggleMenu}>
           Share
         </NavLink>
-        <NavLink className="nav-menu-item" to="/dashboard" onClick={toggleMenu}>
+        <NavLink className="nav-menu-item" to="/bookings" onClick={toggleMenu}>
           My Bookings & Lendings
         </NavLink>
         <NavLink className="nav-menu-item" to="/chats" onClick={toggleMenu}>
           Messages
         </NavLink>
+        {tokenPayload?.isAdmin && (
+          <NavLink
+            className="nav-menu-item"
+            to="/dashboard"
+            onClick={toggleMenu}
+          >
+            Dashboard
+          </NavLink>
+        )}
         {data && data.community.creator._id === tokenPayload.userId && (
           <div className="nav-menu-item invite">
             <NavLink

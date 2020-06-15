@@ -56,6 +56,7 @@ const typeDefs = gql`
     creator: User
     community: Community
     threads: [Thread]
+    createdAt: String
   }
 
   input PostInput {
@@ -77,6 +78,7 @@ const typeDefs = gql`
     creator: User
     community: Community
     threads: [Thread]
+    createdAt: String
   }
 
   input RequestInput {
@@ -169,6 +171,31 @@ const typeDefs = gql`
     isRead: Boolean
   }
 
+  type TotalActivities {
+    totalCommunities: Int
+    totalUsers: Int
+    totalPosts: Int
+    totalRequests: Int
+    totalBookings: Int
+    communitiesActivities: [CommunityActivities]
+  }
+
+  type CommunityActivities {
+    _id: ID
+    name: String
+    code: String
+    zipCode: String
+    numUsers: Int
+    numPosts: Int
+    numRequests: Int
+    numBookings: Int
+    creator: User
+    members: [User]
+    posts: [Post]
+    requests: [Request]
+    bookings: [Booking]
+  }
+
   ### Query
   type Query {
     # Community
@@ -196,6 +223,10 @@ const typeDefs = gql`
 
     # Notification
     notifications(userId: ID): [Notification]
+
+    # Activity
+    totalActivities: TotalActivities
+    communityActivities(communityId: ID!): CommunityActivities
   }
 
   ### Mutation

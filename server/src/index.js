@@ -1,9 +1,12 @@
 require('dotenv').config();
 const { ApolloServer, AuthenticationError } = require('apollo-server');
+const Redis = require('ioredis');
 const mongoose = require('mongoose');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const { verifyToken } = require('./middleware/authToken');
+
+const redis = new Redis(process.env.REDIS_URL);
 
 // Create Apollo server
 const server = new ApolloServer({
@@ -20,7 +23,7 @@ const server = new ApolloServer({
     const tokenWithBearer = req.headers.authorization || '';
     const token = tokenWithBearer.split(' ')[1];
     const user = verifyToken(token);
-    return { user, res, req };
+    return { user, res, req, redis };
   },
   subscriptions: {
     onConnect: async ({ authToken }) => {

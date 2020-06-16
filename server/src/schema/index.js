@@ -15,14 +15,14 @@ const typeDefs = gql`
   }
 
   input UserInput {
-    name: String!
-    email: String!
-    password: String!
-    image: String!
-    apartment: String!
-    communityId: ID!
-    isNotified: Boolean!
-    isCreator: Boolean!
+    name: String
+    email: String
+    password: String
+    image: String
+    apartment: String
+    communityId: ID
+    isNotified: Boolean
+    isCreator: Boolean
   }
 
   ### Community
@@ -198,6 +198,10 @@ const typeDefs = gql`
 
   ### Query
   type Query {
+    # User
+    getUser(userId: ID): User!
+    validateResetLink(userIdKey: String!): Boolean!
+
     # Community
     community(communityId: ID): Community
     findCommunity(communityCode: String!): Community
@@ -234,7 +238,10 @@ const typeDefs = gql`
     # User
     login(email: String!, password: String!): String!
     register(userInput: UserInput!): String!
+    updateUser(userInput: UserInput): User
     tokenRefresh: String!
+    forgotPassword(email: String, uuidKey: String): String
+    resetPassword(userIdKey: String!, password: String!): Boolean
 
     # Community
     createCommunity(communityInput: CommunityInput!): Community!

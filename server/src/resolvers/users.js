@@ -1,16 +1,39 @@
 const { AuthenticationError } = require('apollo-server');
+const { v4: uuidv4 } = require('uuid');
 const bcryptjs = require('bcryptjs');
 const User = require('../models/user');
 const Community = require('../models/community');
 const uploadImg = require('../middleware/uploadImg');
 const parseCookie = require('../middleware/parseCookie');
 const { generateTokens, verifyToken } = require('../middleware/authToken');
-
-// const sendMail = require('../middleware/sendMail');
-// const newCommunityMail = require('../middleware/sendMail/newCommunityMail');
-const updateBookingMail = require('../middleware/sendMail/updateBookingMail');
+const sendMail = require('../middleware/sendMail/index');
 
 const usersResolvers = {
+  Query: {
+    getUser: async (_, __, { user }) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+      const { userId } = user;
+
+      try {
+        // Get user data
+        const user = await User.findById(userId);
+
+        return user;
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    validateResetLink: async (_, { userIdKey }, { redis }) => {
+      try {
+        // Check if key is still valid
+        const userId = await redis.get(userIdKey);
+        return userId ? true : false;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
+  },
   Mutation: {
     login: async (_, { email, password }, { res }) => {
       try {
@@ -98,6 +121,35 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
+    updateUser: async (
+      _,
+      { userInput: { name, image, apartment } },
+      { user }
+    ) => {
+      const { userId } = user;
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
+      try {
+        // Get user from database
+        let user = await User.findById(userId);
+
+        // Upload image if it exists
+        let imgData;
+        if (image) imgData = await uploadImg(image);
+
+        // Conditionally update user
+        if (name) user.name = name;
+        if (image && imgData) user.imgData = imgData;
+        if (apartment) user.apartment = apartment;
+
+        // Save to user
+        const updatedUser = await user.save();
+        return updatedUser;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
     tokenRefresh: async (
       _,
       __,
@@ -137,30 +189,74 @@ const usersResolvers = {
         return '';
       }
     },
-    sentMail: async () => {
-      const name = 'Kevin';
-      // const communityUrl = 'http://localhost:3000/community/1';
-      const bookingsUrl = `${process.env.DOMAIN}/bookings`;
+    forgotPassword: async (_, { email, uuidKey }, { redis }) => {
+      try {
+        // When uuidKey is not entered as an argument, i.e. when
+        // user is not in the resent page
+        if (!uuidKey) {
+          const user = await User.findOne({ email }).lean();
+          if (!user) throw new AuthenticationError('Cannot find email');
 
-      // const info = await newAccountMail(
-      //   'https://sharinghood.de',
-      //   'Internal Testing',
-      //   'k_gao@aol.com',
-      //   `Welcome ${name} to Internal Testing Community!`
-      // );
+          // Generate uuid key for userId and key for the generated uuidKey
+          const userIdKey = uuidv4();
+          const uuidKey = uuidv4();
 
-      console.log(bookingsUrl);
+          // Save userIdKey & uuidKey in redis cache && send email to user
+          await Promise.all([
+            redis.set(userIdKey, user._id, 'ex', 60 * 60 * 48),
+            redis.set(uuidKey, userIdKey, 'ex', 60 * 60 * 48),
+            sendMail(
+              user.email,
+              'Reset your Sharedhood password',
+              `${process.env.DOMAIN}/reset-password/${userIdKey}`
+            ),
+          ]);
 
-      const info = await updateBookingMail(
-        bookingsUrl,
-        'k_gao@aol.com',
-        `Booking ${name} to Internal Testing Community!`
-      );
+          // Return uuidKey onSuccess
+          return uuidKey;
+        }
 
-      console.log(info);
-      // const info = await sendMail();
-      // console.log(info);
-      // return true;
+        // Else get userIdKey
+        const userIdKey = await redis.get(uuidKey);
+
+        // Resend reset email
+        await sendMail(
+          email,
+          'Reset your Sharedhood password',
+          `${process.env.DOMAIN}/reset-password/${userIdKey}`
+        );
+
+        // Return empty array for resend email
+        return '';
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
+    resetPassword: async (_, { userIdKey, password }, { redis }) => {
+      try {
+        // Get userId via userIdKey from redis & hash user password
+        const [userId, hashedPassword] = await Promise.all([
+          redis.get(userIdKey),
+          bcryptjs.hash(password, 12),
+        ]);
+
+        // Update user's password & delete userIdKey
+        await Promise.all([
+          User.findOneAndUpdate(
+            { _id: userId },
+            {
+              password: hashedPassword,
+            }
+          ),
+          redis.del(userIdKey),
+        ]);
+
+        return true;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
     },
   },
 };

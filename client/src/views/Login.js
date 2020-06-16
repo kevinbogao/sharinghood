@@ -64,7 +64,7 @@ function Login({ location, history }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validate(email, password);
+          const errors = validate();
           if (Object.keys(errors).length === 0) {
             login({
               variables: {
@@ -89,6 +89,11 @@ function Login({ location, history }) {
           ref={(node) => (password = node)}
         />
         {error.password && <InlineError text={error.password} />}
+        <p className="prev-p">
+          <Link to="/forgot-password">
+            <span>Forgot password?</span>
+          </Link>
+        </p>
         <p className="prev-p">
           Not a member yet?{' '}
           <Link to="/">

@@ -6,6 +6,7 @@ import Login from './views/Login';
 import Posts from './views/Post/Posts';
 import Chats from './views/Chat/Chats';
 import Navbar from './components/Navbar';
+import Profile from './views/User/Profile';
 import Register from './views/Register';
 import Requests from './views/Request/Requests';
 import Bookings from './views/Bookings';
@@ -18,6 +19,8 @@ import CommunityLink from './views/Community/CommunityLink';
 import RequestDetails from './views/Request/RequestDetails';
 import CreateCommunity from './views/Community/CreateCommunity';
 import CommunityExists from './views/Community/CommunityExists';
+import ResetPassword from './views/User/ResetPassword';
+import ForgotPassword from './views/User/ForgotPassword';
 
 function App() {
   return (
@@ -29,10 +32,13 @@ function App() {
         <Route exact path="/community/create" component={CreateCommunity} />
         <Route exact path="/community/link" component={CommunityLink} />
         <Route exact path="/community/find" component={CommunityExists} />
+        <Route exact path="/reset-password/:id" component={ResetPassword} />
+        <Route exact path="/forgot-password" component={ForgotPassword} />
         <Switch>
           <Route path="/login" component={Login} />
           <ProtectedRoute path="/find" component={Posts} />
           <ProtectedRoute path="/chats" component={Chats} />
+          <ProtectedRoute path="/profile" component={Profile} />
           <ProtectedRoute path="/share" component={CreatePost} />
           <ProtectedRoute path="/bookings" component={Bookings} />
           <ProtectedRoute exact path="/dashboard" component={Dashboard} />

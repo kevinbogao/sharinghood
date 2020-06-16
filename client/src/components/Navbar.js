@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useHistory } from 'react-router-dom';
 import { Link, NavLink } from 'react-router-dom';
 import { gql, useQuery, useApolloClient } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import {
+  faUser,
+  faBell,
+  faSignOutAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import Notifications from './Notifications';
 import hamburger from '../assets/images/hamburger.png';
 
@@ -32,6 +37,7 @@ const GET_COMMUNITY = gql`
 
 function Navbar() {
   const node = useRef();
+  const history = useHistory();
   const client = useApolloClient();
   const [isMenuActive, setIsMenuActive] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -92,6 +98,13 @@ function Navbar() {
         <div className="nav-user-content">
           {tokenPayload ? (
             <div className="nav-icons">
+              <FontAwesomeIcon
+                className="nav-icon"
+                icon={faUser}
+                onClick={() => {
+                  history.push('/profile');
+                }}
+              />
               <FontAwesomeIcon
                 className="nav-icon"
                 icon={faBell}

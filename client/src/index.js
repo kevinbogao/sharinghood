@@ -89,7 +89,7 @@ const client = new ApolloClient({
       },
       fetchAccessToken: () => {
         // Fetch refreshToken from graphql endpoint
-        const response = fetch('http://localhost:4000', {
+        const response = fetch(process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP, {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },

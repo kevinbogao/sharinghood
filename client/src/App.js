@@ -16,6 +16,7 @@ import CreatePost from './views/Post/CreatePost';
 import PostDetails from './views/Post/PostDetails';
 import CreateRequest from './views/Request/CreateRequest';
 import CommunityLink from './views/Community/CommunityLink';
+import CommunityInvite from './views/Community/CommunityInvite';
 import RequestDetails from './views/Request/RequestDetails';
 import CreateCommunity from './views/Community/CreateCommunity';
 import CommunityExists from './views/Community/CommunityExists';
@@ -29,9 +30,14 @@ function App() {
       <div className="base-control">
         <Route exact path="/" component={Home} />
         <Route exact path="/register" component={Register} />
-        <Route exact path="/community/create" component={CreateCommunity} />
-        <Route exact path="/community/link" component={CommunityLink} />
-        <Route exact path="/community/find" component={CommunityExists} />
+        <Route exact path="/create-community" component={CreateCommunity} />
+        <Route exact path="/community-link" component={CommunityLink} />
+        <Route exact path="/find-community" component={CommunityExists} />
+        <Route
+          exact
+          path="/community/:communityCode"
+          component={CommunityInvite}
+        />
         <Route exact path="/reset-password/:id" component={ResetPassword} />
         <Route exact path="/forgot-password" component={ForgotPassword} />
         <Switch>

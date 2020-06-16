@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import Loading from '../../components/Loading';
 
@@ -20,6 +21,7 @@ const UPDATE_USER = gql`
       _id
       name
       image
+      email
       apartment
     }
   }
@@ -31,11 +33,17 @@ function Profile({ history }) {
   const [apartment, setApartment] = useState('');
   const { data, error, loading } = useQuery(GET_USER);
   const [updateUser, { loading: mutationLoading }] = useMutation(UPDATE_USER, {
-    onCompleted: () => {
-      history.push('/find');
-    },
     onError: ({ message }) => {
       console.log(message);
+    },
+    update(cache, { data: { updateUser } }) {
+      cache.writeQuery({
+        query: GET_USER,
+        data: {
+          getUser: updateUser,
+        },
+      });
+      history.push('/find');
     },
   });
 
@@ -112,55 +120,68 @@ function Profile({ history }) {
         </button>
       </form>
       {mutationLoading && <Loading isCover />}
-      <style jsx>{`
-        @import './src/assets/scss/index.scss';
+      <style jsx>
+        {`
+          @import './src/assets/scss/index.scss';
 
-        .profile-control {
-          margin: auto;
+          .profile-control {
+            margin: auto;
 
-          .image-upload > input {
-            display: none;
+            .image-upload > input {
+              display: none;
+            }
+
+            label[for='file-input'] > img {
+              cursor: pointer;
+              height: 100px;
+              width: 100px;
+              border-radius: 50%;
+              box-shadow: 1px 1px 1px 1px #eeeeee;
+            }
+
+            @include sm {
+              max-width: 300px;
+              width: 80vw;
+            }
+
+            h2 {
+              margin: 20px auto;
+              color: $bronze-200;
+              font-size: 20xp;
+            }
+
+            .profile-pic-p {
+              margin: 15px auto 0px auto;
+              color: $brown;
+              font-size: 14px;
+              max-width: 300px;
+            }
+
+            .prev-p {
+              margin: 20px auto;
+              max-width: 300px;
+            }
+
+            .prev-btn {
+              display: block;
+              margin: 30px auto;
+            }
           }
-
-          label[for='file-input'] > img {
-            cursor: pointer;
-            height: 100px;
-            width: 100px;
-            border-radius: 50%;
-            box-shadow: 1px 1px 1px 1px #eeeeee;
-          }
-
-          @include sm {
-            max-width: 300px;
-            width: 80vw;
-          }
-
-          h2 {
-            margin: 20px auto;
-            color: $bronze-200;
-            font-size: 20xp;
-          }
-
-          .profile-pic-p {
-            margin: 15px auto 0px auto;
-            color: $brown;
-            font-size: 14px;
-            max-width: 300px;
-          }
-
-          .prev-p {
-            margin: 20px auto;
-            max-width: 300px;
-          }
-
-          .prev-btn {
-            display: block;
-            margin: 30px auto;
-          }
-        }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 }
+
+Profile.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+    location: PropTypes.shape({
+      state: PropTypes.shape({
+        creatorName: PropTypes.string,
+      }),
+    }),
+  }).isRequired,
+};
 
 export default Profile;

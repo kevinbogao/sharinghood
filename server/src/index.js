@@ -6,6 +6,7 @@ const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const { verifyToken } = require('./middleware/authToken');
 
+// New redis instance
 const redis = new Redis(process.env.REDIS_URL);
 
 // Create Apollo server
@@ -36,7 +37,6 @@ const server = new ApolloServer({
       throw new AuthenticationError('Not Authenticated');
     },
   },
-  // cors: true,
   cors: {
     origin: 'http://localhost:3000',
     credentials: true,

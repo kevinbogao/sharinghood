@@ -152,7 +152,7 @@ function CommunityLink({
           <h5>Now, register and start sharing.</h5>
           <Link
             to={{
-              pathname: '/community/find',
+              pathname: '/find-community',
               state: { communityId, isCreator },
             }}
           >

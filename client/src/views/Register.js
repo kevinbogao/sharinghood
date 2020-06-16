@@ -110,7 +110,7 @@ function Register({
         <div className="register-terms">
           <input type="checkbox" ref={(node) => (isNotified = node)} />
           <p>
-            I want to get Notified when my neighbours request and share items
+            I want to get notified when my neighbours request and share items
           </p>
         </div>
         <div className="register-terms">

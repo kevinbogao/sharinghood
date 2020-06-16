@@ -176,7 +176,7 @@ function Navbar() {
             <NavLink
               className="invite-btn"
               to={{
-                pathname: '/community/link',
+                pathname: '/community-link',
                 state: {
                   communityId: data.community._id,
                   communityCode: data.community.code,

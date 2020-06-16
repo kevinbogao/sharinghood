@@ -7,6 +7,8 @@ const uploadImg = require('../middleware/uploadImg');
 const parseCookie = require('../middleware/parseCookie');
 const { generateTokens, verifyToken } = require('../middleware/authToken');
 const sendMail = require('../middleware/sendMail/index');
+const newAccountMail = require('../middleware/sendMail/newAccountMail');
+const newCommunityMail = require('../middleware/sendMail/newCommunityMail');
 
 const usersResolvers = {
   Query: {
@@ -16,9 +18,9 @@ const usersResolvers = {
 
       try {
         // Get user data
-        const user = await User.findById(userId);
+        const userData = await User.findById(userId);
 
-        return user;
+        return userData;
       } catch (err) {
         console.log(err);
       }
@@ -27,7 +29,9 @@ const usersResolvers = {
       try {
         // Check if key is still valid
         const userId = await redis.get(userIdKey);
-        return userId ? true : false;
+        if (userId) return true;
+        return false;
+        // return userId ? true : false;
       } catch (err) {
         console.log(err);
         throw new Error(err);
@@ -94,6 +98,7 @@ const usersResolvers = {
             image: imgData,
             community: communityId,
             password: hashedPassword,
+            lastLogin: new Date(),
           }),
           Community.findById(communityId),
         ]);
@@ -106,14 +111,30 @@ const usersResolvers = {
         // Add user to community & save as creator if true
         community.members.push(user);
         if (isCreator) community.creator = user;
-        await community.save();
+
+        // Save commnity &&
+        // Send new account mail & send community mail if user is creator
+        // only if user is notified
+        await Promise.all([
+          community.save(),
+          isNotified &&
+            newAccountMail(
+              `${process.env.DOMAIN}/share`,
+              community.name,
+              user.email,
+              'Welcome to Sharinghood'
+            ),
+          isNotified &&
+            isCreator &&
+            newCommunityMail(
+              `${process.env.DOMAIN}/community/${community.code}`,
+              user.email,
+              `Welcome tips for your new ${community.name} community`
+            ),
+        ]);
 
         // Sign accessToken & sent refreshToken as cookie and
         const accessToken = generateTokens(user, res);
-
-        // Update user's last login date
-        user.lastLogin = new Date();
-        await user.save();
 
         return accessToken;
       } catch (err) {
@@ -131,19 +152,19 @@ const usersResolvers = {
 
       try {
         // Get user from database
-        let user = await User.findById(userId);
+        const userData = await User.findById(userId);
 
         // Upload image if it exists
         let imgData;
         if (image) imgData = await uploadImg(image);
 
         // Conditionally update user
-        if (name) user.name = name;
-        if (image && imgData) user.imgData = imgData;
-        if (apartment) user.apartment = apartment;
+        if (name) userData.name = name;
+        if (image && imgData) userData.imgData = imgData;
+        if (apartment) userData.apartment = apartment;
 
         // Save to user
-        const updatedUser = await user.save();
+        const updatedUser = await userData.save();
         return updatedUser;
       } catch (err) {
         console.log(err);

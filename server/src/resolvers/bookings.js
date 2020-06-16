@@ -113,7 +113,7 @@ const bookingsResolvers = {
         });
 
         // Save booking to post, owner & booker && save notification
-        // to owner
+        // to the owner
         post.bookings.push(booking);
         booker.bookings.push(booking);
         owner.bookings.push(booking);
@@ -161,7 +161,7 @@ const bookingsResolvers = {
         });
 
         // Update booking && save booking & add notification to recipient
-        // Sent booking update email to recipient
+        // Sent booking update email to recipient if is subscribed
         booking.status = status;
         booking.pickupTime = pickupTime || booking.pickupTime;
         booking.patcher = userId;
@@ -169,11 +169,12 @@ const bookingsResolvers = {
         await Promise.all([
           booking.save(),
           recipient.save(),
-          updateBookingMail(
-            `${process.env.DOMAIN}/bookings`,
-            recipient.email,
-            notifyContent
-          ),
+          recipient.isNotified &&
+            updateBookingMail(
+              `${process.env.DOMAIN}/bookings`,
+              recipient.email,
+              notifyContent
+            ),
         ]);
 
         return booking;

@@ -34,7 +34,7 @@ function Home({ history }) {
   const [findCommunity] = useLazyQuery(FIND_COMMUNITY, {
     onCompleted: ({ findCommunity }) => {
       history.push({
-        pathname: '/community/find',
+        pathname: '/find-community',
         state: {
           communityId: findCommunity._id,
           communityName: findCommunity.name,
@@ -88,7 +88,7 @@ function Home({ history }) {
             </button>
           </div>
           {isCreate ? (
-            <Link to="/community/create">
+            <Link to="/create-community">
               <button type="button" className="prev-btn create">
                 Create Community
               </button>

@@ -119,10 +119,12 @@ const requestsResolvers = {
             creator: userId,
             isRead: false,
           }),
+          // Populate commnity members, exlude current user & unsubscribed user
+          // & only return email
           Community.findById(communityId).populate({
-            path: 'members', // populate community members
-            match: { _id: { $ne: userId } }, // Exclude user
-            select: 'email', // Only return member's email
+            path: 'members',
+            match: { _id: { $ne: userId }, isNotified: true },
+            select: 'email',
           }),
         ]);
 
@@ -130,10 +132,10 @@ const requestsResolvers = {
         community.requests.push(request);
         community.notifications.push(notification);
 
-        // Parse array of members object into array of emails
+        // parse array of members object into array of emails
         const emails = community.members.map((member) => member.email);
 
-        // Save community & sent email
+        // Save community & sent email to subscribed users
         await Promise.all([
           community.save(),
           newRequestMail(

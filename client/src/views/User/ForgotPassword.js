@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
-import { gql, useMutation } from '@apollo/client';
+import PropTypes from 'prop-types';
+import { Redirect } from 'react-router-dom';
+import { gql, useQuery, useMutation } from '@apollo/client';
 import InlineError from '../../components/InlineError';
 import Loading from '../../components/Loading';
+
+const GET_ACCESS_TOKEN = gql`
+  {
+    accessToken @client
+  }
+`;
 
 const FORGOT_PASSWORD = gql`
   mutation ForgotPassword($email: String, $uuidKey: String) {
@@ -9,10 +17,14 @@ const FORGOT_PASSWORD = gql`
   }
 `;
 
-function ForgotPassword() {
+function ForgotPassword({ location }) {
+  const { from } = location.state || { from: { pathname: '/' } };
   const [email, setEmail] = useState('');
   const [error, setError] = useState({});
   const [uuidKey, setUuidKey] = useState(null);
+  const {
+    data: { accessToken },
+  } = useQuery(GET_ACCESS_TOKEN);
   const [forgotPassword, { loading: mutationLoading }] = useMutation(
     FORGOT_PASSWORD,
     {
@@ -33,7 +45,9 @@ function ForgotPassword() {
     return errors;
   }
 
-  return (
+  return accessToken ? (
+    <Redirect to={from} />
+  ) : (
     <div className="forgot-password-control">
       {uuidKey ? (
         <>
@@ -43,6 +57,7 @@ function ForgotPassword() {
           </p>
           <button
             className="prev-btn"
+            type="submit"
             onClick={(e) => {
               e.preventDefault();
               const errors = validate();
@@ -118,5 +133,28 @@ function ForgotPassword() {
     </div>
   );
 }
+
+ForgotPassword.propTypes = {
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      from: PropTypes.shape({
+        pathname: PropTypes.string,
+      }),
+    }),
+  }),
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
+};
+
+ForgotPassword.defaultProps = {
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      from: PropTypes.shape({
+        pathname: '/',
+      }),
+    }),
+  }),
+};
 
 export default ForgotPassword;

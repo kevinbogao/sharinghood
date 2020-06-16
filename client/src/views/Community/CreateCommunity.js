@@ -17,25 +17,25 @@ const CREATE_COMMUNITY = gql`
 function CreateCommunity({ history }) {
   let name, code, zipCode;
   const [error, setError] = useState({});
-  const [
-    createCommunity,
-    { loading: mutationLoading, error: mutationError },
-  ] = useMutation(CREATE_COMMUNITY, {
-    onCompleted: ({ createCommunity }) => {
-      history.push({
-        pathname: '/community/link',
-        state: {
-          communityId: createCommunity._id,
-          communityCode: createCommunity.code,
-          isCreator: true,
-          isRegistered: false,
-        },
-      });
+  const [createCommunity, { loading: mutationLoading }] = useMutation(
+    CREATE_COMMUNITY,
+    {
+      onCompleted: ({ createCommunity }) => {
+        history.push({
+          pathname: '/community-link',
+          state: {
+            communityId: createCommunity._id,
+            communityCode: createCommunity.code,
+            isCreator: true,
+            isRegistered: false,
+          },
+        });
+      },
+      onError: ({ message }) => {
+        setError({ code: message });
+      },
     },
-    onError: ({ message }) => {
-      console.log(message);
-    },
-  });
+  );
 
   function validate() {
     const errors = {};
@@ -89,7 +89,7 @@ function CreateCommunity({ history }) {
           }}
         />
         {error.code && <InlineError text={error.code} />}
-        <p className="main-p">Please enter your zipCode</p>
+        <p className="main-p">Please enter your zip code</p>
         <input
           type="text"
           className="main-input"
@@ -104,7 +104,6 @@ function CreateCommunity({ history }) {
         </button>
       </form>
       {mutationLoading && <Loading isCover />}
-      {mutationError && <p>Error :( Please try again</p>}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

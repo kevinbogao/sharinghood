@@ -10,11 +10,7 @@ const messagesResolvers = {
     newChatMessage: {
       subscribe: withFilter(
         () => pubsub.asyncIterator(NEW_CHAT_MESSAGE),
-        (payload, args) => {
-          console.log(payload);
-          console.log(args);
-          return payload.chatId === args.chatId;
-        }
+        (payload, args) => payload.chatId === args.chatId
       ),
     },
   },
@@ -53,7 +49,14 @@ const messagesResolvers = {
         // Publish new message
         pubsub.publish(NEW_CHAT_MESSAGE, {
           chatId,
-          newChatMessage: message,
+          newChatMessage: {
+            _id: message._id,
+            text: message.text,
+            sender: {
+              _id: userId,
+            },
+            createdAt: message.createdAt,
+          },
         });
 
         return message;

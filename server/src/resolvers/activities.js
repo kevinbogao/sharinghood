@@ -71,9 +71,12 @@ const activitiesResolvers = {
         throw new Error(err);
       }
     },
-    communityActivities: async (_, { communityId }, { user: { isAdmin } }) => {
-      // Throw auth error is user is not admin
-      if (!isAdmin) throw new AuthenticationError('Not permitted');
+    communityActivities: async (_, { communityId }, { user }) => {
+      if (!user || !user.isAdmin) {
+        throw new AuthenticationError('Not permitted');
+      }
+      // // Throw auth error is user is not admin
+      // if (!isAdmin) throw new AuthenticationError('Not permitted');
 
       try {
         const communityActivities = await Community.aggregate([
@@ -142,10 +145,10 @@ const activitiesResolvers = {
         ]);
 
         const bookings = await Booking.find({ community: communityId });
-        console.log(bookings);
+        // console.log(bookings);
 
-        // console.log(JSON.stringify(communityActivities[0], null, 4));
-        console.log(communityActivities[0].creator);
+        // // console.log(JSON.stringify(communityActivities[0], null, 4));
+        // console.log(communityActivities[0].creator);
         // return communityActivities[0];
         return {
           ...communityActivities[0],

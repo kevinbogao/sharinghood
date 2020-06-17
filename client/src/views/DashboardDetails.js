@@ -31,6 +31,9 @@ const GET_COMMUNITY_ACTIVITIES = gql`
         condition
         image
         isGiveaway
+        creator {
+          _id
+        }
         createdAt
       }
       requests {
@@ -40,19 +43,30 @@ const GET_COMMUNITY_ACTIVITIES = gql`
         dateNeed
         dateReturn
         image
+        creator {
+          _id
+        }
         createdAt
       }
       bookings {
         _id
+        post {
+          _id
+        }
         status
         dateNeed
         dateReturn
+        booker {
+          _id
+        }
       }
     }
   }
 `;
 
 const STATS_IDS = ['members', 'posts', 'requests', 'bookings'];
+const ID_KEYS = ['post', 'creator', 'booker'];
+const ID_SET = new Set(ID_KEYS);
 const DATE_KEYS = ['createdAt', 'dateNeed', 'dateReturn'];
 const DATE_SET = new Set(DATE_KEYS);
 
@@ -130,6 +144,8 @@ function DashboardDetails({ match }) {
                     <td key={key}>
                       {key === 'image' ? (
                         <img src={JSON.parse(stat[key]).secure_url} alt="" />
+                      ) : ID_SET.has(key) ? (
+                        stat[key]._id
                       ) : DATE_SET.has(key) ? (
                         moment(+stat[key]).format('MMM DD HH:mm')
                       ) : (

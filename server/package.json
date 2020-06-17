@@ -49,16 +49,17 @@
     "arrowParens": "always"
   },
   "dependencies": {
-    "apollo-server": "^2.14.3",
+    "apollo-server": "^2.15.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.22.0",
     "dotenv": "^8.2.0",
     "graphql": "^15.1.0",
+    "graphql-redis-subscriptions": "^2.2.1",
     "ioredis": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
-    "mongoose": "^5.9.18",
-    "nodemailer": "^6.4.8",
+    "mongoose": "^5.9.19",
+    "nodemailer": "^6.4.10",
     "uuid": "^8.1.0"
   },
   "devDependencies": {

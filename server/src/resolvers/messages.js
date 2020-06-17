@@ -1,8 +1,8 @@
-const { PubSub, withFilter, AuthenticationError } = require('apollo-server');
+const { withFilter, AuthenticationError } = require('apollo-server');
+const pubsub = require('../middleware/pubsub');
 const Chat = require('../models/chat');
 const Message = require('../models/message');
 
-const pubsub = new PubSub();
 const NEW_CHAT_MESSAGE = 'NEW_CHAT_MESSAGE';
 
 const messagesResolvers = {
@@ -49,7 +49,14 @@ const messagesResolvers = {
         // Publish new message
         pubsub.publish(NEW_CHAT_MESSAGE, {
           chatId,
-          newChatMessage: message,
+          newChatMessage: {
+            _id: message._id,
+            text: message.text,
+            sender: {
+              _id: userId,
+            },
+            createdAt: message.createdAt,
+          },
         });
 
         return message;

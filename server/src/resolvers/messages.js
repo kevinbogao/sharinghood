@@ -1,8 +1,8 @@
-const { PubSub, withFilter, AuthenticationError } = require('apollo-server');
+const { withFilter, AuthenticationError } = require('apollo-server');
+const pubsub = require('../middleware/pubsub');
 const Chat = require('../models/chat');
 const Message = require('../models/message');
 
-const pubsub = new PubSub();
 const NEW_CHAT_MESSAGE = 'NEW_CHAT_MESSAGE';
 
 const messagesResolvers = {
@@ -10,7 +10,11 @@ const messagesResolvers = {
     newChatMessage: {
       subscribe: withFilter(
         () => pubsub.asyncIterator(NEW_CHAT_MESSAGE),
-        (payload, args) => payload.chatId === args.chatId
+        (payload, args) => {
+          console.log(payload);
+          console.log(args);
+          return payload.chatId === args.chatId;
+        }
       ),
     },
   },

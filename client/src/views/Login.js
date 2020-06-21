@@ -14,7 +14,10 @@ const GET_ACCESS_TOKEN = gql`
 
 const LOGIN = gql`
   mutation Login($email: String!, $password: String!) {
-    login(email: $email, password: $password)
+    login(email: $email, password: $password) {
+      accessToken
+      refreshToken
+    }
   }
 `;
 
@@ -28,16 +31,22 @@ function Login({ location, history }) {
   } = useQuery(GET_ACCESS_TOKEN);
   const [login, { loading: mutationLoading }] = useMutation(LOGIN, {
     onCompleted: ({ login }) => {
-      localStorage.setItem('@sharinghood:accessToken', login);
-      const tokenPayload = jwtDecode(login);
+      localStorage.setItem('@sharinghood:accessToken', login.accessToken);
+      localStorage.setItem('@sharinghood:refreshToken', login.refreshToken);
+      const tokenPayload = jwtDecode(login.accessToken);
       client.writeQuery({
         query: gql`
           {
             accessToken
+            refreshToken
             tokenPayload
           }
         `,
-        data: { accessToken: login, tokenPayload },
+        data: {
+          accessToken: login.accessToken,
+          refreshToken: login.refreshToken,
+          tokenPayload,
+        },
       });
       history.push('/find');
     },

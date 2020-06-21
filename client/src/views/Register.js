@@ -7,7 +7,10 @@ import InlineError from '../components/InlineError';
 
 const REGISTER = gql`
   mutation Register($userInput: UserInput!) {
-    register(userInput: $userInput)
+    register(userInput: $userInput) {
+      accessToken
+      refreshToken
+    }
   }
 `;
 
@@ -24,22 +27,28 @@ function Register({
     register,
     { loading: mutationLoading, error: mutationError },
   ] = useMutation(REGISTER, {
-    onError: ({ message }) => {
-      console.log(message);
-    },
     onCompleted: ({ register }) => {
-      localStorage.setItem('@sharinghood:accessToken', register);
-      const tokenPayload = jwtDecode(register);
+      localStorage.setItem('@sharinghood:accessToken', register.accessToken);
+      localStorage.setItem('@sharinghood:refreshToken', register.refreshToken);
+      const tokenPayload = jwtDecode(register.accessToken);
       client.writeQuery({
         query: gql`
           {
             accessToken
+            refreshToken
             tokenPayload
           }
         `,
-        data: { accessToken: register, tokenPayload },
+        data: {
+          accessToken: register.accessToken,
+          refreshToken: register.refreshToken,
+          tokenPayload,
+        },
       });
       history.push('/find');
+    },
+    onError: ({ message }) => {
+      console.log(message);
     },
   });
 

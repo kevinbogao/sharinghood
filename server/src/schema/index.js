@@ -25,6 +25,11 @@ const typeDefs = gql`
     isCreator: Boolean
   }
 
+  type Auth {
+    accessToken: String!
+    refreshToken: String!
+  }
+
   ### Community
   type Community {
     _id: ID!
@@ -236,8 +241,8 @@ const typeDefs = gql`
   ### Mutation
   type Mutation {
     # User
-    login(email: String!, password: String!): String!
-    register(userInput: UserInput!): String!
+    login(email: String!, password: String!): Auth!
+    register(userInput: UserInput!): Auth!
     updateUser(userInput: UserInput): User
     tokenRefresh: String!
     forgotPassword(email: String, uuidKey: String): String

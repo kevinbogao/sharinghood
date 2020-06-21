@@ -134,6 +134,7 @@ cache.writeQuery({
   `,
   data: {
     accessToken: localStorage.getItem('@sharinghood:accessToken'),
+    refreshToken: localStorage.getItem('@sharinghood:refreshToken'),
     tokenPayload: accessToken ? jwtDecode(accessToken) : null,
   },
 });

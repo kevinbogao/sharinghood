@@ -9,6 +9,7 @@ const { generateTokens, verifyToken } = require('../middleware/authToken');
 const sendMail = require('../middleware/sendMail/index');
 const newAccountMail = require('../middleware/sendMail/newAccountMail');
 const newCommunityMail = require('../middleware/sendMail/newCommunityMail');
+const pbkdf2Verify = require('../utils/pbkdf2Verify');
 
 const usersResolvers = {
   Query: {
@@ -23,6 +24,7 @@ const usersResolvers = {
         return userData;
       } catch (err) {
         console.log(err);
+        throw new Error(err);
       }
     },
     validateResetLink: async (_, { userIdKey }, { redis }) => {
@@ -39,24 +41,44 @@ const usersResolvers = {
     },
   },
   Mutation: {
-    login: async (_, { email, password }, { res }) => {
+    login: async (_, { email, password }) => {
       try {
         // Get user
         const user = await User.findOne({ email });
         if (!user) throw new AuthenticationError('User does not exist');
 
-        // Check user password
-        const isEqual = await bcryptjs.compare(password, user.password);
-        if (!isEqual) throw new AuthenticationError('Password is incorrect');
+        // Re-hash user password if user is not migrated
+        if (!user.isMigrated) {
+          const isPasswordValid = await pbkdf2Verify(password, user.password);
 
-        // Sign accessToken & sent refreshToken as cookie and
-        const accessToken = generateTokens(user, res);
+          // Re-hash password with bcryptjs if password if valid
+          if (isPasswordValid) {
+            const hashedPassword = await bcryptjs.hash(password, 12);
+
+            // Update user password & migration status
+            user.password = hashedPassword;
+            user.isMigrated = true;
+
+            // Throw auth error if password is invalid
+          } else {
+            throw new AuthenticationError('Password is incorrect');
+          }
+
+          // If user is migrated
+        } else {
+          // Check user password
+          const isEqual = await bcryptjs.compare(password, user.password);
+          if (!isEqual) throw new AuthenticationError('Password is incorrect');
+        }
+
+        // Sign accessToken & refreshToken
+        const { accessToken, refreshToken } = generateTokens(user);
 
         // Update user's last login date
         user.lastLogin = new Date();
         await user.save();
 
-        return accessToken;
+        return { accessToken, refreshToken };
       } catch (err) {
         console.log(err);
         throw new Error(err);
@@ -75,8 +97,7 @@ const usersResolvers = {
           isNotified,
           isCreator,
         },
-      },
-      { res }
+      }
     ) => {
       try {
         const existingUser = await User.findOne({ email }).lean();
@@ -119,7 +140,7 @@ const usersResolvers = {
           community.save(),
           isNotified &&
             newAccountMail(
-              `${process.env.DOMAIN}/share`,
+              `${process.env.ORIGIN}/share`,
               community.name,
               user.email,
               'Welcome to Sharinghood'
@@ -127,16 +148,16 @@ const usersResolvers = {
           isNotified &&
             isCreator &&
             newCommunityMail(
-              `${process.env.DOMAIN}/community/${community.code}`,
+              `${process.env.ORIGIN}/community/${community.code}`,
               user.email,
               `Welcome tips for your new ${community.name} community`
             ),
         ]);
 
-        // Sign accessToken & sent refreshToken as cookie and
-        const accessToken = generateTokens(user, res);
+        // Sign accessToken & refreshToken
+        const { accessToken, refreshToken } = generateTokens(user);
 
-        return accessToken;
+        return { accessToken, refreshToken };
       } catch (err) {
         console.log(err);
         throw new Error(err);

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useHistory } from 'react-router-dom';
-import { Link, NavLink } from 'react-router-dom';
+import { useHistory, Link, NavLink } from 'react-router-dom';
 import { gql, useQuery, useApolloClient } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -127,12 +126,18 @@ function Navbar() {
                     query: gql`
                       {
                         accessToken
+                        refreshToken
                         tokenPayload
                       }
                     `,
-                    data: { accessToken: null, tokenPayload: null },
+                    data: {
+                      accessToken: null,
+                      refreshToken: null,
+                      tokenPayload: null,
+                    },
                   });
                   localStorage.removeItem('@sharinghood:accessToken');
+                  localStorage.removeItem('@sharinghood:refreshToken');
                 }}
               />
             </div>

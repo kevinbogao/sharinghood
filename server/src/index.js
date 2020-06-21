@@ -13,7 +13,7 @@ const redis = new Redis(process.env.REDIS_URL);
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: async ({ res, req, connection }) => {
+  context: async ({ req, connection }) => {
     // Subscription context
     if (connection) {
       const user = verifyToken(connection.context.authToken);
@@ -24,7 +24,7 @@ const server = new ApolloServer({
     const tokenWithBearer = req.headers.authorization || '';
     const token = tokenWithBearer.split(' ')[1];
     const user = verifyToken(token);
-    return { user, res, req, redis };
+    return { user, redis };
   },
   subscriptions: {
     onConnect: async ({ authToken }) => {

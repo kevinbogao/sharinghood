@@ -244,8 +244,8 @@ const typeDefs = gql`
     login(email: String!, password: String!): Auth!
     register(userInput: UserInput!): Auth!
     updateUser(userInput: UserInput): User
-    tokenRefresh: String!
-    forgotPassword(email: String, uuidKey: String): String
+    tokenRefresh(token: String!): Auth
+    forgotPassword(email: String, accessKey: String): String
     resetPassword(userIdKey: String!, password: String!): Boolean
 
     # Community

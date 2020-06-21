@@ -4,7 +4,6 @@ const bcryptjs = require('bcryptjs');
 const User = require('../models/user');
 const Community = require('../models/community');
 const uploadImg = require('../middleware/uploadImg');
-const parseCookie = require('../middleware/parseCookie');
 const { generateTokens, verifyToken } = require('../middleware/authToken');
 const sendMail = require('../middleware/sendMail/index');
 const newAccountMail = require('../middleware/sendMail/newAccountMail');
@@ -192,50 +191,37 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
-    tokenRefresh: async (
-      _,
-      __,
-      {
-        req: {
-          headers: { cookie },
-        },
-        res,
-      }
-    ) => {
+    tokenRefresh: async (_, { token }) => {
       try {
-        // Parse cookie string to cookies object
-        const { refreshToken } = parseCookie(cookie);
-
         // Validate token & get userId if token is valid
-        const { userId } = verifyToken(refreshToken);
+        const { userId } = verifyToken(token);
 
-        // If refreshToken is valid
+        // If token is valid
         if (userId) {
           // Find user by id
           const user = await User.findOne({ _id: userId });
 
           // Refresh accessToken & refreshToken
-          const accessToken = generateTokens(user, res);
+          const { accessToken, refreshToken } = generateTokens(user);
 
           // Update user's last login date
           user.lastLogin = new Date();
           await user.save();
 
-          return accessToken;
+          return { accessToken, refreshToken };
         }
 
-        // Return empty string on invalid refreshToken
-        return '';
+        throw new AuthenticationError('Please login again');
       } catch (err) {
-        // Return empty string on error
-        return '';
+        console.log(err);
+        throw new Error(err);
       }
     },
-    forgotPassword: async (_, { email, uuidKey }, { redis }) => {
+    forgotPassword: async (_, { email, accessKey }, { redis }) => {
       try {
-        // When uuidKey is not entered as an argument, i.e. when
+        // When accessKey is not entered as an argument, i.e. when
         // user is not in the resent page
-        if (!uuidKey) {
+        if (!accessKey) {
           const user = await User.findOne({ email }).lean();
           if (!user) throw new AuthenticationError('Cannot find email');
 
@@ -259,7 +245,7 @@ const usersResolvers = {
         }
 
         // Else get userIdKey
-        const userIdKey = await redis.get(uuidKey);
+        const userIdKey = await redis.get(accessKey);
 
         // Resend reset email
         await sendMail(

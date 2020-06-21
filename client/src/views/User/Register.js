@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useMutation, useApolloClient } from '@apollo/client';
 import jwtDecode from 'jwt-decode';
-import Loading from '../components/Loading';
-import InlineError from '../components/InlineError';
+import Loading from '../../components/Loading';
+import InlineError from '../../components/InlineError';
 
 const REGISTER = gql`
   mutation Register($userInput: UserInput!) {

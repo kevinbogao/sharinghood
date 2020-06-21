@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { Redirect, Link } from 'react-router-dom';
 import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import jwtDecode from 'jwt-decode';
-import InlineError from '../components/InlineError';
-import Loading from '../components/Loading';
+import InlineError from '../../components/InlineError';
+import Loading from '../../components/Loading';
 
 const GET_ACCESS_TOKEN = gql`
   {

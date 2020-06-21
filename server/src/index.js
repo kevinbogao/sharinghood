@@ -53,8 +53,6 @@ const server = new ApolloServer({
       useCreateIndex: true,
       sslValidate: false,
     });
-    // Log query
-    // mongoose.set('debug', true);
     // Server listener
     const { url, subscriptionsUrl } = await server.listen({
       port: process.env.PORT || 4000,

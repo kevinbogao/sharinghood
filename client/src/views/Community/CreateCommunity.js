@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { gql, useMutation } from '@apollo/client';
+import { gql, useLazyQuery } from '@apollo/client';
 import InlineError from '../../components/InlineError';
 import Loading from '../../components/Loading';
 
-const CREATE_COMMUNITY = gql`
-  mutation CreateCommunity($communityInput: CommunityInput!) {
-    createCommunity(communityInput: $communityInput) {
+const FIND_COMMUNITY = gql`
+  query FindCommunity($communityCode: String!) {
+    findCommunity(communityCode: $communityCode) {
       _id
-      name
-      code
     }
   }
 `;
@@ -17,25 +15,27 @@ const CREATE_COMMUNITY = gql`
 function CreateCommunity({ history }) {
   let name, code, zipCode;
   const [error, setError] = useState({});
-  const [createCommunity, { loading: mutationLoading }] = useMutation(
-    CREATE_COMMUNITY,
-    {
-      onCompleted: ({ createCommunity }) => {
+  const [findCommunity, { loading }] = useLazyQuery(FIND_COMMUNITY, {
+    onCompleted: ({ findCommunity }) => {
+      // Set code error if community exists
+      if (findCommunity) {
+        setError({ code: 'Community code exists' });
+      } else {
         history.push({
-          pathname: '/community-link',
+          pathname: '/find-community',
           state: {
-            communityId: createCommunity._id,
-            communityCode: createCommunity.code,
+            communityName: name.value,
+            communityCode: code.value,
+            communityZipCode: zipCode.value,
             isCreator: true,
-            isRegistered: false,
           },
         });
-      },
-      onError: ({ message }) => {
-        setError({ code: message });
-      },
+      }
     },
-  );
+    onError: ({ message }) => {
+      setError({ community: message });
+    },
+  });
 
   function validate() {
     const errors = {};
@@ -58,13 +58,9 @@ function CreateCommunity({ history }) {
           e.preventDefault();
           const errors = validate();
           if (Object.keys(errors).length === 0) {
-            createCommunity({
+            findCommunity({
               variables: {
-                communityInput: {
-                  name: name.value,
-                  code: code.value,
-                  zipCode: zipCode.value,
-                },
+                communityCode: code.value,
               },
             });
           }
@@ -103,7 +99,7 @@ function CreateCommunity({ history }) {
           Next
         </button>
       </form>
-      {mutationLoading && <Loading isCover />}
+      {loading && <Loading isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

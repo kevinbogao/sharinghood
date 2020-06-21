@@ -83,7 +83,7 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
-    register: async (
+    registerAndOrCreateCommunity: async (
       _,
       {
         userInput: {
@@ -92,13 +92,15 @@ const usersResolvers = {
           password,
           image,
           apartment,
-          communityId,
           isNotified,
           isCreator,
+          communityId,
         },
+        communityInput,
       }
     ) => {
       try {
+        // Get user and check if email exists
         const existingUser = await User.findOne({ email }).lean();
         if (existingUser) throw new Error('User exist already');
 
@@ -108,7 +110,8 @@ const usersResolvers = {
           uploadImg(image),
         ]);
 
-        // Create & save new user && get community
+        // Create and save user, create community if user is create
+        // else get community by id
         const [user, community] = await Promise.all([
           User.create({
             name,
@@ -116,27 +119,32 @@ const usersResolvers = {
             apartment,
             isNotified,
             image: imgData,
-            community: communityId,
             password: hashedPassword,
             lastLogin: new Date(),
           }),
-          Community.findById(communityId),
+          isCreator
+            ? Community.create({
+                name: communityInput.name,
+                code: communityInput.code,
+                zipCode: communityInput.zipCode,
+              })
+            : Community.findById(communityId),
         ]);
 
-        // Unlikely case
-        if (!community) {
-          throw new Error('Community does not exist!');
+        // Add user as creator to community if isCreator if true,
+        // ddd community to user, and user to community members
+        if (isCreator) {
+          community.creator = user._id;
         }
+        user.community = community._id;
+        community.members.push(user._id);
 
-        // Add user to community & save as creator if true
-        community.members.push(user);
-        if (isCreator) community.creator = user;
-
-        // Save commnity &&
-        // Send new account mail & send community mail if user is creator
-        // only if user is notified
+        // Save user and community
         await Promise.all([
+          user.save(),
           community.save(),
+
+          // Sent new account mail if user is notified
           isNotified &&
             newAccountMail(
               `${process.env.ORIGIN}/share`,
@@ -144,6 +152,8 @@ const usersResolvers = {
               user.email,
               'Welcome to Sharinghood'
             ),
+
+          // Sent new community mail if user is notified & isCreator
           isNotified &&
             isCreator &&
             newCommunityMail(
@@ -156,7 +166,13 @@ const usersResolvers = {
         // Sign accessToken & refreshToken
         const { accessToken, refreshToken } = generateTokens(user);
 
-        return { accessToken, refreshToken };
+        return {
+          user: {
+            accessToken,
+            refreshToken,
+          },
+          ...(isCreator && { community }),
+        };
       } catch (err) {
         console.log(err);
         throw new Error(err);
@@ -235,7 +251,7 @@ const usersResolvers = {
             redis.set(uuidKey, userIdKey, 'ex', 60 * 60 * 48),
             sendMail(
               user.email,
-              'Reset your Sharedhood password',
+              'Reset your Sharinghood password',
               `${process.env.DOMAIN}/reset-password/${userIdKey}`
             ),
           ]);
@@ -250,7 +266,7 @@ const usersResolvers = {
         // Resend reset email
         await sendMail(
           email,
-          'Reset your Sharedhood password',
+          'Reset your Sharinghood password',
           `${process.env.DOMAIN}/reset-password/${userIdKey}`
         );
 

@@ -5,18 +5,40 @@ import jwtDecode from 'jwt-decode';
 import Loading from '../../components/Loading';
 import InlineError from '../../components/InlineError';
 
-const REGISTER = gql`
-  mutation Register($userInput: UserInput!) {
-    register(userInput: $userInput) {
-      accessToken
-      refreshToken
+const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
+  mutation RegisterAndOrCreateCommunity(
+    $userInput: UserInput!
+    $communityInput: CommunityInput
+  ) {
+    registerAndOrCreateCommunity(
+      communityInput: $communityInput
+      userInput: $userInput
+    ) {
+      user {
+        accessToken
+        refreshToken
+      }
+      community {
+        _id
+        name
+        code
+      }
     }
   }
 `;
 
 function Register({
   location: {
-    state: { name, image, communityId, apartment, isCreator },
+    state: {
+      name,
+      image,
+      apartment,
+      isCreator,
+      communityId,
+      communityName,
+      communityCode,
+      communityZipCode,
+    },
   },
   history,
 }) {
@@ -24,13 +46,21 @@ function Register({
   let email, password, confirmPassword, isNotified, agreed;
   const [error, setError] = useState({});
   const [
-    register,
+    registerAndOrCreateCommunity,
     { loading: mutationLoading, error: mutationError },
-  ] = useMutation(REGISTER, {
-    onCompleted: ({ register }) => {
-      localStorage.setItem('@sharinghood:accessToken', register.accessToken);
-      localStorage.setItem('@sharinghood:refreshToken', register.refreshToken);
-      const tokenPayload = jwtDecode(register.accessToken);
+  ] = useMutation(REGISTER_AND_OR_CREATE_COMMUNITY, {
+    onCompleted: ({ registerAndOrCreateCommunity }) => {
+      localStorage.setItem(
+        '@sharinghood:accessToken',
+        registerAndOrCreateCommunity.user.accessToken,
+      );
+      localStorage.setItem(
+        '@sharinghood:refreshToken',
+        registerAndOrCreateCommunity.user.refreshToken,
+      );
+      const tokenPayload = jwtDecode(
+        registerAndOrCreateCommunity.user.accessToken,
+      );
       client.writeQuery({
         query: gql`
           {
@@ -40,12 +70,26 @@ function Register({
           }
         `,
         data: {
-          accessToken: register.accessToken,
-          refreshToken: register.refreshToken,
+          accessToken: registerAndOrCreateCommunity.user.accessToken,
+          refreshToken: registerAndOrCreateCommunity.user.refreshToken,
           tokenPayload,
         },
       });
-      history.push('/find');
+
+      // Redirect user to community invite link if user is creator
+      // else redirect user to posts
+      if (isCreator) {
+        history.push({
+          pathname: '/community-link',
+          state: {
+            communityId: registerAndOrCreateCommunity.community._id,
+            communityCode: registerAndOrCreateCommunity.community.code,
+            isRegistered: false,
+          },
+        });
+      } else {
+        history.push('/find');
+      }
     },
     onError: ({ message }) => {
       console.log(message);
@@ -77,7 +121,7 @@ function Register({
           e.preventDefault();
           const errors = validate();
           if (Object.keys(errors).length === 0) {
-            register({
+            registerAndOrCreateCommunity({
               variables: {
                 userInput: {
                   name,
@@ -85,10 +129,17 @@ function Register({
                   password: password.value,
                   image,
                   apartment,
-                  communityId,
                   isNotified: isNotified.checked,
                   isCreator,
+                  communityId,
                 },
+                ...(isCreator && {
+                  communityInput: {
+                    name: communityName,
+                    code: communityCode,
+                    zipCode: communityZipCode,
+                  },
+                }),
               },
             });
           }
@@ -200,9 +251,12 @@ Register.propTypes = {
     state: PropTypes.shape({
       name: PropTypes.string.isRequired,
       image: PropTypes.string.isRequired,
-      communityId: PropTypes.string.isRequired,
       apartment: PropTypes.string.isRequired,
       isCreator: PropTypes.bool.isRequired,
+      communityId: PropTypes.string,
+      communityName: PropTypes.string,
+      communityCode: PropTypes.string,
+      communityZipCode: PropTypes.string,
     }).isRequired,
   }).isRequired,
   history: PropTypes.shape({

@@ -38,9 +38,11 @@ const server = new ApolloServer({
     },
   },
   cors: {
-    origin: 'http://localhost:3000',
+    origin: process.env.ORIGIN,
     credentials: true,
   },
+  introspection: true,
+  playground: true,
 });
 
 // Start server

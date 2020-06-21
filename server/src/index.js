@@ -56,7 +56,9 @@ const server = new ApolloServer({
     // Log query
     // mongoose.set('debug', true);
     // Server listener
-    const { url, subscriptionsUrl } = await server.listen();
+    const { url, subscriptionsUrl } = await server.listen({
+      port: process.env.PORT || 4000,
+    });
     console.log(`Server ready at ${url}`);
     console.log(`Subscriptions ready at ${subscriptionsUrl}`);
   } catch (err) {

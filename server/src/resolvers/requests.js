@@ -1,5 +1,6 @@
 const { AuthenticationError } = require('apollo-server');
 const mongoose = require('mongoose');
+const User = require('../models/user');
 const Thread = require('../models/thread');
 const Request = require('../models/request');
 const Community = require('../models/community');
@@ -99,16 +100,30 @@ const requestsResolvers = {
         // Upload image to Cloudinary
         const imgData = await uploadImg(image);
 
-        // Create and save request
-        const request = await Request.create({
-          title,
-          desc,
-          dateNeed,
-          dateReturn,
-          image: imgData,
-          creator: userId,
-          community: communityId,
-        });
+        // // Create and save request && get creator
+        // const request = await Request.create({
+        //   title,
+        //   desc,
+        //   dateNeed,
+        //   dateReturn,
+        //   image: imgData,
+        //   creator: userId,
+        //   community: communityId,
+        // });
+
+        // Create and save request && get creator
+        const [request, creator] = await Promise.all([
+          Request.create({
+            title,
+            desc,
+            dateNeed,
+            dateReturn,
+            image: imgData,
+            creator: userId,
+            community: communityId,
+          }),
+          User.findById(userId),
+        ]);
 
         // Create & save notification && find creator's community
         const [notification, community] = await Promise.all([
@@ -128,9 +143,10 @@ const requestsResolvers = {
           }),
         ]);
 
-        // Save requestId & notificationId to community
+        // Save requestId & notificationId to community && requestId to creator
         community.requests.push(request);
         community.notifications.push(notification);
+        creator.requests.push(request);
 
         // parse array of members object into array of emails
         const emails = community.members.map((member) => member.email);
@@ -138,15 +154,17 @@ const requestsResolvers = {
         // Save community & sent email to subscribed users
         await Promise.all([
           community.save(),
-          newRequestMail(
-            userName,
-            title,
-            JSON.parse(imgData).secure_url,
-            `${process.env.DOMAIN}/requests/${request._id}`,
-            dateNeed,
-            emails,
-            `${userName} requested ${title} in your community.`
-          ),
+          creator.save(),
+          emails.length &&
+            newRequestMail(
+              userName,
+              title,
+              JSON.parse(imgData).secure_url,
+              `${process.env.DOMAIN}/requests/${request._id}`,
+              dateNeed,
+              emails,
+              `${userName} requested ${title} in your community.`
+            ),
         ]);
 
         return {

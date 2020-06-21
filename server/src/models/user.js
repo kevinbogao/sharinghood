@@ -22,6 +22,18 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    posts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Post',
+      },
+    ],
+    requests: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Requests',
+      },
+    ],
     notifications: [
       {
         type: Schema.Types.ObjectId,

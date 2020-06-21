@@ -1,5 +1,6 @@
 const { AuthenticationError } = require('apollo-server');
 const mongoose = require('mongoose');
+const User = require('../models/user');
 const Post = require('../models/post');
 const Thread = require('../models/thread');
 const Booking = require('../models/booking');
@@ -103,16 +104,19 @@ const postsResolvers = {
         // Upload image to Cloudinary
         const imgData = await uploadImg(image);
 
-        // Create & save post
-        const post = await Post.create({
-          desc,
-          title,
-          condition,
-          isGiveaway,
-          image: imgData,
-          creator: userId,
-          community: communityId,
-        });
+        // Create & save post && get creator
+        const [post, creator] = await Promise.all([
+          Post.create({
+            desc,
+            title,
+            condition,
+            isGiveaway,
+            image: imgData,
+            creator: userId,
+            community: communityId,
+          }),
+          User.findById(userId),
+        ]);
 
         // Create & save notification && find creator's community
         const [notification, community] = await Promise.all([
@@ -126,10 +130,11 @@ const postsResolvers = {
           Community.findById(communityId),
         ]);
 
-        // Save postId & notificationId to community
+        // Save postId & notificationId to community && postId to creator
         community.posts.push(post);
         community.notifications.push(notification);
-        await community.save();
+        creator.posts.push(post);
+        await Promise.all([community.save(), creator.save()]);
 
         return {
           ...post._doc,

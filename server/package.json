@@ -9,6 +9,9 @@
   },
   "main": "index.js",
   "license": "MIT",
+  "engines": {
+    "node": "14.x"
+  },
   "eslintConfig": {
     "extends": [
       "airbnb-base"

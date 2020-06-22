@@ -291,6 +291,7 @@ const usersResolvers = {
             { _id: userId },
             {
               password: hashedPassword,
+              isMigrated: true,
             }
           ),
           redis.del(userIdKey),

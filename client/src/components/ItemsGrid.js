@@ -34,6 +34,7 @@ function ItemsGrid({ isPost, children }) {
           .items-control {
             margin: 30px auto;
             width: 80vw;
+            max-width: $xl-max-width;
 
             .items-switch {
               margin: auto;

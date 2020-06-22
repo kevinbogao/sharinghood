@@ -19,7 +19,11 @@ const GET_MEMBERS = gql`
 function Members() {
   const node = useRef();
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data } = useQuery(GET_MEMBERS);
+  const { data } = useQuery(GET_MEMBERS, {
+    onCompleted: (data) => {
+      console.log(data);
+    },
+  });
 
   function handleClickOutside(e) {
     if (node.current.contains(e.target)) {
@@ -47,9 +51,14 @@ function Members() {
         onClick={() => setIsExpanded(!isExpanded)}
       />
       <div className="members-content">
-        <p>
-          {data && data.community.members.length - 1} members in your community
-        </p>
+        {data && data.community.members.length < 2 ? (
+          <p>You are the only member in your community.</p>
+        ) : (
+          <p>
+            {data && data.community.members.length - 1} members in your
+            community
+          </p>
+        )}
         <div className="members-icon">
           {data &&
             data.community.members

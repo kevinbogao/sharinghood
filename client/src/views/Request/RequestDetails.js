@@ -254,6 +254,7 @@ function RequestDetails({ match, history }) {
           .item-control {
             margin: 30px auto;
             width: 80vw;
+            max-width: $xl-max-width;
 
             .item-desc {
               margin: 0 20px 0 40px;

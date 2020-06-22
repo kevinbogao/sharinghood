@@ -5,8 +5,8 @@ import InlineError from '../../components/InlineError';
 import Loading from '../../components/Loading';
 
 const FIND_COMMUNITY = gql`
-  query FindCommunity($communityCode: String!) {
-    findCommunity(communityCode: $communityCode) {
+  query Community($communityCode: String!) {
+    community(communityCode: $communityCode) {
       _id
     }
   }
@@ -15,10 +15,10 @@ const FIND_COMMUNITY = gql`
 function CreateCommunity({ history }) {
   let name, code, zipCode;
   const [error, setError] = useState({});
-  const [findCommunity, { loading }] = useLazyQuery(FIND_COMMUNITY, {
-    onCompleted: ({ findCommunity }) => {
+  const [community, { loading }] = useLazyQuery(FIND_COMMUNITY, {
+    onCompleted: ({ community }) => {
       // Set code error if community exists
-      if (findCommunity) {
+      if (community) {
         setError({ code: 'Community code exists' });
       } else {
         history.push({
@@ -58,7 +58,7 @@ function CreateCommunity({ history }) {
           e.preventDefault();
           const errors = validate();
           if (Object.keys(errors).length === 0) {
-            findCommunity({
+            community({
               variables: {
                 communityCode: code.value,
               },

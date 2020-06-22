@@ -22,7 +22,7 @@ function ForgotPassword({ location }) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState({});
   const [accessKey, setAccessKey] = useState(null);
-
+  const [isResent, setIsResent] = useState(false);
   const {
     data: { accessToken },
   } = useQuery(GET_ACCESS_TOKEN);
@@ -56,21 +56,28 @@ function ForgotPassword({ location }) {
           <p className="prev-p">
             Please check your email to recover your account.
           </p>
-          <button
-            className="prev-btn"
-            type="submit"
-            onClick={(e) => {
-              e.preventDefault();
-              const errors = validate();
-              if (Object.keys(errors).length === 0) {
-                forgotPassword({
-                  variables: { email, accessKey },
-                });
-              }
-            }}
-          >
-            Resend
-          </button>
+          {!isResent && (
+            <button
+              className="prev-btn"
+              type="submit"
+              onClick={(e) => {
+                e.preventDefault();
+                const errors = validate();
+                if (Object.keys(errors).length === 0) {
+                  forgotPassword({
+                    variables: { email, accessKey },
+                  });
+                  // Stop render resend button for 5 sec, and re-render again
+                  setIsResent(true);
+                  setTimeout(() => {
+                    setIsResent(false);
+                  }, 5000);
+                }
+              }}
+            >
+              Resend
+            </button>
+          )}
         </>
       ) : (
         <>

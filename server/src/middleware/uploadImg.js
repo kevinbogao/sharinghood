@@ -7,8 +7,13 @@ cloudinary.config({
 });
 
 async function uploadImg(img) {
-  const result = await cloudinary.v2.uploader.upload(img);
-  return JSON.stringify(result);
+  try {
+    const result = await cloudinary.v2.uploader.upload(img);
+    return JSON.stringify(result);
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
 }
 
 module.exports = uploadImg;

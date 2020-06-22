@@ -4,7 +4,8 @@ const requestSchema = new Schema(
   {
     title: {
       type: String,
-      unique: true,
+      // unique: true,
+      required: true,
     },
     desc: {
       type: String,

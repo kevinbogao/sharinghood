@@ -119,7 +119,7 @@ const usersResolvers = {
           community.save(),
           isNotified &&
             newAccountMail(
-              `${process.env.DOMAIN}/share`,
+              `${process.env.ORIGIN}/share`,
               community.name,
               user.email,
               'Welcome to Sharinghood'
@@ -127,7 +127,7 @@ const usersResolvers = {
           isNotified &&
             isCreator &&
             newCommunityMail(
-              `${process.env.DOMAIN}/community/${community.code}`,
+              `${process.env.ORIGIN}/community/${community.code}`,
               user.email,
               `Welcome tips for your new ${community.name} community`
             ),

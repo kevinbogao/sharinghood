@@ -4,7 +4,8 @@ const postSchema = new Schema(
   {
     title: {
       type: String,
-      unique: true,
+      required: true,
+      // unique: true,
     },
     desc: {
       type: String,

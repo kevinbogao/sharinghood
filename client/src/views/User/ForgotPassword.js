@@ -12,8 +12,8 @@ const GET_ACCESS_TOKEN = gql`
 `;
 
 const FORGOT_PASSWORD = gql`
-  mutation ForgotPassword($email: String, $uuidKey: String) {
-    forgotPassword(email: $email, uuidKey: $uuidKey)
+  mutation ForgotPassword($email: String, $accessKey: String) {
+    forgotPassword(email: $email, accessKey: $accessKey)
   }
 `;
 
@@ -21,7 +21,8 @@ function ForgotPassword({ location }) {
   const { from } = location.state || { from: { pathname: '/' } };
   const [email, setEmail] = useState('');
   const [error, setError] = useState({});
-  const [uuidKey, setUuidKey] = useState(null);
+  const [accessKey, setAccessKey] = useState(null);
+
   const {
     data: { accessToken },
   } = useQuery(GET_ACCESS_TOKEN);
@@ -30,7 +31,7 @@ function ForgotPassword({ location }) {
     {
       onCompleted: ({ forgotPassword }) => {
         // Set success if true is returned
-        if (!!forgotPassword) setUuidKey(forgotPassword);
+        if (forgotPassword) setAccessKey(forgotPassword);
       },
       onError: ({ message }) => {
         setError({ email: message });
@@ -49,7 +50,7 @@ function ForgotPassword({ location }) {
     <Redirect to={from} />
   ) : (
     <div className="forgot-password-control">
-      {uuidKey ? (
+      {accessKey ? (
         <>
           <p className="prev-p">Reset password instructions have been sent.</p>
           <p className="prev-p">
@@ -63,7 +64,7 @@ function ForgotPassword({ location }) {
               const errors = validate();
               if (Object.keys(errors).length === 0) {
                 forgotPassword({
-                  variables: { email, uuidKey },
+                  variables: { email, accessKey },
                 });
               }
             }}
@@ -96,7 +97,7 @@ function ForgotPassword({ location }) {
             />
             {error.email && <InlineError text={error.email} />}
             <button className="prev-btn" type="submit">
-              Login
+              Continue
             </button>
           </form>
         </>

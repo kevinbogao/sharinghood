@@ -21,7 +21,7 @@ import * as serviceWorker from './serviceWorker';
 require('dotenv').config();
 
 // Get accessToken from localStorage
-const accessToken = localStorage.getItem('@sharinghood:accessToken');
+let accessToken = localStorage.getItem('@sharinghood:accessToken');
 
 // Create an http link
 const httpLink = new HttpLink({
@@ -95,10 +95,16 @@ const client = new ApolloClient({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             query: `
-              mutation {
-                tokenRefresh
+              mutation TokenRefresh($token: String!) {
+                tokenRefresh(token: $token) {
+                  accessToken
+                  refreshToken
+                }
               }
             `,
+            variables: {
+              token: localStorage.getItem('@sharinghood:refreshToken'),
+            },
           }),
         });
 
@@ -106,12 +112,25 @@ const client = new ApolloClient({
         return response;
       },
       handleResponse: () => async (response) => {
-        // Get response data
         const { data } = await response.json();
 
         // Save accessToken to localStorage if it is returned from server
-        if (data.tokenRefresh) {
-          localStorage.setItem('@sharinghood:accessToken', data.tokenRefresh);
+        if (data) {
+          localStorage.setItem(
+            '@sharinghood:accessToken',
+            data.tokenRefresh.accessToken,
+          );
+          localStorage.setItem(
+            '@sharinghood:refreshToken',
+            data.tokenRefresh.refreshToken,
+          );
+
+          // Update accessToken variable
+          accessToken = data.tokenRefresh.accessToken;
+        } else {
+          // Remove tokens from localStorage
+          localStorage.removeItem('@sharinghood:accessToken');
+          localStorage.removeItem('@sharinghood:refreshToken');
         }
       },
       handleError: (err) => {
@@ -134,6 +153,7 @@ cache.writeQuery({
   `,
   data: {
     accessToken: localStorage.getItem('@sharinghood:accessToken'),
+    refreshToken: localStorage.getItem('@sharinghood:refreshToken'),
     tokenPayload: accessToken ? jwtDecode(accessToken) : null,
   },
 });

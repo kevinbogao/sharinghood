@@ -171,7 +171,7 @@ const bookingsResolvers = {
           recipient.save(),
           recipient.isNotified &&
             updateBookingMail(
-              `${process.env.DOMAIN}/bookings`,
+              `${process.env.ORIGIN}/bookings`,
               recipient.email,
               notifyContent
             ),

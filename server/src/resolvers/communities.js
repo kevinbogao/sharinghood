@@ -42,11 +42,6 @@ const communitiesResolvers = {
           },
         ]);
 
-        // Throw error if community is not found (returns empty array)
-        // if (!community.length) {
-        //   throw new Error("Community doesn't exist");
-        // }
-
         return community[0];
       } catch (err) {
         console.log(err);

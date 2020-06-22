@@ -25,6 +25,11 @@ const typeDefs = gql`
     isCreator: Boolean
   }
 
+  type Auth {
+    accessToken: String!
+    refreshToken: String!
+  }
+
   ### Community
   type Community {
     _id: ID!
@@ -43,6 +48,11 @@ const typeDefs = gql`
     code: String!
     zipCode: String
     password: String
+  }
+
+  type AuthAndOrCommunity {
+    user: Auth!
+    community: Community
   }
 
   ### Post
@@ -236,12 +246,17 @@ const typeDefs = gql`
   ### Mutation
   type Mutation {
     # User
-    login(email: String!, password: String!): String!
-    register(userInput: UserInput!): String!
+    login(email: String!, password: String!): Auth!
     updateUser(userInput: UserInput): User
-    tokenRefresh: String!
-    forgotPassword(email: String, uuidKey: String): String
+    tokenRefresh(token: String!): Auth
+    forgotPassword(email: String, accessKey: String): String
     resetPassword(userIdKey: String!, password: String!): Boolean
+
+    # User & Community
+    registerAndOrCreateCommunity(
+      userInput: UserInput!
+      communityInput: CommunityInput
+    ): AuthAndOrCommunity!
 
     # Community
     createCommunity(communityInput: CommunityInput!): Community!

@@ -24,6 +24,8 @@
       "no-console": "off",
       "object-curly-newline": "off",
       "comma-dangle": "off",
+      "indent": "off",
+      "operator-linebreak": "off",
       "no-underscore-dangle": [
         "error",
         {

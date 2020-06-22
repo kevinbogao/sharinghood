@@ -1,15 +1,18 @@
 const { sign, verify } = require('jsonwebtoken');
 
-function generateTokens(user, res) {
+function generateTokens(user) {
   // Save refreshToken as cookie
-  res.cookie(
-    'refreshToken',
-    sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' }),
-    { httpOnly: true }
-  );
+  // res.cookie(
+  //   'refreshToken',
+  //   sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' }),
+  //   { httpOnly: true }
+  // );
 
-  // Return accessToken
-  return sign(
+  const refreshToken = sign({ userId: user._id }, process.env.JWT_SECRET, {
+    expiresIn: '7d',
+  });
+
+  const accessToken = sign(
     {
       userId: user._id,
       userName: user.name,
@@ -20,6 +23,9 @@ function generateTokens(user, res) {
     process.env.JWT_SECRET,
     { expiresIn: '1h' }
   );
+
+  // Return accessToken & refreshToken
+  return { accessToken, refreshToken };
 }
 
 function verifyToken(token) {

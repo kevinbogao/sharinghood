@@ -51,7 +51,6 @@ function ChatDetails({ chatId }) {
   const [text, setText] = useState('');
   const { subscribeToMore, loading, error, data } = useQuery(GET_CHAT, {
     // fetchPolicy: 'cache-and-network',
-    skip: !chatId,
     variables: { chatId },
     onError: ({ message }) => {
       console.log(message);

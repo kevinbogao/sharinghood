@@ -7,8 +7,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock, faUserClock } from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-modal';
 import Loading from '../../components/Loading';
-import ItemDetails from '../../components/ItemDetails';
 import Threads from '../../components/Threads';
+import NotFound from '../../components/NotFound';
+import ItemDetails from '../../components/ItemDetails';
+import { GET_REQUESTS } from './Requests';
 
 const MODAL_STYLE = {
   content: {
@@ -23,22 +25,6 @@ const MODAL_STYLE = {
     padding: '20px 50px 50px 50px',
   },
 };
-
-const GET_REQUESTS = gql`
-  query Requests {
-    requests {
-      _id
-      title
-      desc
-      image
-      dateNeed
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
 
 const GET_REQUEST = gql`
   query Request($requestId: ID!) {
@@ -152,7 +138,7 @@ function RequestDetails({ match, history }) {
     <Loading />
   ) : error ? (
     `Error! ${error.message}`
-  ) : (
+  ) : data.request ? (
     <div className="item-control">
       <ItemDetails item={data.request} userId={data.tokenPayload.userId}>
         <div className="item-desc">
@@ -363,6 +349,8 @@ function RequestDetails({ match, history }) {
         `}
       </style>
     </div>
+  ) : (
+    <NotFound itemType="Request" />
   );
 }
 

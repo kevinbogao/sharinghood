@@ -119,4 +119,4 @@ function Requests() {
   );
 }
 
-export default Requests;
+export { GET_REQUESTS, Requests };

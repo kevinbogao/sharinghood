@@ -108,4 +108,4 @@ function Posts() {
   );
 }
 
-export default Posts;
+export { GET_POSTS, Posts };

@@ -6,25 +6,11 @@ import DatePicker from 'react-datepicker';
 import InlineError from '../../components/InlineError';
 import Loading from '../../components/Loading';
 import uploadImg from '../../assets/images/upload.png';
+import { GET_REQUESTS } from './Requests';
 
 const CREATE_REQUEST = gql`
   mutation CreateRequest($requestInput: RequestInput!) {
     createRequest(requestInput: $requestInput) {
-      _id
-      desc
-      image
-      dateNeed
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
-
-const GET_REQUESTS = gql`
-  query Requests {
-    requests {
       _id
       desc
       image

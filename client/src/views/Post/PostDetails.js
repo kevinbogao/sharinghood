@@ -12,7 +12,9 @@ import DatePicker from 'react-datepicker';
 import Modal from 'react-modal';
 import Threads from '../../components/Threads';
 import Loading from '../../components/Loading';
+import NotFound from '../../components/NotFound';
 import ItemDetails from '../../components/ItemDetails';
+import { GET_POSTS } from './Posts';
 
 const CONDITIONS = ['New', 'Used but good', 'Used but little damaged'];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
@@ -28,20 +30,6 @@ const MODAL_STYLE = {
     padding: '20px 50px 230px 50px',
   },
 };
-
-const GET_POSTS = gql`
-  query Posts {
-    posts {
-      _id
-      title
-      image
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
 
 const GET_POST = gql`
   query Post($postId: ID!) {
@@ -181,7 +169,7 @@ function PostDetails({ match, history }) {
     <Loading />
   ) : error ? (
     `Error! ${error.message}`
-  ) : (
+  ) : data.post ? (
     <div className="item-control">
       <ItemDetails item={data.post} userId={data.tokenPayload.userId}>
         <div className="item-desc">
@@ -427,6 +415,8 @@ function PostDetails({ match, history }) {
         `}
       </style>
     </div>
+  ) : (
+    <NotFound itemType="Item" />
   );
 }
 

@@ -216,12 +216,11 @@ const typeDefs = gql`
     community(communityCode: String): Community
 
     # Post
-    post(postId: ID!): Post!
+    post(postId: ID!): Post
     posts(communityId: ID): [Post]
-    getPosts(communityId: ID!): [Post]
 
     # Request
-    request(requestId: ID!): Request!
+    request(requestId: ID!): Request
     requests(communityId: ID): [Request]
 
     # Chat

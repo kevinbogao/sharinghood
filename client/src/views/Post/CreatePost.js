@@ -4,6 +4,7 @@ import { gql, useMutation } from '@apollo/client';
 import InlineError from '../../components/InlineError';
 import uploadImg from '../../assets/images/upload.png';
 import Loading from '../../components/Loading';
+import { GET_POSTS } from './Posts';
 
 const CREATE_POST = gql`
   mutation CreatePost($postInput: PostInput!) {
@@ -11,20 +12,6 @@ const CREATE_POST = gql`
       _id
       title
       desc
-      image
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
-
-const GET_POSTS = gql`
-  query Posts {
-    posts {
-      _id
-      title
       image
       creator {
         _id

@@ -82,9 +82,11 @@ const bookingsResolvers = {
     createBooking: async (
       _,
       { bookingInput: { dateNeed, dateReturn, status, postId, ownerId } },
-      { user, user: { userId, userName } }
+      { user, user: { userId, userName, communityId } }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
+
+      console.log(communityId);
 
       try {
         // Save booking && find post, owner & booker
@@ -96,6 +98,7 @@ const bookingsResolvers = {
             post: postId,
             booker: userId,
             patcher: userId,
+            community: communityId,
           }),
           Post.findById(postId),
           User.findById(ownerId),

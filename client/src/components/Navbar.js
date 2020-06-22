@@ -10,7 +10,7 @@ import {
 import Notifications from './Notifications';
 import hamburger from '../assets/images/hamburger.png';
 
-const GET_SESSION = gql`
+const GET_TOKEN_PAYLOAD = gql`
   {
     tokenPayload @client
   }
@@ -43,7 +43,7 @@ function Navbar() {
   const [unreadCount, setUnreadCount] = useState(0);
   const {
     data: { tokenPayload },
-  } = useQuery(GET_SESSION);
+  } = useQuery(GET_TOKEN_PAYLOAD);
   const { data } = useQuery(GET_COMMUNITY, {
     skip: !tokenPayload,
   });

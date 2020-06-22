@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { Redirect } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import moment from 'moment';
 import { faArrowDown } from '@fortawesome/free-solid-svg-icons';
 import Loading from '../components/Loading';
+
+const GET_TOKEN_PAYLOAD = gql`
+  {
+    tokenPayload @client
+  }
+`;
 
 const GET_COMMUNITY_ACTIVITIES = gql`
   query CommunityActivities($communityId: ID!) {
@@ -70,10 +77,15 @@ const ID_SET = new Set(ID_KEYS);
 const DATE_KEYS = ['createdAt', 'dateNeed', 'dateReturn'];
 const DATE_SET = new Set(DATE_KEYS);
 
-function DashboardDetails({ match }) {
+function DashboardDetails({ location, match }) {
+  const { from } = location.state || { from: { pathname: '/' } };
   const [selectedStat, setSelectedStat] = useState('members');
   const [selectedCol, setSelectedCol] = useState('_id');
+  const {
+    data: { tokenPayload },
+  } = useQuery(GET_TOKEN_PAYLOAD);
   const { loading, error, data } = useQuery(GET_COMMUNITY_ACTIVITIES, {
+    skip: !tokenPayload.isAdmin,
     variables: { communityId: match.params.id },
     onCompleted: (data) => {
       console.log(data);
@@ -92,6 +104,8 @@ function DashboardDetails({ match }) {
     <Loading />
   ) : error ? (
     `Error! ${error.message}`
+  ) : !tokenPayload.isAdmin ? (
+    <Redirect to={from} />
   ) : (
     <div className="dashboard-control">
       <div className="cad-overview">
@@ -121,7 +135,10 @@ function DashboardDetails({ match }) {
         <table>
           <tbody>
             <tr className="cad-table-header">
-              {Object.keys(data.communityActivities[selectedStat][0])
+              {Object.keys(
+                data.communityActivities[selectedStat].length &&
+                  data.communityActivities[selectedStat][0],
+              )
                 .filter((key) => key !== '__typename')
                 .map((key) => (
                   <th key={key} onClick={() => sortColumns(key)}>
@@ -274,11 +291,28 @@ function DashboardDetails({ match }) {
 }
 
 DashboardDetails.propTypes = {
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      from: PropTypes.shape({
+        pathname: PropTypes.string,
+      }),
+    }),
+  }),
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
+};
+
+DashboardDetails.defaultProps = {
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      from: PropTypes.shape({
+        pathname: '/',
+      }),
+    }),
+  }),
 };
 
 export default DashboardDetails;

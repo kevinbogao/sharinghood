@@ -1,7 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Redirect } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
 import Loading from '../components/Loading';
+
+const GET_TOKEN_PAYLOAD = gql`
+  {
+    tokenPayload @client
+  }
+`;
 
 const GET_ACTIVITIES = gql`
   query {
@@ -23,11 +30,16 @@ const GET_ACTIVITIES = gql`
   }
 `;
 
-function Dashboard({ history }) {
+function Dashboard({ location, history }) {
+  const { from } = location.state || { from: { pathname: '/' } };
+  const {
+    data: { tokenPayload },
+  } = useQuery(GET_TOKEN_PAYLOAD);
   const { loading, error, data } = useQuery(GET_ACTIVITIES, {
-    onCompleted: (data) => {
-      console.log(data);
-    },
+    skip: !tokenPayload.isAdmin,
+    // onCompleted: (data) => {
+    //   console.log(data);
+    // },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -37,6 +49,8 @@ function Dashboard({ history }) {
     <Loading />
   ) : error ? (
     `Error ${error.message}`
+  ) : !tokenPayload.isAdmin ? (
+    <Redirect to={from} />
   ) : (
     <div className="dashboard-control">
       <div className="cad-overview">
@@ -209,9 +223,26 @@ function Dashboard({ history }) {
 }
 
 Dashboard.propTypes = {
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      from: PropTypes.shape({
+        pathname: PropTypes.string,
+      }),
+    }),
+  }),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
+};
+
+Dashboard.defaultProps = {
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      from: PropTypes.shape({
+        pathname: '/',
+      }),
+    }),
+  }),
 };
 
 export default Dashboard;

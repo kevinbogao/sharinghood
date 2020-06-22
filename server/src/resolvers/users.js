@@ -252,7 +252,7 @@ const usersResolvers = {
             sendMail(
               user.email,
               'Reset your Sharinghood password',
-              `${process.env.DOMAIN}/reset-password/${userIdKey}`
+              `${process.env.ORIGIN}/reset-password/${userIdKey}`
             ),
           ]);
 
@@ -267,7 +267,7 @@ const usersResolvers = {
         await sendMail(
           email,
           'Reset your Sharinghood password',
-          `${process.env.DOMAIN}/reset-password/${userIdKey}`
+          `${process.env.ORIGIN}/reset-password/${userIdKey}`
         );
 
         // Return empty array for resend email

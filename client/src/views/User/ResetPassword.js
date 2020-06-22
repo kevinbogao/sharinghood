@@ -31,8 +31,7 @@ function ResetPassword({ match }) {
     RESET_PASSWORD,
     {
       onCompleted: ({ resetPassword }) => {
-        console.log(resetPassword);
-        if (!!resetPassword) setSuccess(true);
+        if (resetPassword) setSuccess(true);
       },
       onError: ({ message }) => {
         console.log(message);

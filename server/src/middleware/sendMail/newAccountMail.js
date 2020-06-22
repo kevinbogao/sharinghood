@@ -139,7 +139,7 @@ async function newAccountMail(
             margin-bottom: 20px;
           "
           >
-            Examples of other comunities:
+            Examples of other communities:
             <span style="color: #3f3d56;"
               >books, drill set, ladder, special kitchen tools...</span
             >!
@@ -181,7 +181,7 @@ async function newAccountMail(
             margin-top: 20px;
           "
           >
-            This is a closed community. Only members of your commnity can see
+            This is a closed community. Only members of your community can see
             and borrow your items.
           </p>
         </div>

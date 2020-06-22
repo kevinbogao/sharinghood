@@ -34,7 +34,7 @@ const chatsResolvers = {
       const { userId } = user;
 
       try {
-        // Get all chat participanted by given user
+        // Get all chat participated by given user
         const userChats = await User.aggregate([
           {
             $match: { _id: mongoose.Types.ObjectId(userId) },

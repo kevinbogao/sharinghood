@@ -51,7 +51,7 @@ function CommunityInvite({ match, history }) {
             <h3>Amazing to see you here!</h3>
             <p>You have been invited to {community.name}</p>
             <p>
-              Sharinghood is a plattform which enables you to share items with
+              Sharinghood is a platform which enables you to share items with
               your community.
             </p>
             <p>You are only one registration away from an easier life.</p>

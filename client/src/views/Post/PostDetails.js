@@ -169,7 +169,7 @@ function PostDetails({ match, history }) {
     CREATE_BOOKING,
     {
       onCompleted: () => {
-        history.push('/dashboard');
+        history.push('/bookings');
       },
       onError: ({ message }) => {
         console.log(message);

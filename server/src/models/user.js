@@ -66,6 +66,11 @@ const userSchema = new Schema(
       required: true,
       default: false,
     },
+    isMigrated: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
   },
   { timestamps: true }
 );

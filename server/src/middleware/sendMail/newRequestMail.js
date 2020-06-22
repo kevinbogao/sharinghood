@@ -114,7 +114,7 @@ async function newRequestMail(
             margin-top: 20px;
           "
           >
-            This is a closed community. Only members of your commnity can see
+            This is a closed community. Only members of your community can see
             and borrow your items.
           </p>
         </div>

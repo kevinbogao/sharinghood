@@ -100,17 +100,6 @@ const requestsResolvers = {
         // Upload image to Cloudinary
         const imgData = await uploadImg(image);
 
-        // // Create and save request && get creator
-        // const request = await Request.create({
-        //   title,
-        //   desc,
-        //   dateNeed,
-        //   dateReturn,
-        //   image: imgData,
-        //   creator: userId,
-        //   community: communityId,
-        // });
-
         // Create and save request && get creator
         const [request, creator] = await Promise.all([
           Request.create({
@@ -134,7 +123,7 @@ const requestsResolvers = {
             creator: userId,
             isRead: false,
           }),
-          // Populate commnity members, exlude current user & unsubscribed user
+          // Populate community members, exclude current user & unsubscribe user
           // & only return email
           Community.findById(communityId).populate({
             path: 'members',
@@ -160,7 +149,7 @@ const requestsResolvers = {
               userName,
               title,
               JSON.parse(imgData).secure_url,
-              `${process.env.DOMAIN}/requests/${request._id}`,
+              `${process.env.ORIGIN}/requests/${request._id}`,
               dateNeed,
               emails,
               `${userName} requested ${title} in your community.`

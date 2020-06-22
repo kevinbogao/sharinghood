@@ -6,7 +6,14 @@ import uploadImg from '../../assets/images/upload.png';
 
 function CommunityExists({
   location: {
-    state: { members, isCreator, communityId, communityName },
+    state: {
+      members,
+      communityId,
+      communityName,
+      communityCode,
+      communityZipCode,
+      isCreator,
+    },
   },
   history,
 }) {
@@ -53,11 +60,14 @@ function CommunityExists({
             history.push({
               pathname: '/register',
               state: {
+                communityId,
                 name: name.value,
                 image: image || profileImg,
-                communityId,
                 apartment: apartment.value,
                 isCreator,
+                communityName,
+                communityCode,
+                communityZipCode,
               },
             });
           }
@@ -173,8 +183,10 @@ CommunityExists.propTypes = {
         }),
       ),
       isCreator: PropTypes.bool.isRequired,
-      communityId: PropTypes.string.isRequired,
+      communityId: PropTypes.string,
       communityName: PropTypes.string,
+      communityCode: PropTypes.string,
+      communityZipCode: PropTypes.string,
     }),
   }).isRequired,
   history: PropTypes.shape({

@@ -4,11 +4,11 @@ const bcryptjs = require('bcryptjs');
 const User = require('../models/user');
 const Community = require('../models/community');
 const uploadImg = require('../middleware/uploadImg');
-const parseCookie = require('../middleware/parseCookie');
 const { generateTokens, verifyToken } = require('../middleware/authToken');
 const sendMail = require('../middleware/sendMail/index');
 const newAccountMail = require('../middleware/sendMail/newAccountMail');
 const newCommunityMail = require('../middleware/sendMail/newCommunityMail');
+const pbkdf2Verify = require('../utils/pbkdf2Verify');
 
 const usersResolvers = {
   Query: {
@@ -23,6 +23,7 @@ const usersResolvers = {
         return userData;
       } catch (err) {
         console.log(err);
+        throw new Error(err);
       }
     },
     validateResetLink: async (_, { userIdKey }, { redis }) => {
@@ -39,30 +40,50 @@ const usersResolvers = {
     },
   },
   Mutation: {
-    login: async (_, { email, password }, { res }) => {
+    login: async (_, { email, password }) => {
       try {
         // Get user
         const user = await User.findOne({ email });
         if (!user) throw new AuthenticationError('User does not exist');
 
-        // Check user password
-        const isEqual = await bcryptjs.compare(password, user.password);
-        if (!isEqual) throw new AuthenticationError('Password is incorrect');
+        // Re-hash user password if user is not migrated
+        if (!user.isMigrated) {
+          const isPasswordValid = await pbkdf2Verify(password, user.password);
 
-        // Sign accessToken & sent refreshToken as cookie and
-        const accessToken = generateTokens(user, res);
+          // Re-hash password with bcryptjs if password if valid
+          if (isPasswordValid) {
+            const hashedPassword = await bcryptjs.hash(password, 12);
+
+            // Update user password & migration status
+            user.password = hashedPassword;
+            user.isMigrated = true;
+
+            // Throw auth error if password is invalid
+          } else {
+            throw new AuthenticationError('Password is incorrect');
+          }
+
+          // If user is migrated
+        } else {
+          // Check user password
+          const isEqual = await bcryptjs.compare(password, user.password);
+          if (!isEqual) throw new AuthenticationError('Password is incorrect');
+        }
+
+        // Sign accessToken & refreshToken
+        const { accessToken, refreshToken } = generateTokens(user);
 
         // Update user's last login date
         user.lastLogin = new Date();
         await user.save();
 
-        return accessToken;
+        return { accessToken, refreshToken };
       } catch (err) {
         console.log(err);
         throw new Error(err);
       }
     },
-    register: async (
+    registerAndOrCreateCommunity: async (
       _,
       {
         userInput: {
@@ -71,14 +92,15 @@ const usersResolvers = {
           password,
           image,
           apartment,
-          communityId,
           isNotified,
           isCreator,
+          communityId,
         },
-      },
-      { res }
+        communityInput,
+      }
     ) => {
       try {
+        // Get user and check if email exists
         const existingUser = await User.findOne({ email }).lean();
         if (existingUser) throw new Error('User exist already');
 
@@ -88,7 +110,8 @@ const usersResolvers = {
           uploadImg(image),
         ]);
 
-        // Create & save new user && get community
+        // Create and save user, create community if user is create
+        // else get community by id
         const [user, community] = await Promise.all([
           User.create({
             name,
@@ -96,27 +119,32 @@ const usersResolvers = {
             apartment,
             isNotified,
             image: imgData,
-            community: communityId,
             password: hashedPassword,
             lastLogin: new Date(),
           }),
-          Community.findById(communityId),
+          isCreator
+            ? Community.create({
+                name: communityInput.name,
+                code: communityInput.code,
+                zipCode: communityInput.zipCode,
+              })
+            : Community.findById(communityId),
         ]);
 
-        // Unlikely case
-        if (!community) {
-          throw new Error('Community does not exist!');
+        // Add user as creator to community if isCreator if true,
+        // ddd community to user, and user to community members
+        if (isCreator) {
+          community.creator = user._id;
         }
+        user.community = community._id;
+        community.members.push(user._id);
 
-        // Add user to community & save as creator if true
-        community.members.push(user);
-        if (isCreator) community.creator = user;
-
-        // Save commnity &&
-        // Send new account mail & send community mail if user is creator
-        // only if user is notified
+        // Save user and community
         await Promise.all([
+          user.save(),
           community.save(),
+
+          // Sent new account mail if user is notified
           isNotified &&
             newAccountMail(
               `${process.env.ORIGIN}/share`,
@@ -124,6 +152,8 @@ const usersResolvers = {
               user.email,
               'Welcome to Sharinghood'
             ),
+
+          // Sent new community mail if user is notified & isCreator
           isNotified &&
             isCreator &&
             newCommunityMail(
@@ -133,10 +163,16 @@ const usersResolvers = {
             ),
         ]);
 
-        // Sign accessToken & sent refreshToken as cookie and
-        const accessToken = generateTokens(user, res);
+        // Sign accessToken & refreshToken
+        const { accessToken, refreshToken } = generateTokens(user);
 
-        return accessToken;
+        return {
+          user: {
+            accessToken,
+            refreshToken,
+          },
+          ...(isCreator && { community }),
+        };
       } catch (err) {
         console.log(err);
         throw new Error(err);
@@ -171,50 +207,37 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
-    tokenRefresh: async (
-      _,
-      __,
-      {
-        req: {
-          headers: { cookie },
-        },
-        res,
-      }
-    ) => {
+    tokenRefresh: async (_, { token }) => {
       try {
-        // Parse cookie string to cookies object
-        const { refreshToken } = parseCookie(cookie);
-
         // Validate token & get userId if token is valid
-        const { userId } = verifyToken(refreshToken);
+        const { userId } = verifyToken(token);
 
-        // If refreshToken is valid
+        // If token is valid
         if (userId) {
           // Find user by id
           const user = await User.findOne({ _id: userId });
 
           // Refresh accessToken & refreshToken
-          const accessToken = generateTokens(user, res);
+          const { accessToken, refreshToken } = generateTokens(user);
 
           // Update user's last login date
           user.lastLogin = new Date();
           await user.save();
 
-          return accessToken;
+          return { accessToken, refreshToken };
         }
 
-        // Return empty string on invalid refreshToken
-        return '';
+        throw new AuthenticationError('Please login again');
       } catch (err) {
-        // Return empty string on error
-        return '';
+        console.log(err);
+        throw new Error(err);
       }
     },
-    forgotPassword: async (_, { email, uuidKey }, { redis }) => {
+    forgotPassword: async (_, { email, accessKey }, { redis }) => {
       try {
-        // When uuidKey is not entered as an argument, i.e. when
+        // When accessKey is not entered as an argument, i.e. when
         // user is not in the resent page
-        if (!uuidKey) {
+        if (!accessKey) {
           const user = await User.findOne({ email }).lean();
           if (!user) throw new AuthenticationError('Cannot find email');
 
@@ -228,7 +251,7 @@ const usersResolvers = {
             redis.set(uuidKey, userIdKey, 'ex', 60 * 60 * 48),
             sendMail(
               user.email,
-              'Reset your Sharedhood password',
+              'Reset your Sharinghood password',
               `${process.env.DOMAIN}/reset-password/${userIdKey}`
             ),
           ]);
@@ -238,12 +261,12 @@ const usersResolvers = {
         }
 
         // Else get userIdKey
-        const userIdKey = await redis.get(uuidKey);
+        const userIdKey = await redis.get(accessKey);
 
         // Resend reset email
         await sendMail(
           email,
-          'Reset your Sharedhood password',
+          'Reset your Sharinghood password',
           `${process.env.DOMAIN}/reset-password/${userIdKey}`
         );
 

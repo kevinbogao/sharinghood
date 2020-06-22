@@ -11,6 +11,8 @@ function InlineError({ text }) {
 
           .inline-error {
             color: $red-200;
+            max-width: 300px;
+            display: block;
           }
         `}
       </style>

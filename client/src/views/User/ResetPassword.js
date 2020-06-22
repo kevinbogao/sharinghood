@@ -120,9 +120,10 @@ function ResetPassword({ match }) {
         ) : (
           <>
             <p className="prev-p">Your link is not longer valid.</p>
-
             <Link to="/forgot-password">
-              <button className="prev-btn">Try again</button>
+              <button className="prev-btn" type="submit">
+                Try again
+              </button>
             </Link>
           </>
         )}

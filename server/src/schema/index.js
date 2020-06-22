@@ -209,12 +209,11 @@ const typeDefs = gql`
   ### Query
   type Query {
     # User
-    getUser(userId: ID): User!
+    user(userId: ID): User!
     validateResetLink(userIdKey: String!): Boolean!
 
     # Community
-    community(communityId: ID): Community
-    findCommunity(communityCode: String!): Community
+    community(communityCode: String): Community
 
     # Post
     post(postId: ID!): Post!

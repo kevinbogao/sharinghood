@@ -4,8 +4,8 @@ import { gql, useQuery, useMutation } from '@apollo/client';
 import Loading from '../../components/Loading';
 
 const GET_USER = gql`
-  query {
-    getUser {
+  query User {
+    user {
       _id
       image
       name
@@ -40,7 +40,7 @@ function Profile({ history }) {
       cache.writeQuery({
         query: GET_USER,
         data: {
-          getUser: updateUser,
+          user: updateUser,
         },
       });
       history.push('/find');
@@ -77,7 +77,7 @@ function Profile({ history }) {
           <label htmlFor="file-input">
             <img
               alt="profile pic"
-              src={image || JSON.parse(data.getUser.image).secure_url}
+              src={image || JSON.parse(data.user.image).secure_url}
             />
           </label>
           <input
@@ -100,19 +100,15 @@ function Profile({ history }) {
         <p className="prev-p">Your name</p>
         <input
           className="prev-input"
-          defaultValue={data.getUser.name}
+          defaultValue={data.user.name}
           onChange={(e) => setName(e.target.value)}
         />
         <p className="prev-p">Email address</p>
-        <input
-          className="prev-input"
-          defaultValue={data.getUser.email}
-          disabled
-        />
+        <input className="prev-input" defaultValue={data.user.email} disabled />
         <p className="prev-p">Where can the neighbours find you?</p>
         <input
           className="prev-input"
-          defaultValue={data.getUser.apartment}
+          defaultValue={data.user.apartment}
           onChange={(e) => setApartment(e.target.value)}
         />
         <button className="prev-btn" type="submit">

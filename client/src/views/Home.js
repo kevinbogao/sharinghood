@@ -12,8 +12,8 @@ const GET_ACCESS_TOKEN = gql`
 `;
 
 const FIND_COMMUNITY = gql`
-  query FindCommunity($communityCode: String!) {
-    findCommunity(communityCode: $communityCode) {
+  query Community($communityCode: String) {
+    community(communityCode: $communityCode) {
       _id
       name
       members {
@@ -31,14 +31,14 @@ function Home({ history }) {
   const {
     data: { accessToken },
   } = useQuery(GET_ACCESS_TOKEN);
-  const [findCommunity] = useLazyQuery(FIND_COMMUNITY, {
-    onCompleted: ({ findCommunity }) => {
+  const [community] = useLazyQuery(FIND_COMMUNITY, {
+    onCompleted: ({ community }) => {
       history.push({
         pathname: '/find-community',
         state: {
-          communityId: findCommunity._id,
-          communityName: findCommunity.name,
-          members: findCommunity.members,
+          communityId: community._id,
+          communityName: community.name,
+          members: community.members,
           isCreator: false,
         },
       });
@@ -99,7 +99,7 @@ function Home({ history }) {
                 e.preventDefault();
                 const errors = validate();
                 if (Object.keys(errors).length === 0) {
-                  findCommunity({
+                  community({
                     variables: {
                       communityCode: code.value,
                     },

@@ -1,5 +1,5 @@
 const { withFilter, AuthenticationError } = require('apollo-server');
-const pubsub = require('../middleware/pubsub');
+const pubsub = require('../utils/pubsub');
 const Chat = require('../models/chat');
 const Message = require('../models/message');
 

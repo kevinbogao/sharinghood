@@ -4,7 +4,7 @@ const Redis = require('ioredis');
 const mongoose = require('mongoose');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
-const { verifyToken } = require('./middleware/authToken');
+const { verifyToken } = require('./utils/authToken');
 
 // Create redis instance
 const redis = new Redis(process.env.REDIS_URL);

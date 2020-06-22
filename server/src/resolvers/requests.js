@@ -5,8 +5,8 @@ const Thread = require('../models/thread');
 const Request = require('../models/request');
 const Community = require('../models/community');
 const Notification = require('../models/notification');
-const uploadImg = require('../middleware/uploadImg');
-const newRequestMail = require('../middleware/sendMail/newRequestMail');
+const uploadImg = require('../utils/uploadImg');
+const newRequestMail = require('../utils/sendMail/newRequestMail');
 
 const requestsResolvers = {
   Query: {

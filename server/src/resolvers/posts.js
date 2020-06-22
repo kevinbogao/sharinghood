@@ -6,7 +6,7 @@ const Thread = require('../models/thread');
 const Booking = require('../models/booking');
 const Community = require('../models/community');
 const Notification = require('../models/notification');
-const uploadImg = require('../middleware/uploadImg');
+const uploadImg = require('../utils/uploadImg');
 
 const postsResolvers = {
   Query: {

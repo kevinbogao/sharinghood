@@ -3,22 +3,21 @@ const { v4: uuidv4 } = require('uuid');
 const bcryptjs = require('bcryptjs');
 const User = require('../models/user');
 const Community = require('../models/community');
-const uploadImg = require('../middleware/uploadImg');
-const { generateTokens, verifyToken } = require('../middleware/authToken');
-const sendMail = require('../middleware/sendMail/index');
-const newAccountMail = require('../middleware/sendMail/newAccountMail');
-const newCommunityMail = require('../middleware/sendMail/newCommunityMail');
+const uploadImg = require('../utils/uploadImg');
+const sendMail = require('../utils/sendMail/index');
 const pbkdf2Verify = require('../utils/pbkdf2Verify');
+const newAccountMail = require('../utils/sendMail/newAccountMail');
+const newCommunityMail = require('../utils/sendMail/newCommunityMail');
+const { generateTokens, verifyToken } = require('../utils/authToken');
 
 const usersResolvers = {
   Query: {
-    getUser: async (_, __, { user }) => {
+    user: async (_, __, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { userId } = user;
 
       try {
         // Get user data
-        const userData = await User.findById(userId);
+        const userData = await User.findById(user.userId);
 
         return userData;
       } catch (err) {

@@ -4,18 +4,18 @@ const User = require('../models/user');
 const Post = require('../models/post');
 const Booking = require('../models/booking');
 const Notification = require('../models/notification');
-const updateBookingMail = require('../middleware/sendMail/updateBookingMail');
+const updateBookingMail = require('../utils/sendMail/updateBookingMail');
 
 const bookingsResolvers = {
   Query: {
-    bookings: async (_, __, { user, user: { userId } }) => {
+    bookings: async (_, __, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
         // Get all user's bookings
         const userBookings = await User.aggregate([
           {
-            $match: { _id: mongoose.Types.ObjectId(userId) },
+            $match: { _id: mongoose.Types.ObjectId(user.userId) },
           },
           {
             $lookup: {
@@ -82,11 +82,10 @@ const bookingsResolvers = {
     createBooking: async (
       _,
       { bookingInput: { dateNeed, dateReturn, status, postId, ownerId } },
-      { user, user: { userId, userName, communityId } }
+      { user }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-
-      console.log(communityId);
+      const { userId, userName, communityId } = user;
 
       try {
         // Save booking && find post, owner & booker

@@ -4,34 +4,22 @@ const Community = require('../models/community');
 
 const communitiesResolvers = {
   Query: {
-    community: async (_, __, { user: { communityId } }) => {
+    community: async (_, { communityCode }, { user }) => {
       try {
-        // Find community by id & populate users
+        // Find community by community code if communityCode is given
+        // else find community by id & populate users
         const community = await Community.aggregate([
           {
-            $match: { _id: mongoose.Types.ObjectId(communityId) },
-          },
-          {
-            $lookup: {
-              from: 'users',
-              localField: 'members',
-              foreignField: '_id',
-              as: 'members',
+            $match: {
+              ...(communityCode
+                ? // Query by community code
+                  { code: communityCode }
+                : // Query by community id
+                  {
+                    _id: mongoose.Types.ObjectId(user.communityId),
+                  }),
             },
           },
-        ]);
-
-        return community[0];
-      } catch (err) {
-        console.log(err);
-        throw err;
-      }
-    },
-    findCommunity: async (_, { communityCode }) => {
-      try {
-        // Find community and populate users
-        const community = await Community.aggregate([
-          { $match: { code: communityCode } },
           {
             $lookup: {
               from: 'users',

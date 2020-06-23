@@ -6,28 +6,14 @@ import DatePicker from 'react-datepicker';
 import InlineError from '../../components/InlineError';
 import Loading from '../../components/Loading';
 import uploadImg from '../../assets/images/upload.png';
+import { GET_REQUESTS } from './Requests';
 
 const CREATE_REQUEST = gql`
   mutation CreateRequest($requestInput: RequestInput!) {
     createRequest(requestInput: $requestInput) {
       _id
       desc
-      picture
-      dateNeed
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
-
-const GET_REQUESTS = gql`
-  query Requests {
-    requests {
-      _id
-      desc
-      picture
+      image
       dateNeed
       creator {
         _id
@@ -38,8 +24,8 @@ const GET_REQUESTS = gql`
 `;
 
 function CreateRequest({ history }) {
-  let desc;
-  const [picture, setPicture] = useState(null);
+  let title, desc;
+  const [image, setImage] = useState(null);
   const [dateNeed, setDateNeed] = useState(new Date());
   const [dateReturn, setDateReturn] = useState(new Date());
   const [error, setError] = useState({});
@@ -66,8 +52,9 @@ function CreateRequest({ history }) {
 
   function validate() {
     const errors = {};
+    if (!title.value) errors.title = 'Please enter a title';
     if (!desc.value) errors.desc = 'Please enter a description';
-    if (!picture) errors.picture = 'Please upload a picture of the item';
+    if (!image) errors.image = 'Please upload a picture of the item';
     setError(errors);
     return errors;
   }
@@ -82,8 +69,9 @@ function CreateRequest({ history }) {
             createRequest({
               variables: {
                 requestInput: {
+                  title: title.value,
                   desc: desc.value,
-                  picture,
+                  image,
                   dateNeed,
                   dateReturn,
                 },
@@ -94,7 +82,7 @@ function CreateRequest({ history }) {
       >
         <div className="image-upload">
           <label htmlFor="file-input">
-            <img alt="profile pic" src={picture || uploadImg} />
+            <img alt="profile pic" src={image || uploadImg} />
           </label>
           <input
             id="file-input"
@@ -104,12 +92,19 @@ function CreateRequest({ history }) {
               const reader = new FileReader();
               reader.readAsDataURL(e.target.files[0]);
               reader.onload = () => {
-                setPicture(reader.result);
+                setImage(reader.result);
               };
             }}
           />
         </div>
-        {error.picture && <InlineError text={error.picture} />}
+        {error.image && <InlineError text={error.image} />}
+        <input
+          className="prev-input desc"
+          name="title"
+          placeholder="Title"
+          ref={(node) => (title = node)}
+        />
+        {error.title && <InlineError text={error.title} />}
         <input
           className="prev-input desc"
           placeholder="Description"

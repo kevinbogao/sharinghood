@@ -1,30 +1,36 @@
 const { ForbiddenError } = require('apollo-server');
+const mongoose = require('mongoose');
 const Community = require('../models/community');
 
 const communitiesResolvers = {
   Query: {
-    community: async (_, __, { user: { communityId } }) => {
+    community: async (_, { communityCode }, { user }) => {
       try {
-        const community = await Community.findById(communityId).populate({
-          path: 'members',
-        });
+        // Find community by community code if communityCode is given
+        // else find community by id & populate users
+        const community = await Community.aggregate([
+          {
+            $match: {
+              ...(communityCode
+                ? // Query by community code
+                  { code: communityCode }
+                : // Query by community id
+                  {
+                    _id: mongoose.Types.ObjectId(user.communityId),
+                  }),
+            },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'members',
+              foreignField: '_id',
+              as: 'members',
+            },
+          },
+        ]);
 
-        if (!community) {
-          throw new ForbiddenError("Community doesn't exist");
-        }
-
-        return community;
-      } catch (err) {
-        console.log(err);
-        throw err;
-      }
-    },
-    getMembers: async (_, { communityId }) => {
-      try {
-        const result = await Community.findById(communityId).populate(
-          'members'
-        );
-        return result;
+        return community[0];
       } catch (err) {
         console.log(err);
         throw err;
@@ -33,28 +39,21 @@ const communitiesResolvers = {
   },
   Mutation: {
     createCommunity: async (_, { communityInput: { name, code, zipCode } }) => {
-      const community = new Community({ name, code, zipCode });
-
       try {
+        // Check if community code exists
         const existingCode = await Community.findOne({ code });
+
         if (existingCode) {
           throw new ForbiddenError('Community code exists already');
         }
-        const result = await community.save();
-        return result;
-      } catch (err) {
-        console.log(err);
-        throw err;
-      }
-    },
-    community: async (_, { communityCode }) => {
-      try {
-        const community = await Community.findOne({
-          code: communityCode,
-        }).populate('members');
-        if (!community) {
-          throw new ForbiddenError("Community doesn't exist");
-        }
+
+        // Create & save community
+        const community = await Community.create({
+          name,
+          code,
+          zipCode,
+        });
+
         return community;
       } catch (err) {
         console.log(err);

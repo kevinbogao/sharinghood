@@ -4,7 +4,7 @@ const postSchema = new Schema(
   {
     title: {
       type: String,
-      unique: true,
+      required: true,
     },
     desc: {
       type: String,
@@ -14,7 +14,7 @@ const postSchema = new Schema(
       type: Number,
       required: true,
     },
-    picture: {
+    image: {
       type: String,
       required: true,
     },

@@ -7,30 +7,35 @@ import {
   InMemoryCache,
   split,
   ApolloProvider,
+  ApolloLink,
 } from '@apollo/client';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { WebSocketLink } from '@apollo/link-ws';
 import { setContext } from 'apollo-link-context';
+import { TokenRefreshLink } from 'apollo-link-token-refresh';
+import jwtDecode from 'jwt-decode';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+// Dotenv config
 require('dotenv').config();
 
-// Get token from localhost
-const token = localStorage.getItem('@sharinghood:token');
+// Get accessToken from localStorage
+let accessToken = localStorage.getItem('@sharinghood:accessToken');
 
 // Create an http link
 const httpLink = new HttpLink({
   uri: process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP,
+  credentials: 'include',
 });
 
 // Auth headers
 const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem('@sharinghood:token');
+  const accessToken = localStorage.getItem('@sharinghood:accessToken');
   return {
     headers: {
       ...headers,
-      authorization: token ? `Bearer ${token}` : '',
+      authorization: accessToken ? `Bearer ${accessToken}` : '',
     },
   };
 });
@@ -41,13 +46,13 @@ const wsLink = new WebSocketLink({
   options: {
     reconnect: true,
     connectionParams: {
-      authToken: token,
+      authToken: accessToken,
     },
   },
 });
 
 // Split links
-const link = split(
+const splitLink = split(
   ({ query }) => {
     const definition = getMainDefinition(query);
     return (
@@ -64,32 +69,92 @@ const cache = new InMemoryCache();
 
 // Init apollo client
 const client = new ApolloClient({
-  link,
-  cache,
-  resolvers: {
-    Query: {
-      contacts: () => {
-        console.log('something');
+  link: ApolloLink.from([
+    new TokenRefreshLink({
+      accessTokenField: 'accessToken',
+      isTokenValidOrUndefined: () => {
+        if (!accessToken) return true;
+
+        try {
+          // Get expiration data on accessToken
+          const { exp } = jwtDecode(accessToken);
+
+          // Check if accessToken if expired return false if not
+          // else return true
+          if (Date.now() >= exp * 1000) return false;
+          return true;
+        } catch (err) {
+          return false;
+        }
       },
-    },
-  },
+      fetchAccessToken: () => {
+        // Fetch refreshToken from graphql endpoint
+        const response = fetch(process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `
+              mutation TokenRefresh($token: String!) {
+                tokenRefresh(token: $token) {
+                  accessToken
+                  refreshToken
+                }
+              }
+            `,
+            variables: {
+              token: localStorage.getItem('@sharinghood:refreshToken'),
+            },
+          }),
+        });
+
+        // Return response
+        return response;
+      },
+      handleResponse: () => async (response) => {
+        const { data } = await response.json();
+
+        // Save accessToken to localStorage if it is returned from server
+        if (data) {
+          localStorage.setItem(
+            '@sharinghood:accessToken',
+            data.tokenRefresh.accessToken,
+          );
+          localStorage.setItem(
+            '@sharinghood:refreshToken',
+            data.tokenRefresh.refreshToken,
+          );
+
+          // Update accessToken variable
+          accessToken = data.tokenRefresh.accessToken;
+        } else {
+          // Remove tokens from localStorage
+          localStorage.removeItem('@sharinghood:accessToken');
+          localStorage.removeItem('@sharinghood:refreshToken');
+        }
+      },
+      handleError: (err) => {
+        console.warn('Your refresh token is invalid. Try to re-login');
+        console.error(err);
+      },
+    }),
+    splitLink,
+  ]),
+  cache,
 });
 
 // Init cache values
 cache.writeQuery({
   query: gql`
     query {
-      token
-      userId
-      userName
-      communityId
+      accessToken
+      tokenPayload
     }
   `,
   data: {
-    token: localStorage.getItem('@sharinghood:token'),
-    userId: localStorage.getItem('@sharinghood:userId'),
-    userName: localStorage.getItem('@sharinghood:userName'),
-    communityId: localStorage.getItem('@sharinghood:communityId'),
+    accessToken: localStorage.getItem('@sharinghood:accessToken'),
+    refreshToken: localStorage.getItem('@sharinghood:refreshToken'),
+    tokenPayload: accessToken ? jwtDecode(accessToken) : null,
   },
 });
 

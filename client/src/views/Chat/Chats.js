@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { gql, useQuery } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -13,22 +14,22 @@ const GET_CHATS = gql`
       participants {
         _id
         name
-        picture
+        image
       }
       updatedAt
     }
-    userId @client
+    tokenPayload @client
     community @client {
       members {
         _id
         name
-        picture
+        image
       }
     }
   }
 `;
 
-function Chats() {
+function Chats({ history }) {
   const [selectedChat, setSelectedChat] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const { loading, error, data } = useQuery(GET_CHATS, {
@@ -64,7 +65,10 @@ function Chats() {
                 setSelectedUser(chat.participants[0]._id);
               }}
             >
-              <img src={chat.participants[0].picture} alt="Community member" />
+              <img
+                src={JSON.parse(chat.participants[0].image).secure_url}
+                alt="Community member"
+              />
               {chat.participants[0]._id === selectedUser ? (
                 <p>{chat.participants[0].name}</p>
               ) : (
@@ -78,12 +82,16 @@ function Chats() {
           role="presentation"
           className={`chats-icon ${!selectedChat && 'active'}`}
           onClick={() => {
-            if (selectedChat && selectedUser) {
-              setSelectedChat(null);
-              setSelectedUser(null);
+            if (data.chats.length) {
+              if (selectedChat && selectedUser) {
+                setSelectedChat(null);
+                setSelectedUser(null);
+              } else {
+                setSelectedChat(data.chats[0]._id);
+                setSelectedUser(data.chats[0].participants[0]._id);
+              }
             } else {
-              setSelectedChat(data.chats[0]._id);
-              setSelectedUser(data.chats[0].participants[0]._id);
+              history.push('/find');
             }
           }}
         >
@@ -99,7 +107,7 @@ function Chats() {
           <ChatDetails chatId={selectedChat} />
         ) : (
           <CreateChat
-            userId={data.userId}
+            userId={data.tokenPayload.userId}
             chats={data.chats}
             community={data.community}
             setSelectedChat={setSelectedChat}
@@ -210,5 +218,11 @@ function Chats() {
     </div>
   );
 }
+
+Chats.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default Chats;

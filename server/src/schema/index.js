@@ -7,7 +7,7 @@ const typeDefs = gql`
     name: String
     email: String
     password: String
-    picture: String
+    image: String
     apartment: String
     isNotified: Boolean
     isAdmin: Boolean
@@ -15,22 +15,19 @@ const typeDefs = gql`
   }
 
   input UserInput {
-    name: String!
-    email: String!
-    password: String!
-    picture: String!
-    apartment: String!
-    communityId: ID!
-    isNotified: Boolean!
-    isCreator: Boolean!
+    name: String
+    email: String
+    password: String
+    image: String
+    apartment: String
+    communityId: ID
+    isNotified: Boolean
+    isCreator: Boolean
   }
 
   type Auth {
-    token: String!
-    tokenExpiration: Int!
-    userId: ID!
-    userName: String!
-    communityId: ID!
+    accessToken: String!
+    refreshToken: String!
   }
 
   ### Community
@@ -53,23 +50,29 @@ const typeDefs = gql`
     password: String
   }
 
+  type AuthAndOrCommunity {
+    user: Auth!
+    community: Community
+  }
+
   ### Post
   type Post {
     _id: ID!
     title: String
     desc: String
-    picture: String
+    image: String
     condition: Int
     isGiveaway: Boolean
     creator: User
     community: Community
     threads: [Thread]
+    createdAt: String
   }
 
   input PostInput {
     title: String!
     desc: String!
-    picture: String!
+    image: String!
     condition: Int!
     isGiveaway: Boolean!
   }
@@ -77,18 +80,21 @@ const typeDefs = gql`
   ### Request
   type Request {
     _id: ID!
+    title: String
     desc: String
-    picture: String
+    image: String
     dateNeed: String
     dateReturn: String
     creator: User
     community: Community
     threads: [Thread]
+    createdAt: String
   }
 
   input RequestInput {
+    title: String!
     desc: String!
-    picture: String!
+    image: String!
     dateNeed: String!
     dateReturn: String!
   }
@@ -156,8 +162,6 @@ const typeDefs = gql`
     notifyRecipientId: ID
   }
 
-  # union Result = Post | Request | Booking | Chat
-
   type Notification {
     _id: ID!
     onType: Int
@@ -177,22 +181,46 @@ const typeDefs = gql`
     isRead: Boolean
   }
 
+  type TotalActivities {
+    totalCommunities: Int
+    totalUsers: Int
+    totalPosts: Int
+    totalRequests: Int
+    totalBookings: Int
+    communitiesActivities: [CommunityActivities]
+  }
+
+  type CommunityActivities {
+    _id: ID
+    name: String
+    code: String
+    zipCode: String
+    numUsers: Int
+    numPosts: Int
+    numRequests: Int
+    numBookings: Int
+    creator: User
+    members: [User]
+    posts: [Post]
+    requests: [Request]
+    bookings: [Booking]
+  }
+
   ### Query
   type Query {
     # User
-    login(email: String!, password: String!): Auth!
+    user(userId: ID): User!
+    validateResetLink(userIdKey: String!): Boolean!
 
     # Community
-    community(communityId: ID): Community
-    getMembers(communityId: ID!): Community
+    community(communityCode: String): Community
 
     # Post
-    post(postId: ID!): Post!
+    post(postId: ID!): Post
     posts(communityId: ID): [Post]
-    getPosts(communityId: ID!): [Post]
 
     # Request
-    request(requestId: ID!): Request!
+    request(requestId: ID!): Request
     requests(communityId: ID): [Request]
 
     # Chat
@@ -207,16 +235,28 @@ const typeDefs = gql`
 
     # Notification
     notifications(userId: ID): [Notification]
+
+    # Activity
+    totalActivities: TotalActivities
+    communityActivities(communityId: ID!): CommunityActivities
   }
 
   ### Mutation
   type Mutation {
     # User
     login(email: String!, password: String!): Auth!
-    register(userInput: UserInput!): Auth!
+    updateUser(userInput: UserInput): User
+    tokenRefresh(token: String!): Auth
+    forgotPassword(email: String, accessKey: String): String
+    resetPassword(userIdKey: String!, password: String!): Boolean
+
+    # User & Community
+    registerAndOrCreateCommunity(
+      userInput: UserInput!
+      communityInput: CommunityInput
+    ): AuthAndOrCommunity!
 
     # Community
-    community(communityCode: String!): Community
     createCommunity(communityInput: CommunityInput!): Community!
 
     # Post
@@ -243,6 +283,9 @@ const typeDefs = gql`
 
     # Notification
     updateNotification(notificationInput: NotificationInput!): Notification
+
+    sentMail: Boolean
+    getEmails(communityId: ID!): Boolean
   }
 
   type Subscription {

@@ -85,7 +85,7 @@ function Notifications({
         history.push(`/requests/${onDocId}`);
         break;
       case 2:
-        history.push('/dashboard');
+        history.push('/bookings');
         break;
       default:
         break;

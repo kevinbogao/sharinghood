@@ -1,5 +1,3 @@
-/* global navigator */
-
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
@@ -11,7 +9,7 @@ import invitePoster from '../../assets/images/invite-poster.png';
 
 function CommunityLink({
   location: {
-    state: { communityId, communityCode, isCreator, isRegistered },
+    state: { communityCode, isRegistered },
   },
 }) {
   const [invite, setInvite] = useState('');
@@ -149,15 +147,10 @@ function CommunityLink({
       </div>
       {!isRegistered && (
         <div className="link-register">
-          <h5>Now, register and start sharing.</h5>
-          <Link
-            to={{
-              pathname: '/community/find',
-              state: { communityId, isCreator },
-            }}
-          >
+          <h5>Start sharing now.</h5>
+          <Link to="/find">
             <button className="main-btn" type="submit">
-              Register
+              Continue
             </button>
           </Link>
         </div>
@@ -262,6 +255,7 @@ function CommunityLink({
               float: right;
               background: $beige;
               margin: 40px;
+              min-width: 250px;
 
               @include xl {
                 margin: 20px;
@@ -291,20 +285,10 @@ function CommunityLink({
 CommunityLink.propTypes = {
   location: PropTypes.shape({
     state: PropTypes.shape({
-      isCreator: PropTypes.bool,
       isRegistered: PropTypes.bool.isRequired,
-      communityId: PropTypes.string.isRequired,
       communityCode: PropTypes.string.isRequired,
-    }),
-  }),
-};
-
-CommunityLink.defaultProps = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      isCreator: true,
-    }),
-  }),
+    }).isRequired,
+  }).isRequired,
 };
 
 export default CommunityLink;

@@ -7,8 +7,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock, faUserClock } from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-modal';
 import Loading from '../../components/Loading';
-import ItemDetails from '../../components/ItemDetails';
 import Threads from '../../components/Threads';
+import NotFound from '../../components/NotFound';
+import ItemDetails from '../../components/ItemDetails';
+import { GET_REQUESTS } from './Requests';
 
 const MODAL_STYLE = {
   content: {
@@ -24,33 +26,19 @@ const MODAL_STYLE = {
   },
 };
 
-const GET_REQUESTS = gql`
-  query Requests {
-    requests {
-      _id
-      desc
-      picture
-      dateNeed
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
-
 const GET_REQUEST = gql`
   query Request($requestId: ID!) {
     request(requestId: $requestId) {
       _id
+      title
       desc
-      picture
+      image
       dateNeed
       dateReturn
       creator {
         _id
         name
-        picture
+        image
         apartment
         createdAt
       }
@@ -62,12 +50,12 @@ const GET_REQUEST = gql`
         }
       }
     }
-    userId @client
+    tokenPayload @client
     community @client {
       members {
         _id
         name
-        picture
+        image
       }
     }
   }
@@ -150,11 +138,12 @@ function RequestDetails({ match, history }) {
     <Loading />
   ) : error ? (
     `Error! ${error.message}`
-  ) : (
+  ) : data.request ? (
     <div className="item-control">
-      <ItemDetails item={data.request} userId={data.userId}>
+      <ItemDetails item={data.request} userId={data.tokenPayload.userId}>
         <div className="item-desc">
-          <h3>{data.request.desc}</h3>
+          <h3>{data.request.title}</h3>
+          <p className="prev-p">{data.request.desc}</p>
           <div className="item-misc">
             <FontAwesomeIcon className="item-icon" icon={faClock} />
             <span>
@@ -167,7 +156,7 @@ function RequestDetails({ match, history }) {
               Needed until: {moment(+data.request.dateReturn).format('MMM DD')}
             </span>
           </div>
-          {data.request.creator._id === data.userId ? (
+          {data.request.creator._id === data.tokenPayload.userId ? (
             <button
               type="button"
               className="item-btn delete"
@@ -226,10 +215,10 @@ function RequestDetails({ match, history }) {
       />
       <div className="new-thread-control">
         {data.community.members
-          .filter((member) => member._id === data.userId)
+          .filter((member) => member._id === data.tokenPayload.userId)
           .map((member) => (
             <Fragment key={member._id}>
-              <img src={member.picture} alt="" />
+              <img src={JSON.parse(member.image).secure_url} alt="" />
               <div className="new-thread-content">
                 <span className="prev-p">{member.name}</span>
                 <input
@@ -265,6 +254,7 @@ function RequestDetails({ match, history }) {
           .item-control {
             margin: 30px auto;
             width: 80vw;
+            max-width: $xl-max-width;
 
             .item-desc {
               margin: 0 20px 0 40px;
@@ -360,6 +350,8 @@ function RequestDetails({ match, history }) {
         `}
       </style>
     </div>
+  ) : (
+    <NotFound itemType="Request" />
   );
 }
 

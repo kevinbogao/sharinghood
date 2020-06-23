@@ -12,7 +12,9 @@ import DatePicker from 'react-datepicker';
 import Modal from 'react-modal';
 import Threads from '../../components/Threads';
 import Loading from '../../components/Loading';
+import NotFound from '../../components/NotFound';
 import ItemDetails from '../../components/ItemDetails';
+import { GET_POSTS } from './Posts';
 
 const CONDITIONS = ['New', 'Used but good', 'Used but little damaged'];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
@@ -29,33 +31,19 @@ const MODAL_STYLE = {
   },
 };
 
-const GET_POSTS = gql`
-  query Posts {
-    posts {
-      _id
-      title
-      picture
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
-
 const GET_POST = gql`
   query Post($postId: ID!) {
     post(postId: $postId) {
       _id
       title
       desc
-      picture
+      image
       condition
       isGiveaway
       creator {
         _id
         name
-        picture
+        image
         apartment
         createdAt
       }
@@ -67,12 +55,12 @@ const GET_POST = gql`
         }
       }
     }
-    userId @client
+    tokenPayload @client
     community @client {
       members {
         _id
         name
-        picture
+        image
       }
     }
   }
@@ -169,7 +157,7 @@ function PostDetails({ match, history }) {
     CREATE_BOOKING,
     {
       onCompleted: () => {
-        history.push('/dashboard');
+        history.push('/bookings');
       },
       onError: ({ message }) => {
         console.log(message);
@@ -181,9 +169,9 @@ function PostDetails({ match, history }) {
     <Loading />
   ) : error ? (
     `Error! ${error.message}`
-  ) : (
+  ) : data.post ? (
     <div className="item-control">
-      <ItemDetails item={data.post} userId={data.userId} L6>
+      <ItemDetails item={data.post} userId={data.tokenPayload.userId}>
         <div className="item-desc">
           <h3>{data.post.title}</h3>
           <p className="prev-p">{data.post.desc}</p>
@@ -200,7 +188,7 @@ function PostDetails({ match, history }) {
               <span>This is a give away</span>
             </div>
           )}
-          {data.post.creator._id === data.userId ? (
+          {data.post.creator._id === data.tokenPayload.userId ? (
             <button
               type="button"
               className="item-btn delete"
@@ -293,10 +281,10 @@ function PostDetails({ match, history }) {
       <Threads threads={data.post.threads} members={data.community.members} />
       <div className="new-thread-control">
         {data.community.members
-          .filter((member) => member._id === data.userId)
+          .filter((member) => member._id === data.tokenPayload.userId)
           .map((member) => (
             <Fragment key={member._id}>
-              <img src={member.picture} alt="" />
+              <img src={JSON.parse(member.image).secure_url} alt="" />
               <div className="new-thread-content">
                 <span className="prev-p">{member.name}</span>
                 <input
@@ -332,6 +320,7 @@ function PostDetails({ match, history }) {
           .item-control {
             margin: 30px auto;
             width: 80vw;
+            max-width: $xl-max-width;
 
             .item-desc {
               margin: 0 20px 0 40px;
@@ -427,6 +416,8 @@ function PostDetails({ match, history }) {
         `}
       </style>
     </div>
+  ) : (
+    <NotFound itemType="Item" />
   );
 }
 

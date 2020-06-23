@@ -10,7 +10,7 @@ const GET_CHATS = gql`
       participants {
         _id
         name
-        picture
+        image
       }
       updatedAt
     }
@@ -24,7 +24,7 @@ const CREATE_CHAT = gql`
       participants {
         _id
         name
-        picture
+        image
       }
       updatedAt
     }
@@ -112,7 +112,7 @@ function CreateChat({
                   }
                 }}
               >
-                <img src={member.picture} alt="" />
+                <img src={JSON.parse(member.image).secure_url} alt="" />
                 <p>{member.name}</p>
               </div>
             ))}
@@ -213,7 +213,7 @@ CreateChat.propTypes = {
       PropTypes.shape({
         _id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
-        picture: PropTypes.string.isRequired,
+        image: PropTypes.string.isRequired,
       }).isRequired,
     ).isRequired,
   }).isRequired,

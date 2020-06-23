@@ -17,7 +17,7 @@ const GET_CHAT = gql`
         createdAt
       }
     }
-    userId @client
+    tokenPayload @client
   }
 `;
 
@@ -50,8 +50,7 @@ const CREATE_MESSAGE = gql`
 function ChatDetails({ chatId }) {
   const [text, setText] = useState('');
   const { subscribeToMore, loading, error, data } = useQuery(GET_CHAT, {
-    fetchPolicy: 'cache-and-network',
-    skip: !chatId,
+    // fetchPolicy: 'cache-and-network',
     variables: { chatId },
     onError: ({ message }) => {
       console.log(message);
@@ -99,7 +98,9 @@ function ChatDetails({ chatId }) {
             <div
               key={message._id}
               className={
-                message.sender._id === data.userId ? 'send' : 'received'
+                message.sender._id === data.tokenPayload.userId
+                  ? 'send'
+                  : 'received'
               }
             >
               <p>{message.text}</p>

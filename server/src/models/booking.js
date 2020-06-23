@@ -23,6 +23,10 @@ const bookingSchema = new Schema(
       type: Number,
       required: true,
     },
+    community: {
+      type: Schema.Types.ObjectId,
+      ref: 'Community',
+    },
     patcher: {
       type: Schema.Types.ObjectId,
       ref: 'User',

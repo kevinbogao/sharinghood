@@ -4,6 +4,7 @@ import { gql, useMutation } from '@apollo/client';
 import InlineError from '../../components/InlineError';
 import uploadImg from '../../assets/images/upload.png';
 import Loading from '../../components/Loading';
+import { GET_POSTS } from './Posts';
 
 const CREATE_POST = gql`
   mutation CreatePost($postInput: PostInput!) {
@@ -11,21 +12,7 @@ const CREATE_POST = gql`
       _id
       title
       desc
-      picture
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
-
-const GET_POSTS = gql`
-  query Posts {
-    posts {
-      _id
-      title
-      picture
+      image
       creator {
         _id
         name
@@ -36,7 +23,7 @@ const GET_POSTS = gql`
 
 function CreatePost({ history }) {
   let title, desc, isGiveaway;
-  const [picture, setPicture] = useState(null);
+  const [image, setImage] = useState(null);
   const [condition, setCondition] = useState(0);
   const [error, setError] = useState({});
   const [
@@ -64,7 +51,7 @@ function CreatePost({ history }) {
     const errors = {};
     if (!title.value) errors.title = 'Please enter a title';
     if (!desc.value) errors.desc = 'Please enter a description';
-    if (!picture) errors.picture = 'Please upload a picture of the item';
+    if (!image) errors.image = 'Please upload a picture of the item';
     setError(errors);
     return errors;
   }
@@ -81,7 +68,7 @@ function CreatePost({ history }) {
                 postInput: {
                   title: title.value,
                   desc: desc.value,
-                  picture,
+                  image,
                   condition: +condition,
                   isGiveaway: isGiveaway.checked,
                 },
@@ -98,7 +85,7 @@ function CreatePost({ history }) {
         )}
         <div className="image-upload">
           <label htmlFor="file-input">
-            <img alt="profile pic" src={picture || uploadImg} />
+            <img alt="profile pic" src={image || uploadImg} />
           </label>
           <input
             id="file-input"
@@ -108,12 +95,12 @@ function CreatePost({ history }) {
               const reader = new FileReader();
               reader.readAsDataURL(e.target.files[0]);
               reader.onload = () => {
-                setPicture(reader.result);
+                setImage(reader.result);
               };
             }}
           />
         </div>
-        {error.picture && <InlineError text={error.picture} />}
+        {error.image && <InlineError text={error.image} />}
         <input
           className="prev-input"
           name="title"

@@ -11,8 +11,9 @@ const GET_REQUESTS = gql`
   query Requests {
     requests {
       _id
+      title
       desc
-      picture
+      image
       dateNeed
       creator {
         _id
@@ -40,12 +41,12 @@ function Requests() {
           <Link
             to={{
               pathname: `/requests/${request._id}`,
-              state: { picture: request.picture },
+              state: { image: request.image },
             }}
           >
-            <img alt="item" src={request.picture} />
+            <img alt="item" src={JSON.parse(request.image).secure_url} />
             <div className="item-info">
-              <p className="item-title">{request.desc}</p>
+              <p className="item-title">{request.title}</p>
               <p>by {request.creator.name}</p>
               <div className="item-needed-on">
                 <FontAwesomeIcon className="item-icons" icon={faClock} />
@@ -118,4 +119,4 @@ function Requests() {
   );
 }
 
-export default Requests;
+export { GET_REQUESTS, Requests };

@@ -1,33 +1,80 @@
 const { AuthenticationError } = require('apollo-server');
+const mongoose = require('mongoose');
 const User = require('../models/user');
 const Post = require('../models/post');
 const Booking = require('../models/booking');
 const Notification = require('../models/notification');
+const updateBookingMail = require('../utils/sendMail/updateBookingMail');
 
 const bookingsResolvers = {
   Query: {
-    bookings: async (_, __, { user, user: { userId } }) => {
+    bookings: async (_, __, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        const booker = await User.findById(userId);
+        // Get all user's bookings
+        const userBookings = await User.aggregate([
+          {
+            $match: { _id: mongoose.Types.ObjectId(user.userId) },
+          },
+          {
+            $lookup: {
+              from: 'bookings',
+              let: { bookings: '$bookings' },
+              pipeline: [
+                { $match: { $expr: { $in: ['$_id', '$$bookings'] } } },
+                {
+                  $lookup: {
+                    from: 'users',
+                    localField: 'booker',
+                    foreignField: '_id',
+                    as: 'booker',
+                  },
+                },
+                { $unwind: '$booker' },
+                {
+                  $lookup: {
+                    from: 'posts',
+                    let: { post: '$post' },
+                    pipeline: [
+                      { $match: { $expr: { $eq: ['$_id', '$$post'] } } },
+                      {
+                        $lookup: {
+                          from: 'users',
+                          localField: 'creator',
+                          foreignField: '_id',
+                          as: 'creator',
+                        },
+                      },
+                      { $unwind: '$creator' },
+                    ],
+                    as: 'post',
+                  },
+                },
+                { $unwind: '$post' },
+              ],
+              as: 'bookings',
+            },
+          },
+          {
+            $project: {
+              bookings: {
+                _id: 1,
+                dateNeed: 1,
+                dateReturn: 1,
+                pickupTime: 1,
+                status: 1,
+                post: { _id: 1, title: 1, creator: { _id: 1, name: 1 } },
+                booker: { _id: 1, name: 1 },
+                patcher: 1,
+              },
+            },
+          },
+        ]);
 
-        // Get bookings and only populate booker.name, post.title
-        // & post.creator.name
-        const bookings = await Booking.find({
-          _id: { $in: booker.bookings },
-        })
-          .populate('booker', 'name')
-          .populate({
-            path: 'post',
-            select: 'title',
-            populate: { path: 'creator', model: 'User', select: 'name' },
-          });
-
-        return bookings;
+        return userBookings[0].bookings;
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
   },
@@ -35,33 +82,29 @@ const bookingsResolvers = {
     createBooking: async (
       _,
       { bookingInput: { dateNeed, dateReturn, status, postId, ownerId } },
-      { user, user: { userId, userName } }
+      { user }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
+      const { userId, userName, communityId } = user;
 
       try {
-        const booking = new Booking({
-          status,
-          dateNeed,
-          dateReturn,
-          post: postId,
-          booker: userId,
-          patcher: userId,
-        });
+        // Save booking && find post, owner & booker
+        const [booking, post, owner, booker] = await Promise.all([
+          Booking.create({
+            status,
+            dateNeed,
+            dateReturn,
+            post: postId,
+            booker: userId,
+            patcher: userId,
+            community: communityId,
+          }),
+          Post.findById(postId),
+          User.findById(ownerId),
+          User.findById(userId),
+        ]);
 
-        const result = await booking.save();
-
-        // Link booking to post, owner & booker
-        const post = await Post.findById(postId);
-        const owner = await User.findById(ownerId);
-        const booker = await User.findById(userId);
-        post.bookings.push(post);
-        owner.bookings.push(booking);
-        booker.bookings.push(booking);
-        await post.save();
-        await booker.save();
-
-        // Create notification and save it to owner
+        // Create and save notification
         const notification = await Notification.create({
           onType: 2,
           onDocId: post.id,
@@ -71,13 +114,18 @@ const bookingsResolvers = {
           isRead: false,
         });
 
+        // Save booking to post, owner & booker && save notification
+        // to the owner
+        post.bookings.push(booking);
+        booker.bookings.push(booking);
+        owner.bookings.push(booking);
         owner.notifications.push(notification);
-        await owner.save();
+        await Promise.all([post.save(), booker.save(), owner.save()]);
 
-        return result;
+        return booking;
       } catch (err) {
         console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
     updateBooking: async (
@@ -92,20 +140,19 @@ const bookingsResolvers = {
           notifyRecipientId,
         },
       },
-      { user, user: { userId } }
+      { user }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
+      const { userId } = user;
 
       try {
-        const booking = await Booking.findById(bookingId);
+        // Get booking & recipient
+        const [booking, recipient] = await Promise.all([
+          Booking.findById(bookingId),
+          User.findById(notifyRecipientId),
+        ]);
 
-        booking.status = status;
-        booking.pickupTime = pickupTime || booking.pickupTime;
-        booking.patcher = userId;
-        await booking.save();
-
-        // Create notification & save to receiver
-        const recipient = await User.findById(notifyRecipientId);
+        // Create & save notification
         const notification = await Notification.create({
           onType: 2,
           onDocId: postId,
@@ -115,8 +162,22 @@ const bookingsResolvers = {
           isRead: false,
         });
 
+        // Update booking && save booking & add notification to recipient
+        // Sent booking update email to recipient if is subscribed
+        booking.status = status;
+        booking.pickupTime = pickupTime || booking.pickupTime;
+        booking.patcher = userId;
         recipient.notifications.push(notification);
-        await recipient.save();
+        await Promise.all([
+          booking.save(),
+          recipient.save(),
+          recipient.isNotified &&
+            updateBookingMail(
+              `${process.env.ORIGIN}/bookings`,
+              recipient.email,
+              notifyContent
+            ),
+        ]);
 
         return booking;
       } catch (err) {

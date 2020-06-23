@@ -2,13 +2,16 @@
   "name": "sharinghood-server",
   "version": "1.0.0",
   "scripts": {
-    "start": "nodemon src/index.js",
+    "start": "node src/index.js",
     "client": "cd ../client && yarn start",
     "server": "nodemon src/index.js",
     "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
   },
   "main": "index.js",
   "license": "MIT",
+  "engines": {
+    "node": "14.x"
+  },
   "eslintConfig": {
     "extends": [
       "airbnb-base"
@@ -21,6 +24,8 @@
       "no-console": "off",
       "object-curly-newline": "off",
       "comma-dangle": "off",
+      "indent": "off",
+      "operator-linebreak": "off",
       "no-underscore-dangle": [
         "error",
         {
@@ -34,7 +39,10 @@
         "error",
         {
           "allow": [
-            "secure_url "
+            "secure_url",
+            "cloud_name",
+            "api_key",
+            "api_secret"
           ]
         }
       ]
@@ -46,20 +54,24 @@
     "arrowParens": "always"
   },
   "dependencies": {
-    "apollo-server": "^2.13.1",
+    "apollo-server": "^2.15.0",
     "bcryptjs": "^2.4.3",
-    "cloudinary": "^1.21.0",
+    "cloudinary": "^1.22.0",
     "dotenv": "^8.2.0",
-    "graphql": "^15.0.0",
+    "graphql": "^15.1.0",
+    "graphql-redis-subscriptions": "^2.2.1",
+    "ioredis": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
-    "mongoose": "^5.9.13"
+    "mongoose": "^5.9.19",
+    "nodemailer": "^6.4.10",
+    "uuid": "^8.1.0"
   },
   "devDependencies": {
     "concurrently": "^5.2.0",
-    "eslint": "^7.0.0",
-    "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-plugin-import": "^2.20.2",
-    "nodemon": "^2.0.3"
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.21.2",
+    "nodemon": "^2.0.4"
   }
 }

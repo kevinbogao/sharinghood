@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link, Redirect } from 'react-router-dom';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { gql, useQuery, useLazyQuery } from '@apollo/client';
 import InlineError from '../components/InlineError';
 import vase from '../assets/images/vase.png';
 
-const GET_SESSION = gql`
+const GET_ACCESS_TOKEN = gql`
   {
-    token @client
+    accessToken @client
   }
 `;
 
-const COMMUNITY = gql`
-  mutation Community($communityCode: String!) {
+const FIND_COMMUNITY = gql`
+  query Community($communityCode: String) {
     community(communityCode: $communityCode) {
       _id
       name
       members {
         _id
-        picture
+        image
       }
     }
   }
@@ -29,12 +29,12 @@ function Home({ history }) {
   const [isCreate, setIsCreate] = useState(false);
   const [error, setError] = useState({});
   const {
-    data: { token },
-  } = useQuery(GET_SESSION);
-  const [community] = useMutation(COMMUNITY, {
+    data: { accessToken },
+  } = useQuery(GET_ACCESS_TOKEN);
+  const [community] = useLazyQuery(FIND_COMMUNITY, {
     onCompleted: ({ community }) => {
       history.push({
-        pathname: '/community/find',
+        pathname: '/find-community',
         state: {
           communityId: community._id,
           communityName: community.name,
@@ -58,7 +58,7 @@ function Home({ history }) {
     return errors;
   }
 
-  return token ? (
+  return accessToken ? (
     <Redirect to="/find" />
   ) : (
     <div className="home-control">
@@ -88,7 +88,7 @@ function Home({ history }) {
             </button>
           </div>
           {isCreate ? (
-            <Link to="/community/create">
+            <Link to="/create-community">
               <button type="button" className="prev-btn create">
                 Create Community
               </button>

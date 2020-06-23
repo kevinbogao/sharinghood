@@ -14,7 +14,7 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    picture: {
+    image: {
       type: String,
       required: true,
     },
@@ -22,13 +22,13 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    createdPosts: [
+    posts: [
       {
         type: Schema.Types.ObjectId,
         ref: 'Post',
       },
     ],
-    createdRequests: [
+    requests: [
       {
         type: Schema.Types.ObjectId,
         ref: 'Requests',
@@ -56,6 +56,7 @@ const userSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Community',
     },
+    lastLogin: Date,
     isNotified: {
       type: Boolean,
       required: true,
@@ -65,10 +66,10 @@ const userSchema = new Schema(
       required: true,
       default: false,
     },
-    isCreator: {
+    isMigrated: {
       type: Boolean,
       required: true,
-      default: false,
+      default: true,
     },
   },
   { timestamps: true }

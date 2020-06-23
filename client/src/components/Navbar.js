@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { useHistory, Link, NavLink } from 'react-router-dom';
 import { gql, useQuery, useApolloClient } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import {
+  faUser,
+  faBell,
+  faSignOutAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import Notifications from './Notifications';
 import hamburger from '../assets/images/hamburger.png';
 
-const GET_SESSION = gql`
+const GET_TOKEN_PAYLOAD = gql`
   {
-    token @client
-    userId @client
-    communityId @client
+    tokenPayload @client
   }
 `;
 
@@ -26,7 +28,7 @@ const GET_COMMUNITY = gql`
       members {
         _id
         name
-        picture
+        image
       }
     }
   }
@@ -34,15 +36,16 @@ const GET_COMMUNITY = gql`
 
 function Navbar() {
   const node = useRef();
+  const history = useHistory();
   const client = useApolloClient();
   const [isMenuActive, setIsMenuActive] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const {
-    data: { token, userId },
-  } = useQuery(GET_SESSION);
+    data: { tokenPayload },
+  } = useQuery(GET_TOKEN_PAYLOAD);
   const { data } = useQuery(GET_COMMUNITY, {
-    skip: !token,
+    skip: !tokenPayload,
   });
 
   function handleClickOutside(e) {
@@ -85,15 +88,22 @@ function Navbar() {
       </div>
       <div className="nav-logo">
         <h1>
-          <Link to={token ? '/find' : '/'}>
+          <Link to={tokenPayload ? '/find' : '/'}>
             {data ? data.community.name : 'Sharinghood'}
           </Link>
         </h1>
       </div>
       <div className="nav-user">
         <div className="nav-user-content">
-          {token ? (
+          {tokenPayload ? (
             <div className="nav-icons">
+              <FontAwesomeIcon
+                className="nav-icon"
+                icon={faUser}
+                onClick={() => {
+                  history.push('/profile');
+                }}
+              />
               <FontAwesomeIcon
                 className="nav-icon"
                 icon={faBell}
@@ -115,19 +125,19 @@ function Navbar() {
                   client.writeQuery({
                     query: gql`
                       {
-                        token
-                        userId
+                        accessToken
+                        refreshToken
+                        tokenPayload
                       }
                     `,
                     data: {
-                      token: null,
-                      userId: null,
+                      accessToken: null,
+                      refreshToken: null,
+                      tokenPayload: null,
                     },
                   });
-                  localStorage.removeItem('@sharinghood:token');
-                  localStorage.removeItem('@sharinghood:userId');
-                  localStorage.removeItem('@sharinghood:userName');
-                  localStorage.removeItem('@sharinghood:communityId');
+                  localStorage.removeItem('@sharinghood:accessToken');
+                  localStorage.removeItem('@sharinghood:refreshToken');
                 }}
               />
             </div>
@@ -151,18 +161,27 @@ function Navbar() {
         <NavLink className="nav-menu-item" to="/share" onClick={toggleMenu}>
           Share
         </NavLink>
-        <NavLink className="nav-menu-item" to="/dashboard" onClick={toggleMenu}>
+        <NavLink className="nav-menu-item" to="/bookings" onClick={toggleMenu}>
           My Bookings & Lendings
         </NavLink>
         <NavLink className="nav-menu-item" to="/chats" onClick={toggleMenu}>
           Messages
         </NavLink>
-        {data && data.community.creator._id === userId && (
+        {tokenPayload?.isAdmin && (
+          <NavLink
+            className="nav-menu-item"
+            to="/dashboard"
+            onClick={toggleMenu}
+          >
+            Dashboard
+          </NavLink>
+        )}
+        {data && data.community.creator._id === tokenPayload.userId && (
           <div className="nav-menu-item invite">
             <NavLink
               className="invite-btn"
               to={{
-                pathname: '/community/link',
+                pathname: '/community-link',
                 state: {
                   communityId: data.community._id,
                   communityCode: data.community.code,

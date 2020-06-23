@@ -18,8 +18,15 @@
    #+end_src
 
 * Client
+** Notification Type
+   Notification type code reference
+   | Code | Type    |
+   |    0 | Post    |
+   |    1 | Request |
+   |    2 | booking |
+
 ** Booking Status
-   item booking status code reference 
+   Booking status code reference 
    | Code | Status   |
    |------+----------|
    |    0 | Pending  |

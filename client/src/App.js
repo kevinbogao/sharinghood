@@ -2,20 +2,26 @@ import React from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './views/Home';
-import Login from './views/Login';
-import Posts from './views/Post/Posts';
+import { Posts } from './views/Post/Posts';
 import Chats from './views/Chat/Chats';
 import Navbar from './components/Navbar';
-import Register from './views/Register';
-import Requests from './views/Request/Requests';
+import Profile from './views/User/Profile';
+import Login from './views/User/Login';
+import Register from './views/User/Register';
+import { Requests } from './views/Request/Requests';
+import Bookings from './views/Bookings';
 import Dashboard from './views/Dashboard';
+import DashboardDetails from './views/DashboardDetails';
 import CreatePost from './views/Post/CreatePost';
 import PostDetails from './views/Post/PostDetails';
 import CreateRequest from './views/Request/CreateRequest';
 import CommunityLink from './views/Community/CommunityLink';
+import CommunityInvite from './views/Community/CommunityInvite';
 import RequestDetails from './views/Request/RequestDetails';
 import CreateCommunity from './views/Community/CreateCommunity';
 import CommunityExists from './views/Community/CommunityExists';
+import ResetPassword from './views/User/ResetPassword';
+import ForgotPassword from './views/User/ForgotPassword';
 
 function App() {
   return (
@@ -24,15 +30,29 @@ function App() {
       <div className="base-control">
         <Route exact path="/" component={Home} />
         <Route exact path="/register" component={Register} />
-        <Route exact path="/community/create" component={CreateCommunity} />
-        <Route exact path="/community/link" component={CommunityLink} />
-        <Route exact path="/community/find" component={CommunityExists} />
+        <Route exact path="/create-community" component={CreateCommunity} />
+        <Route exact path="/community-link" component={CommunityLink} />
+        <Route exact path="/find-community" component={CommunityExists} />
+        <Route
+          exact
+          path="/community/:communityCode"
+          component={CommunityInvite}
+        />
+        <Route exact path="/reset-password/:id" component={ResetPassword} />
+        <Route exact path="/forgot-password" component={ForgotPassword} />
         <Switch>
           <Route path="/login" component={Login} />
           <ProtectedRoute path="/find" component={Posts} />
           <ProtectedRoute path="/chats" component={Chats} />
+          <ProtectedRoute path="/profile" component={Profile} />
           <ProtectedRoute path="/share" component={CreatePost} />
-          <ProtectedRoute path="/dashboard" component={Dashboard} />
+          <ProtectedRoute path="/bookings" component={Bookings} />
+          <ProtectedRoute exact path="/dashboard" component={Dashboard} />
+          <ProtectedRoute
+            exact
+            path="/dashboard/:id"
+            component={DashboardDetails}
+          />
           <ProtectedRoute path="/request" component={CreateRequest} />
           <ProtectedRoute path="/shared/:id" component={PostDetails} />
           <ProtectedRoute exact path="/requests" component={Requests} />

@@ -1,20 +1,25 @@
 * Sharinghood
+  Staging Link: https://sharinghood-staging.herokuapp.com
 ** Quick Overview
    #+begin_src bash
    cd server && yarn dev
    #+end_src
    client ~.env~
    #+begin_src bash
-   REACT_APP_GRAPHQL_ENDPOINT_WS=
-   REACT_APP_GRAPHQL_ENDPOINT_HTTP=
+   REACT_APP_GRAPHQL_ENDPOINT_HTTP=http://localhost:4000
+   REACT_APP_GRAPHQL_ENDPOINT_WS=ws://localhost:4000/graphql
    #+end_src
    server ~.env~
    #+begin_src bash
+   ORIGIN=http://localhost:3000
    JWT_SECRET=
    MONGO_PATH=
+   REDIS_URL=
    CLOUDINARY_CLOUD_NAME=
    CLOUDINARY_API_KEY=
    CLOUDINARY_SECRET_KEY=
+   GMAIL_USERNAME=
+   GMAIL_PASSWORD=
    #+end_src
 
 * Client
@@ -35,7 +40,7 @@
    |    3 | Declined |
   
 * Server
-   Explore Sharinghood's GraphQL API on [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQl Playground]] at ~http://localhost:4000/graphql~
+  Explore Sharinghood's GraphQL API on [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQl Playground]] at ~http://localhost:4000/graphql~
 ** Query
     ~post~ - Get a specific post
     | Arguments | Required | Type | Description            |

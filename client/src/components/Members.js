@@ -19,11 +19,7 @@ const GET_MEMBERS = gql`
 function Members() {
   const node = useRef();
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data } = useQuery(GET_MEMBERS, {
-    onCompleted: (data) => {
-      console.log(data);
-    },
-  });
+  const { data } = useQuery(GET_MEMBERS);
 
   function handleClickOutside(e) {
     if (node.current.contains(e.target)) {

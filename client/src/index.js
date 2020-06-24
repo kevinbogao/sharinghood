@@ -143,8 +143,8 @@ const client = new ApolloClient({
   cache,
 });
 
+// Default cache values
 function writeInitialData() {
-  // Init cache values
   cache.writeQuery({
     query: gql`
       query {
@@ -160,8 +160,10 @@ function writeInitialData() {
   });
 }
 
+// Init cache values
 writeInitialData();
 
+// Reset cache on logout
 client.onResetStore(writeInitialData);
 
 render(

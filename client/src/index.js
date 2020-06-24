@@ -143,20 +143,26 @@ const client = new ApolloClient({
   cache,
 });
 
-// Init cache values
-cache.writeQuery({
-  query: gql`
-    query {
-      accessToken
-      tokenPayload
-    }
-  `,
-  data: {
-    accessToken: localStorage.getItem('@sharinghood:accessToken'),
-    refreshToken: localStorage.getItem('@sharinghood:refreshToken'),
-    tokenPayload: accessToken ? jwtDecode(accessToken) : null,
-  },
-});
+function writeInitialData() {
+  // Init cache values
+  cache.writeQuery({
+    query: gql`
+      query {
+        accessToken
+        tokenPayload
+      }
+    `,
+    data: {
+      accessToken: localStorage.getItem('@sharinghood:accessToken'),
+      refreshToken: localStorage.getItem('@sharinghood:refreshToken'),
+      tokenPayload: accessToken ? jwtDecode(accessToken) : null,
+    },
+  });
+}
+
+writeInitialData();
+
+client.onResetStore(writeInitialData);
 
 render(
   <React.StrictMode>

@@ -121,23 +121,21 @@ function Navbar() {
               <FontAwesomeIcon
                 className="nav-icon"
                 icon={faSignOutAlt}
-                onClick={async () => {
-                  // client.writeQuery({
-                  //   query: gql`
-                  //     {
-                  //       accessToken
-                  //       refreshToken
-                  //       tokenPayload
-                  //     }
-                  //   `,
-                  //   data: {
-                  //     accessToken: null,
-                  //     refreshToken: null,
-                  //     tokenPayload: null,
-                  //   },
-                  // });
-                  history.push('login');
-                  await client.resetStore({});
+                onClick={() => {
+                  client.writeQuery({
+                    query: gql`
+                      {
+                        accessToken
+                        refreshToken
+                        tokenPayload
+                      }
+                    `,
+                    data: {
+                      accessToken: null,
+                      refreshToken: null,
+                      tokenPayload: null,
+                    },
+                  });
                   localStorage.removeItem('@sharinghood:accessToken');
                   localStorage.removeItem('@sharinghood:refreshToken');
                 }}

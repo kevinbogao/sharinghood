@@ -47,26 +47,24 @@ function Members() {
         onClick={() => setIsExpanded(!isExpanded)}
       />
       <div className="members-content">
-        {data && data.community.members.length < 2 ? (
+        {data?.community?.members?.length < 2 ? (
           <p>You are the only member in your community.</p>
         ) : (
           <p>
-            {data && data.community.members.length - 1} members in your
-            community
+            {data?.community?.members?.length - 1} members in your community
           </p>
         )}
         <div className="members-icon">
-          {data &&
-            data.community.members
-              .filter((member) => member._id !== data.tokenPayload.userId)
-              .map((member) => (
-                <div key={member._id} className="member-icon">
-                  {isExpanded && (
-                    <span className="icon-tooltip">{member.name}</span>
-                  )}
-                  <img src={JSON.parse(member.image).secure_url} alt="" />
-                </div>
-              ))}
+          {data?.community?.members
+            .filter((member) => member._id !== data.tokenPayload.userId)
+            .map((member) => (
+              <div key={member._id} className="member-icon">
+                {isExpanded && (
+                  <span className="icon-tooltip">{member.name}</span>
+                )}
+                <img src={JSON.parse(member.image).secure_url} alt="" />
+              </div>
+            ))}
         </div>
       </div>
       <style jsx global>

@@ -124,7 +124,11 @@ function Navbar() {
                 onClick={async () => {
                   // Redirect to login page
                   history.push('/login');
+
+                  // Clear local cache
                   await client.resetStore();
+
+                  // Clear localStorage
                   localStorage.removeItem('@sharinghood:accessToken');
                   localStorage.removeItem('@sharinghood:refreshToken');
                 }}

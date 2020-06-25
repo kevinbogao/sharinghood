@@ -4,9 +4,14 @@ import { gql, useQuery } from '@apollo/client';
 import ItemsGrid from '../../components/ItemsGrid';
 import Loading from '../../components/Loading';
 
+const GET_COMMUNITY_ID = gql`
+  query {
+    selCommunityId @client
+  }
+`;
+
 const GET_POSTS = gql`
   query Posts($communityId: ID!) {
-    selCommunityId @client @export(as: "communityId")
     posts(communityId: $communityId) {
       _id
       title
@@ -20,7 +25,12 @@ const GET_POSTS = gql`
 `;
 
 function Posts() {
+  const {
+    data: { selCommunityId },
+  } = useQuery(GET_COMMUNITY_ID);
   const { loading, error, data } = useQuery(GET_POSTS, {
+    skip: !selCommunityId,
+    variables: { communityId: selCommunityId },
     onError: ({ message }) => {
       console.log(message);
     },

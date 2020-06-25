@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUser,
   faBell,
+  faCaretDown,
   faSignOutAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import Notifications from './Notifications';
@@ -32,6 +33,10 @@ const GET_COMMUNITY = gql`
         image
       }
     }
+    communities {
+      _id
+      name
+    }
   }
 `;
 
@@ -46,7 +51,7 @@ function Navbar() {
     data: { tokenPayload, selCommunityId },
     refetch,
   } = useQuery(GET_TOKEN_PAYLOAD);
-  const { data, error } = useQuery(GET_COMMUNITY, {
+  const { data } = useQuery(GET_COMMUNITY, {
     skip: !tokenPayload || !selCommunityId,
     variables: { communityId: selCommunityId },
     onError: ({ message }) => {
@@ -81,6 +86,8 @@ function Navbar() {
     setIsNotificationsOpen(!isNotificationsOpen);
   }
 
+  console.log(data);
+
   return (
     <div ref={node} className="nav-control">
       <div className="nav-toggle">
@@ -97,6 +104,26 @@ function Navbar() {
           <Link to={tokenPayload ? '/find' : '/'}>
             {data?.community?.name || 'Sharinghood'}
           </Link>
+          {data?.communities.length > 1 && (
+            <FontAwesomeIcon
+              className="logo-icon"
+              icon={faCaretDown}
+              onClick={() => {
+                client.writeQuery({
+                  query: gql`
+                    query {
+                      selCommunityId
+                    }
+                  `,
+                  data: {
+                    selCommunityId: null,
+                  },
+                });
+                localStorage.removeItem('@sharinghood:selCommunityId');
+                history.push('/communities');
+              }}
+            />
+          )}
         </h1>
       </div>
       <div className="nav-user">
@@ -319,6 +346,12 @@ function Navbar() {
             &:hover {
               background: $grey-100;
             }
+          }
+
+          .logo-icon {
+            color: $green-100;
+            padding-top: 3px;
+            margin: auto 12px;
           }
 
           .nav-menu-item {

@@ -65,7 +65,7 @@ function ResetPassword({ match }) {
                   Your password has been successfully reset!
                 </p>
 
-                <button className="prev-btn">
+                <button className="prev-btn" type="button">
                   <Link to="/login">Back to login</Link>
                 </button>
               </>

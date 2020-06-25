@@ -141,6 +141,26 @@ const client = new ApolloClient({
     splitLink,
   ]),
   cache,
+  resolvers: {
+    Mutation: {
+      selectCommunity: (_, { communityId }, { cache }) => {
+        // Store community id in localStorage
+        localStorage.setItem('@sharinghood:selCommunityId', communityId);
+
+        // Set community id in cache
+        cache.writeQuery({
+          query: gql`
+            query {
+              selCommunityId @client
+            }
+          `,
+          data: {
+            selCommunityId: communityId,
+          },
+        });
+      },
+    },
+  },
 });
 
 // Default cache values
@@ -150,11 +170,14 @@ function writeInitialData() {
       query {
         accessToken
         tokenPayload
+        refreshToken
+        selCommunityId
       }
     `,
     data: {
       accessToken: localStorage.getItem('@sharinghood:accessToken'),
       refreshToken: localStorage.getItem('@sharinghood:refreshToken'),
+      selCommunityId: localStorage.getItem('@sharinghood:selCommunityId'),
       tokenPayload: accessToken ? jwtDecode(accessToken) : null,
     },
   });
@@ -164,7 +187,7 @@ function writeInitialData() {
 writeInitialData();
 
 // Reset cache on logout
-client.onResetStore(writeInitialData);
+client.onClearStore(writeInitialData);
 
 render(
   <React.StrictMode>

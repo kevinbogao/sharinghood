@@ -19,6 +19,7 @@ const GET_TOKEN_PAYLOAD = gql`
 
 const GET_COMMUNITY = gql`
   query Community($communityId: ID) {
+    # selCommunityId @client @export(as: "communityId")
     community(communityId: $communityId) {
       _id
       name
@@ -44,9 +45,8 @@ function Navbar() {
   const [unreadCount, setUnreadCount] = useState(0);
   const {
     data: { tokenPayload, selCommunityId },
-    refetch,
   } = useQuery(GET_TOKEN_PAYLOAD);
-  const { data, error } = useQuery(GET_COMMUNITY, {
+  const { data, error, refetch } = useQuery(GET_COMMUNITY, {
     skip: !tokenPayload || !selCommunityId,
     variables: { communityId: selCommunityId },
     onError: ({ message }) => {
@@ -81,7 +81,11 @@ function Navbar() {
     setIsNotificationsOpen(!isNotificationsOpen);
   }
 
-  return (
+  console.log(data);
+
+  return error ? (
+    `Error ${error.message}`
+  ) : (
     <div ref={node} className="nav-control">
       <div className="nav-toggle">
         <img
@@ -95,7 +99,7 @@ function Navbar() {
       <div className="nav-logo">
         <h1>
           <Link to={tokenPayload ? '/find' : '/'}>
-            {data?.community?.name || 'Sharinghood'}
+            {data?.community.name || 'Sharinghood'}
           </Link>
         </h1>
       </div>
@@ -129,17 +133,52 @@ function Navbar() {
                 icon={faSignOutAlt}
                 onClick={() => {
                   // Clear localStorage
+
+                  // await client.writeQuery({
+                  //   query: gql`
+                  //     {
+                  //       accessToken
+                  //       # refreshToken
+                  //       # tokenPayload
+                  //       # selCommunityId
+                  //     }
+                  //   `,
+                  //   data: {
+                  //     accessToken: null,
+                  //     // #refreshToken: null,
+                  //     // #tokenPayload: null,
+                  //     // #selCommunityId: null,
+                  //   },
+                  // });
+
+                  // await
+
+                  client.writeQuery({
+                    query: gql`
+                      {
+                        accessToken
+                        # refreshToken
+                        # tokenPayload
+                        # selCommunityId
+                      }
+                    `,
+                    data: {
+                      accessToken: null,
+                      // #refreshToken: null,
+                      // #tokenPayload: null,
+                      // #selCommunityId: null,
+                    },
+                  });
+
                   localStorage.removeItem('@sharinghood:accessToken');
                   localStorage.removeItem('@sharinghood:refreshToken');
                   localStorage.removeItem('@sharinghood:selCommunityId');
 
-                  // Clear loacl cache
+                  refetch();
+                  // // // Clean local cache
+                  // // // Redirect to login page
                   client.clearStore();
 
-                  // Fetch tokenPayload to clean local state
-                  refetch();
-
-                  // Return to login page
                   history.push('/login');
                 }}
               />

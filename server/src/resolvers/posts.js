@@ -48,9 +48,9 @@ const postsResolvers = {
         throw err;
       }
     },
-    posts: async (_, __, { user }) => {
+    posts: async (_, { communityId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { communityId } = user;
+      // const { communityId } = user;
 
       try {
         // Get all posts from given community

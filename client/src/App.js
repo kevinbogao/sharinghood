@@ -4,7 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './views/Home';
 import { Posts } from './views/Post/Posts';
 import Chats from './views/Chat/Chats';
-import Navbar from './components/Navbar';
+import { Navbar } from './components/Navbar';
 import Profile from './views/User/Profile';
 import Login from './views/User/Login';
 import Register from './views/User/Register';
@@ -22,6 +22,7 @@ import CreateCommunity from './views/Community/CreateCommunity';
 import CommunityExists from './views/Community/CommunityExists';
 import ResetPassword from './views/User/ResetPassword';
 import ForgotPassword from './views/User/ForgotPassword';
+import SelectCommunity from './views/Community/SelectCommunity';
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
           <ProtectedRoute path="/profile" component={Profile} />
           <ProtectedRoute path="/share" component={CreatePost} />
           <ProtectedRoute path="/bookings" component={Bookings} />
+          <ProtectedRoute path="/communities" component={SelectCommunity} />
           <ProtectedRoute exact path="/dashboard" component={Dashboard} />
           <ProtectedRoute
             exact

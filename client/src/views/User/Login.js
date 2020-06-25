@@ -38,7 +38,8 @@ function Login({ history }) {
           tokenPayload,
         },
       });
-      history.push('/find');
+      // history.push('/find');
+      history.push('/communities');
     },
     onError: ({ message }) => {
       setError({ password: message });

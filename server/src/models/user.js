@@ -56,6 +56,12 @@ const userSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Community',
     },
+    communities: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Community',
+      },
+    ],
     lastLogin: Date,
     isNotified: {
       type: Boolean,

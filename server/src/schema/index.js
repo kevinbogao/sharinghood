@@ -213,11 +213,12 @@ const typeDefs = gql`
     validateResetLink(userIdKey: String!): Boolean!
 
     # Community
-    community(communityCode: String): Community
+    community(communityId: ID, communityCode: String): Community
+    communities(userId: ID): [Community]
 
     # Post
     post(postId: ID!): Post
-    posts(communityId: ID): [Post]
+    posts(communityId: ID!): [Post]
 
     # Request
     request(requestId: ID!): Request

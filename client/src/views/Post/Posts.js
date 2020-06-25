@@ -5,8 +5,9 @@ import ItemsGrid from '../../components/ItemsGrid';
 import Loading from '../../components/Loading';
 
 const GET_POSTS = gql`
-  query Posts {
-    posts {
+  query Posts($communityId: ID!) {
+    selCommunityId @client @export(as: "communityId")
+    posts(communityId: $communityId) {
       _id
       title
       image
@@ -31,7 +32,7 @@ function Posts() {
     `Error ${error.message}`
   ) : (
     <ItemsGrid isPost>
-      {data.posts.map((post) => (
+      {data?.posts?.map((post) => (
         <div key={post._id} className="item-card">
           <Link
             to={{

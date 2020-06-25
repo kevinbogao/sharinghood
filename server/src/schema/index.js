@@ -6,13 +6,14 @@ const typeDefs = gql`
     _id: ID
     name: String
     email: String
-    password: String
+    # password: String
     image: String
     apartment: String
     isNotified: Boolean
     isAdmin: Boolean
     createdAt: String
     communities: [Community]
+    posts: [Post]
   }
 
   input UserInput {
@@ -150,6 +151,7 @@ const typeDefs = gql`
     pickupTime: String
     status: Int
     patcher: User
+    community: Community
   }
 
   input BookingInput {
@@ -264,7 +266,8 @@ const typeDefs = gql`
     # Post
     createPost(postInput: PostInput!, communityId: ID): Post!
     updatedPost(postInput: PostInput!): Post!
-    deletePost(postId: ID!): Post
+    inactivatePost(postId: ID): Boolean
+    deletePost(postId: ID!, communityId: ID): Post
 
     # Request
     createRequest(requestInput: RequestInput!, communityId: ID!): Request!

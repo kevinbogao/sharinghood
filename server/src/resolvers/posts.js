@@ -150,6 +150,29 @@ const postsResolvers = {
         throw err;
       }
     },
+    inactivatePost: async (_, { postId }, { user }) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
+      try {
+        const userInfo = await User.findById(user.userId);
+
+        // Find user's communities and remove post from
+        // all communities' posts array
+        await Community.updateMany(
+          {
+            _id: { $in: userInfo.communities },
+          },
+          {
+            $pull: { posts: postId },
+          }
+        );
+
+        return true;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
     deletePost: async (_, { postId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
       const { communityId } = user;

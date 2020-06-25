@@ -12,7 +12,7 @@ import Notifications from './Notifications';
 import hamburger from '../assets/images/hamburger.png';
 
 const GET_TOKEN_PAYLOAD = gql`
-  {
+  query {
     tokenPayload @client
     selCommunityId @client
   }
@@ -126,7 +126,7 @@ function Navbar() {
       </div>
       <div className="nav-user">
         <div className="nav-user-content">
-          {data && tokenPayload ? (
+          {!!tokenPayload ? (
             <div className="nav-icons">
               <FontAwesomeIcon
                 className="nav-icon"

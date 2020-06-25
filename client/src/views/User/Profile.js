@@ -14,6 +14,11 @@ const GET_USER = gql`
       communities {
         _id
       }
+      posts {
+        _id
+        title
+        image
+      }
     }
   }
 `;
@@ -27,6 +32,12 @@ const UPDATE_USER = gql`
       email
       apartment
     }
+  }
+`;
+
+const INACTIVATE_POST = gql`
+  mutation InactivatePost($postId: ID!) {
+    inactivatePost(postId: $postId)
   }
 `;
 
@@ -54,6 +65,11 @@ function Profile({ history }) {
         },
       });
       history.push('/find');
+    },
+  });
+  const [inactivatePost] = useMutation(INACTIVATE_POST, {
+    onCompleted: (data) => {
+      console.log(data);
     },
   });
 
@@ -107,6 +123,27 @@ function Profile({ history }) {
           Pictures increase trust by 80%. Feel free to make your profile more
           trustworthy by uploading a picture.
         </p>
+        <p className="prev-p">Items you shared</p>
+        <div className="user-posts">
+          {data.user.posts.map((post) => (
+            <div key={post._id}>
+              <img src={JSON.parse(post.image).secure_url} alt="" />
+              <span>{post.title}</span>
+              <button type="button">Edit</button>
+              <button
+                type="button"
+                onClick={() => {
+                  inactivatePost({
+                    // TODO: remove from local state if exists
+                    variables: { postId: post._id },
+                  });
+                }}
+              >
+                Set inactive
+              </button>
+            </div>
+          ))}
+        </div>
         <p className="prev-p">Your name</p>
         <input
           className="prev-input"
@@ -171,6 +208,19 @@ function Profile({ history }) {
             .prev-btn {
               display: block;
               margin: 30px auto;
+            }
+
+            .user-posts {
+              max-width: 300px;
+              overflow-x: scroll;
+              display: flex;
+
+              img {
+                margin: 0 5px 0 0;
+                width: 160px;
+                height: 136px;
+                object-fit: cover;
+              }
             }
           }
         `}

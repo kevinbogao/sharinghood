@@ -63,6 +63,7 @@
       "no-plusplus": "off",
       "no-return-assign": "off",
       "nonblock-statement-body-position": "off",
+      "no-extra-boolean-cast": "off",
       "curly": "off",
       "one-var": "off",
       "one-var-declaration-per-line": "off",

@@ -1,6 +1,7 @@
 const { AuthenticationError } = require('apollo-server');
 const { v4: uuidv4 } = require('uuid');
 const bcryptjs = require('bcryptjs');
+const mongoose = require('mongoose');
 const User = require('../models/user');
 const Community = require('../models/community');
 const uploadImg = require('../utils/uploadImg');
@@ -16,10 +17,20 @@ const usersResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Get user data
-        const userData = await User.findById(user.userId);
+        // Get user data & get user posts
+        const userData = await User.aggregate([
+          { $match: { _id: mongoose.Types.ObjectId(user.userId) } },
+          {
+            $lookup: {
+              from: 'posts',
+              localField: 'posts',
+              foreignField: '_id',
+              as: 'posts',
+            },
+          },
+        ]);
 
-        return userData;
+        return userData[0];
       } catch (err) {
         console.log(err);
         throw new Error(err);

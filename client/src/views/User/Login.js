@@ -41,7 +41,6 @@ function Login({ history, location }) {
           tokenPayload,
         },
       });
-      // history.push('/find');
       history.push('/communities');
     },
     onError: ({ message }) => {

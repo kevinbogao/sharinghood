@@ -34,6 +34,15 @@ const bookingsResolvers = {
                 { $unwind: '$booker' },
                 {
                   $lookup: {
+                    from: 'communities',
+                    localField: 'community',
+                    foreignField: '_id',
+                    as: 'community',
+                  },
+                },
+                { $unwind: '$community' },
+                {
+                  $lookup: {
                     from: 'posts',
                     let: { post: '$post' },
                     pipeline: [
@@ -65,6 +74,7 @@ const bookingsResolvers = {
                 pickupTime: 1,
                 status: 1,
                 post: { _id: 1, title: 1, creator: { _id: 1, name: 1 } },
+                community: { _id: 1, name: 1 },
                 booker: { _id: 1, name: 1 },
                 patcher: 1,
               },

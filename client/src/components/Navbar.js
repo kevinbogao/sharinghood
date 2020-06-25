@@ -126,7 +126,7 @@ function Navbar() {
       </div>
       <div className="nav-user">
         <div className="nav-user-content">
-          {tokenPayload ? (
+          {data && tokenPayload ? (
             <div className="nav-icons">
               <FontAwesomeIcon
                 className="nav-icon"

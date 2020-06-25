@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { gql, useMutation } from '@apollo/client';
+import { gql, useQuery, useMutation } from '@apollo/client';
 import InlineError from '../../components/InlineError';
 import uploadImg from '../../assets/images/upload.png';
 import Loading from '../../components/Loading';
 import { GET_POSTS } from './Posts';
+
+const GET_COMMUNITY_ID = gql`
+  query {
+    selCommunityId @client
+  }
+`;
 
 const CREATE_POST = gql`
   mutation CreatePost($postInput: PostInput!) {
@@ -26,6 +32,9 @@ function CreatePost({ history }) {
   const [image, setImage] = useState(null);
   const [condition, setCondition] = useState(0);
   const [error, setError] = useState({});
+  const {
+    data: { selCommunityId },
+  } = useQuery(GET_COMMUNITY_ID);
   const [
     createPost,
     { loading: mutationLoading, error: mutationError },
@@ -35,10 +44,12 @@ function CreatePost({ history }) {
       try {
         const { posts } = cache.readQuery({
           query: GET_POSTS,
+          variables: { communityId: selCommunityId },
         });
         cache.writeQuery({
           query: GET_POSTS,
           data: { posts: posts.concat([createPost]) },
+          variables: { communityId: selCommunityId },
         });
       } catch (err) {
         console.log(err);
@@ -72,6 +83,7 @@ function CreatePost({ history }) {
                   condition: +condition,
                   isGiveaway: isGiveaway.checked,
                 },
+                communityId: selCommunityId,
               },
             });
           }

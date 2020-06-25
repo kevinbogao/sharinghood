@@ -94,11 +94,11 @@ const postsResolvers = {
   Mutation: {
     createPost: async (
       _,
-      { postInput: { title, desc, image, condition, isGiveaway } },
+      { postInput: { title, desc, image, condition, isGiveaway }, communityId },
       { user }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { userId, userName, communityId } = user;
+      const { userId, userName } = user;
 
       try {
         // Upload image to Cloudinary
@@ -113,7 +113,6 @@ const postsResolvers = {
             isGiveaway,
             image: imgData,
             creator: userId,
-            community: communityId,
           }),
           User.findById(userId),
         ]);
@@ -127,14 +126,18 @@ const postsResolvers = {
             creator: userId,
             isRead: false,
           }),
-          Community.findById(communityId),
+          communityId && Community.findById(communityId),
         ]);
 
         // Save postId & notificationId to community && postId to creator
-        community.posts.push(post);
-        community.notifications.push(notification);
+        // Only save to community if communityId is given, i.e user is
+        // uploading the post to a specific community
+        if (communityId) {
+          community.posts.push(post);
+          community.notifications.push(notification);
+        }
         creator.posts.push(post);
-        await Promise.all([community.save(), creator.save()]);
+        await Promise.all([communityId && community.save(), creator.save()]);
 
         return {
           ...post._doc,

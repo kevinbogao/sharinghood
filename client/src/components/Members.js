@@ -3,10 +3,17 @@ import { gql, useQuery } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDoubleLeft } from '@fortawesome/free-solid-svg-icons';
 
+const GET_COMMUNITY_ID = gql`
+  query {
+    selCommunityId @client
+  }
+`;
+
 const GET_MEMBERS = gql`
   {
     tokenPayload @client
-    community @client {
+    #community @client {
+    community(communityId: $communityId) @client {
       members {
         _id
         name
@@ -19,7 +26,13 @@ const GET_MEMBERS = gql`
 function Members() {
   const node = useRef();
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data } = useQuery(GET_MEMBERS);
+  const {
+    data: { selCommunityId },
+  } = useQuery(GET_COMMUNITY_ID);
+  const { data } = useQuery(GET_MEMBERS, {
+    skip: !selCommunityId,
+    variables: { communityId: selCommunityId },
+  });
 
   function handleClickOutside(e) {
     if (node.current.contains(e.target)) {

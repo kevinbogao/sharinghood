@@ -261,7 +261,7 @@ const typeDefs = gql`
     createCommunity(communityInput: CommunityInput!): Community!
 
     # Post
-    createPost(postInput: PostInput!): Post!
+    createPost(postInput: PostInput!, communityId: ID): Post!
     updatedPost(postInput: PostInput!): Post!
     deletePost(postId: ID!): Post
 

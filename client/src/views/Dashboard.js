@@ -21,6 +21,7 @@ const GET_ACTIVITIES = gql`
       communitiesActivities {
         _id
         name
+        code
         numUsers
         numPosts
         numRequests
@@ -37,9 +38,9 @@ function Dashboard({ location, history }) {
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { loading, error, data } = useQuery(GET_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
-    // onCompleted: (data) => {
-    //   console.log(data);
-    // },
+    onCompleted: (data) => {
+      console.log(data);
+    },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -82,6 +83,7 @@ function Dashboard({ location, history }) {
           <tr className="cad-table-header">
             <th>Community ID</th>
             <th>Community Name</th>
+            <th>Community Code</th>
             <th>Users</th>
             <th>Posts</th>
             <th>Requests</th>
@@ -100,6 +102,7 @@ function Dashboard({ location, history }) {
               >
                 <td>{communityActivities._id}</td>
                 <td>{communityActivities.name}</td>
+                <td>{communityActivities.code}</td>
                 <td>{communityActivities.numUsers}</td>
                 <td>{communityActivities.numPosts}</td>
                 <td>{communityActivities.numRequests}</td>

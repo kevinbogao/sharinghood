@@ -187,6 +187,19 @@ function Register({
           Register
         </button>
       </form>
+      <p className="p-center">Already have an account</p>
+      <button
+        className="login-btn"
+        type="button"
+        onClick={() => {
+          history.push({
+            pathname: '/login',
+            state: { communityId },
+          });
+        }}
+      >
+        Login
+      </button>
       {mutationLoading && <Loading isCover />}
       {mutationError && <p>Error :( Please try again</p>}
       <style jsx>
@@ -204,12 +217,37 @@ function Register({
               margin: 20px auto;
             }
 
+            .p-center {
+              margin: 16px 0;
+              font-size: 16px;
+              color: $brown;
+              max-width: 300px;
+              text-align: center;
+              margin-bottom: 3px;
+            }
+
             .prev-input {
               margin-top: 30px;
             }
 
             .prev-btn {
               margin: 20px auto 30px auto;
+            }
+
+            button.login-btn {
+              display: block;
+              margin: auto;
+              padding: 0;
+              border: none;
+              font-size: 16px;
+              color: $brown;
+              text-align: center;
+              background: $background;
+              text-decoration: underline;
+
+              &:hover {
+                cursor: pointer;
+              }
             }
 
             .register-terms {

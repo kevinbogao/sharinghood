@@ -39,7 +39,7 @@ const usersResolvers = {
     },
   },
   Mutation: {
-    login: async (_, { email, password }) => {
+    login: async (_, { email, password, communityId }) => {
       try {
         // Get user
         const user = await User.findOne({ email });
@@ -71,6 +71,21 @@ const usersResolvers = {
 
         // Sign accessToken & refreshToken
         const { accessToken, refreshToken } = generateTokens(user);
+
+        // If a communityId id is given, check if user is in that community,
+        // add the user to community if the user is not in
+        if (communityId && !user.communities.includes(communityId)) {
+          // Update community
+          await Community.updateOne(
+            { _id: communityId },
+            {
+              $push: { members: user._id },
+            }
+          );
+
+          // Add community to user
+          user.communities.push(communityId);
+        }
 
         // Update user's last login date
         user.lastLogin = new Date();

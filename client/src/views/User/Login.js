@@ -7,15 +7,18 @@ import InlineError from '../../components/InlineError';
 import Loading from '../../components/Loading';
 
 const LOGIN = gql`
-  mutation Login($email: String!, $password: String!) {
-    login(email: $email, password: $password) {
+  mutation Login($email: String!, $password: String!, $communityId: ID) {
+    login(email: $email, password: $password, communityId: $communityId) {
       accessToken
       refreshToken
     }
   }
 `;
 
-function Login({ history }) {
+function Login({ history, location }) {
+  // Get communityId from props if user is directed from CommunityExists
+  // else set it as null
+  const { communityId } = location.state || { communityId: null };
   const client = useApolloClient();
   let email, password;
   const [error, setError] = useState({});
@@ -68,6 +71,7 @@ function Login({ history }) {
               variables: {
                 email: email.value,
                 password: password.value,
+                ...(communityId && { communityId }),
               },
             });
           }
@@ -136,6 +140,11 @@ function Login({ history }) {
 Login.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
+  }).isRequired,
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      communityId: PropTypes.string,
+    }),
   }).isRequired,
 };
 

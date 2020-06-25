@@ -117,6 +117,19 @@ function CommunityExists({
           Continue
         </button>
       </form>
+      <p className="p-center">Already have an account</p>
+      <button
+        className="login-btn"
+        type="button"
+        onClick={() => {
+          history.push({
+            pathname: '/login',
+            state: { communityId },
+          });
+        }}
+      >
+        Login
+      </button>
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -129,6 +142,11 @@ function CommunityExists({
               font-size: 16px;
               color: $brown;
               max-width: 300px;
+            }
+
+            .p-center {
+              text-align: center;
+              margin-bottom: 3px;
             }
 
             h1 {
@@ -147,6 +165,22 @@ function CommunityExists({
               width: 100px;
               border-radius: 50%;
               box-shadow: 1px 1px 1px 1px #eeeeee;
+            }
+
+            button.login-btn {
+              display: block;
+              margin: auto;
+              padding: 0;
+              border: none;
+              font-size: 16px;
+              color: $brown;
+              text-align: center;
+              background: $background;
+              text-decoration: underline;
+
+              &:hover {
+                cursor: pointer;
+              }
             }
 
             .prev-btn {

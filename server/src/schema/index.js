@@ -12,6 +12,7 @@ const typeDefs = gql`
     isNotified: Boolean
     isAdmin: Boolean
     createdAt: String
+    communities: [Community]
   }
 
   input UserInput {
@@ -245,7 +246,7 @@ const typeDefs = gql`
   ### Mutation
   type Mutation {
     # User
-    login(email: String!, password: String!): Auth!
+    login(email: String!, password: String!, communityId: ID): Auth!
     updateUser(userInput: UserInput): User
     tokenRefresh(token: String!): Auth
     forgotPassword(email: String, accessKey: String): String

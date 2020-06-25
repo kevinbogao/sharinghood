@@ -11,6 +11,9 @@ const GET_USER = gql`
       name
       email
       apartment
+      communities {
+        _id
+      }
     }
   }
 `;
@@ -31,7 +34,14 @@ function Profile({ history }) {
   const [name, setName] = useState('');
   const [image, setImage] = useState(null);
   const [apartment, setApartment] = useState('');
-  const { data, error, loading } = useQuery(GET_USER);
+  const { data, error, loading } = useQuery(GET_USER, {
+    onCompleted: () => {
+      console.log(data);
+    },
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
   const [updateUser, { loading: mutationLoading }] = useMutation(UPDATE_USER, {
     onError: ({ message }) => {
       console.log(message);
@@ -56,7 +66,7 @@ function Profile({ history }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          // Redirect to /find if no changes were made
+          // Redirect to posts page if no changes were made
           if (!name && !apartment && !image) {
             history.push('/find');
           } else {

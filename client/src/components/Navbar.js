@@ -86,8 +86,6 @@ function Navbar() {
     setIsNotificationsOpen(!isNotificationsOpen);
   }
 
-  console.log(data);
-
   return (
     <div ref={node} className="nav-control">
       <div className="nav-toggle">

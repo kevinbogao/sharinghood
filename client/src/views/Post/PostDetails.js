@@ -31,6 +31,12 @@ const MODAL_STYLE = {
   },
 };
 
+const GET_COMMUNITY_ID = gql`
+  query {
+    selCommunityId @client
+  }
+`;
+
 const GET_POST = gql`
   query Post($postId: ID!) {
     post(postId: $postId) {
@@ -56,7 +62,7 @@ const GET_POST = gql`
       }
     }
     tokenPayload @client
-    community @client {
+    community(communityId: $communityId) @client {
       members {
         _id
         name
@@ -109,8 +115,12 @@ function PostDetails({ match, history }) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [dateNeed, setDateNeed] = useState(new Date());
   const [dateReturn, setDateReturn] = useState(new Date());
+  const {
+    data: { selCommunityId },
+  } = useQuery(GET_COMMUNITY_ID);
   const { loading, error, data } = useQuery(GET_POST, {
-    variables: { postId: match.params.id },
+    skip: !selCommunityId,
+    variables: { postId: match.params.id, communityId: selCommunityId },
     onError: ({ message }) => {
       console.log(message);
     },

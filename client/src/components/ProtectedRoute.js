@@ -4,8 +4,9 @@ import { Route, Redirect } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
 
 const GET_ACCESS_TOKEN = gql`
-  {
+  query {
     accessToken @client
+    selCommunityId @client
   }
 `;
 
@@ -18,7 +19,7 @@ function ProtectedRoute({ component: Component, ...rest }) {
         {...rest}
         render={(props) =>
           data?.accessToken ? (
-            <Component {...props} />
+            <Component {...props} communityId={data?.selCommunityId} />
           ) : (
             <Redirect
               to={{

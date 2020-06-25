@@ -1,20 +1,14 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { gql, useMutation } from '@apollo/client';
 import InlineError from '../../components/InlineError';
 import uploadImg from '../../assets/images/upload.png';
 import Loading from '../../components/Loading';
 import { GET_POSTS } from './Posts';
 
-const GET_COMMUNITY_ID = gql`
-  query {
-    selCommunityId @client
-  }
-`;
-
 const CREATE_POST = gql`
-  mutation CreatePost($postInput: PostInput!) {
-    createPost(postInput: $postInput) {
+  mutation CreatePost($postInput: PostInput!, $communityId: ID) {
+    createPost(postInput: $postInput, communityId: $communityId) {
       _id
       title
       desc
@@ -27,14 +21,11 @@ const CREATE_POST = gql`
   }
 `;
 
-function CreatePost({ history }) {
+function CreatePost({ communityId, history }) {
   let title, desc, isGiveaway;
   const [image, setImage] = useState(null);
   const [condition, setCondition] = useState(0);
   const [error, setError] = useState({});
-  const {
-    data: { selCommunityId },
-  } = useQuery(GET_COMMUNITY_ID);
   const [
     createPost,
     { loading: mutationLoading, error: mutationError },
@@ -44,12 +35,12 @@ function CreatePost({ history }) {
       try {
         const { posts } = cache.readQuery({
           query: GET_POSTS,
-          variables: { communityId: selCommunityId },
+          variables: { communityId },
         });
         cache.writeQuery({
           query: GET_POSTS,
+          variables: { communityId },
           data: { posts: posts.concat([createPost]) },
-          variables: { communityId: selCommunityId },
         });
       } catch (err) {
         console.log(err);
@@ -83,7 +74,7 @@ function CreatePost({ history }) {
                   condition: +condition,
                   isGiveaway: isGiveaway.checked,
                 },
-                communityId: selCommunityId,
+                communityId,
               },
             });
           }
@@ -233,6 +224,7 @@ function CreatePost({ history }) {
 }
 
 CreatePost.propTypes = {
+  communityId: PropTypes.string.isRequired,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
     location: PropTypes.shape({

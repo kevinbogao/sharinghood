@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -8,8 +9,8 @@ import Loading from '../../components/Loading';
 import ItemsGrid from '../../components/ItemsGrid';
 
 const GET_REQUESTS = gql`
-  query Requests {
-    requests {
+  query Requests($communityId: ID!) {
+    requests(communityId: $communityId) {
       _id
       title
       desc
@@ -23,8 +24,10 @@ const GET_REQUESTS = gql`
   }
 `;
 
-function Requests() {
+function Requests({ communityId }) {
   const { loading, error, data } = useQuery(GET_REQUESTS, {
+    skip: !communityId,
+    variables: { communityId },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -118,5 +121,9 @@ function Requests() {
     </ItemsGrid>
   );
 }
+
+Requests.propTypes = {
+  communityId: PropTypes.string.isRequired,
+};
 
 export { GET_REQUESTS, Requests };

@@ -44,9 +44,8 @@ const requestsResolvers = {
         throw err;
       }
     },
-    requests: async (_, __, { user }) => {
+    requests: async (_, { communityId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { communityId } = user;
 
       try {
         // Get all requests from given community
@@ -90,11 +89,14 @@ const requestsResolvers = {
   Mutation: {
     createRequest: async (
       _,
-      { requestInput: { title, desc, image, dateNeed, dateReturn } },
+      {
+        requestInput: { title, desc, image, dateNeed, dateReturn },
+        communityId,
+      },
       { user }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { userId, userName, communityId } = user;
+      const { userId, userName } = user;
 
       try {
         // Upload image to Cloudinary
@@ -109,7 +111,6 @@ const requestsResolvers = {
             dateReturn,
             image: imgData,
             creator: userId,
-            community: communityId,
           }),
           User.findById(userId),
         ]);

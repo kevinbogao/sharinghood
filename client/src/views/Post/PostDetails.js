@@ -152,10 +152,14 @@ function PostDetails({ match, history }) {
     onError: ({ message }) => {
       console.log(message);
     },
-    update(store, { data: { deletePost } }) {
-      const { posts } = store.readQuery({ query: GET_POSTS });
-      store.writeQuery({
+    update(cache, { data: { deletePost } }) {
+      const { posts } = cache.readQuery({
         query: GET_POSTS,
+        variables: { communityId: selCommunityId },
+      });
+      cache.writeQuery({
+        query: GET_POSTS,
+        variables: { communityId: selCommunityId },
         data: {
           posts: posts.filter((post) => post._id !== deletePost._id),
         },

@@ -222,7 +222,7 @@ const typeDefs = gql`
 
     # Request
     request(requestId: ID!): Request
-    requests(communityId: ID): [Request]
+    requests(communityId: ID!): [Request]
 
     # Chat
     chat(chatId: ID!): Chat!
@@ -266,7 +266,7 @@ const typeDefs = gql`
     deletePost(postId: ID!): Post
 
     # Request
-    createRequest(requestInput: RequestInput!): Request!
+    createRequest(requestInput: RequestInput!, communityId: ID!): Request!
     deleteRequest(requestId: ID!): Request
 
     # Thread

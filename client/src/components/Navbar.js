@@ -13,12 +13,13 @@ import hamburger from '../assets/images/hamburger.png';
 const GET_TOKEN_PAYLOAD = gql`
   {
     tokenPayload @client
+    selCommunityId @client
   }
 `;
 
 const GET_COMMUNITY = gql`
-  query Community {
-    community {
+  query Community($communityId: ID) {
+    community(communityId: $communityId) {
       _id
       name
       code
@@ -42,10 +43,15 @@ function Navbar() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const {
-    data: { tokenPayload },
+    data: { tokenPayload, selCommunityId },
+    refetch,
   } = useQuery(GET_TOKEN_PAYLOAD);
-  const { data } = useQuery(GET_COMMUNITY, {
-    skip: !tokenPayload,
+  const { data, error } = useQuery(GET_COMMUNITY, {
+    skip: !tokenPayload || !selCommunityId,
+    variables: { communityId: selCommunityId },
+    onError: ({ message }) => {
+      console.log(message);
+    },
   });
 
   function handleClickOutside(e) {
@@ -75,7 +81,11 @@ function Navbar() {
     setIsNotificationsOpen(!isNotificationsOpen);
   }
 
-  return (
+  console.log(data);
+
+  return error ? (
+    `Error ${error.message}`
+  ) : (
     <div ref={node} className="nav-control">
       <div className="nav-toggle">
         <img
@@ -121,16 +131,20 @@ function Navbar() {
               <FontAwesomeIcon
                 className="nav-icon"
                 icon={faSignOutAlt}
-                onClick={async () => {
-                  // Redirect to login page
-                  history.push('/login');
-
-                  // Clear local cache
-                  await client.resetStore();
-
+                onClick={() => {
                   // Clear localStorage
                   localStorage.removeItem('@sharinghood:accessToken');
                   localStorage.removeItem('@sharinghood:refreshToken');
+                  localStorage.removeItem('@sharinghood:selCommunityId');
+
+                  // Clear loacl cache
+                  client.clearStore();
+
+                  // Fetch tokenPayload to clean local state
+                  refetch();
+
+                  // Return to login page
+                  history.push('/login');
                 }}
               />
             </div>
@@ -169,15 +183,15 @@ function Navbar() {
             Dashboard
           </NavLink>
         )}
-        {data && data.community.creator._id === tokenPayload.userId && (
+        {data?.community?.creator._id === tokenPayload?.userId && (
           <div className="nav-menu-item invite">
             <NavLink
               className="invite-btn"
               to={{
                 pathname: '/community-link',
                 state: {
-                  communityId: data.community._id,
-                  communityCode: data.community.code,
+                  communityId: data?.community?._id,
+                  communityCode: data?.community?.code,
                   isRegistered: true,
                 },
               }}
@@ -348,4 +362,4 @@ function Navbar() {
   );
 }
 
-export default Navbar;
+export { GET_COMMUNITY, Navbar };

@@ -135,7 +135,7 @@ function PostDetails({ match, history }) {
     update(cache, { data: { createThread } }) {
       const { post } = cache.readQuery({
         query: GET_POST,
-        variables: { postId: data.post._id },
+        variables: { postId: data.post._id, communityId: selCommunityId },
       });
       cache.writeQuery({
         query: GET_POST,

@@ -106,6 +106,7 @@ const typeDefs = gql`
     _id: ID
     content: String
     poster: User
+    community: Community
   }
 
   input ThreadInput {
@@ -113,6 +114,7 @@ const typeDefs = gql`
     isPost: Boolean!
     parentId: ID!
     recipientId: ID!
+    communityId: ID!
   }
 
   # Sent emails

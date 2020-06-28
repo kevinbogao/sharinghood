@@ -59,6 +59,9 @@ const GET_POST = gql`
         poster {
           _id
         }
+        community {
+          _id
+        }
       }
     }
     tokenPayload @client
@@ -292,7 +295,11 @@ function PostDetails({ match, history }) {
         </button>
       </Modal>
       {mutationLoading && <Loading isCover />}
-      <Threads threads={data.post.threads} members={data.community.members} />
+      <Threads
+        threads={data.post.threads}
+        members={data.community.members}
+        communityId={selCommunityId}
+      />
       <div className="new-thread-control">
         {data.community.members
           .filter((member) => member._id === data.tokenPayload.userId)
@@ -317,6 +324,7 @@ function PostDetails({ match, history }) {
                             isPost: true,
                             parentId: data.post._id,
                             recipientId: data.post.creator._id,
+                            communityId: selCommunityId,
                           },
                         },
                       });

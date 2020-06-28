@@ -44,10 +44,7 @@ const INACTIVATE_POST = gql`
 function Profile({ history }) {
   const [name, setName] = useState('');
   const [image, setImage] = useState(null);
-  const [activeId, setActiveId] = useState(null);
   const [apartment, setApartment] = useState('');
-  console.log(activeId);
-
   const { data, error, loading } = useQuery(GET_USER, {
     onCompleted: () => {
       console.log(data);
@@ -126,41 +123,25 @@ function Profile({ history }) {
           Pictures increase trust by 80%. Feel free to make your profile more
           trustworthy by uploading a picture.
         </p>
-        <p className="prev-p bronze">Items you shared</p>
+        <p className="prev-p">Items you shared</p>
         <div className="user-posts">
           {data.user.posts.map((post) => (
             // eslint-disable-next-line
-            <div
-              key={post._id}
-              className="post-instance"
-              onMouseOver={() => setActiveId(post._id)}
-              onMouseOut={() => setActiveId(null)}
-            >
-              <img
-                className={activeId === post._id && 'active'}
-                src={JSON.parse(post.image).secure_url}
-                alt=""
-              />
-              <p>{post.title}</p>
-              <div
-                className={`post-img-btn ${activeId === post._id && 'active'}`}
+            <div key={post._id} onMouseOver={() => console.log(post._id)}>
+              <img src={JSON.parse(post.image).secure_url} alt="" />
+              <span>{post.title}</span>
+              <button type="button">Edit</button>
+              <button
+                type="button"
+                onClick={() => {
+                  inactivatePost({
+                    // TODO: remove from local state if exists
+                    variables: { postId: post._id },
+                  });
+                }}
               >
-                <button className="post-btn" type="button">
-                  Edit
-                </button>
-                <button
-                  className="post-btn"
-                  type="button"
-                  // onClick={() => {
-                  //   inactivatePost({
-                  //     // TODO: remove from local state if exists
-                  //     variables: { postId: post._id },
-                  //   });
-                  // }}
-                >
-                  Set inactive
-                </button>
-              </div>
+                Set inactive
+              </button>
             </div>
           ))}
         </div>
@@ -223,10 +204,6 @@ function Profile({ history }) {
             .prev-p {
               margin: 20px auto;
               max-width: 300px;
-
-              &.bronze {
-                color: $bronze-200;
-              }
             }
 
             .prev-btn {
@@ -239,52 +216,11 @@ function Profile({ history }) {
               overflow-x: scroll;
               display: flex;
 
-              .post-instance {
-                position: relative;
-
-                p {
-                  margin: auto;
-                  font-size: 15px;
-                  color: $bronze-200;
-                  text-align: center;
-                }
-
-                .post-img-btn {
-                  display: none;
-
-                  &.active {
-                    top: 60px;
-                    left: 40px;
-                    display: flex;
-                    position: absolute;
-                    flex-direction: column;
-                  }
-
-                  button {
-                    padding: 5px;
-                    margin: 5px auto;
-                    border: none;
-                    color: #fff;
-                    background: #000;
-                  }
-                }
-
-                img {
-                  margin: 0 5px 0 0;
-                  width: 160px;
-                  height: 136px;
-                  object-fit: cover;
-
-                  &.active {
-                    -webkit-filter: grayscale(0%);
-                    filter: grayscale(0%);
-
-                    &:hover {
-                      -webkit-filter: grayscale(100%);
-                      filter: grayscale(100%);
-                    }
-                  }
-                }
+              img {
+                margin: 0 5px 0 0;
+                width: 160px;
+                height: 136px;
+                object-fit: cover;
               }
             }
           }

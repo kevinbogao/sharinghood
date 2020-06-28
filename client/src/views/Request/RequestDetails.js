@@ -48,6 +48,9 @@ const GET_REQUEST = gql`
         poster {
           _id
         }
+        community {
+          _id
+        }
       }
     }
     tokenPayload @client
@@ -216,6 +219,7 @@ function RequestDetails({ communityId, match, history }) {
       <Threads
         threads={data.request.threads}
         members={data.community.members}
+        communityId={communityId}
       />
       <div className="new-thread-control">
         {data.community.members
@@ -241,6 +245,7 @@ function RequestDetails({ communityId, match, history }) {
                             isPost: false,
                             parentId: data.request._id,
                             recipientId: data.request.creator._id,
+                            communityId,
                           },
                         },
                       });

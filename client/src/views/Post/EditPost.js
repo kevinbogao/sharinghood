@@ -457,7 +457,6 @@ function EditPost({ history, match }) {
 Modal.setAppElement('#root');
 
 EditPost.propTypes = {
-  communityId: PropTypes.string.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string.isRequired,

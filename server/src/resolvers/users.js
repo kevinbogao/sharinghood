@@ -246,25 +246,7 @@ const usersResolvers = {
         community.members.push(user.userId);
         await Promise.all([currentUser.save(), community.save()]);
 
-        // await Promise.all([
-        //   User.updateOne(
-        //     { _id: user.userId },
-        //     {
-        //       $push: { communities: communityId },
-        //     }
-        //   ),
-        //   Community.updateOne(
-        //     {
-        //       _id: communityId,
-        //     },
-        //     {
-        //       $push: { members: user.userId },
-        //     }
-        //   ),
-        // ]);
-
         return community;
-        // return 1;
       } catch (err) {
         console.log(err);
         throw new Error(err);

@@ -170,6 +170,7 @@ const postsResolvers = {
         if (desc) post.desc = desc;
         if (image && imgData) post.image = imgData;
         post.condition = condition; // 0 & bool conflict -> always update
+
         // Save & return post
         const updatedPost = await post.save();
         return updatedPost;

@@ -62,7 +62,13 @@ const communitiesResolvers = {
     },
   },
   Mutation: {
-    createCommunity: async (_, { communityInput: { name, code, zipCode } }) => {
+    createCommunity: async (
+      _,
+      { communityInput: { name, code, zipCode } },
+      { user }
+    ) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
       try {
         // Check if community code exists
         const existingCode = await Community.findOne({ code });
@@ -71,12 +77,21 @@ const communitiesResolvers = {
           throw new ForbiddenError('Community code exists already');
         }
 
-        // Create & save community
-        const community = await Community.create({
-          name,
-          code,
-          zipCode,
-        });
+        // Create & save community && get user
+        const [community, currentUser] = await Promise.all([
+          Community.create({
+            name,
+            code,
+            zipCode,
+            creator: user.userId,
+          }),
+          User.findById(user.userId),
+        ]);
+
+        // Add user to community, and add community to user
+        community.members.push(user.userId);
+        currentUser.communities.push(community._id);
+        await Promise.all([community.save(), currentUser.save()]);
 
         return community;
       } catch (err) {

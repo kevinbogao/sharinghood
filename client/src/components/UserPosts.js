@@ -43,7 +43,11 @@ function UserPosts({ posts, history }) {
     <>
       <div className="user-posts-title">
         <p className="prev-p bronze">Items you shared</p>
-        <button type="button" onClick={() => setIsEditing(!isEditing)}>
+        <button
+          type="button"
+          className={isEditing ? 'editing' : undefined}
+          onClick={() => setIsEditing(!isEditing)}
+        >
           Edit
         </button>
       </div>
@@ -131,9 +135,20 @@ function UserPosts({ posts, history }) {
 
           .user-posts-title {
             display: flex;
+            align-items: center;
 
             button {
+              font-size: 14px;
               border: none;
+              color: $background;
+              background: $green-200;
+              padding: 2px 7px;
+              height: 27px;
+              border-radius: 5px;
+
+              &.editing {
+                background: $green-100;
+              }
             }
           }
 

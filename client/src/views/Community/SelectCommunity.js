@@ -233,7 +233,10 @@ function SelectCommunity({ history, location }) {
                 className="prev-btn bronze"
                 type="button"
                 onClick={() => {
-                  history.push('/create-community');
+                  history.push({
+                    pathname: '/create-community',
+                    state: { isLoggedIn: true },
+                  });
                 }}
               >
                 Create Community

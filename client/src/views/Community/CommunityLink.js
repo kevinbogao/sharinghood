@@ -148,7 +148,14 @@ function CommunityLink({
       {!isRegistered && (
         <div className="link-register">
           <h5>Start sharing now.</h5>
-          <Link to="/find">
+          <Link
+            to={{
+              pathname: '/communities',
+              state: {
+                fromLogin: true,
+              },
+            }}
+          >
             <button className="main-btn" type="submit">
               Continue
             </button>

@@ -77,7 +77,8 @@ function Register({
       });
 
       // Redirect user to community invite link if user is creator
-      // else redirect user to posts
+      // else redirect user to communities page (fromLogin state will
+      // redirect user to find)
       if (isCreator) {
         history.push({
           pathname: '/community-link',
@@ -88,7 +89,12 @@ function Register({
           },
         });
       } else {
-        history.push('/find');
+        history.push({
+          pathname: '/communities',
+          state: {
+            fromLogin: true,
+          },
+        });
       }
     },
     onError: ({ message }) => {

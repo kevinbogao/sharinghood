@@ -159,7 +159,7 @@ const usersResolvers = {
         // Add user as creator to community if isCreator if true,
         // ddd community to user, and user to community members
         if (isCreator) community.creator = user._id;
-        user.community = community._id;
+        user.communities.push(community._id);
         community.members.push(user._id);
 
         // Save user and community

@@ -80,10 +80,7 @@ function EditPost({ history, match }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { loading, error, data } = useQuery(GET_POST, {
     variables: { postId: match.params.id },
-    onCompleted: ({ post, communities }) => {
-      // Set component condition state to post condition
-      setCondition(post.condition.toString());
-
+    onCompleted: ({ communities }) => {
       // Look through all user's communities and check if
       // the post exists in posts arrays
       const communityArr = [];
@@ -266,7 +263,7 @@ function EditPost({ history, match }) {
         />
         <p className="prev-p">Condition: </p>
         <select
-          value={+condition}
+          value={+condition || data.post.condition}
           name="condition"
           onChange={(e) => setCondition(e.target.value)}
         >

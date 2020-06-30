@@ -53,7 +53,6 @@ function UserPosts({ posts, history }) {
       </div>
       <div className="user-posts">
         {posts.map((post) => (
-          // eslint-disable-next-line
           <div key={post._id} className="post-instance">
             <img
               className={isEditing ? 'editing' : undefined}

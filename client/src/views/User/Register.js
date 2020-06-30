@@ -242,7 +242,7 @@ function Register({
 
             button.login-btn {
               display: block;
-              margin: auto;
+              margin: auto auto 30px auto;
               padding: 0;
               border: none;
               font-size: 16px;

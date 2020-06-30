@@ -16,7 +16,6 @@ const notificationsResolvers = {
           Community.findById(communityId),
         ]);
 
-        console.log('user', currentUser.notifications);
         const notifications = await Notification.find({
           _id: {
             $in: [...currentUser.notifications, ...community.notifications],

@@ -75,7 +75,6 @@ function EditPost({ history, match }) {
   const [desc, setDesc] = useState('');
   const [image, setImage] = useState(null);
   const [condition, setCondition] = useState('');
-  console.log(condition);
   const [communityArr, setCommunityArr] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);

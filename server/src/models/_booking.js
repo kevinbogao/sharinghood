@@ -6,30 +6,28 @@ const bookingSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Post',
     },
-
-    // 0: pending
-    // 1: accepted
-    // 2: declined
+    booker: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    dateNeed: {
+      type: Date,
+      required: true,
+    },
+    dateReturn: {
+      type: Date,
+      required: true,
+    },
+    pickupTime: Date,
     status: {
       type: Number,
       required: true,
     },
-
-    // 0: asap
-    // 1: any
-    // 2: need & return
-    dateType: {
-      type: Number,
-      required: true,
+    community: {
+      type: Schema.Types.ObjectId,
+      ref: 'Community',
     },
-
-    // dateNeed & dateReturn are not needed for
-    // date type 0 & 1
-    dateNeed: Date,
-    dateReturn: Date,
-
-    // User who booked the post
-    booker: {
+    patcher: {
       type: Schema.Types.ObjectId,
       ref: 'User',
     },

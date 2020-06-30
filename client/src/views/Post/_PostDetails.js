@@ -26,7 +26,7 @@ const MODAL_STYLE = {
     transform: 'translate(-50%, -50%)',
     borderWidth: 0,
     boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '30px 30px 240px 30px',
+    padding: '20px 50px 230px 50px',
   },
 };
 
@@ -86,34 +86,26 @@ const CREATE_THREAD = gql`
   }
 `;
 
-// const CREATE_BOOKING = gql`
-//   mutation CreateBooking($bookingInput: BookingInput!) {
-//     createBooking(bookingInput: $bookingInput) {
-//       _id
-//       dateNeed
-//       dateReturn
-//       status
-//       booker {
-//         _id
-//       }
-//       patcher {
-//         _id
-//       }
-//     }
-//   }
-// `;
-
-const CREATE_NOTIFICATION = gql`
-  mutation CreateNotification($notificationInput: NotificationInput) {
-    createNotification(notificationInput: $notificationInput)
+const CREATE_BOOKING = gql`
+  mutation CreateBooking($bookingInput: BookingInput!) {
+    createBooking(bookingInput: $bookingInput) {
+      _id
+      dateNeed
+      dateReturn
+      status
+      booker {
+        _id
+      }
+      patcher {
+        _id
+      }
+    }
   }
 `;
 
 function PostDetails({ match, history }) {
   const [comment, setComment] = useState('');
-  const [isBookingOpen, setIsBookingOpen] = useState(true);
-  const [dateType, setDateType] = useState(0);
-  console.log(dateType);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [dateNeed, setDateNeed] = useState(new Date());
   const [dateReturn, setDateReturn] = useState(new Date());
   const {
@@ -122,9 +114,6 @@ function PostDetails({ match, history }) {
   const { loading, error, data } = useQuery(GET_POST, {
     skip: !selCommunityId,
     variables: { postId: match.params.id, communityId: selCommunityId },
-    onCompleted: (data) => {
-      console.log(data);
-    },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -152,11 +141,11 @@ function PostDetails({ match, history }) {
       });
     },
   });
-  const [createNotification, { loading: mutationLoading }] = useMutation(
-    CREATE_NOTIFICATION,
+  const [createBooking, { loading: mutationLoading }] = useMutation(
+    CREATE_BOOKING,
     {
-      onCompleted: (data) => {
-        console.log(data);
+      onCompleted: () => {
+        history.push('/bookings');
       },
       onError: ({ message }) => {
         console.log(message);
@@ -211,61 +200,42 @@ function PostDetails({ match, history }) {
         style={MODAL_STYLE}
         onRequestClose={() => setIsBookingOpen(false)}
       >
-        <p className="modal-p">When do you need the item?</p>
-        <select name="dateType" onChange={(e) => setDateType(+e.target.value)}>
-          <option value="0">As soon as possible</option>
-          <option value="1">No timeframe</option>
-          <option value="2">Select timeframe</option>
-        </select>
-        {dateType === 2 && (
-          <>
-            <p className="modal-p">By when do you need it?</p>
-            <DatePicker
-              className="prev-input date"
-              selected={dateNeed}
-              onChange={(date) => setDateNeed(date)}
-              dateFormat="yyyy.MM.dd"
-              minDate={new Date()}
-            />
-            <p className="modal-p">When would like to return it?</p>
-            <DatePicker
-              className="prev-input date"
-              selected={dateReturn}
-              onChange={(date) => setDateReturn(date)}
-              dateFormat="yyyy.MM.dd"
-              minDate={dateNeed}
-            />
-          </>
-        )}
+        <p className="modal-p">By when do you need it?</p>
+        <DatePicker
+          className="prev-input date"
+          selected={dateNeed}
+          onChange={(date) => setDateNeed(date)}
+          dateFormat="yyyy.MM.dd"
+          minDate={new Date()}
+        />
+        <p className="modal-p">When would like to return it?</p>
+        <DatePicker
+          className="prev-input date"
+          selected={dateReturn}
+          onChange={(date) => setDateReturn(date)}
+          dateFormat="yyyy.MM.dd"
+          minDate={dateNeed}
+        />
         <button
-          className="modal-btn full"
           type="submit"
+          className="prev-btn block"
           onClick={(e) => {
             e.preventDefault();
-            createNotification({
+            createBooking({
               variables: {
-                notificationInput: {
-                  bookingInput: {
-                    postId: match.params.id,
-                    dateType,
-                    status: 0,
-                    ...(dateType === 2 && { dateNeed, dateReturn }),
-                  },
-                  onType: 0,
-                  recipientId: data.post.creator._id,
+                bookingInput: {
+                  dateNeed,
+                  dateReturn,
+                  status: 0,
+                  postId: data.post._id,
+                  ownerId: data.post.creator._id,
+                  communityId: selCommunityId,
                 },
               },
             });
           }}
         >
-          Borrow item
-        </button>
-        <button
-          className="modal-btn full bronze"
-          type="button"
-          onClick={() => setIsBookingOpen(false)}
-        >
-          Close
+          Confirm
         </button>
       </Modal>
       {mutationLoading && <Loading isCover />}
@@ -408,27 +378,6 @@ function PostDetails({ match, history }) {
                 flex: 2;
               }
             }
-          }
-        `}
-      </style>
-      <style jsx global>
-        {`
-          @import './src/assets/scss/index.scss';
-
-          select {
-            font-size: 18px;
-            padding-left: 10px;
-            color: $brown;
-            width: 300px;
-            height: 40px;
-            border-width: 0px;
-            background: $grey-200;
-            border-radius: 4px;
-            margin-bottom: 12px;
-
-            // @include sm {
-            //   width: 280px;
-            // }
           }
         `}
       </style>

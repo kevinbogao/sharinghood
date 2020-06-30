@@ -5,12 +5,12 @@ import { gql, useQuery, useMutation } from '@apollo/client';
 
 const GET_NOTIFICATIONS = gql`
   query GetNotifications {
-    notifications {
+    getNotifications {
       _id
-      onType
-      onDocId
-      content
-      isRead
+      # onType
+      # onDocId
+      # content
+      # isRead
     }
   }
 `;

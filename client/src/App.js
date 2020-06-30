@@ -25,6 +25,9 @@ import ForgotPassword from './views/User/ForgotPassword';
 import SelectCommunity from './views/Community/SelectCommunity';
 import EditPost from './views/Post/EditPost';
 
+import Notifications from './views/User/Notifications';
+import NotificationDetails from './views/User/NotificationDetails';
+
 function App() {
   return (
     <BrowserRouter>
@@ -50,6 +53,16 @@ function App() {
           <ProtectedRoute path="/share" component={CreatePost} />
           <ProtectedRoute path="/bookings" component={Bookings} />
           <ProtectedRoute path="/communities" component={SelectCommunity} />
+          <ProtectedRoute
+            exact
+            path="/notifications"
+            component={Notifications}
+          />
+          <ProtectedRoute
+            exact
+            path="/notifications/:id"
+            component={NotificationDetails}
+          />
           <ProtectedRoute exact path="/dashboard" component={Dashboard} />
           <ProtectedRoute
             exact

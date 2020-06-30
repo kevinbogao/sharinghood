@@ -145,48 +145,81 @@ const typeDefs = gql`
     text: String!
   }
 
+  # type Booking {
+  #   _id: ID!
+  #   post: Post
+  #   booker: User
+  #   dateType: Int
+  #   dateNeed: String
+  #   dateReturn: String
+  #   pickupTime: String
+  #   status: Int
+  #   patcher: User
+  #   community: Community
+  # }
+
   type Booking {
     _id: ID!
     post: Post
+    status: Int
     booker: User
+    dateType: Int
     dateNeed: String
     dateReturn: String
-    pickupTime: String
-    status: Int
-    patcher: User
-    community: Community
   }
 
+  # input BookingInput {
+  #   dateNeed: String
+  #   dateReturn: String
+  #   pickupTime: String
+  #   status: Int
+  #   ownerId: ID
+  #   postId: ID
+  #   notifyContent: String
+  #   notifyRecipientId: ID
+  #   communityId: ID
+  # }
+
   input BookingInput {
+    postId: ID
+    status: Int
+    dateType: Int
     dateNeed: String
     dateReturn: String
-    pickupTime: String
-    status: Int
-    ownerId: ID
-    postId: ID
-    notifyContent: String
-    notifyRecipientId: ID
-    communityId: ID
   }
+
+  # type Notification {
+  #   _id: ID!
+  #   onType: Int
+  #   onDocId: ID
+  #   content: String
+  #   recipient: User
+  #   creator: User
+  #   isRead: Boolean
+  # }
 
   type Notification {
     _id: ID!
     onType: Int
-    onDocId: ID
-    content: String
-    recipient: User
-    creator: User
-    isRead: Boolean
+    booking: Booking
+    participants: [User]
+    messages: [Message]
   }
 
   input NotificationInput {
-    notificationId: ID!
+    bookingInput: BookingInput
     onType: Int
-    content: String
     recipientId: ID
-    creatorId: ID
-    isRead: Boolean
   }
+
+  # input NotificationInput {
+  #   notificationId: ID!
+  #   onType: Int
+  #   content: String
+  #   recipientId: ID
+  #   creatorId: ID
+  #   isRead: Boolean
+  # }
 
   type TotalActivities {
     totalCommunities: Int
@@ -242,7 +275,9 @@ const typeDefs = gql`
     bookings(userId: ID): [Booking]
 
     # Notification
+    notification(notificationId: ID!): Notification
     notifications(userId: ID): [Notification]
+    getNotifications(userId: ID): [Notification]
 
     # Activity
     totalActivities: TotalActivities
@@ -293,6 +328,7 @@ const typeDefs = gql`
     updateBooking(bookingId: ID!, bookingInput: BookingInput!): Booking
 
     # Notification
+    createNotification(notificationInput: NotificationInput): Boolean
     updateNotification(notificationInput: NotificationInput!): Notification
 
     sentMail: Boolean

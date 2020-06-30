@@ -5,7 +5,6 @@ const User = require('../models/user');
 
 const communitiesResolvers = {
   Query: {
-    // community: async (_, { communityCode }, { user }) => {
     community: async (_, { communityId, communityCode }) => {
       try {
         // Find community by community code if communityCode is given

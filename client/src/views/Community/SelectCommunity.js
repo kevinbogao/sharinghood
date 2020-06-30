@@ -72,7 +72,6 @@ function SelectCommunity({ history, location }) {
   // in localStorage or user is only in one community.
   const { loading, error, data } = useQuery(GET_USER_COMMUNITIES, {
     onCompleted: ({ selCommunityId, communities }) => {
-      console.log(communities);
       // Check if selectedCommunityId exists in communities array
       const isIdInArray = communities.some(
         (community) => community._id === selCommunityId,

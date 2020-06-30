@@ -82,6 +82,8 @@ const bookingsResolvers = {
           },
         ]);
 
+        console.log(userBookings);
+
         return userBookings[0].bookings;
       } catch (err) {
         throw new Error(err);
@@ -91,11 +93,20 @@ const bookingsResolvers = {
   Mutation: {
     createBooking: async (
       _,
-      { bookingInput: { dateNeed, dateReturn, status, postId, ownerId } },
+      {
+        bookingInput: {
+          dateNeed,
+          dateReturn,
+          status,
+          postId,
+          ownerId,
+          communityId,
+        },
+      },
       { user }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { userId, userName, communityId } = user;
+      const { userId, userName } = user;
 
       try {
         // Save booking && find post, owner & booker

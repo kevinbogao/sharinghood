@@ -359,8 +359,9 @@ function Navbar() {
 
           .logo-icon {
             color: $green-100;
-            padding-top: 3px;
+            // padding-top: 3px;
             margin: auto 12px;
+            font-size: 22px;
           }
 
           .nav-menu-item {

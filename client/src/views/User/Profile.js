@@ -42,17 +42,11 @@ function Profile({ history }) {
   const [image, setImage] = useState(null);
   const [apartment, setApartment] = useState('');
   const { data, error, loading } = useQuery(GET_USER, {
-    onCompleted: () => {
-      console.log(data);
-    },
     onError: ({ message }) => {
       console.log(message);
     },
   });
   const [updateUser, { loading: mutationLoading }] = useMutation(UPDATE_USER, {
-    onError: ({ message }) => {
-      console.log(message);
-    },
     update(cache, { data: { updateUser } }) {
       cache.writeQuery({
         query: GET_USER,
@@ -61,6 +55,9 @@ function Profile({ history }) {
         },
       });
       history.push('/find');
+    },
+    onError: ({ message }) => {
+      console.log(message);
     },
   });
 
@@ -114,7 +111,7 @@ function Profile({ history }) {
           Pictures increase trust by 80%. Feel free to make your profile more
           trustworthy by uploading a picture.
         </p>
-        {data.user.posts.length && data.user.isAdmin && (
+        {data.user.posts.length > 0 && (
           <UserPosts posts={data.user.posts} history={history} />
         )}
         <p className="prev-p">Your name</p>

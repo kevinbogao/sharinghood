@@ -166,6 +166,7 @@ const typeDefs = gql`
     postId: ID
     notifyContent: String
     notifyRecipientId: ID
+    communityId: ID
   }
 
   type Notification {

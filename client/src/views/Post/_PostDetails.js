@@ -14,6 +14,7 @@ import Threads from '../../components/Threads';
 import Loading from '../../components/Loading';
 import NotFound from '../../components/NotFound';
 import ItemDetails from '../../components/ItemDetails';
+import { GET_POSTS } from './Posts';
 
 const CONDITIONS = ['New', 'Used but good', 'Used but little damaged'];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
@@ -86,6 +87,14 @@ const CREATE_THREAD = gql`
   }
 `;
 
+const DELETE_POST = gql`
+  mutation DeletePost($postId: ID!) {
+    deletePost(postId: $postId) {
+      _id
+    }
+  }
+`;
+
 const CREATE_BOOKING = gql`
   mutation CreateBooking($bookingInput: BookingInput!) {
     createBooking(bookingInput: $bookingInput) {
@@ -105,6 +114,7 @@ const CREATE_BOOKING = gql`
 
 function PostDetails({ match, history }) {
   const [comment, setComment] = useState('');
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [dateNeed, setDateNeed] = useState(new Date());
   const [dateReturn, setDateReturn] = useState(new Date());
@@ -139,6 +149,25 @@ function PostDetails({ match, history }) {
           },
         },
       });
+    },
+  });
+  const [deletePost] = useMutation(DELETE_POST, {
+    onError: ({ message }) => {
+      console.log(message);
+    },
+    update(cache, { data: { deletePost } }) {
+      const { posts } = cache.readQuery({
+        query: GET_POSTS,
+        variables: { communityId: selCommunityId },
+      });
+      cache.writeQuery({
+        query: GET_POSTS,
+        variables: { communityId: selCommunityId },
+        data: {
+          posts: posts.filter((post) => post._id !== deletePost._id),
+        },
+      });
+      history.push('/find');
     },
   });
   const [createBooking, { loading: mutationLoading }] = useMutation(
@@ -179,10 +208,10 @@ function PostDetails({ match, history }) {
           {data.post.creator._id === data.tokenPayload.userId ? (
             <button
               type="button"
-              className="item-btn book"
-              onClick={() => history.push(`/shared/${match.params.id}/edit`)}
+              className="item-btn delete"
+              onClick={() => setIsDeleteOpen(true)}
             >
-              Edit
+              Delete
             </button>
           ) : (
             <button
@@ -195,6 +224,34 @@ function PostDetails({ match, history }) {
           )}
         </div>
       </ItemDetails>
+      <Modal
+        isOpen={isDeleteOpen}
+        style={MODAL_STYLE}
+        onRequestClose={() => setIsDeleteOpen(false)}
+      >
+        <p className="modal-p">Are you sure you want to delete this post?</p>
+        <button
+          type="submit"
+          className="modal-btn"
+          onClick={(e) => {
+            e.preventDefault();
+            deletePost({
+              variables: {
+                postId: data.post._id,
+              },
+            });
+          }}
+        >
+          Yes
+        </button>
+        <button
+          type="button"
+          className="modal-btn"
+          onClick={() => setIsDeleteOpen(false)}
+        >
+          No
+        </button>
+      </Modal>
       <Modal
         isOpen={isBookingOpen}
         style={MODAL_STYLE}
@@ -229,7 +286,6 @@ function PostDetails({ match, history }) {
                   status: 0,
                   postId: data.post._id,
                   ownerId: data.post.creator._id,
-                  communityId: selCommunityId,
                 },
               },
             });

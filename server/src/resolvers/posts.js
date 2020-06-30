@@ -170,7 +170,6 @@ const postsResolvers = {
         if (desc) post.desc = desc;
         if (image && imgData) post.image = imgData;
         post.condition = condition; // 0 & bool conflict -> always update
-
         // Save & return post
         const updatedPost = await post.save();
         return updatedPost;
@@ -221,6 +220,7 @@ const postsResolvers = {
             { _id: communityId },
             { $pull: { posts: postId } }
           ),
+          User.updateOne({ _id: user.userId }, { $pull: { posts: postId } }),
           Thread.deleteMany({ _id: threads }),
           Booking.deleteMany({ _id: bookings }),
         ]);

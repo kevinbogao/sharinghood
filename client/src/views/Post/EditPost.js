@@ -54,6 +54,14 @@ const UPDATE_POST = gql`
   }
 `;
 
+const DELETE_POST = gql`
+  mutation DeletePost($postId: ID!) {
+    deletePost(postId: $postId) {
+      _id
+    }
+  }
+`;
+
 const ADD_POST_TO_COMMUNITY = gql`
   mutation AddPostToCommunity($postId: ID!, $communityId: ID!) {
     addPostToCommunity(postId: $postId, communityId: $communityId) {
@@ -68,7 +76,8 @@ function EditPost({ history, match }) {
   const [image, setImage] = useState(null);
   const [condition, setCondition] = useState('');
   const [communityArr, setCommunityArr] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { loading, error, data } = useQuery(GET_POST, {
     variables: { postId: match.params.id },
     onCompleted: ({ post, communities }) => {
@@ -165,6 +174,37 @@ function EditPost({ history, match }) {
     },
   });
 
+  // Delete user's post
+  const [deletePost] = useMutation(DELETE_POST, {
+    update(cache, { data: { deletePost } }) {
+      try {
+        // Loop over user's communities and query posts with community ids
+        // delete post from posts array
+        for (let i = 0; i < data.communities.length; i++) {
+          const { posts } = cache.readQuery({
+            query: GET_POSTS,
+            variables: { communityId: data.communities[i]._id },
+          });
+          cache.writeQuery({
+            query: GET_POSTS,
+            variables: { communityId: data.communities[i]._id },
+            data: {
+              posts: posts.filter((post) => post._id !== deletePost._id),
+            },
+          });
+        }
+      } catch (err) {
+        console.log(err);
+      }
+
+      // Redirect to posts page on complete
+      history.push('/find');
+    },
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
+
   return loading ? (
     <Loading />
   ) : error ? (
@@ -237,19 +277,26 @@ function EditPost({ history, match }) {
         <button
           className="login-btn"
           type="button"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsAddModalOpen(true)}
         >
           Share this item in another community
         </button>
         <button className="prev-btn" type="submit">
           Save
         </button>
+        <button
+          className="prev-btn red"
+          type="button"
+          onClick={() => setIsDeleteModalOpen(true)}
+        >
+          Delete
+        </button>
       </form>
       <Modal
-        isOpen={isModalOpen}
+        isOpen={isAddModalOpen}
         style={MODAL_STYLE}
         onRequestClose={() => {
-          setIsModalOpen(false);
+          setIsAddModalOpen(false);
         }}
       >
         {communityArr.length ? (
@@ -263,7 +310,7 @@ function EditPost({ history, match }) {
           <button
             key={community._id}
             type="submit"
-            className="modal-btn"
+            className="modal-btn full"
             onClick={(e) => {
               e.preventDefault();
               addPostToCommunity({
@@ -279,12 +326,40 @@ function EditPost({ history, match }) {
         ))}
         <button
           type="button"
-          className="modal-btn"
+          className="modal-btn full bronze"
           onClick={() => {
-            setIsModalOpen(false);
+            setIsAddModalOpen(false);
           }}
         >
           Close
+        </button>
+      </Modal>
+      <Modal
+        isOpen={isDeleteModalOpen}
+        style={MODAL_STYLE}
+        onRequestClose={() => setIsDeleteModalOpen(false)}
+      >
+        <p className="modal-p">Are you sure you want to delete this post?</p>
+        <button
+          type="submit"
+          className="modal-btn full red"
+          onClick={(e) => {
+            e.preventDefault();
+            deletePost({
+              variables: {
+                postId: data.post._id,
+              },
+            });
+          }}
+        >
+          Yes
+        </button>
+        <button
+          type="button"
+          className="modal-btn full"
+          onClick={() => setIsDeleteModalOpen(false)}
+        >
+          No
         </button>
       </Modal>
       {mutationLoading && <Loading isCover />}
@@ -379,7 +454,10 @@ function EditPost({ history, match }) {
   );
 }
 
+Modal.setAppElement('#root');
+
 EditPost.propTypes = {
+  communityId: PropTypes.string.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string.isRequired,
@@ -387,6 +465,7 @@ EditPost.propTypes = {
   }).isRequired,
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
+    push: PropTypes.func.isRequired,
   }).isRequired,
 };
 

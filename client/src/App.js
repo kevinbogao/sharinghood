@@ -112,13 +112,9 @@ function App() {
             font-size: 20px;
             width: 280px;
 
-            @include sm {
-              max-width: 280px;
-              width: calc(100% - 20px);
-
-              &.date {
-                width: 80vw;
-              }
+            &.modal {
+              margin-left: auto;
+              margin-right: auto;
             }
           }
 
@@ -257,6 +253,30 @@ function App() {
             height: initial;
             margin: 20px 20px 0 0;
             padding: 8px 15px;
+
+            &.full {
+              margin: 20px auto 20px auto;
+              display: block;
+              width: 300px;
+
+              &.red {
+                margin: 20px auto 20px auto;
+                background: $red-200;
+
+                &:hover {
+                  background: $red-100;
+                }
+              }
+
+              &.bronze {
+                margin: 20px auto 20px auto;
+                background: $bronze-200;
+
+                &:hover {
+                  background: $bronze-100;
+                }
+              }
+            }
 
             &.red {
               display: block;

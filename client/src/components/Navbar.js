@@ -5,20 +5,22 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUser,
   faBell,
+  faCaretDown,
   faSignOutAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import Notifications from './Notifications';
 import hamburger from '../assets/images/hamburger.png';
 
 const GET_TOKEN_PAYLOAD = gql`
-  {
+  query {
     tokenPayload @client
+    selCommunityId @client
   }
 `;
 
 const GET_COMMUNITY = gql`
-  query Community {
-    community {
+  query Community($communityId: ID) {
+    community(communityId: $communityId) {
       _id
       name
       code
@@ -31,6 +33,10 @@ const GET_COMMUNITY = gql`
         image
       }
     }
+    communities {
+      _id
+      name
+    }
   }
 `;
 
@@ -42,10 +48,15 @@ function Navbar() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const {
-    data: { tokenPayload },
+    data: { tokenPayload, selCommunityId },
+    refetch,
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { data } = useQuery(GET_COMMUNITY, {
-    skip: !tokenPayload,
+    skip: !tokenPayload || !selCommunityId,
+    variables: { communityId: selCommunityId },
+    onError: ({ message }) => {
+      console.log(message);
+    },
   });
 
   function handleClickOutside(e) {
@@ -88,14 +99,42 @@ function Navbar() {
       </div>
       <div className="nav-logo">
         <h1>
-          <Link to={tokenPayload ? '/find' : '/'}>
-            {data ? data.community.name : 'Sharinghood'}
+          <Link
+            to={
+              tokenPayload && selCommunityId
+                ? '/find'
+                : tokenPayload && !selCommunityId
+                ? '/communities'
+                : '/'
+            }
+          >
+            {data?.community?.name || 'Sharinghood'}
           </Link>
         </h1>
+        {data?.communities && (
+          <FontAwesomeIcon
+            className="logo-icon"
+            icon={faCaretDown}
+            onClick={() => {
+              client.writeQuery({
+                query: gql`
+                  query {
+                    selCommunityId
+                  }
+                `,
+                data: {
+                  selCommunityId: null,
+                },
+              });
+              localStorage.removeItem('@sharinghood:selCommunityId');
+              history.push('/communities');
+            }}
+          />
+        )}
       </div>
       <div className="nav-user">
         <div className="nav-user-content">
-          {tokenPayload ? (
+          {!!tokenPayload ? (
             <div className="nav-icons">
               <FontAwesomeIcon
                 className="nav-icon"
@@ -122,22 +161,19 @@ function Navbar() {
                 className="nav-icon"
                 icon={faSignOutAlt}
                 onClick={() => {
-                  client.writeQuery({
-                    query: gql`
-                      {
-                        accessToken
-                        refreshToken
-                        tokenPayload
-                      }
-                    `,
-                    data: {
-                      accessToken: null,
-                      refreshToken: null,
-                      tokenPayload: null,
-                    },
-                  });
+                  // Clear localStorage
                   localStorage.removeItem('@sharinghood:accessToken');
                   localStorage.removeItem('@sharinghood:refreshToken');
+                  localStorage.removeItem('@sharinghood:selCommunityId');
+
+                  // Clear loacl cache
+                  client.clearStore();
+
+                  // Fetch tokenPayload to clean local state
+                  refetch();
+
+                  // Return to login page
+                  history.push('/login');
                 }}
               />
             </div>
@@ -176,15 +212,15 @@ function Navbar() {
             Dashboard
           </NavLink>
         )}
-        {data && data.community.creator._id === tokenPayload.userId && (
+        {data?.community?.creator._id === tokenPayload?.userId && (
           <div className="nav-menu-item invite">
             <NavLink
               className="invite-btn"
               to={{
                 pathname: '/community-link',
                 state: {
-                  communityId: data.community._id,
-                  communityCode: data.community.code,
+                  communityId: data?.community?._id,
+                  communityCode: data?.community?.code,
                   isRegistered: true,
                 },
               }}
@@ -217,7 +253,7 @@ function Navbar() {
             }
 
             .nav-logo {
-              // flex: 1;
+              display: flex;
 
               h1 {
                 font-size: 26px;
@@ -227,6 +263,9 @@ function Navbar() {
 
                 @include sm {
                   font-size: 21px;
+                  width: 120px;
+                  white-space: nowrap;
+                  overflow: hidden;
                 }
               }
             }
@@ -318,6 +357,13 @@ function Navbar() {
             }
           }
 
+          .logo-icon {
+            color: $green-100;
+            // padding-top: 3px;
+            margin: auto 12px;
+            font-size: 22px;
+          }
+
           .nav-menu-item {
             display: block;
             line-height: 60px;
@@ -355,4 +401,4 @@ function Navbar() {
   );
 }
 
-export default Navbar;
+export { GET_COMMUNITY, Navbar };

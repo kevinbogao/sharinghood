@@ -9,7 +9,7 @@ const threadsResolvers = {
   Mutation: {
     createThread: async (
       _,
-      { threadInput: { content, isPost, parentId, recipientId } },
+      { threadInput: { content, isPost, parentId, recipientId, communityId } },
       { user }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
@@ -21,6 +21,7 @@ const threadsResolvers = {
           Thread.create({
             content,
             poster: userId,
+            community: communityId,
           }),
           isPost ? Post.findById(parentId) : Request.findById(parentId),
         ]);

@@ -21,6 +21,7 @@ const GET_ACTIVITIES = gql`
       communitiesActivities {
         _id
         name
+        code
         numUsers
         numPosts
         numRequests
@@ -37,9 +38,9 @@ function Dashboard({ location, history }) {
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { loading, error, data } = useQuery(GET_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
-    // onCompleted: (data) => {
-    //   console.log(data);
-    // },
+    onCompleted: (data) => {
+      console.log(data);
+    },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -53,12 +54,12 @@ function Dashboard({ location, history }) {
     <Redirect to={from} />
   ) : (
     <div className="dashboard-control">
-      <div className="cad-overview">
-        <div className="cad-overview-highlight">
+      <div className="dashboard-overview">
+        <div className="dashboard-overview-highlight">
           <h1>{data.totalActivities.totalCommunities}</h1>
           <h3>Total Communities</h3>
         </div>
-        <div className="cad-overview-stats">
+        <div className="dashboard-overview-stats">
           <div className="stat-unclickable">
             <h2>{data.totalActivities.totalUsers}</h2>
             <h4>Total Users</h4>
@@ -79,9 +80,10 @@ function Dashboard({ location, history }) {
       </div>
       <table>
         <thead>
-          <tr className="cad-table-header">
+          <tr className="dashboard-table-header">
             <th>Community ID</th>
             <th>Community Name</th>
+            <th>Community Code</th>
             <th>Users</th>
             <th>Posts</th>
             <th>Requests</th>
@@ -93,13 +95,14 @@ function Dashboard({ location, history }) {
             (communityActivities) => (
               <tr
                 key={communityActivities._id}
-                className="cad-table-row"
+                className="dashboard-table-row"
                 onClick={() => {
                   history.push(`/dashboard/${communityActivities._id}`);
                 }}
               >
                 <td>{communityActivities._id}</td>
                 <td>{communityActivities.name}</td>
+                <td>{communityActivities.code}</td>
                 <td>{communityActivities.numUsers}</td>
                 <td>{communityActivities.numPosts}</td>
                 <td>{communityActivities.numRequests}</td>
@@ -129,7 +132,7 @@ function Dashboard({ location, history }) {
               font-weight: bold;
             }
 
-            .cad-overview {
+            .dashboard-overview {
               width: 100%;
               text-align: center;
               margin: 0 auto;
@@ -138,7 +141,7 @@ function Dashboard({ location, history }) {
               background-color: $green-200;
               color: $white;
 
-              .cad-overview-highlight {
+              .dashboard-overview-highlight {
                 padding: 10px 0px;
 
                 h4 {
@@ -146,7 +149,7 @@ function Dashboard({ location, history }) {
                 }
               }
 
-              .cad-overview-stats {
+              .dashboard-overview-stats {
                 width: 100%;
                 display: flex;
                 flex-wrap: wrap;
@@ -175,7 +178,7 @@ function Dashboard({ location, history }) {
               border-collapse: collapse;
             }
 
-            .cad-table-header {
+            .dashboard-table-header {
               height: 40px;
               background-color: white;
 
@@ -197,7 +200,7 @@ function Dashboard({ location, history }) {
             th {
               align-items: center;
 
-              .cad-sort-icons {
+              .dashboard-sort-icons {
                 font-size: 12px;
                 padding-left: 8px;
               }

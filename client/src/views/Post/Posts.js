@@ -1,12 +1,13 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
 import ItemsGrid from '../../components/ItemsGrid';
 import Loading from '../../components/Loading';
 
 const GET_POSTS = gql`
-  query Posts {
-    posts {
+  query Posts($communityId: ID!) {
+    posts(communityId: $communityId) {
       _id
       title
       image
@@ -18,8 +19,10 @@ const GET_POSTS = gql`
   }
 `;
 
-function Posts() {
+function Posts({ communityId }) {
   const { loading, error, data } = useQuery(GET_POSTS, {
+    skip: !communityId,
+    variables: { communityId },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -31,7 +34,7 @@ function Posts() {
     `Error ${error.message}`
   ) : (
     <ItemsGrid isPost>
-      {data.posts.map((post) => (
+      {data?.posts?.map((post) => (
         <div key={post._id} className="item-card">
           <Link
             to={{
@@ -107,5 +110,9 @@ function Posts() {
     </ItemsGrid>
   );
 }
+
+Posts.propTypes = {
+  communityId: PropTypes.string.isRequired,
+};
 
 export { GET_POSTS, Posts };

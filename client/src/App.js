@@ -4,7 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './views/Home';
 import { Posts } from './views/Post/Posts';
 import Chats from './views/Chat/Chats';
-import Navbar from './components/Navbar';
+import { Navbar } from './components/Navbar';
 import Profile from './views/User/Profile';
 import Login from './views/User/Login';
 import Register from './views/User/Register';
@@ -22,6 +22,8 @@ import CreateCommunity from './views/Community/CreateCommunity';
 import CommunityExists from './views/Community/CommunityExists';
 import ResetPassword from './views/User/ResetPassword';
 import ForgotPassword from './views/User/ForgotPassword';
+import SelectCommunity from './views/Community/SelectCommunity';
+import EditPost from './views/Post/EditPost';
 
 function App() {
   return (
@@ -47,6 +49,7 @@ function App() {
           <ProtectedRoute path="/profile" component={Profile} />
           <ProtectedRoute path="/share" component={CreatePost} />
           <ProtectedRoute path="/bookings" component={Bookings} />
+          <ProtectedRoute path="/communities" component={SelectCommunity} />
           <ProtectedRoute exact path="/dashboard" component={Dashboard} />
           <ProtectedRoute
             exact
@@ -54,7 +57,8 @@ function App() {
             component={DashboardDetails}
           />
           <ProtectedRoute path="/request" component={CreateRequest} />
-          <ProtectedRoute path="/shared/:id" component={PostDetails} />
+          <ProtectedRoute exact path="/shared/:id" component={PostDetails} />
+          <ProtectedRoute exact path="/shared/:id/edit" component={EditPost} />
           <ProtectedRoute exact path="/requests" component={Requests} />
           <ProtectedRoute
             exact
@@ -108,13 +112,9 @@ function App() {
             font-size: 20px;
             width: 280px;
 
-            @include sm {
-              max-width: 280px;
-              width: calc(100% - 20px);
-
-              &.date {
-                width: 80vw;
-              }
+            &.modal {
+              margin-left: auto;
+              margin-right: auto;
             }
           }
 
@@ -149,6 +149,24 @@ function App() {
             &.block {
               display: block;
               margin: 30px auto auto auto;
+            }
+
+            &.bronze {
+              background: $bronze-200;
+
+              &:hover {
+                cursor: pointer;
+                background: $bronze-100;
+              }
+            }
+
+            &.red {
+              background: $red-200;
+
+              &:hover {
+                cursor: pointer;
+                background: $red-100;
+              }
             }
 
             &:hover {
@@ -235,6 +253,30 @@ function App() {
             height: initial;
             margin: 20px 20px 0 0;
             padding: 8px 15px;
+
+            &.full {
+              margin: 20px auto 20px auto;
+              display: block;
+              width: 300px;
+
+              &.red {
+                margin: 20px auto 20px auto;
+                background: $red-200;
+
+                &:hover {
+                  background: $red-100;
+                }
+              }
+
+              &.bronze {
+                margin: 20px auto 20px auto;
+                background: $bronze-200;
+
+                &:hover {
+                  background: $bronze-100;
+                }
+              }
+            }
 
             &.red {
               display: block;

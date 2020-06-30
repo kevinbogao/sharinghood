@@ -48,10 +48,13 @@ const GET_REQUEST = gql`
         poster {
           _id
         }
+        community {
+          _id
+        }
       }
     }
     tokenPayload @client
-    community @client {
+    community(communityId: $communityId) @client {
       members {
         _id
         name
@@ -81,11 +84,11 @@ const DELETE_REQUEST = gql`
   }
 `;
 
-function RequestDetails({ match, history }) {
+function RequestDetails({ communityId, match, history }) {
   const [comment, setComment] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { loading, error, data } = useQuery(GET_REQUEST, {
-    variables: { requestId: match.params.id },
+    variables: { requestId: match.params.id, communityId },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -100,7 +103,7 @@ function RequestDetails({ match, history }) {
     update(cache, { data: { createThread } }) {
       const { request } = cache.readQuery({
         query: GET_REQUEST,
-        variables: { requestId: data.request._id },
+        variables: { requestId: data.request._id, communityId },
       });
       cache.writeQuery({
         query: GET_REQUEST,
@@ -120,9 +123,13 @@ function RequestDetails({ match, history }) {
         console.log(message);
       },
       update(store, { data: { deleteRequest } }) {
-        const { requests } = store.readQuery({ query: GET_REQUESTS });
+        const { requests } = store.readQuery({
+          query: GET_REQUESTS,
+          variables: { communityId },
+        });
         store.writeQuery({
           query: GET_REQUESTS,
+          variables: { communityId },
           data: {
             requests: requests.filter(
               (request) => request._id !== deleteRequest._id,
@@ -212,6 +219,7 @@ function RequestDetails({ match, history }) {
       <Threads
         threads={data.request.threads}
         members={data.community.members}
+        communityId={communityId}
       />
       <div className="new-thread-control">
         {data.community.members
@@ -237,6 +245,7 @@ function RequestDetails({ match, history }) {
                             isPost: false,
                             parentId: data.request._id,
                             recipientId: data.request.creator._id,
+                            communityId,
                           },
                         },
                       });
@@ -356,6 +365,7 @@ function RequestDetails({ match, history }) {
 }
 
 RequestDetails.propTypes = {
+  communityId: PropTypes.string.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string.isRequired,

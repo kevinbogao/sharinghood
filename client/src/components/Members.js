@@ -3,10 +3,16 @@ import { gql, useQuery } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDoubleLeft } from '@fortawesome/free-solid-svg-icons';
 
+const GET_COMMUNITY_ID = gql`
+  query {
+    selCommunityId @client
+  }
+`;
+
 const GET_MEMBERS = gql`
   {
     tokenPayload @client
-    community @client {
+    community(communityId: $communityId) @client {
       members {
         _id
         name
@@ -19,7 +25,13 @@ const GET_MEMBERS = gql`
 function Members() {
   const node = useRef();
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data } = useQuery(GET_MEMBERS);
+  const {
+    data: { selCommunityId },
+  } = useQuery(GET_COMMUNITY_ID);
+  const { data } = useQuery(GET_MEMBERS, {
+    skip: !selCommunityId,
+    variables: { communityId: selCommunityId },
+  });
 
   function handleClickOutside(e) {
     if (node.current.contains(e.target)) {
@@ -47,26 +59,24 @@ function Members() {
         onClick={() => setIsExpanded(!isExpanded)}
       />
       <div className="members-content">
-        {data && data.community.members.length < 2 ? (
+        {data?.community?.members?.length < 2 ? (
           <p>You are the only member in your community.</p>
         ) : (
           <p>
-            {data && data.community.members.length - 1} members in your
-            community
+            {data?.community?.members?.length - 1} members in your community
           </p>
         )}
         <div className="members-icon">
-          {data &&
-            data.community.members
-              .filter((member) => member._id !== data.tokenPayload.userId)
-              .map((member) => (
-                <div key={member._id} className="member-icon">
-                  {isExpanded && (
-                    <span className="icon-tooltip">{member.name}</span>
-                  )}
-                  <img src={JSON.parse(member.image).secure_url} alt="" />
-                </div>
-              ))}
+          {data?.community?.members
+            .filter((member) => member._id !== data.tokenPayload.userId)
+            .map((member) => (
+              <div key={member._id} className="member-icon">
+                {isExpanded && (
+                  <span className="icon-tooltip">{member.name}</span>
+                )}
+                <img src={JSON.parse(member.image).secure_url} alt="" />
+              </div>
+            ))}
         </div>
       </div>
       <style jsx global>

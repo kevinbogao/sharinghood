@@ -1,27 +1,32 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 
-function Threads({ threads, members }) {
+function Threads({ threads, members, communityId }) {
   return (
     <div className="threads-container">
-      {threads.map((thread) => (
-        <Fragment key={thread._id}>
-          <div className="thread-control">
-            {members
-              .filter((member) => member._id === thread.poster._id)
-              .map((member) => (
-                <Fragment key={member._id}>
-                  <img src={JSON.parse(member.image).secure_url} alt="Member" />
-                  <div className="thread-content">
-                    <span className="prev-p">{member.name}</span>
-                    <p>{thread.content}</p>
-                  </div>
-                </Fragment>
-              ))}
-          </div>
-          <div className="item-separator" />
-        </Fragment>
-      ))}
+      {threads
+        .filter((thread) => thread.community._id === communityId)
+        .map((thread) => (
+          <Fragment key={thread._id}>
+            <div className="thread-control">
+              {members
+                .filter((member) => member._id === thread.poster._id)
+                .map((member) => (
+                  <Fragment key={member._id}>
+                    <img
+                      src={JSON.parse(member.image).secure_url}
+                      alt="Member"
+                    />
+                    <div className="thread-content">
+                      <span className="prev-p">{member.name}</span>
+                      <p>{thread.content}</p>
+                    </div>
+                  </Fragment>
+                ))}
+            </div>
+            <div className="item-separator" />
+          </Fragment>
+        ))}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -66,6 +71,7 @@ function Threads({ threads, members }) {
 }
 
 Threads.propTypes = {
+  communityId: PropTypes.string.isRequired,
   threads: PropTypes.arrayOf(
     PropTypes.shape({
       _id: PropTypes.string.isRequired,

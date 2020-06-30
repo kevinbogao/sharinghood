@@ -48,9 +48,8 @@ const postsResolvers = {
         throw err;
       }
     },
-    posts: async (_, __, { user }) => {
+    posts: async (_, { communityId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { communityId } = user;
 
       try {
         // Get all posts from given community
@@ -94,11 +93,11 @@ const postsResolvers = {
   Mutation: {
     createPost: async (
       _,
-      { postInput: { title, desc, image, condition, isGiveaway } },
+      { postInput: { title, desc, image, condition, isGiveaway }, communityId },
       { user }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { userId, userName, communityId } = user;
+      const { userId, userName } = user;
 
       try {
         // Upload image to Cloudinary
@@ -113,7 +112,6 @@ const postsResolvers = {
             isGiveaway,
             image: imgData,
             creator: userId,
-            community: communityId,
           }),
           User.findById(userId),
         ]);
@@ -127,14 +125,18 @@ const postsResolvers = {
             creator: userId,
             isRead: false,
           }),
-          Community.findById(communityId),
+          communityId && Community.findById(communityId),
         ]);
 
         // Save postId & notificationId to community && postId to creator
-        community.posts.push(post);
-        community.notifications.push(notification);
+        // Only save to community if communityId is given, i.e user is
+        // uploading the post to a specific community
+        if (communityId) {
+          community.posts.push(post);
+          community.notifications.push(notification);
+        }
         creator.posts.push(post);
-        await Promise.all([community.save(), creator.save()]);
+        await Promise.all([communityId && community.save(), creator.save()]);
 
         return {
           ...post._doc,
@@ -146,6 +148,58 @@ const postsResolvers = {
       } catch (err) {
         console.log(err);
         throw err;
+      }
+    },
+    updatePost: async (
+      _,
+      { postInput: { postId, title, desc, image, condition } },
+      { user }
+    ) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
+      try {
+        // Find post by id
+        const post = await Post.findById(postId);
+
+        // Upload image if it exists
+        let imgData;
+        if (image) imgData = await uploadImg(image);
+
+        // Conditionally update post
+        if (title) post.title = title;
+        if (desc) post.desc = desc;
+        if (image && imgData) post.image = imgData;
+        post.condition = condition; // 0 & bool conflict -> always update
+
+        // Save & return post
+        const updatedPost = await post.save();
+        return updatedPost;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
+    inactivatePost: async (_, { postId }, { user }) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
+      try {
+        const userInfo = await User.findById(user.userId);
+
+        // Find user's communities and remove post from
+        // all communities' posts array
+        await Community.updateMany(
+          {
+            _id: { $in: userInfo.communities },
+          },
+          {
+            $pull: { posts: postId },
+          }
+        );
+
+        return true;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
       }
     },
     deletePost: async (_, { postId }, { user }) => {
@@ -167,6 +221,7 @@ const postsResolvers = {
             { _id: communityId },
             { $pull: { posts: postId } }
           ),
+          User.updateOne({ _id: user.userId }, { $pull: { posts: postId } }),
           Thread.deleteMany({ _id: threads }),
           Booking.deleteMany({ _id: bookings }),
         ]);
@@ -175,6 +230,20 @@ const postsResolvers = {
       } catch (err) {
         console.log(err);
         throw err;
+      }
+    },
+    addPostToCommunity: async (_, { postId, communityId }) => {
+      try {
+        // Get community by id and add post if to the community's
+        // posts array; return community
+        const community = await Community.findById(communityId);
+        community.posts.push(postId);
+        await community.save();
+
+        return community;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
       }
     },
   },

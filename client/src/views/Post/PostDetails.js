@@ -14,7 +14,6 @@ import Threads from '../../components/Threads';
 import Loading from '../../components/Loading';
 import NotFound from '../../components/NotFound';
 import ItemDetails from '../../components/ItemDetails';
-import { GET_POSTS } from './Posts';
 
 const CONDITIONS = ['New', 'Used but good', 'Used but little damaged'];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
@@ -30,6 +29,12 @@ const MODAL_STYLE = {
     padding: '20px 50px 230px 50px',
   },
 };
+
+const GET_COMMUNITY_ID = gql`
+  query {
+    selCommunityId @client
+  }
+`;
 
 const GET_POST = gql`
   query Post($postId: ID!) {
@@ -53,10 +58,13 @@ const GET_POST = gql`
         poster {
           _id
         }
+        community {
+          _id
+        }
       }
     }
     tokenPayload @client
-    community @client {
+    community(communityId: $communityId) @client {
       members {
         _id
         name
@@ -74,14 +82,6 @@ const CREATE_THREAD = gql`
       poster {
         _id
       }
-    }
-  }
-`;
-
-const DELETE_POST = gql`
-  mutation DeletePost($postId: ID!) {
-    deletePost(postId: $postId) {
-      _id
     }
   }
 `;
@@ -105,12 +105,15 @@ const CREATE_BOOKING = gql`
 
 function PostDetails({ match, history }) {
   const [comment, setComment] = useState('');
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [dateNeed, setDateNeed] = useState(new Date());
   const [dateReturn, setDateReturn] = useState(new Date());
+  const {
+    data: { selCommunityId },
+  } = useQuery(GET_COMMUNITY_ID);
   const { loading, error, data } = useQuery(GET_POST, {
-    variables: { postId: match.params.id },
+    skip: !selCommunityId,
+    variables: { postId: match.params.id, communityId: selCommunityId },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -125,7 +128,7 @@ function PostDetails({ match, history }) {
     update(cache, { data: { createThread } }) {
       const { post } = cache.readQuery({
         query: GET_POST,
-        variables: { postId: data.post._id },
+        variables: { postId: data.post._id, communityId: selCommunityId },
       });
       cache.writeQuery({
         query: GET_POST,
@@ -136,21 +139,6 @@ function PostDetails({ match, history }) {
           },
         },
       });
-    },
-  });
-  const [deletePost] = useMutation(DELETE_POST, {
-    onError: ({ message }) => {
-      console.log(message);
-    },
-    update(store, { data: { deletePost } }) {
-      const { posts } = store.readQuery({ query: GET_POSTS });
-      store.writeQuery({
-        query: GET_POSTS,
-        data: {
-          posts: posts.filter((post) => post._id !== deletePost._id),
-        },
-      });
-      history.push('/find');
     },
   });
   const [createBooking, { loading: mutationLoading }] = useMutation(
@@ -191,10 +179,10 @@ function PostDetails({ match, history }) {
           {data.post.creator._id === data.tokenPayload.userId ? (
             <button
               type="button"
-              className="item-btn delete"
-              onClick={() => setIsDeleteOpen(true)}
+              className="item-btn book"
+              onClick={() => history.push(`/shared/${match.params.id}/edit`)}
             >
-              Delete
+              Edit
             </button>
           ) : (
             <button
@@ -207,34 +195,6 @@ function PostDetails({ match, history }) {
           )}
         </div>
       </ItemDetails>
-      <Modal
-        isOpen={isDeleteOpen}
-        style={MODAL_STYLE}
-        onRequestClose={() => setIsDeleteOpen(false)}
-      >
-        <p className="modal-p">Are you sure you want to delete this post?</p>
-        <button
-          type="submit"
-          className="modal-btn"
-          onClick={(e) => {
-            e.preventDefault();
-            deletePost({
-              variables: {
-                postId: data.post._id,
-              },
-            });
-          }}
-        >
-          Yes
-        </button>
-        <button
-          type="button"
-          className="modal-btn"
-          onClick={() => setIsDeleteOpen(false)}
-        >
-          No
-        </button>
-      </Modal>
       <Modal
         isOpen={isBookingOpen}
         style={MODAL_STYLE}
@@ -269,6 +229,7 @@ function PostDetails({ match, history }) {
                   status: 0,
                   postId: data.post._id,
                   ownerId: data.post.creator._id,
+                  communityId: selCommunityId,
                 },
               },
             });
@@ -278,7 +239,11 @@ function PostDetails({ match, history }) {
         </button>
       </Modal>
       {mutationLoading && <Loading isCover />}
-      <Threads threads={data.post.threads} members={data.community.members} />
+      <Threads
+        threads={data.post.threads}
+        members={data.community.members}
+        communityId={selCommunityId}
+      />
       <div className="new-thread-control">
         {data.community.members
           .filter((member) => member._id === data.tokenPayload.userId)
@@ -303,6 +268,7 @@ function PostDetails({ match, history }) {
                             isPost: true,
                             parentId: data.post._id,
                             recipientId: data.post.creator._id,
+                            communityId: selCommunityId,
                           },
                         },
                       });

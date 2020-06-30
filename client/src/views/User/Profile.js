@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import Loading from '../../components/Loading';
+import UserPosts from '../../components/UserPosts';
 
 const GET_USER = gql`
   query User {
@@ -11,6 +12,15 @@ const GET_USER = gql`
       name
       email
       apartment
+      isAdmin
+      communities {
+        _id
+      }
+      posts {
+        _id
+        title
+        image
+      }
     }
   }
 `;
@@ -31,11 +41,12 @@ function Profile({ history }) {
   const [name, setName] = useState('');
   const [image, setImage] = useState(null);
   const [apartment, setApartment] = useState('');
-  const { data, error, loading } = useQuery(GET_USER);
-  const [updateUser, { loading: mutationLoading }] = useMutation(UPDATE_USER, {
+  const { data, error, loading } = useQuery(GET_USER, {
     onError: ({ message }) => {
       console.log(message);
     },
+  });
+  const [updateUser, { loading: mutationLoading }] = useMutation(UPDATE_USER, {
     update(cache, { data: { updateUser } }) {
       cache.writeQuery({
         query: GET_USER,
@@ -44,6 +55,9 @@ function Profile({ history }) {
         },
       });
       history.push('/find');
+    },
+    onError: ({ message }) => {
+      console.log(message);
     },
   });
 
@@ -56,7 +70,7 @@ function Profile({ history }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          // Redirect to /find if no changes were made
+          // Redirect to posts page if no changes were made
           if (!name && !apartment && !image) {
             history.push('/find');
           } else {
@@ -97,6 +111,9 @@ function Profile({ history }) {
           Pictures increase trust by 80%. Feel free to make your profile more
           trustworthy by uploading a picture.
         </p>
+        {data.user.posts.length > 0 && (
+          <UserPosts posts={data.user.posts} history={history} />
+        )}
         <p className="prev-p">Your name</p>
         <input
           className="prev-input"
@@ -123,6 +140,11 @@ function Profile({ history }) {
           .profile-control {
             margin: auto;
 
+            @include sm {
+              max-width: 300px;
+              width: 80vw;
+            }
+
             .image-upload > input {
               display: none;
             }
@@ -133,11 +155,6 @@ function Profile({ history }) {
               width: 100px;
               border-radius: 50%;
               box-shadow: 1px 1px 1px 1px #eeeeee;
-            }
-
-            @include sm {
-              max-width: 300px;
-              width: 80vw;
             }
 
             h2 {
@@ -156,6 +173,10 @@ function Profile({ history }) {
             .prev-p {
               margin: 20px auto;
               max-width: 300px;
+
+              &.bronze {
+                color: $bronze-200;
+              }
             }
 
             .prev-btn {

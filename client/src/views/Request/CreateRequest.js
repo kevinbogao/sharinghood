@@ -9,8 +9,8 @@ import uploadImg from '../../assets/images/upload.png';
 import { GET_REQUESTS } from './Requests';
 
 const CREATE_REQUEST = gql`
-  mutation CreateRequest($requestInput: RequestInput!) {
-    createRequest(requestInput: $requestInput) {
+  mutation CreateRequest($requestInput: RequestInput!, $communityId: ID!) {
+    createRequest(requestInput: $requestInput, communityId: $communityId) {
       _id
       desc
       image
@@ -23,7 +23,7 @@ const CREATE_REQUEST = gql`
   }
 `;
 
-function CreateRequest({ history }) {
+function CreateRequest({ communityId, history }) {
   let title, desc;
   const [image, setImage] = useState(null);
   const [dateNeed, setDateNeed] = useState(new Date());
@@ -38,9 +38,11 @@ function CreateRequest({ history }) {
       try {
         const { requests } = cache.readQuery({
           query: GET_REQUESTS,
+          variables: { communityId },
         });
         cache.writeQuery({
           query: GET_REQUESTS,
+          variables: { communityId },
           data: { requests: requests.concat([createRequest]) },
         });
       } catch (err) {
@@ -75,6 +77,7 @@ function CreateRequest({ history }) {
                   dateNeed,
                   dateReturn,
                 },
+                communityId,
               },
             });
           }
@@ -184,6 +187,7 @@ function CreateRequest({ history }) {
 }
 
 CreateRequest.propTypes = {
+  communityId: PropTypes.string.isRequired,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,

@@ -47,6 +47,7 @@ const activitiesResolvers = {
             $project: {
               _id: 1,
               name: 1,
+              code: 1,
               numUsers: { $size: '$members' },
               numPosts: { $size: '$posts' },
               numRequests: { $size: '$requests' },

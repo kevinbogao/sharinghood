@@ -7,8 +7,8 @@ import Loading from '../../components/Loading';
 import { GET_POSTS } from './Posts';
 
 const CREATE_POST = gql`
-  mutation CreatePost($postInput: PostInput!) {
-    createPost(postInput: $postInput) {
+  mutation CreatePost($postInput: PostInput!, $communityId: ID) {
+    createPost(postInput: $postInput, communityId: $communityId) {
       _id
       title
       desc
@@ -21,7 +21,7 @@ const CREATE_POST = gql`
   }
 `;
 
-function CreatePost({ history }) {
+function CreatePost({ communityId, history }) {
   let title, desc, isGiveaway;
   const [image, setImage] = useState(null);
   const [condition, setCondition] = useState(0);
@@ -35,9 +35,11 @@ function CreatePost({ history }) {
       try {
         const { posts } = cache.readQuery({
           query: GET_POSTS,
+          variables: { communityId },
         });
         cache.writeQuery({
           query: GET_POSTS,
+          variables: { communityId },
           data: { posts: posts.concat([createPost]) },
         });
       } catch (err) {
@@ -72,6 +74,7 @@ function CreatePost({ history }) {
                   condition: +condition,
                   isGiveaway: isGiveaway.checked,
                 },
+                communityId,
               },
             });
           }
@@ -221,6 +224,7 @@ function CreatePost({ history }) {
 }
 
 CreatePost.propTypes = {
+  communityId: PropTypes.string.isRequired,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
     location: PropTypes.shape({

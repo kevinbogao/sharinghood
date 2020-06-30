@@ -7,6 +7,12 @@ import ChatDetails from './ChatDetails';
 import CreateChat from './CreateChat';
 import Loading from '../../components/Loading';
 
+const GET_COMMUNITY_ID = gql`
+  query {
+    selCommunityId @client
+  }
+`;
+
 const GET_CHATS = gql`
   query Chats {
     chats {
@@ -19,7 +25,7 @@ const GET_CHATS = gql`
       updatedAt
     }
     tokenPayload @client
-    community @client {
+    community(communityId: $communityId) @client {
       members {
         _id
         name
@@ -32,7 +38,14 @@ const GET_CHATS = gql`
 function Chats({ history }) {
   const [selectedChat, setSelectedChat] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const {
+    data: { selCommunityId },
+  } = useQuery(GET_COMMUNITY_ID);
   const { loading, error, data } = useQuery(GET_CHATS, {
+    skip: !selCommunityId,
+    variables: {
+      communityId: selCommunityId,
+    },
     onCompleted: ({ chats }) => {
       // Select first chat if chats is not empty
       if (chats.length) {

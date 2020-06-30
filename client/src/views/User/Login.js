@@ -1,39 +1,32 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Redirect, Link } from 'react-router-dom';
-import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
+import { Link } from 'react-router-dom';
+import { gql, useMutation, useApolloClient } from '@apollo/client';
 import jwtDecode from 'jwt-decode';
 import InlineError from '../../components/InlineError';
 import Loading from '../../components/Loading';
 
-const GET_ACCESS_TOKEN = gql`
-  {
-    accessToken @client
-  }
-`;
-
 const LOGIN = gql`
-  mutation Login($email: String!, $password: String!) {
-    login(email: $email, password: $password) {
+  mutation Login($email: String!, $password: String!, $communityId: ID) {
+    login(email: $email, password: $password, communityId: $communityId) {
       accessToken
       refreshToken
     }
   }
 `;
 
-function Login({ location, history }) {
+function Login({ history, location }) {
+  // Get communityId from props if user is directed from CommunityExists
+  // else set it as null
+  const { communityId } = location.state || { communityId: null };
   const client = useApolloClient();
   let email, password;
   const [error, setError] = useState({});
-  const { from } = location.state || { from: { pathname: '/' } };
-  const {
-    data: { accessToken },
-  } = useQuery(GET_ACCESS_TOKEN);
   const [login, { loading: mutationLoading }] = useMutation(LOGIN, {
-    onCompleted: ({ login }) => {
+    onCompleted: async ({ login }) => {
+      const tokenPayload = jwtDecode(login.accessToken);
       localStorage.setItem('@sharinghood:accessToken', login.accessToken);
       localStorage.setItem('@sharinghood:refreshToken', login.refreshToken);
-      const tokenPayload = jwtDecode(login.accessToken);
       client.writeQuery({
         query: gql`
           {
@@ -48,7 +41,12 @@ function Login({ location, history }) {
           tokenPayload,
         },
       });
-      history.push('/find');
+      history.push({
+        pathname: '/communities',
+        state: {
+          fromLogin: true,
+        },
+      });
     },
     onError: ({ message }) => {
       setError({ password: message });
@@ -65,9 +63,7 @@ function Login({ location, history }) {
     return errors;
   }
 
-  return accessToken ? (
-    <Redirect to={from} />
-  ) : (
+  return (
     <div className="login-control">
       <p className="prev-p">Login and start sharing!</p>
       <form
@@ -79,6 +75,7 @@ function Login({ location, history }) {
               variables: {
                 email: email.value,
                 password: password.value,
+                ...(communityId && { communityId }),
               },
             });
           }
@@ -145,26 +142,14 @@ function Login({ location, history }) {
 }
 
 Login.propTypes = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      from: PropTypes.shape({
-        pathname: PropTypes.string,
-      }),
-    }),
-  }),
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
-};
-
-Login.defaultProps = {
   location: PropTypes.shape({
     state: PropTypes.shape({
-      from: PropTypes.shape({
-        pathname: '/',
-      }),
+      communityId: PropTypes.string,
     }),
-  }),
+  }).isRequired,
 };
 
 export default Login;

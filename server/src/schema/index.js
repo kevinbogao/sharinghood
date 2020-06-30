@@ -6,12 +6,14 @@ const typeDefs = gql`
     _id: ID
     name: String
     email: String
-    password: String
+    # password: String
     image: String
     apartment: String
     isNotified: Boolean
     isAdmin: Boolean
     createdAt: String
+    communities: [Community]
+    posts: [Post]
   }
 
   input UserInput {
@@ -70,11 +72,12 @@ const typeDefs = gql`
   }
 
   input PostInput {
-    title: String!
-    desc: String!
-    image: String!
-    condition: Int!
-    isGiveaway: Boolean!
+    postId: ID
+    title: String
+    desc: String
+    image: String
+    condition: Int
+    isGiveaway: Boolean
   }
 
   ### Request
@@ -104,6 +107,7 @@ const typeDefs = gql`
     _id: ID
     content: String
     poster: User
+    community: Community
   }
 
   input ThreadInput {
@@ -111,6 +115,7 @@ const typeDefs = gql`
     isPost: Boolean!
     parentId: ID!
     recipientId: ID!
+    communityId: ID!
   }
 
   # Sent emails
@@ -149,6 +154,7 @@ const typeDefs = gql`
     pickupTime: String
     status: Int
     patcher: User
+    community: Community
   }
 
   input BookingInput {
@@ -160,6 +166,7 @@ const typeDefs = gql`
     postId: ID
     notifyContent: String
     notifyRecipientId: ID
+    communityId: ID
   }
 
   type Notification {
@@ -213,15 +220,16 @@ const typeDefs = gql`
     validateResetLink(userIdKey: String!): Boolean!
 
     # Community
-    community(communityCode: String): Community
+    community(communityId: ID, communityCode: String): Community
+    communities(userId: ID): [Community]
 
     # Post
     post(postId: ID!): Post
-    posts(communityId: ID): [Post]
+    posts(communityId: ID!): [Post]
 
     # Request
     request(requestId: ID!): Request
-    requests(communityId: ID): [Request]
+    requests(communityId: ID!): [Request]
 
     # Chat
     chat(chatId: ID!): Chat!
@@ -244,8 +252,9 @@ const typeDefs = gql`
   ### Mutation
   type Mutation {
     # User
-    login(email: String!, password: String!): Auth!
+    login(email: String!, password: String!, communityId: ID): Auth!
     updateUser(userInput: UserInput): User
+    joinCommunity(communityId: ID!): Community
     tokenRefresh(token: String!): Auth
     forgotPassword(email: String, accessKey: String): String
     resetPassword(userIdKey: String!, password: String!): Boolean
@@ -260,12 +269,14 @@ const typeDefs = gql`
     createCommunity(communityInput: CommunityInput!): Community!
 
     # Post
-    createPost(postInput: PostInput!): Post!
-    updatedPost(postInput: PostInput!): Post!
-    deletePost(postId: ID!): Post
+    createPost(postInput: PostInput!, communityId: ID): Post!
+    updatePost(postInput: PostInput!): Post!
+    inactivatePost(postId: ID): Boolean
+    deletePost(postId: ID!, communityId: ID): Post
+    addPostToCommunity(postId: ID, communityId: ID): Community
 
     # Request
-    createRequest(requestInput: RequestInput!): Request!
+    createRequest(requestInput: RequestInput!, communityId: ID!): Request!
     deleteRequest(requestId: ID!): Request
 
     # Thread

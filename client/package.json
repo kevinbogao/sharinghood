@@ -48,6 +48,8 @@
       "graphql"
     ],
     "rules": {
+      "indent": "off",
+      "no-confusing-arrow": "off",
       "no-console": "off",
       "no-shadow": "off",
       "no-nested-ternary": "off",
@@ -63,8 +65,11 @@
       "no-plusplus": "off",
       "no-return-assign": "off",
       "nonblock-statement-body-position": "off",
+      "no-extra-boolean-cast": "off",
       "curly": "off",
       "one-var": "off",
+      "function-paren-newline": "off",
+      "implicit-arrow-linebreak": "off",
       "one-var-declaration-per-line": "off",
       "object-curly-newline": "off",
       "operator-linebreak": "off",

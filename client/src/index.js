@@ -141,22 +141,53 @@ const client = new ApolloClient({
     splitLink,
   ]),
   cache,
-});
+  resolvers: {
+    Mutation: {
+      selectCommunity: (_, { communityId }, { cache }) => {
+        // Store community id in localStorage
+        localStorage.setItem('@sharinghood:selCommunityId', communityId);
 
-// Init cache values
-cache.writeQuery({
-  query: gql`
-    query {
-      accessToken
-      tokenPayload
-    }
-  `,
-  data: {
-    accessToken: localStorage.getItem('@sharinghood:accessToken'),
-    refreshToken: localStorage.getItem('@sharinghood:refreshToken'),
-    tokenPayload: accessToken ? jwtDecode(accessToken) : null,
+        // Set community id in cache
+        cache.writeQuery({
+          query: gql`
+            query {
+              selCommunityId @client
+            }
+          `,
+          data: {
+            selCommunityId: communityId,
+          },
+        });
+      },
+    },
   },
 });
+
+// Default cache values
+function writeInitialData() {
+  cache.writeQuery({
+    query: gql`
+      query {
+        accessToken
+        tokenPayload
+        refreshToken
+        selCommunityId
+      }
+    `,
+    data: {
+      accessToken: localStorage.getItem('@sharinghood:accessToken'),
+      refreshToken: localStorage.getItem('@sharinghood:refreshToken'),
+      selCommunityId: localStorage.getItem('@sharinghood:selCommunityId'),
+      tokenPayload: accessToken ? jwtDecode(accessToken) : null,
+    },
+  });
+}
+
+// Init cache values
+writeInitialData();
+
+// Reset cache on logout
+client.onClearStore(writeInitialData);
 
 render(
   <React.StrictMode>

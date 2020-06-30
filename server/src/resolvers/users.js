@@ -1,6 +1,7 @@
 const { AuthenticationError } = require('apollo-server');
 const { v4: uuidv4 } = require('uuid');
 const bcryptjs = require('bcryptjs');
+const mongoose = require('mongoose');
 const User = require('../models/user');
 const Community = require('../models/community');
 const uploadImg = require('../utils/uploadImg');
@@ -16,10 +17,20 @@ const usersResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Get user data
-        const userData = await User.findById(user.userId);
+        // Get user data & get user posts
+        const userData = await User.aggregate([
+          { $match: { _id: mongoose.Types.ObjectId(user.userId) } },
+          {
+            $lookup: {
+              from: 'posts',
+              localField: 'posts',
+              foreignField: '_id',
+              as: 'posts',
+            },
+          },
+        ]);
 
-        return userData;
+        return userData[0];
       } catch (err) {
         console.log(err);
         throw new Error(err);
@@ -39,7 +50,7 @@ const usersResolvers = {
     },
   },
   Mutation: {
-    login: async (_, { email, password }) => {
+    login: async (_, { email, password, communityId }) => {
       try {
         // Get user
         const user = await User.findOne({ email });
@@ -71,6 +82,21 @@ const usersResolvers = {
 
         // Sign accessToken & refreshToken
         const { accessToken, refreshToken } = generateTokens(user);
+
+        // If a communityId id is given, check if user is in that community,
+        // add the user to community if the user is not in
+        if (communityId && !user.communities.includes(communityId)) {
+          // Update community
+          await Community.updateOne(
+            { _id: communityId },
+            {
+              $push: { members: user._id },
+            }
+          );
+
+          // Add community to user
+          user.communities.push(communityId);
+        }
 
         // Update user's last login date
         user.lastLogin = new Date();
@@ -133,7 +159,7 @@ const usersResolvers = {
         // Add user as creator to community if isCreator if true,
         // ddd community to user, and user to community members
         if (isCreator) community.creator = user._id;
-        user.community = community._id;
+        user.communities.push(community._id);
         community.members.push(user._id);
 
         // Save user and community
@@ -193,12 +219,34 @@ const usersResolvers = {
 
         // Conditionally update user
         if (name) userData.name = name;
-        if (image && imgData) userData.imgData = imgData;
+        if (image && imgData) userData.image = imgData;
         if (apartment) userData.apartment = apartment;
 
         // Save to user
         const updatedUser = await userData.save();
         return updatedUser;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
+    joinCommunity: async (_, { communityId }, { user }) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
+      try {
+        // Get current user & community
+        const [currentUser, community] = await Promise.all([
+          await User.findById(user.userId),
+          await Community.findById(communityId),
+        ]);
+
+        // Save user to community members and save community to
+        // user communities
+        currentUser.communities.push(communityId);
+        community.members.push(user.userId);
+        await Promise.all([currentUser.save(), community.save()]);
+
+        return community;
       } catch (err) {
         console.log(err);
         throw new Error(err);

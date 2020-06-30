@@ -22,7 +22,8 @@ const MODAL_STYLE = {
     transform: 'translate(-50%, -50%)',
     borderWidth: 0,
     boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '20px 50px 230px 50px',
+    padding: '30px 30px 230px 30px',
+    minWidth: '300px',
     maxWidth: '320px',
   },
 };
@@ -43,6 +44,10 @@ const GET_BOOKINGS = gql`
       dateReturn
       pickupTime
       status
+      community {
+        _id
+        name
+      }
       booker {
         _id
         name
@@ -80,6 +85,9 @@ function Bookings() {
   const [pickupDate, setPickupDate] = useState(new Date());
   const { loading, error, data } = useQuery(GET_BOOKINGS, {
     // fetchPolicy: 'network-only',
+    onCompleted: (data) => {
+      console.log(data);
+    },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -108,6 +116,7 @@ function Bookings() {
         <thead>
           <tr>
             <th>Item</th>
+            <th>Community</th>
             <th>Owner</th>
             <th>Requested Date</th>
             <th>Status</th>
@@ -126,6 +135,7 @@ function Bookings() {
                     {booking.post.title}
                   </Link>
                 </td>
+                <td>{booking.community.name}</td>
                 <td>{booking.post.creator.name}</td>
                 <td>
                   {booking.dateNeed === booking.dateReturn
@@ -195,6 +205,7 @@ function Bookings() {
         <thead>
           <tr>
             <th>Item</th>
+            <th>Community</th>
             <th>Booked by</th>
             <th>Requested Date</th>
             <th>Status</th>
@@ -213,6 +224,7 @@ function Bookings() {
                     {booking.post.title}
                   </Link>
                 </td>
+                <td>{booking.community.name}</td>
                 <td>{booking.booker.name}</td>
                 <td>
                   {booking.dateNeed === booking.dateReturn
@@ -275,7 +287,7 @@ function Bookings() {
                 item.
               </p>
               <DatePicker
-                className="prev-input date"
+                className="prev-input modal"
                 selected={pickupDate}
                 onChange={(date) => setPickupDate(date)}
                 showTimeSelect
@@ -288,7 +300,7 @@ function Bookings() {
               />
               <button
                 type="submit"
-                className="modal-btn"
+                className="modal-btn full"
                 onClick={() => {
                   updateBooking({
                     variables: {
@@ -326,7 +338,7 @@ function Bookings() {
               </p>
               <button
                 type="submit"
-                className="modal-btn red"
+                className="modal-btn full red"
                 onClick={() => {
                   updateBooking({
                     variables: {
@@ -354,7 +366,7 @@ function Bookings() {
                 {booking.booker.name}
               </p>
               <DatePicker
-                className="prev-input date"
+                className="prev-input modal"
                 selected={pickupDate}
                 onChange={(date) => setPickupDate(date)}
                 showTimeSelect
@@ -365,7 +377,7 @@ function Bookings() {
               />
               <button
                 type="submit"
-                className="modal-btn bronze"
+                className="modal-btn full bronze"
                 onClick={() => {
                   updateBooking({
                     variables: {
@@ -382,6 +394,16 @@ function Bookings() {
                 }}
               >
                 Suggest a new date
+              </button>
+              <button
+                type="submit"
+                className="modal-btn full bronze"
+                onClick={() => {
+                  setIsDeclineOpen(false);
+                  setSelectedBooking(null);
+                }}
+              >
+                Close
               </button>
             </Fragment>
           ))}

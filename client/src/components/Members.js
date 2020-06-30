@@ -12,7 +12,6 @@ const GET_COMMUNITY_ID = gql`
 const GET_MEMBERS = gql`
   {
     tokenPayload @client
-    #community @client {
     community(communityId: $communityId) @client {
       members {
         _id

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import Loading from '../../components/Loading';
+import UserPosts from '../../components/UserPosts';
 
 const GET_USER = gql`
   query User {
@@ -11,6 +12,7 @@ const GET_USER = gql`
       name
       email
       apartment
+      isAdmin
       communities {
         _id
       }
@@ -35,19 +37,10 @@ const UPDATE_USER = gql`
   }
 `;
 
-const INACTIVATE_POST = gql`
-  mutation InactivatePost($postId: ID!) {
-    inactivatePost(postId: $postId)
-  }
-`;
-
 function Profile({ history }) {
   const [name, setName] = useState('');
   const [image, setImage] = useState(null);
-  const [activeId, setActiveId] = useState(null);
   const [apartment, setApartment] = useState('');
-  console.log(activeId);
-
   const { data, error, loading } = useQuery(GET_USER, {
     onCompleted: () => {
       console.log(data);
@@ -68,11 +61,6 @@ function Profile({ history }) {
         },
       });
       history.push('/find');
-    },
-  });
-  const [inactivatePost] = useMutation(INACTIVATE_POST, {
-    onCompleted: (data) => {
-      console.log(data);
     },
   });
 
@@ -126,44 +114,9 @@ function Profile({ history }) {
           Pictures increase trust by 80%. Feel free to make your profile more
           trustworthy by uploading a picture.
         </p>
-        <p className="prev-p bronze">Items you shared</p>
-        <div className="user-posts">
-          {data.user.posts.map((post) => (
-            // eslint-disable-next-line
-            <div
-              key={post._id}
-              className="post-instance"
-              onMouseOver={() => setActiveId(post._id)}
-              onMouseOut={() => setActiveId(null)}
-            >
-              <img
-                className={activeId === post._id && 'active'}
-                src={JSON.parse(post.image).secure_url}
-                alt=""
-              />
-              <p>{post.title}</p>
-              <div
-                className={`post-img-btn ${activeId === post._id && 'active'}`}
-              >
-                <button className="post-btn" type="button">
-                  Edit
-                </button>
-                <button
-                  className="post-btn"
-                  type="button"
-                  // onClick={() => {
-                  //   inactivatePost({
-                  //     // TODO: remove from local state if exists
-                  //     variables: { postId: post._id },
-                  //   });
-                  // }}
-                >
-                  Set inactive
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+        {data.user.posts.length && data.user.isAdmin && (
+          <UserPosts posts={data.user.posts} history={history} />
+        )}
         <p className="prev-p">Your name</p>
         <input
           className="prev-input"
@@ -190,6 +143,11 @@ function Profile({ history }) {
           .profile-control {
             margin: auto;
 
+            @include sm {
+              max-width: 300px;
+              width: 80vw;
+            }
+
             .image-upload > input {
               display: none;
             }
@@ -200,11 +158,6 @@ function Profile({ history }) {
               width: 100px;
               border-radius: 50%;
               box-shadow: 1px 1px 1px 1px #eeeeee;
-            }
-
-            @include sm {
-              max-width: 300px;
-              width: 80vw;
             }
 
             h2 {
@@ -232,60 +185,6 @@ function Profile({ history }) {
             .prev-btn {
               display: block;
               margin: 30px auto;
-            }
-
-            .user-posts {
-              max-width: 300px;
-              overflow-x: scroll;
-              display: flex;
-
-              .post-instance {
-                position: relative;
-
-                p {
-                  margin: auto;
-                  font-size: 15px;
-                  color: $bronze-200;
-                  text-align: center;
-                }
-
-                .post-img-btn {
-                  display: none;
-
-                  &.active {
-                    top: 60px;
-                    left: 40px;
-                    display: flex;
-                    position: absolute;
-                    flex-direction: column;
-                  }
-
-                  button {
-                    padding: 5px;
-                    margin: 5px auto;
-                    border: none;
-                    color: #fff;
-                    background: #000;
-                  }
-                }
-
-                img {
-                  margin: 0 5px 0 0;
-                  width: 160px;
-                  height: 136px;
-                  object-fit: cover;
-
-                  &.active {
-                    -webkit-filter: grayscale(0%);
-                    filter: grayscale(0%);
-
-                    &:hover {
-                      -webkit-filter: grayscale(100%);
-                      filter: grayscale(100%);
-                    }
-                  }
-                }
-              }
             }
           }
         `}

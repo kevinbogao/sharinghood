@@ -219,12 +219,52 @@ const usersResolvers = {
 
         // Conditionally update user
         if (name) userData.name = name;
-        if (image && imgData) userData.imgData = imgData;
+        if (image && imgData) userData.image = imgData;
         if (apartment) userData.apartment = apartment;
 
         // Save to user
         const updatedUser = await userData.save();
         return updatedUser;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
+    joinCommunity: async (_, { communityId }, { user }) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
+      try {
+        // Get current user & community
+        const [currentUser, community] = await Promise.all([
+          await User.findById(user.userId),
+          await Community.findById(communityId),
+        ]);
+
+        // Save user to community members and save community to
+        // user communities
+        currentUser.communities.push(communityId);
+        community.members.push(user.userId);
+        await Promise.all([currentUser.save(), community.save()]);
+
+        // await Promise.all([
+        //   User.updateOne(
+        //     { _id: user.userId },
+        //     {
+        //       $push: { communities: communityId },
+        //     }
+        //   ),
+        //   Community.updateOne(
+        //     {
+        //       _id: communityId,
+        //     },
+        //     {
+        //       $push: { members: user.userId },
+        //     }
+        //   ),
+        // ]);
+
+        return community;
+        // return 1;
       } catch (err) {
         console.log(err);
         throw new Error(err);

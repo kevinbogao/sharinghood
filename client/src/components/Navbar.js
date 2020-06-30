@@ -99,30 +99,38 @@ function Navbar() {
       </div>
       <div className="nav-logo">
         <h1>
-          <Link to={tokenPayload ? '/find' : '/'}>
+          <Link
+            to={
+              tokenPayload && selCommunityId
+                ? '/find'
+                : tokenPayload && !selCommunityId
+                ? '/communities'
+                : '/'
+            }
+          >
             {data?.community?.name || 'Sharinghood'}
           </Link>
-          {data?.communities.length > 1 && (
-            <FontAwesomeIcon
-              className="logo-icon"
-              icon={faCaretDown}
-              onClick={() => {
-                client.writeQuery({
-                  query: gql`
-                    query {
-                      selCommunityId
-                    }
-                  `,
-                  data: {
-                    selCommunityId: null,
-                  },
-                });
-                localStorage.removeItem('@sharinghood:selCommunityId');
-                history.push('/communities');
-              }}
-            />
-          )}
         </h1>
+        {data?.communities && (
+          <FontAwesomeIcon
+            className="logo-icon"
+            icon={faCaretDown}
+            onClick={() => {
+              client.writeQuery({
+                query: gql`
+                  query {
+                    selCommunityId
+                  }
+                `,
+                data: {
+                  selCommunityId: null,
+                },
+              });
+              localStorage.removeItem('@sharinghood:selCommunityId');
+              history.push('/communities');
+            }}
+          />
+        )}
       </div>
       <div className="nav-user">
         <div className="nav-user-content">
@@ -245,7 +253,7 @@ function Navbar() {
             }
 
             .nav-logo {
-              // flex: 1;
+              display: flex;
 
               h1 {
                 font-size: 26px;
@@ -255,6 +263,9 @@ function Navbar() {
 
                 @include sm {
                   font-size: 21px;
+                  width: 120px;
+                  white-space: nowrap;
+                  overflow: hidden;
                 }
               }
             }

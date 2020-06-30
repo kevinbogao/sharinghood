@@ -41,7 +41,12 @@ function Login({ history, location }) {
           tokenPayload,
         },
       });
-      history.push('/communities');
+      history.push({
+        pathname: '/communities',
+        state: {
+          fromLogin: true,
+        },
+      });
     },
     onError: ({ message }) => {
       setError({ password: message });

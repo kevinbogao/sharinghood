@@ -23,6 +23,7 @@ import CommunityExists from './views/Community/CommunityExists';
 import ResetPassword from './views/User/ResetPassword';
 import ForgotPassword from './views/User/ForgotPassword';
 import SelectCommunity from './views/Community/SelectCommunity';
+import EditPost from './views/Post/EditPost';
 
 function App() {
   return (
@@ -56,7 +57,8 @@ function App() {
             component={DashboardDetails}
           />
           <ProtectedRoute path="/request" component={CreateRequest} />
-          <ProtectedRoute path="/shared/:id" component={PostDetails} />
+          <ProtectedRoute exact path="/shared/:id" component={PostDetails} />
+          <ProtectedRoute exact path="/shared/:id/edit" component={EditPost} />
           <ProtectedRoute exact path="/requests" component={Requests} />
           <ProtectedRoute
             exact
@@ -151,6 +153,24 @@ function App() {
             &.block {
               display: block;
               margin: 30px auto auto auto;
+            }
+
+            &.bronze {
+              background: $bronze-200;
+
+              &:hover {
+                cursor: pointer;
+                background: $bronze-100;
+              }
+            }
+
+            &.red {
+              background: $red-200;
+
+              &:hover {
+                cursor: pointer;
+                background: $red-100;
+              }
             }
 
             &:hover {

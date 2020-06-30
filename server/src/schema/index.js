@@ -72,11 +72,12 @@ const typeDefs = gql`
   }
 
   input PostInput {
-    title: String!
-    desc: String!
-    image: String!
-    condition: Int!
-    isGiveaway: Boolean!
+    postId: ID
+    title: String
+    desc: String
+    image: String
+    condition: Int
+    isGiveaway: Boolean
   }
 
   ### Request
@@ -252,6 +253,7 @@ const typeDefs = gql`
     # User
     login(email: String!, password: String!, communityId: ID): Auth!
     updateUser(userInput: UserInput): User
+    joinCommunity(communityId: ID!): Community
     tokenRefresh(token: String!): Auth
     forgotPassword(email: String, accessKey: String): String
     resetPassword(userIdKey: String!, password: String!): Boolean
@@ -267,9 +269,10 @@ const typeDefs = gql`
 
     # Post
     createPost(postInput: PostInput!, communityId: ID): Post!
-    updatedPost(postInput: PostInput!): Post!
+    updatePost(postInput: PostInput!): Post!
     inactivatePost(postId: ID): Boolean
     deletePost(postId: ID!, communityId: ID): Post
+    addPostToCommunity(postId: ID, communityId: ID): Community
 
     # Request
     createRequest(requestInput: RequestInput!, communityId: ID!): Request!

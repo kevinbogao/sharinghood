@@ -150,6 +150,35 @@ const postsResolvers = {
         throw err;
       }
     },
+    updatePost: async (
+      _,
+      { postInput: { postId, title, desc, image, condition } },
+      { user }
+    ) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
+      try {
+        // Find post by id
+        const post = await Post.findById(postId);
+
+        // Upload image if it exists
+        let imgData;
+        if (image) imgData = await uploadImg(image);
+
+        // Conditionally update post
+        if (title) post.title = title;
+        if (desc) post.desc = desc;
+        if (image && imgData) post.image = imgData;
+        post.condition = condition; // 0 & bool conflict -> always update
+
+        // Save & return post
+        const updatedPost = await post.save();
+        return updatedPost;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
     inactivatePost: async (_, { postId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
@@ -200,6 +229,20 @@ const postsResolvers = {
       } catch (err) {
         console.log(err);
         throw err;
+      }
+    },
+    addPostToCommunity: async (_, { postId, communityId }) => {
+      try {
+        // Get community by id and add post if to the community's
+        // posts array; return community
+        const community = await Community.findById(communityId);
+        community.posts.push(postId);
+        await community.save();
+
+        return community;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
       }
     },
   },

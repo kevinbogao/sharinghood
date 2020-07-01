@@ -25,8 +25,8 @@ import ForgotPassword from './views/User/ForgotPassword';
 import SelectCommunity from './views/Community/SelectCommunity';
 import EditPost from './views/Post/EditPost';
 
-import Notifications from './views/User/Notifications';
-import NotificationDetails from './views/User/NotificationDetails';
+import Notifications from './views/Notification/Notifications';
+import NotificationDetails from './views/Notification/NotificationDetails';
 
 function App() {
   return (

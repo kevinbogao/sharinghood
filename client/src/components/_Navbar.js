@@ -8,6 +8,7 @@ import {
   faCaretDown,
   faSignOutAlt,
 } from '@fortawesome/free-solid-svg-icons';
+import Notifications from './Notifications';
 import hamburger from '../assets/images/hamburger.png';
 
 const GET_TOKEN_PAYLOAD = gql`
@@ -44,6 +45,8 @@ function Navbar() {
   const history = useHistory();
   const client = useApolloClient();
   const [isMenuActive, setIsMenuActive] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const {
     data: { tokenPayload, selCommunityId },
     refetch,
@@ -77,6 +80,10 @@ function Navbar() {
 
   function toggleMenu() {
     setIsMenuActive(!isMenuActive);
+  }
+
+  function toggleNotifications() {
+    setIsNotificationsOpen(!isNotificationsOpen);
   }
 
   return (
@@ -139,7 +146,16 @@ function Navbar() {
               <FontAwesomeIcon
                 className="nav-icon"
                 icon={faBell}
-                onClick={() => history.push('/notifications')}
+                onClick={toggleNotifications}
+              />
+              {unreadCount > 0 && (
+                <span className="notifications-count">{unreadCount}</span>
+              )}
+              <Notifications
+                isNotificationsOpen={isNotificationsOpen}
+                setIsNotificationsOpen={setIsNotificationsOpen}
+                unreadCount={unreadCount}
+                setUnreadCount={setUnreadCount}
               />
               <FontAwesomeIcon
                 className="nav-icon"
@@ -274,6 +290,23 @@ function Navbar() {
 
                   &:hover {
                     background: $grey-200;
+                  }
+                }
+
+                .notifications-count {
+                  position: absolute;
+                  top: 11px;
+                  right: 66px;
+                  color: $background;
+                  padding: 2px;
+                  width: 13px;
+                  text-align: center;
+                  background: $red-200;
+                  border-radius: 50%;
+                  font-size: 11px;
+
+                  @include sm {
+                    right: 39px;
                   }
                 }
               }

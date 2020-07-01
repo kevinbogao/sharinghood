@@ -62,6 +62,9 @@ function ChatDetails({ chatId }) {
       onCompleted: () => {
         setText('');
       },
+      onError: ({ message }) => {
+        console.log(message);
+      },
     },
   );
 

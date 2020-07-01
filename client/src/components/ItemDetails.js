@@ -1,8 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { gql, useMutation } from '@apollo/client';
 import PropTypes from 'prop-types';
+import Modal from 'react-modal';
 import moment from 'moment';
 
-function ItemDetails({ item, children }) {
+const MODAL_STYLE = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    transform: 'translate(-50%, -50%)',
+    borderWidth: 0,
+    boxShadow: '0px 0px 6px #f2f2f2',
+    padding: '30px',
+  },
+};
+
+const CREATE_NOTIFICATION = gql`
+  mutation CreateNotification($notificationInput: NotificationInput) {
+    createNotification(notificationInput: $notificationInput)
+  }
+`;
+
+function ItemDetails({ item, userId, children }) {
+  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [createNotification, { loading: mutationLoading }] = useMutation(
+    CREATE_NOTIFICATION,
+    {
+      onCompleted: (data) => {
+        console.log(data);
+      },
+      onError: ({ message }) => {
+        console.log(message);
+      },
+    },
+  );
+
   return (
     <>
       <div className="item-content">
@@ -23,10 +57,52 @@ function ItemDetails({ item, children }) {
                 {moment(+item.creator.createdAt).format('MMM DD')}
               </span>
             </p>
+            {item.creator._id !== userId && (
+              <button
+                className=""
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+              >
+                Send Message
+              </button>
+            )}
           </div>
         </div>
       </div>
       <div className="item-separator" />
+      <Modal
+        isOpen={isModalOpen}
+        style={MODAL_STYLE}
+        onRequestClose={() => setIsModalOpen(false)}
+      >
+        <p className="modal-p">
+          Would you like to sent a message to {item.creator.name} ?
+        </p>
+        <button
+          className="modal-btn full"
+          type="submit"
+          onClick={(e) => {
+            e.preventDefault();
+            createNotification({
+              variables: {
+                notificationInput: {
+                  onType: 2,
+                  recipientId: item.creator._id,
+                },
+              },
+            });
+          }}
+        >
+          Yes
+        </button>
+        <button
+          className="modal-btn full bronze"
+          type="button"
+          onClick={() => setIsModalOpen(false)}
+        >
+          Close
+        </button>
+      </Modal>
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -163,16 +239,20 @@ function ItemDetails({ item, children }) {
   );
 }
 
+Modal.setAppElement('#root');
+
 ItemDetails.propTypes = {
   item: PropTypes.shape({
     image: PropTypes.string.isRequired,
     creator: PropTypes.shape({
+      _id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
       image: PropTypes.string.isRequired,
       apartment: PropTypes.string.isRequired,
       createdAt: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
+  userId: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
 };
 

@@ -30,12 +30,6 @@ const MODAL_STYLE = {
   },
 };
 
-const GET_COMMUNITY_ID = gql`
-  query {
-    selCommunityId @client
-  }
-`;
-
 const GET_POST = gql`
   query Post($postId: ID!) {
     post(postId: $postId) {
@@ -86,42 +80,21 @@ const CREATE_THREAD = gql`
   }
 `;
 
-// const CREATE_BOOKING = gql`
-//   mutation CreateBooking($bookingInput: BookingInput!) {
-//     createBooking(bookingInput: $bookingInput) {
-//       _id
-//       dateNeed
-//       dateReturn
-//       status
-//       booker {
-//         _id
-//       }
-//       patcher {
-//         _id
-//       }
-//     }
-//   }
-// `;
-
 const CREATE_NOTIFICATION = gql`
   mutation CreateNotification($notificationInput: NotificationInput) {
     createNotification(notificationInput: $notificationInput)
   }
 `;
 
-function PostDetails({ match, history }) {
+function PostDetails({ communityId, match, history }) {
   const [comment, setComment] = useState('');
-  const [isBookingOpen, setIsBookingOpen] = useState(true);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [dateType, setDateType] = useState(0);
   console.log(dateType);
   const [dateNeed, setDateNeed] = useState(new Date());
   const [dateReturn, setDateReturn] = useState(new Date());
-  const {
-    data: { selCommunityId },
-  } = useQuery(GET_COMMUNITY_ID);
   const { loading, error, data } = useQuery(GET_POST, {
-    skip: !selCommunityId,
-    variables: { postId: match.params.id, communityId: selCommunityId },
+    variables: { postId: match.params.id, communityId },
     onCompleted: (data) => {
       console.log(data);
     },
@@ -139,7 +112,7 @@ function PostDetails({ match, history }) {
     update(cache, { data: { createThread } }) {
       const { post } = cache.readQuery({
         query: GET_POST,
-        variables: { postId: data.post._id, communityId: selCommunityId },
+        variables: { postId: data.post._id, communityId },
       });
       cache.writeQuery({
         query: GET_POST,
@@ -272,7 +245,7 @@ function PostDetails({ match, history }) {
       <Threads
         threads={data.post.threads}
         members={data.community.members}
-        communityId={selCommunityId}
+        communityId={communityId}
       />
       <div className="new-thread-control">
         {data.community.members
@@ -298,7 +271,7 @@ function PostDetails({ match, history }) {
                             isPost: true,
                             parentId: data.post._id,
                             recipientId: data.post.creator._id,
-                            communityId: selCommunityId,
+                            communityId,
                           },
                         },
                       });
@@ -441,6 +414,7 @@ function PostDetails({ match, history }) {
 Modal.setAppElement('#root');
 
 PostDetails.propTypes = {
+  communityId: PropTypes.string.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string.isRequired,

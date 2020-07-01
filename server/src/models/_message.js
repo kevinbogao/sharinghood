@@ -10,9 +10,9 @@ const messageSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
     },
-    notification: {
+    chat: {
       type: Schema.Types.ObjectId,
-      ref: 'Notification',
+      ref: 'Chat',
     },
   },
   { timestamps: true }

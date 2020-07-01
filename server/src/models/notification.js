@@ -46,6 +46,9 @@ const notificationSchema = new Schema(
         ref: 'User',
       },
     ],
+
+    // Notification read status
+    isRead: Schema.Types.Mixed,
   },
   { timestamps: true }
 );

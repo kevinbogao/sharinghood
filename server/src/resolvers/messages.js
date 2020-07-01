@@ -1,55 +1,47 @@
 const { withFilter, AuthenticationError } = require('apollo-server');
 const pubsub = require('../utils/pubsub');
-const Chat = require('../models/chat');
 const Message = require('../models/message');
+const Notification = require('../models/notification');
 
-const NEW_CHAT_MESSAGE = 'NEW_CHAT_MESSAGE';
+const NEW_NOTIFICATION_MESSAGE = 'NEW_NOTIFICATION_MESSAGE';
 
 const messagesResolvers = {
   Subscription: {
-    newChatMessage: {
+    newNotificationMessage: {
       subscribe: withFilter(
-        () => pubsub.asyncIterator(NEW_CHAT_MESSAGE),
-        (payload, args) => payload.chatId === args.chatId
+        () => pubsub.asyncIterator(NEW_NOTIFICATION_MESSAGE),
+        (payload, args) => payload.notificationId === args.notificationId
       ),
     },
   },
-  Query: {
-    messages: async (_, { chatId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
-
-      try {
-        const messages = await Message.find({ chat: chatId });
-        return messages;
-      } catch (err) {
-        throw new Error(err);
-      }
-    },
-  },
   Mutation: {
-    createMessage: async (_, { messageInput: { chatId, text } }, { user }) => {
+    createMessage: async (
+      _,
+      { messageInput: { notificationId, text } },
+      { user }
+    ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
       const { userId } = user;
 
       try {
-        // Create and save message & get message parent
-        const [message, chat] = await Promise.all([
+        // Create and save message & get notification
+        const [message, notification] = await Promise.all([
           Message.create({
             text,
             sender: userId,
-            chat: chatId,
+            notification: notificationId,
           }),
-          Chat.findById(chatId),
+          Notification.findById(notificationId),
         ]);
 
-        // Save messageId to chat
-        chat.messages.push(message);
-        await chat.save();
+        // Save messageId to notification
+        notification.messages.push(message);
+        await notification.save();
 
         // Publish new message
-        pubsub.publish(NEW_CHAT_MESSAGE, {
-          chatId,
-          newChatMessage: {
+        pubsub.publish(NEW_NOTIFICATION_MESSAGE, {
+          notificationId,
+          newNotificationMessage: {
             _id: message._id,
             text: message.text,
             sender: {
@@ -61,6 +53,7 @@ const messagesResolvers = {
 
         return message;
       } catch (err) {
+        console.log(err);
         throw new Error(err);
       }
     },

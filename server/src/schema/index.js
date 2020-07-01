@@ -1,6 +1,10 @@
 const { gql } = require('apollo-server');
+const GraphQLJSON = require('graphql-type-json');
 
 const typeDefs = gql`
+  ### JSON scalar
+  scalar JSON
+
   ### User
   type User {
     _id: ID
@@ -141,7 +145,8 @@ const typeDefs = gql`
   }
 
   input MessageInput {
-    chatId: ID!
+    chatId: ID
+    notificationId: ID!
     text: String!
   }
 
@@ -159,7 +164,7 @@ const typeDefs = gql`
   # }
 
   type Booking {
-    _id: ID!
+    _id: ID
     post: Post
     status: Int
     booker: User
@@ -204,6 +209,7 @@ const typeDefs = gql`
     booking: Booking
     participants: [User]
     messages: [Message]
+    isRead: JSON
   }
 
   input NotificationInput {
@@ -269,7 +275,7 @@ const typeDefs = gql`
     chats(userId: ID): [Chat]
 
     # Message
-    messages(chatId: ID!): [Message]
+    # messages(chatId: ID!): [Message]
 
     # Booking
     bookings(userId: ID): [Booking]
@@ -337,6 +343,7 @@ const typeDefs = gql`
 
   type Subscription {
     newChatMessage(chatId: ID!): Message!
+    newNotificationMessage(notificationId: ID!): Message!
   }
 `;
 

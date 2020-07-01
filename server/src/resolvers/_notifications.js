@@ -35,12 +35,7 @@ const notificationsResolvers = {
               as: 'booking',
             },
           },
-          {
-            $unwind: {
-              path: '$booking',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
+          { $unwind: '$booking' },
           {
             $lookup: {
               from: 'users',
@@ -73,8 +68,6 @@ const notificationsResolvers = {
             },
           },
         ]);
-
-        console.log(notification[0]);
 
         return notification[0];
       } catch (err) {
@@ -114,12 +107,7 @@ const notificationsResolvers = {
                   as: 'booking',
                 },
               },
-              {
-                $unwind: {
-                  path: '$booking',
-                  preserveNullAndEmptyArrays: true,
-                },
-              },
+              { $unwind: '$booking' },
               {
                 $lookup: {
                   from: 'users',
@@ -199,10 +187,7 @@ const notificationsResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Declear booking variable for lower onType === 0 scope
         let booking;
-
-        // If type === 0 (i.e it is booking related notification)
         if (onType === 0) {
           // Destructure variables from bookingInput
           const {
@@ -221,25 +206,12 @@ const notificationsResolvers = {
             ...(dateType === 2 && { dateNeed, dateReturn }),
             booker: user.userId,
           });
-
-          // Add booking to post's bookings array
-          await Post.updateOne(
-            { _id: postId },
-            {
-              $push: { bookings: booking },
-            }
-          );
         }
 
-        // Create an array of recipients ids
-        const participantIds = [recipientId, user.userId];
-
-        // Create & save notification, add booking to notification if
-        // it is type 0
         const notification = await Notification.create({
           ...(onType === 0 && { booking: booking._id }),
           onType,
-          participants: participantIds,
+          participants: [recipientId, user.userId],
           // Notification read status for participants
           isRead: {
             [recipientId]: false,
@@ -247,15 +219,28 @@ const notificationsResolvers = {
           },
         });
 
-        // Save notification to recipient & current user
-        await User.updateMany(
-          { _id: { $in: participantIds } },
-          {
-            $push: {
-              notifications: notification,
-            },
-          }
-        );
+        // Get recipient & current user by id
+        // Only get post is bookingInput is given
+        const [recipient, currentUser, post] = await Promise.all([
+          User.findById(recipientId),
+          User.findById(user.userId),
+          bookingInput && Post.findById(bookingInput.postId),
+        ]);
+
+        // Write notification to recipient and current user
+        // Only add booking to post if bookingInput is give
+        recipient.notifications.push(notification._id);
+        currentUser.notifications.push(notification._id);
+        if (bookingInput) post.bookings.push(booking._id);
+        await Promise.all([
+          recipient.save(),
+          currentUser.save(),
+          bookingInput && post.save(),
+        ]);
+
+        console.log(recipient);
+        console.log(currentUser);
+        console.log(post);
 
         return 1;
       } catch (err) {

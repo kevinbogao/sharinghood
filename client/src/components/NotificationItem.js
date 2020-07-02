@@ -12,7 +12,7 @@ function NotificationItem({ history, notifications, tokenPayload }) {
           key={notification._id}
           className="notification-item-control"
           role="presentation"
-          onClick={() => history.push(`/notifications/${notification._id}`)}
+          onClick={() => history.push(`/notification/${notification._id}`)}
         >
           {notification.onType === 0 && (
             <>
@@ -112,12 +112,14 @@ function NotificationItem({ history, notifications, tokenPayload }) {
                   </p>
                 </div>
                 <div className="message-text">
-                  <p className="text">
-                    {
-                      notification.messages[notification.messages.length - 1]
-                        .text
-                    }
-                  </p>
+                  {notification.messages.length && (
+                    <p className="text">
+                      {
+                        notification.messages[notification.messages.length - 1]
+                          .text
+                      }
+                    </p>
+                  )}
                 </div>
               </div>
             </>

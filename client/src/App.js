@@ -56,7 +56,7 @@ function App() {
           />
           <ProtectedRoute
             exact
-            path="/notifications/:id"
+            path="/notification/:id"
             component={NotificationDetails}
           />
           <ProtectedRoute exact path="/dashboard" component={Dashboard} />

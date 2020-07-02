@@ -64,7 +64,7 @@ function CommunityInvite({ match, history }) {
               <h3>How does it work?</h3>
               <p>
                 Browse through the items which your community members are
-                willing to share.. If you don’t find why you need, simply
+                willing to share.. If you don’t find what you need, simply
                 request it.
               </p>
               <div className="img-image">

@@ -17,6 +17,11 @@ function NotificationItem({ history, notifications, tokenPayload }) {
           {notification.onType === 0 && (
             <>
               <img
+                className={`${
+                  notification.isRead[tokenPayload.userId]
+                    ? undefined
+                    : 'unread'
+                }`}
                 src={JSON.parse(notification.booking.post.image).secure_url}
                 alt=""
               />
@@ -92,6 +97,11 @@ function NotificationItem({ history, notifications, tokenPayload }) {
           {notification.onType === 2 && (
             <>
               <img
+                className={`${
+                  notification.isRead[tokenPayload.userId]
+                    ? undefined
+                    : 'unread'
+                }`}
                 src={JSON.parse(notification.participants[0].image).secure_url}
                 alt=""
               />
@@ -154,9 +164,12 @@ function NotificationItem({ history, notifications, tokenPayload }) {
               margin: 10px;
               border-width: 3px;
               border-radius: 50%;
-              border-color: #fc5e06;
-              border-style: solid;
               box-shadow: 1px 1px 1px 1px #eeeeee;
+
+              &.unread {
+                border-color: #fc5e06;
+                border-style: solid;
+              }
 
               @include sm {
                 height: 80px;

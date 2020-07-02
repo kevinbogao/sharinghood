@@ -12,67 +12,76 @@ const notificationsResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        const notification = await Notification.aggregate([
-          {
-            $match: { _id: mongoose.Types.ObjectId(notificationId) },
-          },
-          {
-            $lookup: {
-              from: 'bookings',
-              let: { booking: '$booking' },
-              pipeline: [
-                { $match: { $expr: { $eq: ['$_id', '$$booking'] } } },
-                {
-                  $lookup: {
-                    from: 'posts',
-                    localField: 'post',
-                    foreignField: '_id',
-                    as: 'post',
-                  },
-                },
-                { $unwind: '$post' },
-              ],
-              as: 'booking',
+        // Get notification & populate data && get notification mongoose instance
+        const [notification, notificationObj] = await Promise.all([
+          Notification.aggregate([
+            {
+              $match: { _id: mongoose.Types.ObjectId(notificationId) },
             },
-          },
-          {
-            $unwind: {
-              path: '$booking',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $lookup: {
-              from: 'users',
-              let: { participants: '$participants' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $in: ['$_id', '$$participants'],
-                        },
-                        {
-                          $ne: ['$_id', mongoose.Types.ObjectId(user.userId)],
-                        },
-                      ],
+            {
+              $lookup: {
+                from: 'bookings',
+                let: { booking: '$booking' },
+                pipeline: [
+                  { $match: { $expr: { $eq: ['$_id', '$$booking'] } } },
+                  {
+                    $lookup: {
+                      from: 'posts',
+                      localField: 'post',
+                      foreignField: '_id',
+                      as: 'post',
                     },
                   },
-                },
-              ],
-              as: 'participants',
+                  { $unwind: '$post' },
+                ],
+                as: 'booking',
+              },
             },
-          },
-          {
-            $lookup: {
-              from: 'messages',
-              localField: 'messages',
-              foreignField: '_id',
-              as: 'messages',
+            {
+              $unwind: {
+                path: '$booking',
+                preserveNullAndEmptyArrays: true,
+              },
             },
-          },
+            {
+              $lookup: {
+                from: 'users',
+                let: { participants: '$participants' },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          {
+                            $in: ['$_id', '$$participants'],
+                          },
+                          {
+                            $ne: ['$_id', mongoose.Types.ObjectId(user.userId)],
+                          },
+                        ],
+                      },
+                    },
+                  },
+                ],
+                as: 'participants',
+              },
+            },
+            {
+              $lookup: {
+                from: 'messages',
+                localField: 'messages',
+                foreignField: '_id',
+                as: 'messages',
+              },
+            },
+          ]),
+          Notification.findById(notificationId),
         ]);
+
+        // Set isRead of current user to true & save
+        notificationObj.isRead[user.userId] = true;
+        notificationObj.markModified('isRead');
+        await notificationObj.save();
 
         return notification[0];
       } catch (err) {

@@ -12,7 +12,7 @@ import hamburger from '../assets/images/hamburger.png';
 
 const GET_TOKEN_PAYLOAD = gql`
   query {
-    accessToken @client
+    # accessToken @client
     tokenPayload @client
     selCommunityId @client
   }
@@ -46,11 +46,11 @@ function Navbar() {
   const client = useApolloClient();
   const [isMenuActive, setIsMenuActive] = useState(false);
   const {
-    data: { accessToken, tokenPayload, selCommunityId },
+    data: { tokenPayload, selCommunityId },
     refetch,
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { data } = useQuery(GET_COMMUNITY, {
-    skip: !accessToken || !selCommunityId,
+    skip: !tokenPayload || !selCommunityId,
     variables: { communityId: selCommunityId },
     onError: () => {},
   });

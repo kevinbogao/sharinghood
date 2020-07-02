@@ -30,7 +30,7 @@ const httpLink = new HttpLink({
 });
 
 // Auth headers
-const authLink = setContext((_, { headers }) => {
+const authLink = setContext(async (_, { headers }) => {
   const accessToken = localStorage.getItem('@sharinghood:accessToken');
   return {
     headers: {
@@ -45,9 +45,9 @@ const wsLink = new WebSocketLink({
   uri: process.env.REACT_APP_GRAPHQL_ENDPOINT_WS,
   options: {
     reconnect: true,
-    connectionParams: {
-      authToken: accessToken,
-    },
+    connectionParams: () => ({
+      authToken: localStorage.getItem('@sharinghood:accessToken'),
+    }),
   },
 });
 

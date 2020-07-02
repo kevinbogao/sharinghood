@@ -311,7 +311,8 @@ function App() {
           }
 
           .base-control {
-            margin-top: 4px;
+            // margin-top: 4px;
+            margin-top: 3px;
             flex: 1 1 0%;
             display: flex;
             overflow-y: scroll;

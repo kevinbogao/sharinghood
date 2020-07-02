@@ -39,13 +39,11 @@ function Notifications({ history }) {
   const { loading, error, data } = useQuery(GET_NOTIFICATIONS, {
     onCompleted: ({ notifications, tokenPayload }) => {
       console.log(notifications);
-      // console.log(tokenPayload.userId);
-
-      for (let i = 0; i < notifications.length; i++) {
-        console.log(notifications[i]);
-        console.log(notifications[i].isRead[tokenPayload.userId]);
-      }
-
+      // // console.log(tokenPayload.userId);
+      // for (let i = 0; i < notifications.length; i++) {
+      //   console.log(notifications[i]);
+      //   console.log(notifications[i].isRead[tokenPayload.userId]);
+      // }
       // console.log(notifications);
       // console.log(tokenPayload);
     },
@@ -67,7 +65,11 @@ function Notifications({ history }) {
           @import './src/assets/scss/index.scss';
 
           .notifications-control {
-            margin: auto;
+            margin: 30px auto;
+
+            @include sm {
+              margin: 15px auto 30px auto;
+            }
           }
         `}
       </style>

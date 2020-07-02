@@ -21,36 +21,47 @@ function NotificationItem({ history, notifications, tokenPayload }) {
                 alt=""
               />
               <div className="item-info">
-                {notification.booking.booker._id === tokenPayload.userId ? (
-                  <p>
-                    You requested {notification.participants[0].name}&apos;{' '}
-                    {notification.booking.post.title}
-                  </p>
-                ) : (
-                  <p>
-                    {notification.participants[0].name} requested your{' '}
-                    {notification.booking.post.title}
-                  </p>
-                )}
-                {notification.booking.dateType === 0 ? (
-                  <span>As soon as possible</span>
-                ) : notification.booking.dateType === 1 ? (
-                  <span>No timeframe</span>
-                ) : (
-                  <span>
-                    {moment(+notification.booking.dateNeed).format('DD.MM.Y')} -{' '}
-                    {moment(+notification.booking.dateReturn).format('DD.MM.Y')}
-                  </span>
-                )}
+                <div className="item-status">
+                  {notification.booking.booker._id === tokenPayload.userId ? (
+                    <p className="title">
+                      You requested {notification.participants[0].name}&apos;{' '}
+                      {notification.booking.post.title}
+                    </p>
+                  ) : (
+                    <p className="title">
+                      {notification.participants[0].name} requested your{' '}
+                      {notification.booking.post.title}
+                    </p>
+                  )}
+                  {notification.booking.dateType === 0 ? (
+                    <span>As soon as possible</span>
+                  ) : notification.booking.dateType === 1 ? (
+                    <span>No timeframe</span>
+                  ) : (
+                    <span>
+                      {moment(+notification.booking.dateNeed).format('DD.MM.Y')}{' '}
+                      -{' '}
+                      {moment(+notification.booking.dateReturn).format(
+                        'DD.MM.Y',
+                      )}
+                    </span>
+                  )}
+                </div>
                 <div className="item-btns">
                   {notification.booking.booker._id === tokenPayload.userId ? (
                     <>
                       {notification.booking.status === 0 ? (
-                        <p>Pending</p>
+                        <button type="button" className="status bronze">
+                          Pending
+                        </button>
                       ) : notification.booking.status === 0 ? (
-                        <p>Accepted</p>
+                        <button type="button" className="status green">
+                          Accepted
+                        </button>
                       ) : (
-                        <p>Denied</p>
+                        <button type="button" className="status red">
+                          Denied
+                        </button>
                       )}
                     </>
                   ) : (
@@ -65,6 +76,7 @@ function NotificationItem({ history, notifications, tokenPayload }) {
                       </button>
                       <button
                         type="button"
+                        className="red"
                         onClick={(e) => {
                           e.stopPropagation();
                         }}
@@ -84,7 +96,7 @@ function NotificationItem({ history, notifications, tokenPayload }) {
                 alt=""
               />
               <div>
-                <p>{notification.participants[0].name}</p>
+                <p className="title">{notification.participants[0].name}</p>
               </div>
             </>
           )}
@@ -95,18 +107,98 @@ function NotificationItem({ history, notifications, tokenPayload }) {
           @import './src/assets/scss/index.scss';
 
           .notification-item-control {
+            margin: 15px;
             display: flex;
+            background: #faf7f5;
+            width: 320px;
 
             &:hover {
               cursor: pointer;
-              background: #f4f4f4;
+              background: #f3efed;
+            }
+
+            p {
+              &.title {
+                margin: auto 10px;
+                display: block;
+                font-size: 16px;
+                color: $bronze-200;
+              }
+            }
+
+            span {
+              margin: auto 10px;
+              display: block;
+              font-size: 14px;
             }
 
             img {
               height: 90px;
               width: 90px;
+              margin: 10px;
+              border-width: 3px;
               border-radius: 50%;
+              border-color: #fc5e06;
+              border-style: solid;
               box-shadow: 1px 1px 1px 1px #eeeeee;
+              // border-color: $green-100;
+
+              @include sm {
+                height: 80px;
+                width: 80px;
+              }
+            }
+
+            button {
+              border: none;
+              color: $background;
+              background: $green-200;
+              font-size: 17px;
+              width: 85px;
+              height: 30px;
+              border-radius: 15px;
+
+              &:hover {
+                color: #fff;
+                background: $green-100;
+              }
+
+              &.red {
+                background: $red-200;
+
+                &:hover {
+                  color: #fff;
+                  background: $red-100;
+                }
+              }
+
+              &.status {
+                color: $background;
+                width: 160px;
+
+                &.bronze {
+                  background: $bronze-200;
+                }
+
+                &.green {
+                  background: $green-200;
+                }
+
+                &.red {
+                  background: $red-200;
+                }
+              }
+            }
+
+            .item-info {
+              display: flex;
+              flex-direction: column;
+              justify-content: space-evenly;
+
+              .item-btns {
+                display: flex;
+                justify-content: space-evenly;
+              }
             }
           }
         `}

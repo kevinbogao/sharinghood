@@ -3,6 +3,7 @@ import { gql, useMutation } from '@apollo/client';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import moment from 'moment';
+import Loading from './Loading';
 
 const MODAL_STYLE = {
   content: {
@@ -24,7 +25,7 @@ const CREATE_NOTIFICATION = gql`
 `;
 
 function ItemDetails({ item, userId, children }) {
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [createNotification, { loading: mutationLoading }] = useMutation(
     CREATE_NOTIFICATION,
     {
@@ -103,6 +104,7 @@ function ItemDetails({ item, userId, children }) {
           Close
         </button>
       </Modal>
+      {mutationLoading && <Loading isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

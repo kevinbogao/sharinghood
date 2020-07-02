@@ -3,13 +3,11 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './views/Home';
 import { Posts } from './views/Post/Posts';
-import Chats from './views/Chat/Chats';
 import { Navbar } from './components/Navbar';
 import Profile from './views/User/Profile';
 import Login from './views/User/Login';
 import Register from './views/User/Register';
 import { Requests } from './views/Request/Requests';
-import Bookings from './views/Bookings';
 import Dashboard from './views/Dashboard';
 import DashboardDetails from './views/DashboardDetails';
 import CreatePost from './views/Post/CreatePost';
@@ -48,10 +46,8 @@ function App() {
         <Switch>
           <Route path="/login" component={Login} />
           <ProtectedRoute path="/find" component={Posts} />
-          <ProtectedRoute path="/chats" component={Chats} />
           <ProtectedRoute path="/profile" component={Profile} />
           <ProtectedRoute path="/share" component={CreatePost} />
-          <ProtectedRoute path="/bookings" component={Bookings} />
           <ProtectedRoute path="/communities" component={SelectCommunity} />
           <ProtectedRoute
             exact

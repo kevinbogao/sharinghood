@@ -74,8 +74,6 @@ const notificationsResolvers = {
           },
         ]);
 
-        console.log(notification[0]);
-
         return notification[0];
       } catch (err) {
         console.log(err);

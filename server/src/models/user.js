@@ -40,22 +40,6 @@ const userSchema = new Schema(
         ref: 'Notification',
       },
     ],
-    bookings: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Booking',
-      },
-    ],
-    chats: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Chat',
-      },
-    ],
-    community: {
-      type: Schema.Types.ObjectId,
-      ref: 'Community',
-    },
     communities: [
       {
         type: Schema.Types.ObjectId,

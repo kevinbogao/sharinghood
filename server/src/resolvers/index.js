@@ -1,6 +1,5 @@
 const { merge } = require('lodash');
 const usersResolvers = require('./users');
-const chatsResolvers = require('./chats');
 const postsResolvers = require('./posts');
 const threadsResolvers = require('./threads');
 const requestsResolvers = require('./requests');
@@ -13,7 +12,6 @@ const notificationsResolvers = require('./notifications');
 const resolvers = merge(
   usersResolvers,
   postsResolvers,
-  chatsResolvers,
   threadsResolvers,
   requestsResolvers,
   messagesResolvers,

@@ -372,7 +372,8 @@ function NotificationDetails({ communityId, match }) {
                     padding: 7px 15px;
                     clear: both;
                     float: left;
-                    width: max-content;
+                    line-height: 1.3;
+                    max-width: 230px;
                     color: #000000;
                     background: #f1f0f0;
                     border-radius: 20px;
@@ -386,7 +387,8 @@ function NotificationDetails({ communityId, match }) {
                     padding: 7px 15px;
                     clear: both;
                     float: right;
-                    width: max-content;
+                    line-height: 1.3;
+                    max-width: 230px;
                     color: #ffffff;
                     background: $green-100;
                     border-radius: 20px;

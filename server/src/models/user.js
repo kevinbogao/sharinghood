@@ -65,4 +65,7 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
+// Index for user email
+userSchema.index({ email: 1 });
+
 module.exports = model('User', userSchema);

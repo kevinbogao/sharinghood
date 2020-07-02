@@ -152,18 +152,13 @@ const notificationsResolvers = {
                   as: 'messages',
                 },
               },
-              {
-                $addFields: {
-                  messages: { $slice: ['$messages', -1] },
-                },
-              },
             ],
             as: 'notifications',
           },
         },
       ]);
 
-      // console.log(JSON.stringify(userNotifications, null, 4));
+      console.log(userNotifications[0].notifications);
 
       return userNotifications[0].notifications;
     },

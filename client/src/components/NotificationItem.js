@@ -95,8 +95,20 @@ function NotificationItem({ history, notifications, tokenPayload }) {
                 src={JSON.parse(notification.participants[0].image).secure_url}
                 alt=""
               />
-              <div>
-                <p className="title">{notification.participants[0].name}</p>
+              <div className="message-info">
+                <div className="message-user">
+                  <p className="title name">
+                    {notification.participants[0].name}
+                  </p>
+                </div>
+                <div className="message-text">
+                  <p className="text">
+                    {
+                      notification.messages[notification.messages.length - 1]
+                        .text
+                    }
+                  </p>
+                </div>
               </div>
             </>
           )}
@@ -123,6 +135,10 @@ function NotificationItem({ history, notifications, tokenPayload }) {
                 display: block;
                 font-size: 16px;
                 color: $bronze-200;
+
+                &.name {
+                  margin: 8px 10px;
+                }
               }
             }
 
@@ -141,7 +157,6 @@ function NotificationItem({ history, notifications, tokenPayload }) {
               border-color: #fc5e06;
               border-style: solid;
               box-shadow: 1px 1px 1px 1px #eeeeee;
-              // border-color: $green-100;
 
               @include sm {
                 height: 80px;
@@ -198,6 +213,27 @@ function NotificationItem({ history, notifications, tokenPayload }) {
               .item-btns {
                 display: flex;
                 justify-content: space-evenly;
+              }
+            }
+
+            .message-info {
+              display: flex;
+              flex-direction: column;
+
+              .message-user {
+                height: 10px;
+              }
+
+              .message-text {
+                flex: 1 1 0%;
+                display: flex;
+                align-items: center;
+
+                .text {
+                  display: block;
+                  font-size: 14px;
+                  margin: auto 10px;
+                }
               }
             }
           }

@@ -23,6 +23,8 @@
     "rules": {
       "no-console": "off",
       "object-curly-newline": "off",
+      "one-var": "off",
+      "one-var-declaration-per-line": "off",
       "comma-dangle": "off",
       "indent": "off",
       "operator-linebreak": "off",

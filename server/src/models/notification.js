@@ -53,4 +53,7 @@ const notificationSchema = new Schema(
   { timestamps: true }
 );
 
+// Index for user email
+notificationSchema.index({ onType: 1, participants: 1 });
+
 module.exports = model('Notification', notificationSchema);

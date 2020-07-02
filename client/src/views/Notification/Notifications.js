@@ -30,6 +30,10 @@ const GET_NOTIFICATIONS = gql`
         image
       }
       isRead
+      messages {
+        _id
+        text
+      }
     }
     tokenPayload @client
   }

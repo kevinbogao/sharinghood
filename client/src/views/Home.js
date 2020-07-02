@@ -33,15 +33,19 @@ function Home({ history }) {
   } = useQuery(GET_ACCESS_TOKEN);
   const [community] = useLazyQuery(FIND_COMMUNITY, {
     onCompleted: ({ community }) => {
-      history.push({
-        pathname: '/find-community',
-        state: {
-          communityId: community._id,
-          communityName: community.name,
-          members: community.members,
-          isCreator: false,
-        },
-      });
+      if (community) {
+        history.push({
+          pathname: '/find-community',
+          state: {
+            communityId: community._id,
+            communityName: community.name,
+            members: community.members,
+            isCreator: false,
+          },
+        });
+      } else {
+        setError({ community: 'Community not found' });
+      }
     },
     onError: ({ message }) => {
       setError({ community: message });

@@ -41,8 +41,6 @@ const server = new ApolloServer({
     origin: process.env.ORIGIN,
     credentials: true,
   },
-  introspection: true,
-  playground: true,
 });
 
 // Start server

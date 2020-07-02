@@ -5,8 +5,8 @@ import Loading from '../../components/Loading';
 import ProductScreenshot from '../../assets/images/product-screenshot.png';
 
 const FIND_COMMUNITY = gql`
-  query FindCommunity($communityCode: String!) {
-    findCommunity(communityCode: $communityCode) {
+  query Community($communityCode: String!) {
+    community(communityCode: $communityCode) {
       _id
       name
       members {
@@ -21,8 +21,8 @@ function CommunityInvite({ match, history }) {
   const [community, setCommunity] = useState(null);
   const { loading } = useQuery(FIND_COMMUNITY, {
     variables: { communityCode: match.params.communityCode },
-    onCompleted: ({ findCommunity }) => {
-      setCommunity(findCommunity);
+    onCompleted: ({ community }) => {
+      setCommunity(community);
     },
     onError: ({ message }) => {
       console.log(message);
@@ -64,7 +64,7 @@ function CommunityInvite({ match, history }) {
               <h3>How does it work?</h3>
               <p>
                 Browse through the items which your community members are
-                willing to share.. If you don’t find why you need, simply
+                willing to share.. If you don’t find what you need, simply
                 request it.
               </p>
               <div className="img-image">

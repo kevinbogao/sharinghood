@@ -21,8 +21,8 @@ function CommunityInvite({ match, history }) {
   const [community, setCommunity] = useState(null);
   const { loading } = useQuery(FIND_COMMUNITY, {
     variables: { communityCode: match.params.communityCode },
-    onCompleted: ({ findCommunity }) => {
-      setCommunity(findCommunity);
+    onCompleted: ({ community }) => {
+      setCommunity(community);
     },
     onError: ({ message }) => {
       console.log(message);

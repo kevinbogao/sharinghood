@@ -5,8 +5,8 @@ import Loading from '../../components/Loading';
 import ProductScreenshot from '../../assets/images/product-screenshot.png';
 
 const FIND_COMMUNITY = gql`
-  query FindCommunity($communityCode: String!) {
-    findCommunity(communityCode: $communityCode) {
+  query Community($communityCode: String!) {
+    community(communityCode: $communityCode) {
       _id
       name
       members {

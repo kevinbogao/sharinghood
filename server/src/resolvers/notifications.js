@@ -92,89 +92,121 @@ const notificationsResolvers = {
     notifications: async (_, __, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
-      const userNotifications = await User.aggregate([
-        {
-          $match: { _id: mongoose.Types.ObjectId(user.userId) },
-        },
-        {
-          $lookup: {
-            from: 'notifications',
-            let: { notifications: '$notifications' },
-            pipeline: [
-              { $match: { $expr: { $in: ['$_id', '$$notifications'] } } },
-              {
-                $lookup: {
-                  from: 'bookings',
-                  let: { booking: '$booking' },
-                  pipeline: [
-                    { $match: { $expr: { $eq: ['$_id', '$$booking'] } } },
-                    {
-                      $lookup: {
-                        from: 'posts',
-                        localField: 'post',
-                        foreignField: '_id',
-                        as: 'post',
-                      },
-                    },
-                    { $unwind: '$post' },
-                  ],
-                  as: 'booking',
-                },
-              },
-              {
-                $unwind: {
-                  path: '$booking',
-                  preserveNullAndEmptyArrays: true,
-                },
-              },
-              {
-                $lookup: {
-                  from: 'users',
-                  let: { participants: '$participants' },
-                  pipeline: [
-                    {
-                      $match: {
-                        $expr: {
-                          $and: [
-                            {
-                              $in: ['$_id', '$$participants'],
-                            },
-                            {
-                              $ne: [
-                                '$_id',
-                                mongoose.Types.ObjectId(user.userId),
-                              ],
-                            },
-                          ],
+      try {
+        const userNotifications = await User.aggregate([
+          {
+            $match: { _id: mongoose.Types.ObjectId(user.userId) },
+          },
+          {
+            $lookup: {
+              from: 'notifications',
+              let: { notifications: '$notifications' },
+              pipeline: [
+                { $match: { $expr: { $in: ['$_id', '$$notifications'] } } },
+                {
+                  $lookup: {
+                    from: 'bookings',
+                    let: { booking: '$booking' },
+                    pipeline: [
+                      { $match: { $expr: { $eq: ['$_id', '$$booking'] } } },
+                      {
+                        $lookup: {
+                          from: 'posts',
+                          localField: 'post',
+                          foreignField: '_id',
+                          as: 'post',
                         },
                       },
-                    },
-                  ],
-                  as: 'participants',
+                      { $unwind: '$post' },
+                    ],
+                    as: 'booking',
+                  },
                 },
-              },
-              {
-                $lookup: {
-                  from: 'messages',
-                  localField: 'messages',
-                  foreignField: '_id',
-                  as: 'messages',
+                {
+                  $unwind: {
+                    path: '$booking',
+                    preserveNullAndEmptyArrays: true,
+                  },
                 },
-              },
-              {
-                $addFields: {
-                  messages: { $slice: ['$messages', -1] },
+                {
+                  $lookup: {
+                    from: 'users',
+                    let: { participants: '$participants' },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              {
+                                $in: ['$_id', '$$participants'],
+                              },
+                              {
+                                $ne: [
+                                  '$_id',
+                                  mongoose.Types.ObjectId(user.userId),
+                                ],
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                    as: 'participants',
+                  },
                 },
-              },
-            ],
-            as: 'notifications',
+                {
+                  $lookup: {
+                    from: 'messages',
+                    localField: 'messages',
+                    foreignField: '_id',
+                    as: 'messages',
+                  },
+                },
+                {
+                  $addFields: {
+                    messages: { $slice: ['$messages', -1] },
+                  },
+                },
+                {
+                  $sort: {
+                    updatedAt: -1,
+                  },
+                },
+              ],
+              as: 'notifications',
+            },
           },
-        },
-      ]);
+        ]);
 
-      // console.log(JSON.stringify(userNotifications, null, 4));
+        return userNotifications[0].notifications;
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    findNotification: async (_, { recipientId }, { user }) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
 
-      return userNotifications[0].notifications;
+      console.log(recipientId);
+
+      try {
+        // Create an array of recipients ids
+        const participantIds = [recipientId, user.userId];
+
+        // Find a notification where both of users participates in and of type 2
+        const notification = await Notification.findOne({
+          onType: 2,
+          participants: participantIds,
+        });
+
+        return notification;
+
+        // console.log(notification);
+
+        // return 1;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
     },
     getNotifications: async (_, __, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');

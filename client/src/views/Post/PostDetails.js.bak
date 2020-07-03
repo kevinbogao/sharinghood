@@ -1,6 +1,6 @@
 import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { gql, useQuery, useLazyQuery, useMutation } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCheckDouble,
@@ -80,6 +80,12 @@ const CREATE_THREAD = gql`
   }
 `;
 
+const FIND_NOTIFICATION = gql`
+  query FindNotification($recipientId: ID!) {
+    findNotification(recipientId: $recipientId)
+  }
+`;
+
 const CREATE_NOTIFICATION = gql`
   mutation CreateNotification($notificationInput: NotificationInput) {
     createNotification(notificationInput: $notificationInput)
@@ -143,11 +149,7 @@ function PostDetails({ communityId, match, history }) {
     `Error! ${error.message}`
   ) : data.post ? (
     <div className="item-control">
-      <ItemDetails
-        item={data.post}
-        userId={data.tokenPayload.userId}
-        history={history}
-      >
+      <ItemDetails item={data.post} userId={data.tokenPayload.userId}>
         <div className="item-desc">
           <h3>{data.post.title}</h3>
           <p className="prev-p">{data.post.desc}</p>

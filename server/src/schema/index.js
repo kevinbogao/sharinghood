@@ -283,6 +283,7 @@ const typeDefs = gql`
     # Notification
     notification(notificationId: ID!): Notification
     notifications(userId: ID): [Notification]
+    findNotification(recipientId: ID!): Notification
     getNotifications(userId: ID): [Notification]
 
     # Activity

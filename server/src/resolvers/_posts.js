@@ -133,7 +133,7 @@ const postsResolvers = {
         // uploading the post to a specific community
         if (communityId) {
           community.posts.push(post);
-          // community.notifications.push(notification);
+          community.notifications.push(notification);
         }
         creator.posts.push(post);
         await Promise.all([communityId && community.save(), creator.save()]);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { gql, useMutation } from '@apollo/client';
 import PropTypes from 'prop-types';
+import { gql, useLazyQuery, useMutation } from '@apollo/client';
 import Modal from 'react-modal';
 import moment from 'moment';
 import Loading from './Loading';
@@ -18,19 +18,38 @@ const MODAL_STYLE = {
   },
 };
 
+const FIND_NOTIFICATION = gql`
+  query FindNotification($recipientId: ID!) {
+    findNotification(recipientId: $recipientId) {
+      _id
+    }
+  }
+`;
+
 const CREATE_NOTIFICATION = gql`
   mutation CreateNotification($notificationInput: NotificationInput) {
     createNotification(notificationInput: $notificationInput)
   }
 `;
 
-function ItemDetails({ item, userId, children }) {
+function ItemDetails({ history, item, userId, children }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [findNotification] = useLazyQuery(FIND_NOTIFICATION, {
+    onCompleted: ({ findNotification }) => {
+      // Redirect user to chat if chat (notification) exists, esle
+      // open the send message modal for the user to create a new notification
+      if (findNotification)
+        history.push(`/notification/${findNotification._id}`);
+      else setIsModalOpen(true);
+    },
+  });
   const [createNotification, { loading: mutationLoading }] = useMutation(
     CREATE_NOTIFICATION,
     {
-      onCompleted: (data) => {
-        console.log(data);
+      onCompleted: ({ createNotification }) => {
+        // TODO: Chaneg return schema to Notification
+        // Push to notification && update local state
+        console.log(createNotification);
       },
       onError: ({ message }) => {
         console.log(message);
@@ -62,7 +81,16 @@ function ItemDetails({ item, userId, children }) {
               <button
                 className=""
                 type="button"
-                onClick={() => setIsModalOpen(true)}
+                // onClick={() => setIsModalOpen(true)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  findNotification({
+                    variables: {
+                      recipientId: item.creator._id,
+                      // recipientId: 'kdsjalkdj',
+                    },
+                  });
+                }}
               >
                 Send Message
               </button>
@@ -84,6 +112,11 @@ function ItemDetails({ item, userId, children }) {
           type="submit"
           onClick={(e) => {
             e.preventDefault();
+            // findNotification({
+            //   variables: {
+            //     recipientId: item.creator._id,
+            //   },
+            // });
             createNotification({
               variables: {
                 notificationInput: {
@@ -244,6 +277,9 @@ function ItemDetails({ item, userId, children }) {
 Modal.setAppElement('#root');
 
 ItemDetails.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
   item: PropTypes.shape({
     image: PropTypes.string.isRequired,
     creator: PropTypes.shape({

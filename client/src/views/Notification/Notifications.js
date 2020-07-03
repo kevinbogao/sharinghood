@@ -285,6 +285,8 @@ function Notifications({ history }) {
                 margin: 10px;
                 border-width: 3px;
                 border-radius: 50%;
+                border-color: transparent;
+                border-style: solid;
                 box-shadow: 1px 1px 1px 1px #eeeeee;
 
                 &.unread {

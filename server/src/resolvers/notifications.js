@@ -78,10 +78,12 @@ const notificationsResolvers = {
           Notification.findById(notificationId),
         ]);
 
-        // Set isRead of current user to true & save
-        notificationObj.isRead[user.userId] = true;
-        notificationObj.markModified('isRead');
-        await notificationObj.save();
+        // Set isRead of current user to true if isRead is false & save
+        if (!notificationObj.isRead[user.userId]) {
+          notificationObj.isRead[user.userId] = true;
+          notificationObj.markModified('isRead');
+          await notificationObj.save();
+        }
 
         return notification[0];
       } catch (err) {
@@ -322,10 +324,12 @@ const notificationsResolvers = {
           return {
             ...notification._doc,
             participants: participantsObj,
-            booking: {
-              ...booking._doc,
-              post: post._doc,
-            },
+            ...(onType === 0 && {
+              booking: {
+                ...booking._doc,
+                post: post._doc,
+              },
+            }),
           };
         }
 

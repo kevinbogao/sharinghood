@@ -169,6 +169,7 @@ function PostDetails({ communityId, match, history }) {
           console.log(err);
         }
 
+        // Redirect user to notifications
         history.push('/notifications');
       },
       onError: ({ message }) => {

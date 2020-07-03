@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
@@ -39,6 +39,7 @@ const GET_NOTIFICATION = gql`
         }
         createdAt
       }
+      isRead
     }
     tokenPayload @client
     community(communityId: $communityId) @client {
@@ -87,11 +88,46 @@ const CREATE_MESSAGE = gql`
 `;
 
 function NotificationDetails({ communityId, match }) {
+  const client = useApolloClient();
   const [text, setText] = useState('');
   const { subscribeToMore, loading, error, data } = useQuery(GET_NOTIFICATION, {
     variables: { notificationId: match.params.id, communityId },
-    onCompleted: (data) => {
-      console.log(data);
+    onCompleted: ({ notification, tokenPayload }) => {
+      // const { notification } = client.readQuery({
+      //   query: GET_NOTIFICATION,
+      //   variables: {
+      //     notificationId: match.params.id,
+      //     communityId,
+      //   },
+      //   data: {
+      //     // accessToken: login.accessToken,
+      //     // refreshToken: login.refreshToken,
+      //     // tokenPayload,
+      //   },
+      // });
+
+      client.writeQuery({
+        query: GET_NOTIFICATION,
+        variables: {
+          notificationId: match.params.id,
+          communityId,
+        },
+        data: {
+          notification: {
+            ...notification,
+            isRead: {
+              ...notification.isRead,
+              [notification.isRead[tokenPayload.userId]]: true,
+              // isRead[user.userId]: true,
+            },
+          },
+          // accessToken: login.accessToken,
+          // refreshToken: login.refreshToken,
+          // tokenPayload,
+        },
+      });
+
+      console.log(notification);
     },
     onError: ({ message }) => {
       console.log(message);

@@ -4,6 +4,7 @@ import { gql, useLazyQuery, useMutation } from '@apollo/client';
 import Modal from 'react-modal';
 import moment from 'moment';
 import Loading from './Loading';
+import { GET_NOTIFICATIONS } from '../views/Notification/Notifications';
 
 const MODAL_STYLE = {
   content: {
@@ -28,7 +29,35 @@ const FIND_NOTIFICATION = gql`
 
 const CREATE_NOTIFICATION = gql`
   mutation CreateNotification($notificationInput: NotificationInput) {
-    createNotification(notificationInput: $notificationInput)
+    createNotification(notificationInput: $notificationInput) {
+      _id
+      onType
+      booking {
+        _id
+        status
+        dateType
+        dateNeed
+        dateReturn
+        post {
+          _id
+          title
+          image
+        }
+        booker {
+          _id
+        }
+      }
+      participants {
+        _id
+        name
+        image
+      }
+      isRead
+      messages {
+        _id
+        text
+      }
+    }
   }
 `;
 
@@ -46,8 +75,25 @@ function ItemDetails({ history, item, userId, children }) {
   const [createNotification, { loading: mutationLoading }] = useMutation(
     CREATE_NOTIFICATION,
     {
+      // Push to notification && update local state
+      update(cache, { data: { createNotification } }) {
+        try {
+          const { notifications } = cache.readQuery({
+            query: GET_NOTIFICATIONS,
+          });
+          cache.writeQuery({
+            query: GET_NOTIFICATIONS,
+            data: { notifications: [createNotification, ...notifications] },
+          });
+        } catch (err) {
+          console.log(err);
+        }
+
+        // Redirect user to notifications
+        history.push('/notifications');
+      },
       onCompleted: ({ createNotification }) => {
-        // TODO: Chaneg return schema to Notification
+        // TODO: Change return schema to Notification
         // Push to notification && update local state
         console.log(createNotification);
       },

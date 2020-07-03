@@ -1,5 +1,6 @@
 * Sharinghood
   When in doubt, consult [[https://github.com/kelseyhightower/nocode][nocode]]
+
   Staging Link: https://sharinghood-staging.herokuapp.com
 ** Quick Overview
    #+begin_src bash

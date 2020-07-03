@@ -1,8 +1,4 @@
-const {
-  ApolloError,
-  AuthenticationError,
-  ForbiddenError,
-} = require('apollo-server');
+const { AuthenticationError, ForbiddenError } = require('apollo-server');
 const mongoose = require('mongoose');
 const Community = require('../models/community');
 const User = require('../models/user');
@@ -34,23 +30,6 @@ const communitiesResolvers = {
             },
           },
         ]);
-
-        // Throw error if community code is given and community is not found
-        if (communityCode && !community[0]) {
-          throw new Error('code: Community not found');
-        }
-
-        // // If userId is given, query from Navbar component
-        // if (userId) {
-        //   // Get string value of whether the user has notifications from
-        //   // redis, and convert it to boolean value
-        //   const userHasNotifications = await redis.get(
-        //     `notifications:${userId}`
-        //   );
-        //   const hasNotificationsBool = userHasNotifications === 'true';
-
-        //   return { ...community[0], hasNotifications: hasNotificationsBool };
-        // }
 
         return community[0];
       } catch (err) {

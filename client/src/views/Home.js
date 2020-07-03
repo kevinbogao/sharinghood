@@ -48,7 +48,8 @@ function Home({ history }) {
       }
     },
     onError: ({ message }) => {
-      setError({ community: message });
+      const errMsgArr = message.split(': ');
+      setError({ [errMsgArr[0]]: errMsgArr[1] });
     },
   });
 
@@ -117,7 +118,6 @@ function Home({ history }) {
                 ref={(node) => (code = node)}
               />
               {error.code && <InlineError text={error.code} />}
-              {error.community && <InlineError text={error.community} />}
               <button className="prev-btn" type="submit">
                 Find my community
               </button>

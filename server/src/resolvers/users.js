@@ -54,7 +54,8 @@ const usersResolvers = {
       try {
         // Get user
         const user = await User.findOne({ email });
-        if (!user) throw new AuthenticationError('User does not exist');
+        // if (!user) throw new AuthenticationError('User does not exist');
+        if (!user) throw new Error('email: User not found');
 
         // Re-hash user password if user is not migrated
         if (!user.isMigrated) {
@@ -70,14 +71,16 @@ const usersResolvers = {
 
             // Throw auth error if password is invalid
           } else {
-            throw new AuthenticationError('Password is incorrect');
+            throw new AuthenticationError('password: Invalid credentials');
           }
 
           // If user is migrated
         } else {
           // Check user password
           const isEqual = await bcryptjs.compare(password, user.password);
-          if (!isEqual) throw new AuthenticationError('Password is incorrect');
+          if (!isEqual) {
+            throw new AuthenticationError('password: Invalid credentials');
+          }
         }
 
         // Sign accessToken & refreshToken

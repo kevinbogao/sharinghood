@@ -14,6 +14,7 @@ import Threads from '../../components/Threads';
 import Loading from '../../components/Loading';
 import NotFound from '../../components/NotFound';
 import ItemDetails from '../../components/ItemDetails';
+import { GET_NOTIFICATIONS } from '../Notification/Notifications';
 
 const CONDITIONS = ['New', 'Used but good', 'Used but little damaged'];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
@@ -82,7 +83,35 @@ const CREATE_THREAD = gql`
 
 const CREATE_NOTIFICATION = gql`
   mutation CreateNotification($notificationInput: NotificationInput) {
-    createNotification(notificationInput: $notificationInput)
+    createNotification(notificationInput: $notificationInput) {
+      _id
+      onType
+      booking {
+        _id
+        status
+        dateType
+        dateNeed
+        dateReturn
+        post {
+          _id
+          title
+          image
+        }
+        booker {
+          _id
+        }
+      }
+      participants {
+        _id
+        name
+        image
+      }
+      isRead
+      messages {
+        _id
+        text
+      }
+    }
   }
 `;
 
@@ -90,14 +119,10 @@ function PostDetails({ communityId, match, history }) {
   const [comment, setComment] = useState('');
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [dateType, setDateType] = useState(0);
-  console.log(dateType);
   const [dateNeed, setDateNeed] = useState(new Date());
   const [dateReturn, setDateReturn] = useState(new Date());
   const { loading, error, data } = useQuery(GET_POST, {
     variables: { postId: match.params.id, communityId },
-    onCompleted: (data) => {
-      console.log(data);
-    },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -125,11 +150,26 @@ function PostDetails({ communityId, match, history }) {
       });
     },
   });
+
+  // Create a new booking notification for user and owner
   const [createNotification, { loading: mutationLoading }] = useMutation(
     CREATE_NOTIFICATION,
     {
-      onCompleted: (data) => {
-        console.log(data);
+      // Add created notification to the beginning of the notifications array
+      update(cache, { data: { createNotification } }) {
+        try {
+          const { notifications } = cache.readQuery({
+            query: GET_NOTIFICATIONS,
+          });
+          cache.writeQuery({
+            query: GET_NOTIFICATIONS,
+            data: { notifications: [createNotification, ...notifications] },
+          });
+        } catch (err) {
+          console.log(err);
+        }
+
+        history.push('/notifications');
       },
       onError: ({ message }) => {
         console.log(message);

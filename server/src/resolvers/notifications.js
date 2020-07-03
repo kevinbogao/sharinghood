@@ -181,6 +181,7 @@ const notificationsResolvers = {
         return userNotifications[0].notifications;
       } catch (err) {
         console.log(err);
+        throw new Error(err);
       }
     },
     findNotification: async (_, { recipientId }, { user }) => {
@@ -243,7 +244,7 @@ const notificationsResolvers = {
 
       try {
         // Declear booking variable for lower onType === 0 scope
-        let booking, existingChat;
+        let booking, post, existingChat;
 
         // If type === 0 (i.e it is booking related notification)
         if (onType === 0) {
@@ -256,22 +257,21 @@ const notificationsResolvers = {
             dateReturn,
           } = bookingInput;
 
-          // Create & save booking
-          booking = await Booking.create({
-            post: postId,
-            status,
-            dateType,
-            ...(dateType === 2 && { dateNeed, dateReturn }),
-            booker: user.userId,
-          });
+          // Create & save booking && get parent post
+          [booking, post] = await Promise.all([
+            Booking.create({
+              post: postId,
+              status,
+              dateType,
+              ...(dateType === 2 && { dateNeed, dateReturn }),
+              booker: user.userId,
+            }),
+            Post.findById(postId),
+          ]);
 
-          // Add booking to post's bookings array
-          await Post.updateOne(
-            { _id: postId },
-            {
-              $push: { bookings: booking },
-            }
-          );
+          // Add booking to post bookings & save post
+          post.bookings.push(booking);
+          await post.save();
         }
 
         // Create an array of recipients ids
@@ -313,9 +313,25 @@ const notificationsResolvers = {
             ),
             redis.set(`notifications:${user.userId}`, true),
           ]);
+
+          // Get participants and add to return value
+          const participantsObj = await User.find({
+            _id: { $in: participantIds },
+          });
+
+          return {
+            ...notification._doc,
+            participants: participantsObj,
+            booking: {
+              ...booking._doc,
+              post: post._doc,
+            },
+          };
         }
 
-        return 1;
+        // TODO: return chat?
+
+        // return 1;
       } catch (err) {
         console.log(err);
         throw new Error(err);

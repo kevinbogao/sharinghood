@@ -335,7 +335,7 @@ const typeDefs = gql`
     updateBooking(bookingId: ID!, bookingInput: BookingInput!): Booking
 
     # Notification
-    createNotification(notificationInput: NotificationInput): Notification
+    createNotification(notificationInput: NotificationInput): Boolean
     updateNotification(notificationInput: NotificationInput!): Notification
 
     sentMail: Boolean

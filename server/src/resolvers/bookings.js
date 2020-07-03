@@ -149,63 +149,87 @@ const bookingsResolvers = {
         throw new Error(err);
       }
     },
+
     updateBooking: async (
       _,
-      {
-        bookingId,
-        bookingInput: {
-          status,
-          postId,
-          pickupTime,
-          notifyContent,
-          notifyRecipientId,
-        },
-      },
+      { bookingId, bookingInput: { status } },
       { user }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { userId } = user;
+
+      console.log(bookingId);
+      console.log(status);
 
       try {
-        // Get booking & recipient
-        const [booking, recipient] = await Promise.all([
-          Booking.findById(bookingId),
-          User.findById(notifyRecipientId),
-        ]);
-
-        // Create & save notification
-        const notification = await Notification.create({
-          onType: 2,
-          onDocId: postId,
-          content: notifyContent,
-          recipient: recipient.id,
-          creator: userId,
-          isRead: false,
-        });
-
-        // Update booking && save booking & add notification to recipient
-        // Sent booking update email to recipient if is subscribed
+        // throw new Error('ID: Not found');
+        // throw new Error('Not Authenticated');
+        const booking = await Booking.findById(bookingId);
         booking.status = status;
-        booking.pickupTime = pickupTime || booking.pickupTime;
-        booking.patcher = userId;
-        recipient.notifications.push(notification);
-        await Promise.all([
-          booking.save(),
-          recipient.save(),
-          recipient.isNotified &&
-            updateBookingMail(
-              `${process.env.ORIGIN}/bookings`,
-              recipient.email,
-              notifyContent
-            ),
-        ]);
+        await booking.save();
 
         return booking;
       } catch (err) {
         console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
+    // updateBooking: async (
+    //   _,
+    //   {
+    //     bookingId,
+    //     bookingInput: {
+    //       status,
+    //       postId,
+    //       pickupTime,
+    //       notifyContent,
+    //       notifyRecipientId,
+    //     },
+    //   },
+    //   { user }
+    // ) => {
+    //   if (!user) throw new AuthenticationError('Not Authenticated');
+    //   const { userId } = user;
+
+    //   try {
+    //     // Get booking & recipient
+    //     const [booking, recipient] = await Promise.all([
+    //       Booking.findById(bookingId),
+    //       User.findById(notifyRecipientId),
+    //     ]);
+
+    //     // Create & save notification
+    //     const notification = await Notification.create({
+    //       onType: 2,
+    //       onDocId: postId,
+    //       content: notifyContent,
+    //       recipient: recipient.id,
+    //       creator: userId,
+    //       isRead: false,
+    //     });
+
+    //     // Update booking && save booking & add notification to recipient
+    //     // Sent booking update email to recipient if is subscribed
+    //     booking.status = status;
+    //     booking.pickupTime = pickupTime || booking.pickupTime;
+    //     booking.patcher = userId;
+    //     recipient.notifications.push(notification);
+    //     await Promise.all([
+    //       booking.save(),
+    //       recipient.save(),
+    //       recipient.isNotified &&
+    //         updateBookingMail(
+    //           `${process.env.ORIGIN}/bookings`,
+    //           recipient.email,
+    //           notifyContent
+    //         ),
+    //     ]);
+
+    //     return booking;
+    //   } catch (err) {
+    //     console.log(err);
+    //     throw err;
+    //   }
+    // },
   },
 };
 

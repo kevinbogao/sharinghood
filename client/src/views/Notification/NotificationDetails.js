@@ -51,6 +51,15 @@ const GET_NOTIFICATION = gql`
   }
 `;
 
+const UPDATE_BOOKING = gql`
+  mutation UpdateBooking($bookingId: ID!, $bookingInput: BookingInput!) {
+    updateBooking(bookingId: $bookingId, bookingInput: $bookingInput) {
+      _id
+      status
+    }
+  }
+`;
+
 const MESSAGES_SUBSCRIPTION = gql`
   subscription onNewNotificationMessage($notificationId: ID!) {
     newNotificationMessage(notificationId: $notificationId) {
@@ -99,6 +108,24 @@ function NotificationDetails({ communityId, match }) {
       },
     },
   );
+
+  // Update booking status by changing booking status int
+  // 0: pending
+  // 1: accepted
+  // 2: declined
+  const [
+    updateBooking,
+    {
+      loading: { mutationLoading },
+    },
+  ] = useMutation(UPDATE_BOOKING, {
+    onCompleted: (data) => {
+      console.log(data);
+    },
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
 
   // Subscribe to new messages
   useEffect(() => {
@@ -173,31 +200,63 @@ function NotificationDetails({ communityId, match }) {
                     <button type="button" className="status bronze">
                       Pending
                     </button>
-                  ) : data.notification.booking.status === 0 ? (
-                    <p>Accepted</p>
+                  ) : data.notification.booking.status === 1 ? (
+                    <button type="button" className="status green">
+                      Accepted
+                    </button>
                   ) : (
-                    <p>Denied</p>
+                    <button type="button" className="status red">
+                      Denied
+                    </button>
                   )}
                 </>
               ) : (
                 <>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    Accept
-                  </button>
-                  <button
-                    className="red"
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    Deny
-                  </button>
+                  {data.notification.booking.status === 0 ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          updateBooking({
+                            variables: {
+                              bookingId: data.notification.booking._id,
+                              bookingInput: {
+                                status: 1,
+                              },
+                            },
+                          });
+                        }}
+                      >
+                        Accept
+                      </button>
+                      <button
+                        className="red"
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          updateBooking({
+                            variables: {
+                              bookingId: data.notification.booking._id,
+                              bookingInput: {
+                                status: 2,
+                              },
+                            },
+                          });
+                        }}
+                      >
+                        Deny
+                      </button>
+                    </>
+                  ) : data.notification.booking.status === 1 ? (
+                    <button type="button" className="status green">
+                      Accepted
+                    </button>
+                  ) : (
+                    <button type="button" className="status red">
+                      Denied
+                    </button>
+                  )}
                 </>
               )}
             </div>
@@ -258,6 +317,7 @@ function NotificationDetails({ communityId, match }) {
         </div>
       </div>
       {mutationError && <p>Error :( Please try again</p>}
+      {mutationLoading && <Loading isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

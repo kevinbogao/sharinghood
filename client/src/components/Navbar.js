@@ -12,7 +12,6 @@ import hamburger from '../assets/images/hamburger.png';
 
 const GET_TOKEN_PAYLOAD = gql`
   query {
-    # accessToken @client
     tokenPayload @client
     selCommunityId @client
   }
@@ -50,9 +49,12 @@ function Navbar() {
     refetch,
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { data } = useQuery(GET_COMMUNITY, {
-    skip: !tokenPayload || !selCommunityId,
+    // skip: !localStorage.getItem('@sharinghood:accessToken') || !selCommunityId,
+    skip: !localStorage.getItem('@sharinghood:accessToken') || !selCommunityId,
     variables: { communityId: selCommunityId },
-    onError: () => {},
+    onError: ({ message }) => {
+      console.log(message);
+    },
   });
 
   function handleClickOutside(e) {

@@ -23,7 +23,7 @@ import ForgotPassword from './views/User/ForgotPassword';
 import SelectCommunity from './views/Community/SelectCommunity';
 import EditPost from './views/Post/EditPost';
 
-import Notifications from './views/Notification/Notifications';
+import { Notifications } from './views/Notification/Notifications';
 import NotificationDetails from './views/Notification/NotificationDetails';
 
 function App() {

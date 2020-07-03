@@ -106,24 +106,24 @@ function SelectCommunity({ history, location }) {
         (member) => member._id === tokenPayload.userId,
       );
 
-      if (community) {
-        // Throw erorr if user is in 5 communities already
-        if (data.communities.length > 5)
-          setPageError({
-            code: 'You have reached the maximum number of communities',
-          });
-        // Check if user is part of the community
-        else if (userIsInCommunity)
-          setPageError({
-            code: `You are already a member of ${community.name}`,
-          });
-        else setFoundCommunity(community);
-      } else {
-        setPageError({ code: 'Community not found' });
-      }
+      // Throw erorr if user is in 5 communities already
+      if (data.communities.length > 5)
+        setPageError({
+          code: 'You have reached the maximum number of communities',
+        });
+      // Check if user is part of the community
+      else if (userIsInCommunity)
+        setPageError({
+          code: `You are already a member of ${community.name}`,
+        });
+      else setFoundCommunity(community);
     },
     onError: ({ message }) => {
-      setPageError({ community: message });
+      const errMsgArr = message.split(': ');
+      const errMsgArrLen = errMsgArr.length;
+      setPageError({
+        [errMsgArr[errMsgArrLen - 2]]: errMsgArr[errMsgArrLen - 1],
+      });
     },
   });
 

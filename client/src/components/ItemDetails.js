@@ -79,9 +79,8 @@ function ItemDetails({ history, item, userId, children }) {
             </p>
             {item.creator._id !== userId && (
               <button
-                className=""
+                className="msg-btn"
                 type="button"
-                // onClick={() => setIsModalOpen(true)}
                 onClick={(e) => {
                   e.preventDefault();
                   findNotification({
@@ -112,11 +111,6 @@ function ItemDetails({ history, item, userId, children }) {
           type="submit"
           onClick={(e) => {
             e.preventDefault();
-            // findNotification({
-            //   variables: {
-            //     recipientId: item.creator._id,
-            //   },
-            // });
             createNotification({
               variables: {
                 notificationInput: {
@@ -146,6 +140,20 @@ function ItemDetails({ history, item, userId, children }) {
             display: flex;
             justify-content: space-between;
             margin-bottom: 30px;
+
+            .msg-btn {
+              color: $background;
+              background: $green-200;
+              padding: 5px 12px;
+              border: none;
+              border-radius: 15px;
+              font-size: 15px;
+
+              &:hover {
+                color: #fff;
+                background: $green-100;
+              }
+            }
 
             @include lg {
               flex-direction: column;

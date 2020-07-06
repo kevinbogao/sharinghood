@@ -5,6 +5,7 @@ const Post = require('../models/post');
 const Booking = require('../models/booking');
 const Community = require('../models/community');
 const Notification = require('../models/notification');
+const updateBookingMail = require('../utils/sendMail/updateBookingMail');
 
 const notificationsResolvers = {
   Query: {
@@ -259,7 +260,7 @@ const notificationsResolvers = {
 
       try {
         // Declear booking variable for lower onType === 0 scope
-        let booking, post, existingChat;
+        let booking, post, recipient, existingChat;
 
         // If type === 0 (i.e it is booking related notification)
         if (onType === 0) {
@@ -274,7 +275,7 @@ const notificationsResolvers = {
           } = bookingInput;
 
           // Create & save booking && get parent post
-          [booking, post] = await Promise.all([
+          [booking, post, recipient] = await Promise.all([
             Booking.create({
               post: postId,
               status,
@@ -284,11 +285,22 @@ const notificationsResolvers = {
               community: communityId,
             }),
             Post.findById(postId),
+            User.findById(recipientId),
           ]);
 
-          // Add booking to post bookings & save post
+          // Add booking to post bookings
           post.bookings.push(booking);
-          await post.save();
+
+          // Save post & sent booking email to recipient
+          await Promise.all([
+            post.save(),
+            recipient.isNotified &&
+              updateBookingMail(
+                `${process.env.ORIGIN}/notifications`,
+                recipient.email,
+                `${user.userName} has requested to book your ${post.title}`
+              ),
+          ]);
         }
 
         // Create an array of recipients ids

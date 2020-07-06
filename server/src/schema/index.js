@@ -56,6 +56,7 @@ const typeDefs = gql`
     password: String
   }
 
+  # Auth & Community
   type AuthAndOrCommunity {
     user: Auth!
     community: Community
@@ -122,21 +123,7 @@ const typeDefs = gql`
     communityId: ID!
   }
 
-  # Sent emails
-  input EmailInput {
-    email: String!
-  }
-
-  # Chat
-  type Chat {
-    _id: ID!
-    participants: [User]
-    contact: User
-    messages: [Message]
-    community: Community
-    updatedAt: String
-  }
-
+  # Messages
   type Message {
     _id: ID!
     text: String
@@ -150,19 +137,7 @@ const typeDefs = gql`
     text: String!
   }
 
-  # type Booking {
-  #   _id: ID!
-  #   post: Post
-  #   booker: User
-  #   dateType: Int
-  #   dateNeed: String
-  #   dateReturn: String
-  #   pickupTime: String
-  #   status: Int
-  #   patcher: User
-  #   community: Community
-  # }
-
+  # Bookings
   type Booking {
     _id: ID
     post: Post
@@ -173,18 +148,6 @@ const typeDefs = gql`
     dateReturn: String
   }
 
-  # input BookingInput {
-  #   dateNeed: String
-  #   dateReturn: String
-  #   pickupTime: String
-  #   status: Int
-  #   ownerId: ID
-  #   postId: ID
-  #   notifyContent: String
-  #   notifyRecipientId: ID
-  #   communityId: ID
-  # }
-
   input BookingInput {
     postId: ID
     status: Int
@@ -192,18 +155,11 @@ const typeDefs = gql`
     dateNeed: String
     dateReturn: String
     communityId: ID
+    notifyContent: String
+    notifyRecipientId: ID
   }
 
-  # type Notification {
-  #   _id: ID!
-  #   onType: Int
-  #   onDocId: ID
-  #   content: String
-  #   recipient: User
-  #   creator: User
-  #   isRead: Boolean
-  # }
-
+  # Notifications
   type Notification {
     _id: ID!
     onType: Int
@@ -219,15 +175,7 @@ const typeDefs = gql`
     recipientId: ID
   }
 
-  # input NotificationInput {
-  #   notificationId: ID!
-  #   onType: Int
-  #   content: String
-  #   recipientId: ID
-  #   creatorId: ID
-  #   isRead: Boolean
-  # }
-
+  # Activities
   type TotalActivities {
     totalCommunities: Int
     totalUsers: Int
@@ -270,16 +218,6 @@ const typeDefs = gql`
     # Request
     request(requestId: ID!): Request
     requests(communityId: ID!): [Request]
-
-    # Chat
-    chat(chatId: ID!): Chat!
-    chats(userId: ID): [Chat]
-
-    # Message
-    # messages(chatId: ID!): [Message]
-
-    # Booking
-    bookings(userId: ID): [Booking]
 
     # Notification
     notification(notificationId: ID!): Notification
@@ -326,26 +264,19 @@ const typeDefs = gql`
     # Thread
     createThread(threadInput: ThreadInput!): Thread!
 
-    # Chat
-    createChat(recipientId: ID!): Chat
-
     # Message
     createMessage(messageInput: MessageInput!): Message
 
     # Booking
-    createBooking(bookingInput: BookingInput!): Booking
     updateBooking(bookingId: ID!, bookingInput: BookingInput!): Booking
 
     # Notification
     createNotification(notificationInput: NotificationInput): Notification
     updateNotification(notificationInput: NotificationInput!): Notification
-
-    sentMail: Boolean
-    getEmails(communityId: ID!): Boolean
   }
 
   type Subscription {
-    newChatMessage(chatId: ID!): Message!
+    # Message
     newNotificationMessage(notificationId: ID!): Message!
   }
 `;

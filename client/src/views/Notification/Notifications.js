@@ -167,6 +167,9 @@ function Notifications({ history, communityId }) {
                                   bookingId: notification.booking._id,
                                   bookingInput: {
                                     status: 1,
+                                    notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${notification.booking.post.title}`,
+                                    notifyRecipientId:
+                                      notification.booking.booker._id,
                                   },
                                 },
                               });
@@ -185,6 +188,9 @@ function Notifications({ history, communityId }) {
                                   bookingId: notification.booking._id,
                                   bookingInput: {
                                     status: 2,
+                                    notifyContent: `${data.tokenPayload.userName} has denied your booking on ${notification.booking.post.title}`,
+                                    notifyRecipientId:
+                                      notification.booking.booker._id,
                                   },
                                 },
                               });

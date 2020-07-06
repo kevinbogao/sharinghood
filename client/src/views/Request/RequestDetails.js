@@ -147,7 +147,11 @@ function RequestDetails({ communityId, match, history }) {
     `Error! ${error.message}`
   ) : data.request ? (
     <div className="item-control">
-      <ItemDetails item={data.request} userId={data.tokenPayload.userId}>
+      <ItemDetails
+        item={data.request}
+        userId={data.tokenPayload.userId}
+        history={history}
+      >
         <div className="item-desc">
           <h3>{data.request.title}</h3>
           <p className="prev-p">{data.request.desc}</p>

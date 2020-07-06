@@ -122,9 +122,8 @@ function NotificationDetails({ communityId, match }) {
           query: GET_NOTIFICATIONS,
           data: { notifications: newNotifications },
         });
-      } catch (err) {
-        console.log(err);
-      }
+        // eslint-disable-next-line
+      } catch (err) {}
     },
     onError: ({ message }) => {
       console.log(message);
@@ -256,6 +255,9 @@ function NotificationDetails({ communityId, match }) {
                               bookingId: data.notification.booking._id,
                               bookingInput: {
                                 status: 1,
+                                notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${data.notification.booking.post.title}`,
+                                notifyRecipientId:
+                                  data.notification.booking.booker._id,
                               },
                             },
                           });
@@ -273,6 +275,9 @@ function NotificationDetails({ communityId, match }) {
                               bookingId: data.notification.booking._id,
                               bookingInput: {
                                 status: 2,
+                                notifyContent: `${data.tokenPayload.userName} has denied your booking on ${data.notification.booking.post.title}`,
+                                notifyRecipientId:
+                                  data.notification.booking.booker._id,
                               },
                             },
                           });

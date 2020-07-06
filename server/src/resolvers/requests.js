@@ -103,7 +103,7 @@ const requestsResolvers = {
         const imgData = await uploadImg(image);
 
         // Create and save request && get creator
-        const [request, creator] = await Promise.all([
+        const [request, creator, community] = await Promise.all([
           Request.create({
             title,
             desc,
@@ -113,17 +113,6 @@ const requestsResolvers = {
             creator: userId,
           }),
           User.findById(userId),
-        ]);
-
-        // Create & save notification && find creator's community
-        const [notification, community] = await Promise.all([
-          Notification.create({
-            onType: 1,
-            onDocId: request._id,
-            content: `${userName} made a requested for ${title} in your community`,
-            creator: userId,
-            isRead: false,
-          }),
           // Populate community members, exclude current user & unsubscribe user
           // & only return email
           Community.findById(communityId).populate({
@@ -135,7 +124,6 @@ const requestsResolvers = {
 
         // Save requestId & notificationId to community && requestId to creator
         community.requests.push(request);
-        community.notifications.push(notification);
         creator.requests.push(request);
 
         // parse array of members object into array of emails
@@ -170,18 +158,21 @@ const requestsResolvers = {
     },
     deleteRequest: async (_, { requestId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { communityId } = user;
 
       try {
-        // Find request & get request's threads
-        const request = await Request.findById(requestId);
+        // Find request & it's creator & get request's threads
+        const [request, creator] = await Promise.all([
+          Request.findById(requestId),
+          User.findById(user.userId),
+        ]);
+
         const { threads } = request;
 
         // Delete request, requestId from community & delete request threads
         await Promise.all([
           request.remove(),
-          Community.updateOne(
-            { _id: communityId },
+          Community.updateMany(
+            { _id: { $in: creator.communities } },
             {
               $pull: { requests: requestId },
             }

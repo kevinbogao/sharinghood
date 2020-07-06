@@ -199,18 +199,13 @@ const notificationsResolvers = {
         );
         const hasNotificationsBool = userHasNotifications === 'true';
 
-        console.log(hasNotificationsBool);
-
         return hasNotificationsBool;
       } catch (err) {
-        console.log(err);
-        throw new Error(err);
+        return false;
       }
     },
     findNotification: async (_, { recipientId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-
-      console.log(recipientId);
 
       try {
         // Create an array of recipients ids
@@ -222,11 +217,8 @@ const notificationsResolvers = {
           participants: participantIds,
         });
 
+        // Return chat/notification object if it is found
         return notification;
-
-        // console.log(notification);
-
-        // return 1;
       } catch (err) {
         console.log(err);
         throw new Error(err);

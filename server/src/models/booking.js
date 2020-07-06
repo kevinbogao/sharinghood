@@ -33,8 +33,17 @@ const bookingSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
     },
+
+    // Which community is the booking part of
+    community: {
+      type: Schema.Types.ObjectId,
+      ref: 'Community',
+    },
   },
   { timestamps: true }
 );
+
+// Index for booking community
+bookingSchema.index({ community: 1 });
 
 module.exports = model('Booking', bookingSchema);

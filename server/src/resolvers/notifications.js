@@ -270,6 +270,7 @@ const notificationsResolvers = {
             status,
             dateNeed,
             dateReturn,
+            communityId,
           } = bookingInput;
 
           // Create & save booking && get parent post
@@ -280,6 +281,7 @@ const notificationsResolvers = {
               dateType,
               ...(dateType === 2 && { dateNeed, dateReturn }),
               booker: user.userId,
+              community: communityId,
             }),
             Post.findById(postId),
           ]);

@@ -226,12 +226,16 @@ function Notifications({ history, communityId }) {
                   </p>
                 </div>
                 <div className="message-text">
-                  {notification.messages.length && (
+                  {notification.messages.length > 0 ? (
                     <p className="text">
                       {
                         notification.messages[notification.messages.length - 1]
                           .text
                       }
+                    </p>
+                  ) : (
+                    <p className="text">
+                      Send a message to {notification.participants[0].name} now
                     </p>
                   )}
                 </div>

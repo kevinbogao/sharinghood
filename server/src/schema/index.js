@@ -191,6 +191,7 @@ const typeDefs = gql`
     dateType: Int
     dateNeed: String
     dateReturn: String
+    communityId: ID
   }
 
   # type Notification {

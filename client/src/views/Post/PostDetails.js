@@ -267,6 +267,7 @@ function PostDetails({ communityId, match, history }) {
                     postId: match.params.id,
                     dateType,
                     status: 0,
+                    communityId,
                     ...(dateType === 2 && { dateNeed, dateReturn }),
                   },
                   onType: 0,

@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import moment from 'moment';
 import Loading from '../../components/Loading';
+import { GET_COMMUNITY } from '../../components/Navbar';
 
 const GET_NOTIFICATIONS = gql`
   query GetNotifications {
@@ -48,17 +49,19 @@ const UPDATE_BOOKING = gql`
   }
 `;
 
-function Notifications({ history }) {
+function Notifications({ history, communityId }) {
+  const client = useApolloClient();
   const { loading, error, data } = useQuery(GET_NOTIFICATIONS, {
-    onCompleted: ({ notifications }) => {
-      console.log(notifications);
-      // // console.log(tokenPayload.userId);
-      // for (let i = 0; i < notifications.length; i++) {
-      //   console.log(notifications[i]);
-      //   console.log(notifications[i].isRead[tokenPayload.userId]);
-      // }
-      // console.log(notifications);
-      // console.log(tokenPayload);
+    onCompleted: () => {
+      // Mutate hasNotifications stats to false to remove notification red dot
+      client.writeQuery({
+        query: GET_COMMUNITY,
+        variables: { communityId },
+        data: {
+          ...data,
+          hasNotifications: false,
+        },
+      });
     },
   });
 
@@ -384,6 +387,7 @@ Notifications.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
+  communityId: PropTypes.string.isRequired,
 };
 
 export { GET_NOTIFICATIONS, Notifications };

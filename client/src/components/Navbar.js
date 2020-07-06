@@ -36,6 +36,7 @@ const GET_COMMUNITY = gql`
       _id
       name
     }
+    hasNotifications
   }
 `;
 
@@ -49,12 +50,9 @@ function Navbar() {
     refetch,
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { data } = useQuery(GET_COMMUNITY, {
-    // skip: !localStorage.getItem('@sharinghood:accessToken') || !selCommunityId,
     skip: !localStorage.getItem('@sharinghood:accessToken') || !selCommunityId,
     variables: { communityId: selCommunityId },
-    onError: ({ message }) => {
-      console.log(message);
-    },
+    onError: () => {},
   });
 
   function handleClickOutside(e) {
@@ -133,15 +131,16 @@ function Navbar() {
               <FontAwesomeIcon
                 className="nav-icon"
                 icon={faUser}
-                onClick={() => {
-                  history.push('/profile');
-                }}
+                onClick={() => history.push('/profile')}
               />
               <FontAwesomeIcon
                 className="nav-icon"
                 icon={faBell}
                 onClick={() => history.push('/notifications')}
               />
+              {data?.hasNotifications && (
+                <span className="notifications-unread" />
+              )}
               <FontAwesomeIcon
                 className="nav-icon"
                 icon={faSignOutAlt}
@@ -269,6 +268,21 @@ function Navbar() {
 
                   &:hover {
                     background: $grey-200;
+                  }
+                }
+
+                .notifications-unread {
+                  position: absolute;
+                  top: 14px;
+                  right: 73px;
+                  width: 10px;
+                  height: 10px;
+                  text-align: center;
+                  background: $red-200;
+                  border-radius: 50%;
+
+                  @include sm {
+                    right: 46px;
                   }
                 }
               }

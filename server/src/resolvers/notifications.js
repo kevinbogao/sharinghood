@@ -91,7 +91,7 @@ const notificationsResolvers = {
         throw new Error(err);
       }
     },
-    notifications: async (_, __, { user }) => {
+    notifications: async (_, __, { user, redis }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
@@ -180,7 +180,28 @@ const notificationsResolvers = {
           },
         ]);
 
+        // Delete user has notifications status in redis
+        await redis.del(`notifications:${user.userId}`);
+
+        // Return user's notifications to client
         return userNotifications[0].notifications;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
+    hasNotifications: async (_, __, { user, redis }) => {
+      try {
+        // Get string value of whether the user has notifications from
+        // redis, and convert it to boolean value
+        const userHasNotifications = await redis.get(
+          `notifications:${user.userId}`
+        );
+        const hasNotificationsBool = userHasNotifications === 'true';
+
+        console.log(hasNotificationsBool);
+
+        return hasNotificationsBool;
       } catch (err) {
         console.log(err);
         throw new Error(err);
@@ -303,7 +324,7 @@ const notificationsResolvers = {
           });
 
           // Save notification to recipient & current user && save
-          // notification:userId to redis
+          // notification:recipientId to redis
           await Promise.all([
             User.updateMany(
               { _id: { $in: participantIds } },
@@ -313,7 +334,7 @@ const notificationsResolvers = {
                 },
               }
             ),
-            redis.set(`notifications:${user.userId}`, true),
+            redis.set(`notifications:${recipientId}`, true),
           ]);
 
           // Get participants and add to return value

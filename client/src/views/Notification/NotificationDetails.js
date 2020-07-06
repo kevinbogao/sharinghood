@@ -5,6 +5,7 @@ import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import Loading from '../../components/Loading';
+import { GET_NOTIFICATIONS } from './Notifications';
 
 const GET_NOTIFICATION = gql`
   query GetNotification($notificationId: ID!) {
@@ -93,41 +94,37 @@ function NotificationDetails({ communityId, match }) {
   const { subscribeToMore, loading, error, data } = useQuery(GET_NOTIFICATION, {
     variables: { notificationId: match.params.id, communityId },
     onCompleted: ({ notification, tokenPayload }) => {
-      // const { notification } = client.readQuery({
-      //   query: GET_NOTIFICATION,
-      //   variables: {
-      //     notificationId: match.params.id,
-      //     communityId,
-      //   },
-      //   data: {
-      //     // accessToken: login.accessToken,
-      //     // refreshToken: login.refreshToken,
-      //     // tokenPayload,
-      //   },
-      // });
+      // TODO: MAY BE USE THE NOTIFICATION THAT IS RECEIVED FROM THE SERVER TO
+      // UPDATE LOCAL NOTIFICATIONS ARRAY
+      try {
+        // Get notifications from cache, and the notification's index in the notifications array
+        const { notifications } = client.readQuery({
+          query: GET_NOTIFICATIONS,
+        });
+        const notificationIndex = notifications.findIndex(
+          (item) => item._id === notification._id,
+        );
 
-      client.writeQuery({
-        query: GET_NOTIFICATION,
-        variables: {
-          notificationId: match.params.id,
-          communityId,
-        },
-        data: {
-          notification: {
-            ...notification,
-            isRead: {
-              ...notification.isRead,
-              [notification.isRead[tokenPayload.userId]]: true,
-              // isRead[user.userId]: true,
-            },
+        // Create a new instance of notifications array
+        const newNotifications = [...notifications];
+
+        // Change current user's isRead status in the new notifications array
+        newNotifications[notificationIndex] = {
+          ...newNotifications[notificationIndex],
+          isRead: {
+            ...newNotifications[notificationIndex].isRead,
+            [tokenPayload.userId]: true,
           },
-          // accessToken: login.accessToken,
-          // refreshToken: login.refreshToken,
-          // tokenPayload,
-        },
-      });
+        };
 
-      console.log(notification);
+        // Write the new notifications array cache
+        client.writeQuery({
+          query: GET_NOTIFICATIONS,
+          data: { notifications: newNotifications },
+        });
+      } catch (err) {
+        console.log(err);
+      }
     },
     onError: ({ message }) => {
       console.log(message);

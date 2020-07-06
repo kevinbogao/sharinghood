@@ -126,20 +126,24 @@ function Navbar() {
       </div>
       <div className="nav-user">
         <div className="nav-user-content">
-          {!!tokenPayload ? (
+          {tokenPayload ? (
             <div className="nav-icons">
-              <FontAwesomeIcon
-                className="nav-icon"
-                icon={faUser}
-                onClick={() => history.push('/profile')}
-              />
-              <FontAwesomeIcon
-                className="nav-icon"
-                icon={faBell}
-                onClick={() => history.push('/notifications')}
-              />
-              {data?.hasNotifications && (
-                <span className="notifications-unread" />
+              {selCommunityId && (
+                <>
+                  <FontAwesomeIcon
+                    className="nav-icon"
+                    icon={faUser}
+                    onClick={() => history.push('/profile')}
+                  />
+                  <FontAwesomeIcon
+                    className="nav-icon"
+                    icon={faBell}
+                    onClick={() => history.push('/notifications')}
+                  />
+                  {data?.hasNotifications && (
+                    <span className="notifications-unread" />
+                  )}
+                </>
               )}
               <FontAwesomeIcon
                 className="nav-icon"

@@ -65,7 +65,22 @@ const splitLink = split(
 );
 
 // Init cache
-const cache = new InMemoryCache();
+const cache = new InMemoryCache({
+  typePolicies: {
+    Notification: {
+      fields: {
+        messages: {
+          merge(existing, incoming) {
+            // If the length of incoming messages array is shorter than
+            // the existing messages array, return the existing messages
+            if (incoming?.length < existing?.length) return existing;
+            return incoming;
+          },
+        },
+      },
+    },
+  },
+});
 
 // Init apollo client
 const client = new ApolloClient({

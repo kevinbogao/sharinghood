@@ -23,7 +23,6 @@ require('dotenv').config();
 
 // Google Tag Manager config
 const TAG_MANAGER_ARGS = {
-  // gtmId: 'GTM-596TJLG',
   gtmId: process.env.REACT_APP_GTM_ID,
 };
 

@@ -22,6 +22,7 @@ const MODAL_STYLE = {
 
 const GET_USER_COMMUNITIES = gql`
   query Communities {
+    selCommunityId @client
     communities {
       _id
       name
@@ -64,15 +65,14 @@ const JOIN_COMMUNITY = gql`
 function CommunityInvite({ match, history }) {
   const [community, setCommunity] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
-  // console.log(community);
-  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-  const [isErrModalOpen, setIsErrModalOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [pageError, setPageError] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isErrModalOpen, setIsErrModalOpen] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const { loading, data } = useQuery(FIND_COMMUNITY, {
     variables: { communityCode: match.params.communityCode },
     onCompleted: ({ community, tokenPayload }) => {
-      // console.log(tokenPayload);
+      // Set community to state
       setCommunity(community);
 
       // Set log in status if tokenPayload exists
@@ -95,10 +95,8 @@ function CommunityInvite({ match, history }) {
       },
     ],
     // Redirect user to posts page on complete
-    onCompleted: (data) => {
-      console.log(data);
-
-      // history.push('/find');
+    onCompleted: () => {
+      history.push('/find');
     },
   });
 
@@ -107,16 +105,20 @@ function CommunityInvite({ match, history }) {
     JOIN_COMMUNITY,
     {
       update(cache, { data: { joinCommunity } }) {
-        console.log(joinCommunity);
-
         // Get and update communities cache
-        const { communities } = cache.readQuery({
-          query: GET_USER_COMMUNITIES,
-        });
-        cache.writeQuery({
-          query: GET_USER_COMMUNITIES,
-          communities: [...communities, joinCommunity],
-        });
+        try {
+          const { communities } = cache.readQuery({
+            query: GET_USER_COMMUNITIES,
+          });
+
+          cache.writeQuery({
+            query: GET_USER_COMMUNITIES,
+            communities: [...communities, joinCommunity],
+          });
+
+          // eslint-disable-next-line
+        } catch (err) {}
+
         // Set community id
         selectCommunity({
           variables: {

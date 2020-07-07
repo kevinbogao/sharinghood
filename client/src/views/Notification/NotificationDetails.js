@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
+import { gql, useQuery, useMutation } from '@apollo/client';
 import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import Loading from '../../components/Loading';
-import { GET_NOTIFICATIONS } from './Notifications';
+// import { GET_NOTIFICATIONS } from './Notifications';
 
 const GET_NOTIFICATION = gql`
   query GetNotification($notificationId: ID!) {
@@ -26,6 +26,9 @@ const GET_NOTIFICATION = gql`
         booker {
           _id
         }
+      }
+      post {
+        _id
       }
       participants {
         _id
@@ -88,44 +91,47 @@ const CREATE_MESSAGE = gql`
   }
 `;
 
-function NotificationDetails({ communityId, match }) {
-  const client = useApolloClient();
+function NotificationDetails({ communityId, match, history }) {
+  // const client = useApolloClient();
   const [text, setText] = useState('');
   const { subscribeToMore, loading, error, data } = useQuery(GET_NOTIFICATION, {
     variables: { notificationId: match.params.id, communityId },
-    onCompleted: ({ notification, tokenPayload }) => {
-      console.log(notification);
+    onCompleted: ({ notification }) => {
+      // Redirect to post details page by id if notification type is 2
+      if (notification.ofType === 2) {
+        history.push(`/shared/${notification.post._id}`);
+      }
 
-      // TODO: MAY BE USE THE NOTIFICATION THAT IS RECEIVED FROM THE SERVER TO
-      // UPDATE LOCAL NOTIFICATIONS ARRAY
-      try {
-        // Get notifications from cache, and the notification's index in the notifications array
-        const { notifications } = client.readQuery({
-          query: GET_NOTIFICATIONS,
-        });
-        const notificationIndex = notifications.findIndex(
-          (item) => item._id === notification._id,
-        );
+      // // TODO: MAY BE USE THE NOTIFICATION THAT IS RECEIVED FROM THE SERVER TO
+      // // UPDATE LOCAL NOTIFICATIONS ARRAY
+      // try {
+      //   // Get notifications from cache, and the notification's index in the notifications array
+      //   const { notifications } = client.readQuery({
+      //     query: GET_NOTIFICATIONS,
+      //   });
+      //   const notificationIndex = notifications.findIndex(
+      //     (item) => item._id === notification._id,
+      //   );
 
-        // Create a new instance of notifications array
-        const newNotifications = [...notifications];
+      //   // Create a new instance of notifications array
+      //   const newNotifications = [...notifications];
 
-        // Change current user's isRead status in the new notifications array
-        newNotifications[notificationIndex] = {
-          ...newNotifications[notificationIndex],
-          isRead: {
-            ...newNotifications[notificationIndex].isRead,
-            [tokenPayload.userId]: true,
-          },
-        };
+      //   // Change current user's isRead status in the new notifications array
+      //   newNotifications[notificationIndex] = {
+      //     ...newNotifications[notificationIndex],
+      //     isRead: {
+      //       ...newNotifications[notificationIndex].isRead,
+      //       [tokenPayload.userId]: true,
+      //     },
+      //   };
 
-        // Write the new notifications array cache
-        client.writeQuery({
-          query: GET_NOTIFICATIONS,
-          data: { notifications: newNotifications },
-        });
-        // eslint-disable-next-line
-      } catch (err) {}
+      //   // Write the new notifications array cache
+      //   client.writeQuery({
+      //     query: GET_NOTIFICATIONS,
+      //     data: { notifications: newNotifications },
+      //   });
+      //   // eslint-disable-next-line
+      // } catch (err) {}
     },
     onError: ({ message }) => {
       console.log(message);
@@ -557,6 +563,9 @@ NotificationDetails.propTypes = {
     params: PropTypes.shape({
       id: PropTypes.string.isRequired,
     }).isRequired,
+  }).isRequired,
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
   }).isRequired,
 };
 

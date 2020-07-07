@@ -148,14 +148,14 @@ function Navbar() {
               <FontAwesomeIcon
                 className="nav-icon"
                 icon={faSignOutAlt}
-                onClick={() => {
+                onClick={async () => {
                   // Clear localStorage
                   localStorage.removeItem('@sharinghood:accessToken');
                   localStorage.removeItem('@sharinghood:refreshToken');
                   localStorage.removeItem('@sharinghood:selCommunityId');
 
                   // Clear loacl cache
-                  client.clearStore();
+                  await client.clearStore();
 
                   // Fetch tokenPayload to clean local state
                   refetch();

@@ -82,7 +82,6 @@ const typeDefs = gql`
     image: String
     condition: Int
     isGiveaway: Boolean
-    requestId: ID
     requesterId: ID
   }
 
@@ -163,6 +162,7 @@ const typeDefs = gql`
   type Notification {
     _id: ID!
     ofType: Int
+    post: Post
     booking: Booking
     participants: [User]
     messages: [Message]
@@ -170,9 +170,9 @@ const typeDefs = gql`
   }
 
   input NotificationInput {
-    bookingInput: BookingInput
     ofType: Int
     recipientId: ID
+    bookingInput: BookingInput
   }
 
   # Activities
@@ -233,7 +233,7 @@ const typeDefs = gql`
   ### Mutation
   type Mutation {
     # User
-    login(email: String!, password: String!, communityId: ID): Auth!
+    login(email: String!, password: String!): Auth!
     updateUser(userInput: UserInput): User
     tokenRefresh(token: String!): Auth
     forgotPassword(email: String, accessKey: String): String

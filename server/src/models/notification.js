@@ -2,30 +2,24 @@ const { Schema, model } = require('mongoose');
 
 const notificationSchema = new Schema(
   {
-    // 0: chats
-    // 1: bookings
-    // 2: requests
+    // 0: Chats
+    // 1: Bookings
+    // 2: Requests
     ofType: {
       type: Number,
       required: true,
     },
 
-    // Booking obj if type is 0
+    // For ofType 1
     booking: {
       type: Schema.Types.ObjectId,
       ref: 'Booking',
     },
 
-    // Request response obj if type is 1
-    requestRes: {
-      post: {
-        type: Schema.Types.ObjectId,
-        ref: 'Post',
-      },
-      request: {
-        type: Schema.Types.ObjectId,
-        ref: 'Request',
-      },
+    // For ofType 2
+    post: {
+      type: Schema.Types.ObjectId,
+      ref: 'Post',
     },
 
     // All messages associated with booking or chat

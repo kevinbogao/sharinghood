@@ -35,6 +35,7 @@ const FIND_COMMUNITY = gql`
     community(communityCode: $communityCode) {
       _id
       name
+      code
       members {
         _id
         image
@@ -151,6 +152,7 @@ function CommunityInvite({ match, history }) {
         pathname: '/find-community',
         state: {
           communityId: data.community._id,
+          communityCode: data.community.code,
           communityName: data.community.name,
           members: data.community.members,
           isCreator: false,

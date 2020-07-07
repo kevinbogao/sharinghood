@@ -26,10 +26,6 @@ const requestSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
     },
-    community: {
-      type: Schema.Types.ObjectId,
-      ref: 'Community',
-    },
     threads: [
       {
         type: Schema.Types.ObjectId,

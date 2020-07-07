@@ -132,6 +132,31 @@ const notificationsResolvers = {
                 },
                 {
                   $lookup: {
+                    from: 'posts',
+                    let: { post: '$post' },
+                    pipeline: [
+                      { $match: { $expr: { $eq: ['$_id', '$$post'] } } },
+                      {
+                        $lookup: {
+                          from: 'users',
+                          localField: 'creator',
+                          foreignField: '_id',
+                          as: 'creator',
+                        },
+                      },
+                      { $unwind: '$creator' },
+                    ],
+                    as: 'post',
+                  },
+                },
+                {
+                  $unwind: {
+                    path: '$post',
+                    preserveNullAndEmptyArrays: true,
+                  },
+                },
+                {
+                  $lookup: {
                     from: 'users',
                     let: { participants: '$participants' },
                     pipeline: [

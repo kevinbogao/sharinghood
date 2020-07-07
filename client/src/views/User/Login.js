@@ -7,8 +7,8 @@ import InlineError from '../../components/InlineError';
 import Loading from '../../components/Loading';
 
 const LOGIN = gql`
-  mutation Login($email: String!, $password: String!, $communityId: ID) {
-    login(email: $email, password: $password, communityId: $communityId) {
+  mutation Login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
       accessToken
       refreshToken
     }
@@ -16,11 +16,11 @@ const LOGIN = gql`
 `;
 
 function Login({ history, location }) {
-  // Get communityId from props if user is directed from CommunityExists
+  // Get communityCode from props if user is directed from CommunityExists
   // else set it as null
-  const { communityId } = location.state || { communityId: null };
-  const client = useApolloClient();
   let email, password;
+  const { communityCode } = location.state || { communityCode: null };
+  const client = useApolloClient();
   const [error, setError] = useState({});
   const [login, { loading: mutationLoading }] = useMutation(LOGIN, {
     onCompleted: async ({ login }) => {
@@ -45,6 +45,7 @@ function Login({ history, location }) {
         pathname: '/communities',
         state: {
           fromLogin: true,
+          communityCode,
         },
       });
     },
@@ -79,7 +80,6 @@ function Login({ history, location }) {
               variables: {
                 email: email.value.toLowerCase(),
                 password: password.value,
-                ...(communityId && { communityId }),
               },
             });
           }
@@ -151,7 +151,7 @@ Login.propTypes = {
   }).isRequired,
   location: PropTypes.shape({
     state: PropTypes.shape({
-      communityId: PropTypes.string,
+      communityCode: PropTypes.string,
     }),
   }).isRequired,
 };

@@ -31,11 +31,6 @@ const communitiesResolvers = {
           },
         ]);
 
-        // Throw error if community code is given and community is not found
-        if (communityCode && !community[0]) {
-          throw new Error('code: Community not found');
-        }
-
         return community[0];
       } catch (err) {
         console.log(err);

@@ -180,7 +180,6 @@ function RequestDetails({ communityId, match, history }) {
               to={{
                 pathname: '/share',
                 state: {
-                  requestId: data.request._id,
                   requesterId: data.request.creator._id,
                   requesterName: data.request.creator.name,
                 },

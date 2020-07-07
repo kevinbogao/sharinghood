@@ -25,13 +25,6 @@ const GET_NOTIFICATIONS = gql`
           _id
         }
       }
-      post {
-        _id
-        creator {
-          _id
-          name
-        }
-      }
       participants {
         _id
         name
@@ -59,11 +52,11 @@ const UPDATE_BOOKING = gql`
 function Notifications({ history, communityId }) {
   const client = useApolloClient();
   const { loading, error, data } = useQuery(GET_NOTIFICATIONS, {
-    // Use useCallback to prevent fetchPolicy's infinite requests
-    // TODO: wait for package fix
+    // Use useCallback to prevent fetchPolicy's infinite requests, TODO: wait for package fix
     // fetchPolicy: 'network-only',
     fetchPolicy: 'cache-and-network',
-    onCompleted: useCallback(() => {
+    onCompleted: useCallback(({ notifications }) => {
+      console.log(notifications);
       // Mutate hasNotifications stats to false to remove notification red dot
       client.writeQuery({
         query: GET_COMMUNITY,
@@ -87,6 +80,9 @@ function Notifications({ history, communityId }) {
       loading: { mutationLoading },
     },
   ] = useMutation(UPDATE_BOOKING, {
+    onCompleted: (data) => {
+      console.log(data);
+    },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -105,7 +101,7 @@ function Notifications({ history, communityId }) {
           role="presentation"
           onClick={() => history.push(`/notification/${notification._id}`)}
         >
-          {notification.ofType === 0 ? (
+          {notification.ofType === 0 && (
             <>
               <img
                 className={`${
@@ -138,7 +134,8 @@ function Notifications({ history, communityId }) {
                 </div>
               </div>
             </>
-          ) : notification.ofType === 1 ? (
+          )}
+          {notification.ofType === 1 && (
             <>
               <img
                 className={`${
@@ -255,31 +252,6 @@ function Notifications({ history, communityId }) {
                 </div>
               </div>
             </>
-          ) : (
-            <>
-              <img
-                className={`${
-                  notification.isRead[data.tokenPayload.userId]
-                    ? undefined
-                    : 'unread'
-                }`}
-                src={JSON.parse(notification.participants[0].image).secure_url}
-                alt=""
-              />
-              <div className="item-info">
-                <div className="item-status">
-                  <p className="title">
-                    {notification.post.creator.name} uploaded a item for your
-                    request!
-                  </p>
-                </div>
-                <div className="item-btns">
-                  <button type="button" className="status brown">
-                    Request now
-                  </button>
-                </div>
-              </div>
-            </>
           )}
         </div>
       ))}
@@ -375,10 +347,6 @@ function Notifications({ history, communityId }) {
 
                   &.bronze {
                     background: $bronze-200;
-                  }
-
-                  &.brown {
-                    background: $brown;
                   }
 
                   &.green {

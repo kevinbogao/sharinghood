@@ -94,15 +94,7 @@ const postsResolvers = {
     createPost: async (
       _,
       {
-        postInput: {
-          title,
-          desc,
-          image,
-          condition,
-          isGiveaway,
-          requestId,
-          requesterId,
-        },
+        postInput: { title, desc, image, condition, isGiveaway, requesterId },
         communityId,
       },
       { user, redis }
@@ -140,10 +132,7 @@ const postsResolvers = {
         if (requesterId) {
           const notification = await Notification.create({
             ofType: 2,
-            requestRes: {
-              post: post._id,
-              request: requestId,
-            },
+            post: post._id,
             participants: [requesterId, user.userId],
             isRead: {
               [requesterId]: false,

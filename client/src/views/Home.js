@@ -44,7 +44,7 @@ function Home({ history }) {
           },
         });
       } else {
-        setError({ community: 'Community not found' });
+        setError({ code: 'Community not found' });
       }
     },
     onError: ({ message }) => {

@@ -124,7 +124,7 @@ function CommunityExists({
         onClick={() => {
           history.push({
             pathname: '/login',
-            state: { communityId },
+            state: { communityCode },
           });
         }}
       >

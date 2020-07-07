@@ -1,36 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation } from '@apollo/client';
-import Modal from 'react-modal';
 import Loading from '../../components/Loading';
 import ProductScreenshot from '../../assets/images/product-screenshot.png';
 import { GET_COMMUNITY } from '../../components/Navbar';
-
-const MODAL_STYLE = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    transform: 'translate(-50%, -50%)',
-    borderWidth: 0,
-    boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '30px',
-    minWidth: '300px',
-  },
-};
-
-const GET_USER_COMMUNITIES = gql`
-  query Communities {
-    communities {
-      _id
-      name
-      posts {
-        _id
-      }
-    }
-  }
-`;
 
 const FIND_COMMUNITY = gql`
   query Community($communityCode: String!) {
@@ -63,16 +36,14 @@ const JOIN_COMMUNITY = gql`
 
 function CommunityInvite({ match, history }) {
   const [community, setCommunity] = useState(null);
-  const [selectedId, setSelectedId] = useState(null);
-  // console.log(community);
-  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-  const [isErrModalOpen, setIsErrModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [pageError, setPageError] = useState('');
-  const { loading, data } = useQuery(FIND_COMMUNITY, {
+
+  console.log(isLoggedIn);
+
+  const { loading } = useQuery(FIND_COMMUNITY, {
     variables: { communityCode: match.params.communityCode },
     onCompleted: ({ community, tokenPayload }) => {
-      // console.log(tokenPayload);
+      console.log(tokenPayload);
       setCommunity(community);
 
       // Set log in status if tokenPayload exists
@@ -85,78 +56,60 @@ function CommunityInvite({ match, history }) {
     },
   });
 
-  // Set selectedCommunityId in cache & localStorage, refetch community
-  // with selected communityId
-  const [selectCommunity] = useMutation(SELECT_COMMUNITY, {
-    refetchQueries: [
-      {
-        query: GET_COMMUNITY,
-        variables: { communityId: selectedId },
-      },
-    ],
-    // Redirect user to posts page on complete
-    onCompleted: (data) => {
-      console.log(data);
+  // // Set selectedCommunityId in cache & localStorage, refetch community
+  // // with selected communityId
+  // const [selectCommunity] = useMutation(SELECT_COMMUNITY, {
+  //   refetchQueries: [
+  //     {
+  //       query: GET_COMMUNITY,
+  //       variables: { communityId: selectedId },
+  //     },
+  //   ],
+  //   onCompleted: () => {
+  //     history.push('/find');
+  //   },
+  // });
 
-      // history.push('/find');
-    },
-  });
+  // // Add user to community
+  // const [joinCommunity, { loading: mutationLoading }] = useMutation(
+  //   JOIN_COMMUNITY,
+  //   {
+  //     update(cache, { data: { joinCommunity } }) {
+  //       // Get and update communities cache
+  //       const { communities } = cache.readQuery({
+  //         query: GET_USER_COMMUNITIES,
+  //       });
+  //       cache.writeQuery({
+  //         query: GET_USER_COMMUNITIES,
+  //         communities: [...communities, joinCommunity],
+  //       });
 
-  // Add user to community
-  const [joinCommunity, { loading: mutationLoading }] = useMutation(
-    JOIN_COMMUNITY,
-    {
-      update(cache, { data: { joinCommunity } }) {
-        console.log(joinCommunity);
+  //       // Set community id
+  //       selectCommunity({
+  //         variables: {
+  //           communityId: joinCommunity._id,
+  //         },
+  //       });
 
-        // Get and update communities cache
-        const { communities } = cache.readQuery({
-          query: GET_USER_COMMUNITIES,
-        });
-        cache.writeQuery({
-          query: GET_USER_COMMUNITIES,
-          communities: [...communities, joinCommunity],
-        });
-        // Set community id
-        selectCommunity({
-          variables: {
-            communityId: joinCommunity._id,
-          },
-        });
-      },
-      onError: ({ message }) => {
-        setPageError(message);
-      },
-    },
-  );
+  //       // Redirect to posts page
+  //       history.push('/find');
+  //     },
+  //     onError: ({ message }) => {
+  //       console.log(message);
+  //     },
+  //   },
+  // );
 
-  // Set isJoinModalOpen to true if user is logged in, else redirect user to
-  // CommunityExist component with related states
   function handleSubmit() {
-    if (isLoggedIn) {
-      // Check if user is part of the community
-      const userIsInCommunity = community.members.some(
-        (member) => member._id === data.tokenPayload.userId,
-      );
-
-      // Open error modal if user is part of the the community already
-      if (userIsInCommunity) {
-        setPageError(`You are already a member of ${community.name}`);
-        setIsErrModalOpen(true);
-      } else {
-        setIsJoinModalOpen(true);
-      }
-    } else {
-      history.push({
-        pathname: '/find-community',
-        state: {
-          communityId: community._id,
-          communityName: community.name,
-          members: community.members,
-          isCreator: false,
-        },
-      });
-    }
+    history.push({
+      pathname: '/find-community',
+      state: {
+        communityId: community._id,
+        communityName: community.name,
+        members: community.members,
+        isCreator: false,
+      },
+    });
   }
 
   return loading ? (
@@ -193,61 +146,10 @@ function CommunityInvite({ match, history }) {
               Join {community.name} now
             </button>
           </div>
-          <Modal
-            isOpen={isJoinModalOpen}
-            style={MODAL_STYLE}
-            onRequestClose={() => {
-              setIsJoinModalOpen(false);
-            }}
-          >
-            <p className="modal-p">Join {community.name}?</p>
-            <button
-              className="prev-btn"
-              type="button"
-              onClick={() => {
-                setSelectedId(community._id);
-                joinCommunity({
-                  variables: {
-                    communityId: community._id,
-                  },
-                });
-              }}
-            >
-              Yes
-            </button>
-            <button
-              type="button"
-              className="modal-btn full bronze"
-              onClick={() => {
-                setIsJoinModalOpen(false);
-              }}
-            >
-              Close
-            </button>
-          </Modal>
-          <Modal
-            isOpen={isErrModalOpen}
-            style={MODAL_STYLE}
-            onRequestClose={() => {
-              setIsErrModalOpen(false);
-            }}
-          >
-            <p className="modal-p">{pageError}</p>
-            <button
-              type="button"
-              className="modal-btn full bronze"
-              onClick={() => {
-                setIsErrModalOpen(false);
-              }}
-            >
-              Close
-            </button>
-          </Modal>
         </>
       ) : (
         <h3>The invite link you have entered is invalid.</h3>
       )}
-      {mutationLoading && <Loading isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

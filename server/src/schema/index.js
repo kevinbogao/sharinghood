@@ -234,7 +234,6 @@ const typeDefs = gql`
     # User
     login(email: String!, password: String!, communityId: ID): Auth!
     updateUser(userInput: UserInput): User
-    joinCommunity(communityId: ID!): Community
     tokenRefresh(token: String!): Auth
     forgotPassword(email: String, accessKey: String): String
     resetPassword(userIdKey: String!, password: String!): Boolean
@@ -247,6 +246,7 @@ const typeDefs = gql`
 
     # Community
     createCommunity(communityInput: CommunityInput!): Community!
+    joinCommunity(communityId: ID!): Community
 
     # Post
     createPost(postInput: PostInput!, communityId: ID): Post!

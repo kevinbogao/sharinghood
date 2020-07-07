@@ -233,28 +233,28 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
-    joinCommunity: async (_, { communityId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+    // joinCommunity: async (_, { communityId }, { user }) => {
+    //   if (!user) throw new AuthenticationError('Not Authenticated');
 
-      try {
-        // Get current user & community
-        const [currentUser, community] = await Promise.all([
-          await User.findById(user.userId),
-          await Community.findById(communityId),
-        ]);
+    //   try {
+    //     // Get current user & community
+    //     const [currentUser, community] = await Promise.all([
+    //       await User.findById(user.userId),
+    //       await Community.findById(communityId),
+    //     ]);
 
-        // Save user to community members and save community to
-        // user communities
-        currentUser.communities.push(communityId);
-        community.members.push(user.userId);
-        await Promise.all([currentUser.save(), community.save()]);
+    //     // Save user to community members and save community to
+    //     // user communities
+    //     currentUser.communities.push(communityId);
+    //     community.members.push(user.userId);
+    //     await Promise.all([currentUser.save(), community.save()]);
 
-        return community;
-      } catch (err) {
-        console.log(err);
-        throw new Error(err);
-      }
-    },
+    //     return community;
+    //   } catch (err) {
+    //     console.log(err);
+    //     throw new Error(err);
+    //   }
+    // },
     tokenRefresh: async (_, { token }) => {
       try {
         // Validate token & get userId if token is valid

@@ -1,5 +1,10 @@
 const { Schema, model } = require('mongoose');
 
+// Limite number of communities a user can be to 5
+function communitiesLimit(communities) {
+  return communities.length < 6;
+}
+
 const userSchema = new Schema(
   {
     name: {
@@ -40,12 +45,15 @@ const userSchema = new Schema(
         ref: 'Notification',
       },
     ],
-    communities: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Community',
-      },
-    ],
+    communities: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: 'Community',
+        },
+      ],
+      validate: [communitiesLimit, '{PATH} exceeds the limit of 5'],
+    },
     lastLogin: Date,
     isNotified: {
       type: Boolean,

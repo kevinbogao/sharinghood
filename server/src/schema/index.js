@@ -271,7 +271,6 @@ const typeDefs = gql`
 
     # Notification
     createNotification(notificationInput: NotificationInput): Notification
-    # updateNotification(notificationInput: NotificationInput!): Notification
   }
 
   type Subscription {

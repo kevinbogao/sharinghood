@@ -165,9 +165,8 @@ function PostDetails({ communityId, match, history }) {
             query: GET_NOTIFICATIONS,
             data: { notifications: [createNotification, ...notifications] },
           });
-        } catch (err) {
-          console.log(err);
-        }
+          // eslint-disable-next-line
+        } catch (err) {}
 
         // Redirect user to notifications
         history.push('/notifications');
@@ -443,10 +442,6 @@ function PostDetails({ communityId, match, history }) {
             background: $grey-200;
             border-radius: 4px;
             margin-bottom: 12px;
-
-            // @include sm {
-            //   width: 280px;
-            // }
           }
         `}
       </style>

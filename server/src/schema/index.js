@@ -82,6 +82,8 @@ const typeDefs = gql`
     image: String
     condition: Int
     isGiveaway: Boolean
+    requestId: ID
+    requesterId: ID
   }
 
   ### Request
@@ -118,7 +120,6 @@ const typeDefs = gql`
     content: String!
     isPost: Boolean!
     parentId: ID!
-    recipientId: ID!
     communityId: ID!
   }
 
@@ -161,7 +162,7 @@ const typeDefs = gql`
   # Notifications
   type Notification {
     _id: ID!
-    onType: Int
+    ofType: Int
     booking: Booking
     participants: [User]
     messages: [Message]
@@ -170,7 +171,7 @@ const typeDefs = gql`
 
   input NotificationInput {
     bookingInput: BookingInput
-    onType: Int
+    ofType: Int
     recipientId: ID
   }
 
@@ -270,7 +271,7 @@ const typeDefs = gql`
 
     # Notification
     createNotification(notificationInput: NotificationInput): Notification
-    updateNotification(notificationInput: NotificationInput!): Notification
+    # updateNotification(notificationInput: NotificationInput!): Notification
   }
 
   type Subscription {

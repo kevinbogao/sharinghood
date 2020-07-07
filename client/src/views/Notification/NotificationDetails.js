@@ -11,7 +11,7 @@ const GET_NOTIFICATION = gql`
   query GetNotification($notificationId: ID!) {
     notification(notificationId: $notificationId) {
       _id
-      onType
+      ofType
       booking {
         _id
         status
@@ -206,7 +206,12 @@ function NotificationDetails({ communityId, match }) {
             alt="Booker profile"
           />
         </div>
-        {data.notification.onType === 0 && (
+        {data.notification.ofType === 0 && (
+          <>
+            <p>You - {data.notification.participants[0].name}</p>
+          </>
+        )}
+        {data.notification.ofType === 1 && (
           <div className="item-info">
             <div className="item-status">
               <p>{data.notification.booking.post.title}</p>
@@ -301,11 +306,6 @@ function NotificationDetails({ communityId, match }) {
               )}
             </div>
           </div>
-        )}
-        {data.notification.onType === 2 && (
-          <>
-            <p>You - {data.notification.participants[0].name}</p>
-          </>
         )}
       </div>
       <div className="notification-chat">

@@ -4,7 +4,7 @@ import { gql, useLazyQuery, useMutation } from '@apollo/client';
 import Modal from 'react-modal';
 import moment from 'moment';
 import Loading from './Loading';
-import { GET_NOTIFICATIONS } from '../views/Notification/Notifications';
+// import { GET_NOTIFICATIONS } from '../views/Notification/Notifications';
 
 const MODAL_STYLE = {
   content: {
@@ -31,7 +31,7 @@ const CREATE_NOTIFICATION = gql`
   mutation CreateNotification($notificationInput: NotificationInput) {
     createNotification(notificationInput: $notificationInput) {
       _id
-      onType
+      ofType
       booking {
         _id
         status
@@ -75,31 +75,31 @@ function ItemDetails({ history, item, userId, children }) {
   const [createNotification, { loading: mutationLoading }] = useMutation(
     CREATE_NOTIFICATION,
     {
-      // Push to notification && update local state
-      update(cache, { data: { createNotification } }) {
-        try {
-          const { notifications } = cache.readQuery({
-            query: GET_NOTIFICATIONS,
-          });
-          cache.writeQuery({
-            query: GET_NOTIFICATIONS,
-            data: { notifications: [createNotification, ...notifications] },
-          });
-        } catch (err) {
-          console.log(err);
-        }
-
-        // Redirect user to notifications
-        history.push('/notifications');
-      },
       onCompleted: ({ createNotification }) => {
-        // TODO: Change return schema to Notification
-        // Push to notification && update local state
-        console.log(createNotification);
+        // Redirect user to chat on mutation complete
+        history.push(`/notification/${createNotification._id}`);
       },
       onError: ({ message }) => {
         console.log(message);
       },
+      // // Push to notification && update local state
+      // update(cache, { data: { createNotification } }) {
+      //   console.log(createNotification);
+
+      //   try {
+      //     const { notifications } = cache.readQuery({
+      //       query: GET_NOTIFICATIONS,
+      //     });
+      //     cache.writeQuery({
+      //       query: GET_NOTIFICATIONS,
+      //       data: { notifications: [createNotification, ...notifications] },
+      //     });
+      //     // eslint-disable-next-line
+      //   } catch (err) {}
+
+      //   // Redirect user to notifications
+      //   history.push('/notifications');
+      // },
     },
   );
 
@@ -132,7 +132,6 @@ function ItemDetails({ history, item, userId, children }) {
                   findNotification({
                     variables: {
                       recipientId: item.creator._id,
-                      // recipientId: 'kdsjalkdj',
                     },
                   });
                 }}
@@ -160,7 +159,7 @@ function ItemDetails({ history, item, userId, children }) {
             createNotification({
               variables: {
                 notificationInput: {
-                  onType: 2,
+                  ofType: 0,
                   recipientId: item.creator._id,
                 },
               },

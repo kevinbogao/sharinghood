@@ -208,13 +208,10 @@ const notificationsResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Create an array of recipients ids
-        const participantIds = [recipientId, user.userId];
-
         // Find a notification where both of users participates in and of type 2
         const notification = await Notification.findOne({
-          onType: 2,
-          participants: participantIds,
+          ofType: 0,
+          participants: [recipientId, user.userId],
         });
 
         // Return chat/notification object if it is found
@@ -224,45 +221,32 @@ const notificationsResolvers = {
         throw new Error(err);
       }
     },
-    // getNotifications: async (_, __, { user }) => {
-    //   if (!user) throw new AuthenticationError('Not Authenticated');
-    //   const { userId, communityId } = user;
-
-    //   try {
-    //     // Get notifications from user & community
-    //     const [currentUser, community] = await Promise.all([
-    //       User.findById(userId),
-    //       Community.findById(communityId),
-    //     ]);
-
-    //     const notifications = await Notification.find({
-    //       _id: {
-    //         $in: [...currentUser.notifications, ...community.notifications],
-    //       },
-    //       creator: { $ne: userId },
-    //     }).sort({ createdAt: -1 });
-
-    //     return notifications;
-    //   } catch (err) {
-    //     console.log(err);
-    //     throw err;
-    //   }
-    // },
   },
   Mutation: {
     createNotification: async (
       _,
-      { notificationInput: { onType, recipientId, bookingInput } },
+      { notificationInput: { ofType, recipientId, bookingInput } },
       { user, redis }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Declear booking variable for lower onType === 0 scope
+        // Declear top level variables
         let booking, post, recipient, existingChat;
 
-        // If type === 0 (i.e it is booking related notification)
-        if (onType === 0) {
+        // If type is 0 (i.e chat), create chat notification
+        if (ofType === 0) {
+          // Check if chat that contains both user exists
+          existingChat = await Notification.findOne({
+            ofType: 0,
+            participants: [recipientId, user.userId],
+          });
+
+          // Return chat notification if it exists
+          if (existingChat) return existingChat;
+
+          // If type is 1 (i.e booking), create booking
+        } else if (ofType === 1) {
           // Destructure variables from bookingInput
           const {
             postId,
@@ -273,7 +257,7 @@ const notificationsResolvers = {
             communityId,
           } = bookingInput;
 
-          // Create & save booking && get parent post
+          // Create & save booking && get parent post && recipient
           [booking, post, recipient] = await Promise.all([
             Booking.create({
               post: postId,
@@ -290,7 +274,7 @@ const notificationsResolvers = {
           // Add booking to post bookings
           post.bookings.push(booking);
 
-          // Save post & sent booking email to recipient
+          // Save post & sent booking email to recipient if recipient is subscribed to email
           await Promise.all([
             post.save(),
             recipient.isNotified &&
@@ -302,88 +286,50 @@ const notificationsResolvers = {
           ]);
         }
 
-        // Create an array of recipients ids
-        const participantIds = [recipientId, user.userId];
+        // Create & save notification, add booking to notification if it is type 1
+        const notification = await Notification.create({
+          ...(ofType === 1 && { booking: booking._id }),
+          ofType,
+          participants: [recipientId, user.userId],
+          // Notification read status for participants
+          isRead: {
+            [recipientId]: false,
+            [user.userId]: false,
+          },
+        });
 
-        // Query for chat that contains both users and of type 2
-        if (onType === 2) {
-          existingChat = await Notification.findOne({
-            onType: 2,
-            participants: participantIds,
-          });
-        }
-
-        // Only create & save notification if no existingChat is found
-        if (!existingChat) {
-          // Create & save notification, add booking to notification if
-          // it is type 0
-          const notification = await Notification.create({
-            ...(onType === 0 && { booking: booking._id }),
-            onType,
-            participants: participantIds,
-            // Notification read status for participants
-            isRead: {
-              [recipientId]: false,
-              [user.userId]: false,
-            },
-          });
-
-          // Save notification to recipient & current user && save
-          // notification:recipientId to redis
-          await Promise.all([
-            User.updateMany(
-              { _id: { $in: participantIds } },
-              {
-                $push: {
-                  notifications: notification,
-                },
-              }
-            ),
-            redis.set(`notifications:${recipientId}`, true),
-          ]);
-
-          // Get participants and add to return value
-          const participantsObj = await User.find({
-            _id: { $in: participantIds },
-          });
-
-          return {
-            ...notification._doc,
-            participants: participantsObj,
-            ...(onType === 0 && {
-              booking: {
-                ...booking._doc,
-                post: post._doc,
+        // Save notification to recipient & current user && save notification:recipientId to redis
+        await Promise.all([
+          User.updateMany(
+            { _id: { $in: [recipientId, user.userId] } },
+            {
+              $push: {
+                notifications: notification,
               },
-            }),
-          };
-        }
+            }
+          ),
+          redis.set(`notifications:${recipientId}`, true),
+        ]);
 
-        // Return null for all other cases
-        return null;
+        // Get participants and add to return value
+        const participants = await User.find({
+          _id: { $in: [recipientId, user.userId] },
+        });
+
+        // Return notification object with participants & booking if it is type 1
+        return {
+          ...notification._doc,
+          participants,
+          ...(ofType === 1 && {
+            booking: {
+              ...booking._doc,
+              post: post._doc,
+            },
+          }),
+        };
       } catch (err) {
         console.log(err);
         throw new Error(err);
-      }
-    },
-    updateNotification: async (
-      _,
-      { notificationInput: { notificationId, isRead } },
-      { user }
-    ) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
-
-      try {
-        const notification = await Notification.findById(notificationId);
-
-        // Update notification as read
-        notification.isRead = isRead;
-        await notification.save();
-
-        return notification;
-      } catch (err) {
-        console.log(err);
-        throw err;
       }
     },
   },

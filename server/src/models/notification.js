@@ -2,21 +2,12 @@ const { Schema, model } = require('mongoose');
 
 const notificationSchema = new Schema(
   {
-    // 0: bookings
-    // 1: requests
-    // 2: chats
-    onType: {
+    // 0: chats
+    // 1: bookings
+    // 2: requests
+    ofType: {
       type: Number,
       required: true,
-    },
-
-    // onDocId: {
-    //   type: Schema.Types.ObjectId,
-    //   required: true,
-    // },
-    content: {
-      type: String,
-      // required: true,
     },
 
     // Booking obj if type is 0
@@ -25,10 +16,16 @@ const notificationSchema = new Schema(
       ref: 'Booking',
     },
 
-    // Booking obj if type is 1
-    request: {
-      type: Schema.Types.ObjectId,
-      ref: 'Request',
+    // Request response obj if type is 1
+    requestRes: {
+      post: {
+        type: Schema.Types.ObjectId,
+        ref: 'Post',
+      },
+      request: {
+        type: Schema.Types.ObjectId,
+        ref: 'Request',
+      },
     },
 
     // All messages associated with booking or chat
@@ -54,6 +51,6 @@ const notificationSchema = new Schema(
 );
 
 // Index for user email
-notificationSchema.index({ onType: 1, participants: 1 });
+notificationSchema.index({ ofType: 1, participants: 1 });
 
 module.exports = model('Notification', notificationSchema);

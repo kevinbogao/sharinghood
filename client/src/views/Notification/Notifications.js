@@ -9,7 +9,7 @@ const GET_NOTIFICATIONS = gql`
   query GetNotifications {
     notifications {
       _id
-      onType
+      ofType
       booking {
         _id
         status
@@ -55,7 +55,8 @@ function Notifications({ history, communityId }) {
     // Use useCallback to prevent fetchPolicy's infinite requests, TODO: wait for package fix
     // fetchPolicy: 'network-only',
     fetchPolicy: 'cache-and-network',
-    onCompleted: useCallback(() => {
+    onCompleted: useCallback(({ notifications }) => {
+      console.log(notifications);
       // Mutate hasNotifications stats to false to remove notification red dot
       client.writeQuery({
         query: GET_COMMUNITY,
@@ -100,7 +101,41 @@ function Notifications({ history, communityId }) {
           role="presentation"
           onClick={() => history.push(`/notification/${notification._id}`)}
         >
-          {notification.onType === 0 && (
+          {notification.ofType === 0 && (
+            <>
+              <img
+                className={`${
+                  notification.isRead[data.tokenPayload.userId]
+                    ? undefined
+                    : 'unread'
+                }`}
+                src={JSON.parse(notification.participants[0].image).secure_url}
+                alt=""
+              />
+              <div className="message-info">
+                <div className="message-user">
+                  <p className="title name">
+                    {notification.participants[0].name}
+                  </p>
+                </div>
+                <div className="message-text">
+                  {notification.messages.length > 0 ? (
+                    <p className="text">
+                      {
+                        notification.messages[notification.messages.length - 1]
+                          .text
+                      }
+                    </p>
+                  ) : (
+                    <p className="text">
+                      Send a message to {notification.participants[0].name} now
+                    </p>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+          {notification.ofType === 1 && (
             <>
               <img
                 className={`${
@@ -116,7 +151,7 @@ function Notifications({ history, communityId }) {
                   {notification.booking.booker._id ===
                   data.tokenPayload.userId ? (
                     <p className="title">
-                      You requested {notification.participants[0].name}&apos;{' '}
+                      You requested {notification.participants[0].name}&apos;s{' '}
                       {notification.booking.post.title}
                     </p>
                   ) : (
@@ -213,40 +248,6 @@ function Notifications({ history, communityId }) {
                         </button>
                       )}
                     </>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-          {notification.onType === 2 && (
-            <>
-              <img
-                className={`${
-                  notification.isRead[data.tokenPayload.userId]
-                    ? undefined
-                    : 'unread'
-                }`}
-                src={JSON.parse(notification.participants[0].image).secure_url}
-                alt=""
-              />
-              <div className="message-info">
-                <div className="message-user">
-                  <p className="title name">
-                    {notification.participants[0].name}
-                  </p>
-                </div>
-                <div className="message-text">
-                  {notification.messages.length > 0 ? (
-                    <p className="text">
-                      {
-                        notification.messages[notification.messages.length - 1]
-                          .text
-                      }
-                    </p>
-                  ) : (
-                    <p className="text">
-                      Send a message to {notification.participants[0].name} now
-                    </p>
                   )}
                 </div>
               </div>

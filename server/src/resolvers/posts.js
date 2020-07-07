@@ -93,8 +93,19 @@ const postsResolvers = {
   Mutation: {
     createPost: async (
       _,
-      { postInput: { title, desc, image, condition, isGiveaway }, communityId },
-      { user }
+      {
+        postInput: {
+          title,
+          desc,
+          image,
+          condition,
+          isGiveaway,
+          requestId,
+          requesterId,
+        },
+        communityId,
+      },
+      { user, redis }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
       const { userId, userName } = user;
@@ -104,7 +115,8 @@ const postsResolvers = {
         const imgData = await uploadImg(image);
 
         // Create & save post && get creator && find creator's community
-        const [post, creator, community] = await Promise.all([
+        // && find requester if the post is in response to a request
+        const [post, creator, community, requester] = await Promise.all([
           Post.create({
             desc,
             title,
@@ -115,6 +127,7 @@ const postsResolvers = {
           }),
           User.findById(userId),
           communityId && Community.findById(communityId),
+          requesterId && User.findById(requesterId),
         ]);
 
         // Only save to community if communityId is given, i.e user is
@@ -122,6 +135,32 @@ const postsResolvers = {
         if (communityId) {
           community.posts.push(post);
         }
+
+        // Create notification if requesterId is given
+        if (requesterId) {
+          const notification = await Notification.create({
+            ofType: 2,
+            requestRes: {
+              post: post._id,
+              request: requestId,
+            },
+            participants: [requesterId, user.userId],
+            isRead: {
+              [requesterId]: false,
+              [user.userId]: false,
+            },
+          });
+
+          // Add notification to requester
+          requester.notifications.push(notification);
+
+          // Save requester & and add hasNotifications to requester
+          await Promise.all([
+            requester.save(),
+            redis.set(`notifications:${requesterId}`, true),
+          ]);
+        }
+
         creator.posts.push(post);
         await Promise.all([communityId && community.save(), creator.save()]);
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import Modal from 'react-modal';
 import Loading from '../../components/Loading';
 import ProductScreenshot from '../../assets/images/product-screenshot.png';
@@ -26,9 +26,6 @@ const GET_USER_COMMUNITIES = gql`
     communities {
       _id
       name
-      posts {
-        _id
-      }
     }
   }
 `;
@@ -63,23 +60,15 @@ const JOIN_COMMUNITY = gql`
 `;
 
 function CommunityInvite({ match, history }) {
-  const [community, setCommunity] = useState(null);
-  const [selectedId, setSelectedId] = useState(null);
+  const client = useApolloClient();
   const [pageError, setPageError] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
   const [isErrModalOpen, setIsErrModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-  const { loading, data } = useQuery(FIND_COMMUNITY, {
-    variables: { communityCode: match.params.communityCode },
-    onCompleted: ({ community, tokenPayload }) => {
-      // Set community to state
-      setCommunity(community);
 
-      // Set log in status if tokenPayload exists
-      if (tokenPayload) {
-        setIsLoggedIn(true);
-      }
-    },
+  // Find community by community code from url
+  const { loading, error, data } = useQuery(FIND_COMMUNITY, {
+    variables: { communityCode: match.params.communityCode },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -100,7 +89,7 @@ function CommunityInvite({ match, history }) {
     },
   });
 
-  // Add user to community
+  // Mutation for user to joinCommunity
   const [joinCommunity, { loading: mutationLoading }] = useMutation(
     JOIN_COMMUNITY,
     {
@@ -132,18 +121,27 @@ function CommunityInvite({ match, history }) {
     },
   );
 
-  // Set isJoinModalOpen to true if user is logged in, else redirect user to
-  // CommunityExist component with related states
-  function handleSubmit() {
-    if (isLoggedIn) {
+  // Try to join user to community if user is logged in,
+  // esle redirect user CommunityExist component
+  function handleSubmit(data) {
+    if (data.tokenPayload) {
       // Check if user is part of the community
-      const userIsInCommunity = community.members.some(
+      const userIsMember = data.community.members.some(
         (member) => member._id === data.tokenPayload.userId,
       );
 
-      // Open error modal if user is part of the the community already
-      if (userIsInCommunity) {
-        setPageError(`You are already a member of ${community.name}`);
+      // Get user communities from cache
+      const { communities } = client.readQuery({
+        query: GET_USER_COMMUNITIES,
+      });
+
+      // Open error modal if user is part of 5 communities already
+      if (communities.length >= 5) {
+        setPageError('You have reached the maximum number of communities');
+        setIsErrModalOpen(true);
+        // Open error modal if user is part of the the community already
+      } else if (userIsMember) {
+        setPageError(`You are already a member of ${data.community.name}`);
         setIsErrModalOpen(true);
       } else {
         setIsJoinModalOpen(true);
@@ -152,9 +150,9 @@ function CommunityInvite({ match, history }) {
       history.push({
         pathname: '/find-community',
         state: {
-          communityId: community._id,
-          communityName: community.name,
-          members: community.members,
+          communityId: data.community._id,
+          communityName: data.community.name,
+          members: data.community.members,
           isCreator: false,
         },
       });
@@ -165,18 +163,24 @@ function CommunityInvite({ match, history }) {
     <Loading />
   ) : (
     <div className="community-invite-control">
-      {community ? (
+      {error ? (
+        <h3>The invite link you have entered is invalid.</h3>
+      ) : (
         <>
           <div className="invite-text">
             <h3>Amazing to see you here!</h3>
-            <p>You have been invited to {community.name}</p>
+            <p>You have been invited to {data.community.name}</p>
             <p>
               Sharinghood is a platform which enables you to share items with
               your community.
             </p>
             <p>You are only one registration away from an easier life.</p>
-            <button className="main-btn" onClick={handleSubmit} type="submit">
-              Join {community.name} now
+            <button
+              className="main-btn"
+              onClick={() => handleSubmit(data)}
+              type="submit"
+            >
+              Join {data.community.name} now
             </button>
           </div>
           <div className="invite-img">
@@ -191,8 +195,12 @@ function CommunityInvite({ match, history }) {
                 <img src={ProductScreenshot} alt="Screenshot of our product" />
               </div>
             </div>
-            <button className="main-btn" onClick={handleSubmit} type="submit">
-              Join {community.name} now
+            <button
+              className="main-btn"
+              onClick={() => handleSubmit(data)}
+              type="submit"
+            >
+              Join {data.community.name} now
             </button>
           </div>
           <Modal
@@ -202,15 +210,16 @@ function CommunityInvite({ match, history }) {
               setIsJoinModalOpen(false);
             }}
           >
-            <p className="modal-p">Join {community.name}?</p>
+            <p className="modal-p">Join {data.community.name}?</p>
             <button
               className="prev-btn"
               type="button"
-              onClick={() => {
-                setSelectedId(community._id);
+              onClick={(e) => {
+                e.preventDefault();
+                setSelectedId(data.community._id);
                 joinCommunity({
                   variables: {
-                    communityId: community._id,
+                    communityId: data.community._id,
                   },
                 });
               }}
@@ -246,8 +255,6 @@ function CommunityInvite({ match, history }) {
             </button>
           </Modal>
         </>
-      ) : (
-        <h3>The invite link you have entered is invalid.</h3>
       )}
       {mutationLoading && <Loading isCover />}
       <style jsx>

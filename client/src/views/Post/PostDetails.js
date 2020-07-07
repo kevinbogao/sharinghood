@@ -85,7 +85,7 @@ const CREATE_NOTIFICATION = gql`
   mutation CreateNotification($notificationInput: NotificationInput) {
     createNotification(notificationInput: $notificationInput) {
       _id
-      onType
+      ofType
       booking {
         _id
         status
@@ -270,7 +270,7 @@ function PostDetails({ communityId, match, history }) {
                     communityId,
                     ...(dateType === 2 && { dateNeed, dateReturn }),
                   },
-                  onType: 0,
+                  ofType: 1,
                   recipientId: data.post.creator._id,
                 },
               },
@@ -316,7 +316,6 @@ function PostDetails({ communityId, match, history }) {
                             content: comment,
                             isPost: true,
                             parentId: data.post._id,
-                            recipientId: data.post.creator._id,
                             communityId,
                           },
                         },

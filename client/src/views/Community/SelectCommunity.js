@@ -107,7 +107,7 @@ function SelectCommunity({ history, location }) {
       );
 
       // Throw erorr if user is in 5 communities already
-      if (data.communities.length > 5)
+      if (data.communities.length >= 5)
         setPageError({
           code: 'You have reached the maximum number of communities',
         });

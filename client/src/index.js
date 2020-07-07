@@ -15,13 +15,22 @@ import { setContext } from 'apollo-link-context';
 import { TokenRefreshLink } from 'apollo-link-token-refresh';
 import jwtDecode from 'jwt-decode';
 import App from './App';
+import TagManager from 'react-gtm-module';
 import * as serviceWorker from './serviceWorker';
 
 // Dotenv config
 require('dotenv').config();
 
+// Google Tag Manager config
+const TAG_MANAGER_ARGS = {
+  gtmId: process.env.REACT_APP_GTM_ID,
+};
+
 // Get accessToken from localStorage
 let accessToken = localStorage.getItem('@sharinghood:accessToken');
+
+// Init Google Tag Manager Module
+TagManager.initialize(TAG_MANAGER_ARGS);
 
 // Create an http link
 const httpLink = new HttpLink({

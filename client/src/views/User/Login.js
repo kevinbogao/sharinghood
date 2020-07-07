@@ -77,7 +77,7 @@ function Login({ history, location }) {
           if (Object.keys(errors).length === 0) {
             login({
               variables: {
-                email: email.value,
+                email: email.value.toLowerCase(),
                 password: password.value,
                 ...(communityId && { communityId }),
               },

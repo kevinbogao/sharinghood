@@ -287,10 +287,11 @@ function RequestDetails({ communityId, match, history }) {
               }
 
               @include md {
-                margin: 20px 0 0 0;
+                margin: 20px 0 0 30px;
               }
 
               @include sm {
+                margin: 20px 0 0 0;
                 width: 100%;
               }
 

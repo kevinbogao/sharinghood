@@ -94,6 +94,8 @@ function NotificationDetails({ communityId, match }) {
   const { subscribeToMore, loading, error, data } = useQuery(GET_NOTIFICATION, {
     variables: { notificationId: match.params.id, communityId },
     onCompleted: ({ notification, tokenPayload }) => {
+      console.log(notification);
+
       // TODO: MAY BE USE THE NOTIFICATION THAT IS RECEIVED FROM THE SERVER TO
       // UPDATE LOCAL NOTIFICATIONS ARRAY
       try {
@@ -332,7 +334,11 @@ function NotificationDetails({ communityId, match }) {
               if (keyCode === 13 && text !== '') {
                 createMessage({
                   variables: {
-                    messageInput: { notificationId: match.params.id, text },
+                    messageInput: {
+                      text,
+                      recipientId: data.notification.participants[0]._id,
+                      notificationId: match.params.id,
+                    },
                   },
                 });
               }
@@ -346,7 +352,11 @@ function NotificationDetails({ communityId, match }) {
               if (text !== '') {
                 createMessage({
                   variables: {
-                    messageInput: { notificationId: match.params.id, text },
+                    messageInput: {
+                      text,
+                      recipientId: data.notification.participants[0]._id,
+                      notificationId: match.params.id,
+                    },
                   },
                 });
               }

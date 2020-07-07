@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import moment from 'moment';
@@ -52,7 +52,10 @@ const UPDATE_BOOKING = gql`
 function Notifications({ history, communityId }) {
   const client = useApolloClient();
   const { loading, error, data } = useQuery(GET_NOTIFICATIONS, {
-    onCompleted: () => {
+    // Use useCallback to prevent fetchPolicy's infinite requests, TODO: wait for package fix
+    // fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-and-network',
+    onCompleted: useCallback(() => {
       // Mutate hasNotifications stats to false to remove notification red dot
       client.writeQuery({
         query: GET_COMMUNITY,
@@ -62,7 +65,8 @@ function Notifications({ history, communityId }) {
           hasNotifications: false,
         },
       });
-    },
+      // eslint-disable-next-line
+    }, []),
   });
 
   // Update booking status by changing booking status int

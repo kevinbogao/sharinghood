@@ -17,8 +17,8 @@ const messagesResolvers = {
   Mutation: {
     createMessage: async (
       _,
-      { messageInput: { notificationId, text } },
-      { user }
+      { messageInput: { text, recipientId, notificationId } },
+      { user, redis }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
       const { userId } = user;
@@ -34,9 +34,16 @@ const messagesResolvers = {
           Notification.findById(notificationId),
         ]);
 
-        // Save messageId to notification
+        // Add essageId to notification & update recipient's isRead status to false
         notification.messages.push(message);
-        await notification.save();
+        notification.isRead[recipientId] = false;
+        notification.markModified('isRead');
+
+        // Save notification & set recipient's hasNotifications to true in redis
+        await Promise.all([
+          notification.save(),
+          redis.set(`notifications:${recipientId}`, true),
+        ]);
 
         // Publish new message
         pubsub.publish(NEW_NOTIFICATION_MESSAGE, {

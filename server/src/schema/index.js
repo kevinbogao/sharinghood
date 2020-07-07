@@ -10,7 +10,6 @@ const typeDefs = gql`
     _id: ID
     name: String
     email: String
-    # password: String
     image: String
     apartment: String
     isNotified: Boolean
@@ -132,9 +131,9 @@ const typeDefs = gql`
   }
 
   input MessageInput {
-    chatId: ID
-    notificationId: ID!
     text: String!
+    recipientId: ID!
+    notificationId: ID!
   }
 
   # Bookings
@@ -223,7 +222,6 @@ const typeDefs = gql`
     notification(notificationId: ID!): Notification
     notifications(userId: ID): [Notification]
     findNotification(recipientId: ID!): Notification
-    getNotifications(userId: ID): [Notification]
     hasNotifications: Boolean
 
     # Activity

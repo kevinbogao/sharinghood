@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const User = require('../models/user');
 const Post = require('../models/post');
 const Booking = require('../models/booking');
-const Community = require('../models/community');
+// const Community = require('../models/community');
 const Notification = require('../models/notification');
 const updateBookingMail = require('../utils/sendMail/updateBookingMail');
 
@@ -14,7 +14,8 @@ const notificationsResolvers = {
 
       try {
         // Get notification & populate data && get notification mongoose instance
-        const [notification, notificationObj] = await Promise.all([
+        // eslint-disable-next-line
+        const [notification, updateNotification] = await Promise.all([
           Notification.aggregate([
             {
               $match: { _id: mongoose.Types.ObjectId(notificationId) },
@@ -76,15 +77,13 @@ const notificationsResolvers = {
               },
             },
           ]),
-          Notification.findById(notificationId),
+          // Update isRead of current user to true via MongoDB API to
+          // avoid mongoose's auto timestamp
+          Notification.collection.findOneAndUpdate(
+            { _id: mongoose.Types.ObjectId(notificationId) },
+            { $set: { [`isRead.${user.userId}`]: true } }
+          ),
         ]);
-
-        // Set isRead of current user to true if isRead is false & save
-        if (!notificationObj.isRead[user.userId]) {
-          notificationObj.isRead[user.userId] = true;
-          notificationObj.markModified('isRead');
-          await notificationObj.save();
-        }
 
         return notification[0];
       } catch (err) {
@@ -225,30 +224,30 @@ const notificationsResolvers = {
         throw new Error(err);
       }
     },
-    getNotifications: async (_, __, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
-      const { userId, communityId } = user;
+    // getNotifications: async (_, __, { user }) => {
+    //   if (!user) throw new AuthenticationError('Not Authenticated');
+    //   const { userId, communityId } = user;
 
-      try {
-        // Get notifications from user & community
-        const [currentUser, community] = await Promise.all([
-          User.findById(userId),
-          Community.findById(communityId),
-        ]);
+    //   try {
+    //     // Get notifications from user & community
+    //     const [currentUser, community] = await Promise.all([
+    //       User.findById(userId),
+    //       Community.findById(communityId),
+    //     ]);
 
-        const notifications = await Notification.find({
-          _id: {
-            $in: [...currentUser.notifications, ...community.notifications],
-          },
-          creator: { $ne: userId },
-        }).sort({ createdAt: -1 });
+    //     const notifications = await Notification.find({
+    //       _id: {
+    //         $in: [...currentUser.notifications, ...community.notifications],
+    //       },
+    //       creator: { $ne: userId },
+    //     }).sort({ createdAt: -1 });
 
-        return notifications;
-      } catch (err) {
-        console.log(err);
-        throw err;
-      }
-    },
+    //     return notifications;
+    //   } catch (err) {
+    //     console.log(err);
+    //     throw err;
+    //   }
+    // },
   },
   Mutation: {
     createNotification: async (
@@ -360,9 +359,8 @@ const notificationsResolvers = {
           };
         }
 
-        // TODO: return chat?
-
-        // return 1;
+        // Return null for all other cases
+        return null;
       } catch (err) {
         console.log(err);
         throw new Error(err);

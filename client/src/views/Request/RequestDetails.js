@@ -147,7 +147,11 @@ function RequestDetails({ communityId, match, history }) {
     `Error! ${error.message}`
   ) : data.request ? (
     <div className="item-control">
-      <ItemDetails item={data.request} userId={data.tokenPayload.userId}>
+      <ItemDetails
+        item={data.request}
+        userId={data.tokenPayload.userId}
+        history={history}
+      >
         <div className="item-desc">
           <h3>{data.request.title}</h3>
           <p className="prev-p">{data.request.desc}</p>
@@ -176,7 +180,8 @@ function RequestDetails({ communityId, match, history }) {
               to={{
                 pathname: '/share',
                 state: {
-                  creatorName: data.request.creator.name,
+                  requesterId: data.request.creator._id,
+                  requesterName: data.request.creator.name,
                 },
               }}
             >
@@ -244,7 +249,6 @@ function RequestDetails({ communityId, match, history }) {
                             content: comment,
                             isPost: false,
                             parentId: data.request._id,
-                            recipientId: data.request.creator._id,
                             communityId,
                           },
                         },
@@ -283,10 +287,11 @@ function RequestDetails({ communityId, match, history }) {
               }
 
               @include md {
-                margin: 20px 0 0 0;
+                margin: 20px 0 0 30px;
               }
 
               @include sm {
+                margin: 20px 0 0 0;
                 width: 100%;
               }
 

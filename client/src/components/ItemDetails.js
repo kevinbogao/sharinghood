@@ -1,8 +1,108 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { gql, useLazyQuery, useMutation } from '@apollo/client';
+import Modal from 'react-modal';
 import moment from 'moment';
+import Loading from './Loading';
+// import { GET_NOTIFICATIONS } from '../views/Notification/Notifications';
 
-function ItemDetails({ item, children }) {
+const MODAL_STYLE = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    transform: 'translate(-50%, -50%)',
+    borderWidth: 0,
+    boxShadow: '0px 0px 6px #f2f2f2',
+    padding: '30px',
+  },
+};
+
+const FIND_NOTIFICATION = gql`
+  query FindNotification($recipientId: ID!) {
+    findNotification(recipientId: $recipientId) {
+      _id
+    }
+  }
+`;
+
+const CREATE_NOTIFICATION = gql`
+  mutation CreateNotification($notificationInput: NotificationInput) {
+    createNotification(notificationInput: $notificationInput) {
+      _id
+      ofType
+      booking {
+        _id
+        status
+        dateType
+        dateNeed
+        dateReturn
+        post {
+          _id
+          title
+          image
+        }
+        booker {
+          _id
+        }
+      }
+      participants {
+        _id
+        name
+        image
+      }
+      isRead
+      messages {
+        _id
+        text
+      }
+    }
+  }
+`;
+
+function ItemDetails({ history, item, userId, children }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [findNotification] = useLazyQuery(FIND_NOTIFICATION, {
+    onCompleted: ({ findNotification }) => {
+      // Redirect user to chat if chat (notification) exists, esle
+      // open the send message modal for the user to create a new notification
+      if (findNotification)
+        history.push(`/notification/${findNotification._id}`);
+      else setIsModalOpen(true);
+    },
+  });
+  const [createNotification, { loading: mutationLoading }] = useMutation(
+    CREATE_NOTIFICATION,
+    {
+      onCompleted: ({ createNotification }) => {
+        // Redirect user to chat on mutation complete
+        history.push(`/notification/${createNotification._id}`);
+      },
+      onError: ({ message }) => {
+        console.log(message);
+      },
+      // // Push to notification && update local state
+      // update(cache, { data: { createNotification } }) {
+      //   console.log(createNotification);
+
+      //   try {
+      //     const { notifications } = cache.readQuery({
+      //       query: GET_NOTIFICATIONS,
+      //     });
+      //     cache.writeQuery({
+      //       query: GET_NOTIFICATIONS,
+      //       data: { notifications: [createNotification, ...notifications] },
+      //     });
+      //     // eslint-disable-next-line
+      //   } catch (err) {}
+
+      //   // Redirect user to notifications
+      //   history.push('/notifications');
+      // },
+    },
+  );
+
   return (
     <>
       <div className="item-content">
@@ -23,10 +123,60 @@ function ItemDetails({ item, children }) {
                 {moment(+item.creator.createdAt).format('MMM DD')}
               </span>
             </p>
+            {item.creator._id !== userId && (
+              <button
+                className="msg-btn"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  findNotification({
+                    variables: {
+                      recipientId: item.creator._id,
+                    },
+                  });
+                }}
+              >
+                Send Message
+              </button>
+            )}
           </div>
         </div>
       </div>
       <div className="item-separator" />
+      <Modal
+        isOpen={isModalOpen}
+        style={MODAL_STYLE}
+        onRequestClose={() => setIsModalOpen(false)}
+      >
+        <p className="modal-p">
+          Would you like to sent a message to {item.creator.name} ?
+        </p>
+        <button
+          className="modal-btn full"
+          type="submit"
+          onClick={(e) => {
+            e.preventDefault();
+            createNotification({
+              variables: {
+                notificationInput: {
+                  ofType: 0,
+                  recipientId: item.creator._id,
+                },
+              },
+            });
+          }}
+        >
+          Yes
+        </button>
+        <button
+          className="modal-btn full bronze"
+          type="button"
+          onClick={() => setIsModalOpen(false)}
+        >
+          Close
+        </button>
+      </Modal>
+      {mutationLoading && <Loading isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -35,6 +185,20 @@ function ItemDetails({ item, children }) {
             display: flex;
             justify-content: space-between;
             margin-bottom: 30px;
+
+            .msg-btn {
+              color: $background;
+              background: $green-200;
+              padding: 5px 12px;
+              border: none;
+              border-radius: 15px;
+              font-size: 15px;
+
+              &:hover {
+                color: #fff;
+                background: $green-100;
+              }
+            }
 
             @include lg {
               flex-direction: column;
@@ -163,16 +327,23 @@ function ItemDetails({ item, children }) {
   );
 }
 
+Modal.setAppElement('#root');
+
 ItemDetails.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
   item: PropTypes.shape({
     image: PropTypes.string.isRequired,
     creator: PropTypes.shape({
+      _id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
       image: PropTypes.string.isRequired,
       apartment: PropTypes.string.isRequired,
       createdAt: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
+  userId: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
 };
 

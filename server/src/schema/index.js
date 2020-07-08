@@ -1,12 +1,15 @@
 const { gql } = require('apollo-server');
+const GraphQLJSON = require('graphql-type-json');
 
 const typeDefs = gql`
+  ### JSON scalar
+  scalar JSON
+
   ### User
   type User {
     _id: ID
     name: String
     email: String
-    # password: String
     image: String
     apartment: String
     isNotified: Boolean
@@ -52,6 +55,7 @@ const typeDefs = gql`
     password: String
   }
 
+  # Auth & Community
   type AuthAndOrCommunity {
     user: Auth!
     community: Community
@@ -78,6 +82,7 @@ const typeDefs = gql`
     image: String
     condition: Int
     isGiveaway: Boolean
+    requesterId: ID
   }
 
   ### Request
@@ -114,25 +119,10 @@ const typeDefs = gql`
     content: String!
     isPost: Boolean!
     parentId: ID!
-    recipientId: ID!
     communityId: ID!
   }
 
-  # Sent emails
-  input EmailInput {
-    email: String!
-  }
-
-  # Chat
-  type Chat {
-    _id: ID!
-    participants: [User]
-    contact: User
-    messages: [Message]
-    community: Community
-    updatedAt: String
-  }
-
+  # Messages
   type Message {
     _id: ID!
     text: String
@@ -141,53 +131,51 @@ const typeDefs = gql`
   }
 
   input MessageInput {
-    chatId: ID!
     text: String!
+    recipientId: ID!
+    notificationId: ID!
   }
 
+  # Bookings
   type Booking {
-    _id: ID!
+    _id: ID
     post: Post
+    status: Int
     booker: User
+    dateType: Int
     dateNeed: String
     dateReturn: String
-    pickupTime: String
-    status: Int
-    patcher: User
-    community: Community
   }
 
   input BookingInput {
+    postId: ID
+    status: Int
+    dateType: Int
     dateNeed: String
     dateReturn: String
-    pickupTime: String
-    status: Int
-    ownerId: ID
-    postId: ID
+    communityId: ID
     notifyContent: String
     notifyRecipientId: ID
-    communityId: ID
   }
 
+  # Notifications
   type Notification {
     _id: ID!
-    onType: Int
-    onDocId: ID
-    content: String
-    recipient: User
-    creator: User
-    isRead: Boolean
+    ofType: Int
+    post: Post
+    booking: Booking
+    participants: [User]
+    messages: [Message]
+    isRead: JSON
   }
 
   input NotificationInput {
-    notificationId: ID!
-    onType: Int
-    content: String
+    ofType: Int
     recipientId: ID
-    creatorId: ID
-    isRead: Boolean
+    bookingInput: BookingInput
   }
 
+  # Activities
   type TotalActivities {
     totalCommunities: Int
     totalUsers: Int
@@ -231,18 +219,11 @@ const typeDefs = gql`
     request(requestId: ID!): Request
     requests(communityId: ID!): [Request]
 
-    # Chat
-    chat(chatId: ID!): Chat!
-    chats(userId: ID): [Chat]
-
-    # Message
-    messages(chatId: ID!): [Message]
-
-    # Booking
-    bookings(userId: ID): [Booking]
-
     # Notification
+    notification(notificationId: ID!): Notification
     notifications(userId: ID): [Notification]
+    findNotification(recipientId: ID!): Notification
+    hasNotifications: Boolean
 
     # Activity
     totalActivities: TotalActivities
@@ -252,9 +233,8 @@ const typeDefs = gql`
   ### Mutation
   type Mutation {
     # User
-    login(email: String!, password: String!, communityId: ID): Auth!
+    login(email: String!, password: String!): Auth!
     updateUser(userInput: UserInput): User
-    joinCommunity(communityId: ID!): Community
     tokenRefresh(token: String!): Auth
     forgotPassword(email: String, accessKey: String): String
     resetPassword(userIdKey: String!, password: String!): Boolean
@@ -267,6 +247,7 @@ const typeDefs = gql`
 
     # Community
     createCommunity(communityInput: CommunityInput!): Community!
+    joinCommunity(communityId: ID!): Community
 
     # Post
     createPost(postInput: PostInput!, communityId: ID): Post!
@@ -282,25 +263,19 @@ const typeDefs = gql`
     # Thread
     createThread(threadInput: ThreadInput!): Thread!
 
-    # Chat
-    createChat(recipientId: ID!): Chat
-
     # Message
     createMessage(messageInput: MessageInput!): Message
 
     # Booking
-    createBooking(bookingInput: BookingInput!): Booking
     updateBooking(bookingId: ID!, bookingInput: BookingInput!): Booking
 
     # Notification
-    updateNotification(notificationInput: NotificationInput!): Notification
-
-    sentMail: Boolean
-    getEmails(communityId: ID!): Boolean
+    createNotification(notificationInput: NotificationInput): Notification
   }
 
   type Subscription {
-    newChatMessage(chatId: ID!): Message!
+    # Message
+    newNotificationMessage(notificationId: ID!): Message!
   }
 `;
 

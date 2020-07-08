@@ -49,6 +49,7 @@ const JOIN_COMMUNITY = gql`
 function SelectCommunity({ history, location }) {
   let code;
   const { fromLogin } = location.state || { fromLogin: false };
+  const { communityCode } = location.state || { communityCode: null };
   const [pageError, setPageError] = useState({});
   const [selectedId, setSelectedId] = useState(null);
   const [isNewCommunity, setIsNewCommunity] = useState(false);
@@ -63,8 +64,12 @@ function SelectCommunity({ history, location }) {
         variables: { communityId: selectedId },
       },
     ],
+
     onCompleted: () => {
-      history.push('/find');
+      // Redirect user to CommunityInvite page if user is redirected from
+      // Login page and has a communityCode; else redirect user to posts page
+      if (communityCode) history.push(`/community/${communityCode}`);
+      else history.push('/find');
     },
   });
 
@@ -77,20 +82,35 @@ function SelectCommunity({ history, location }) {
         (community) => community._id === selCommunityId,
       );
 
+      // If selected community id exists in localStorage & it the user is a member of that community
       if (selCommunityId && isIdInArray) {
         selectCommunity({
           variables: {
             communityId: selCommunityId,
           },
         });
+
+        // Redirect to posts page
         history.push('/find');
+
+        // If user is redirect from login and only has one community
       } else if (communities.length === 1 && fromLogin) {
         selectCommunity({
           variables: {
             communityId: communities[0]._id,
           },
         });
+
+        // Redirect to posts page
         history.push('/find');
+
+        // If user is redirect from login and communityCode is given
+      } else if (fromLogin && communityCode) {
+        selectCommunity({
+          variables: {
+            communityId: communities[0]._id,
+          },
+        });
       }
     },
     onError: ({ message }) => {
@@ -102,28 +122,28 @@ function SelectCommunity({ history, location }) {
   const [community] = useLazyQuery(FIND_COMMUNITY, {
     onCompleted: ({ community, tokenPayload }) => {
       // True if user is inside of community members array
-      const userIsInCommunity = community.members.some(
+      const userIsMember = community.members.some(
         (member) => member._id === tokenPayload.userId,
       );
 
-      if (community) {
-        // Throw erorr if user is in 5 communities already
-        if (data.communities.length > 5)
-          setPageError({
-            code: 'You have reached the maximum number of communities',
-          });
-        // Check if user is part of the community
-        else if (userIsInCommunity)
-          setPageError({
-            code: `You are already a member of ${community.name}`,
-          });
-        else setFoundCommunity(community);
-      } else {
-        setPageError({ code: 'Community not found' });
-      }
+      // Throw erorr if user is in 5 communities already
+      if (data.communities.length >= 5)
+        setPageError({
+          code: 'You have reached the maximum number of communities',
+        });
+      // Check if user is part of the community
+      else if (userIsMember)
+        setPageError({
+          code: `You are already a member of ${community.name}`,
+        });
+      else setFoundCommunity(community);
     },
     onError: ({ message }) => {
-      setPageError({ community: message });
+      const errMsgArr = message.split(': ');
+      const errMsgArrLen = errMsgArr.length;
+      setPageError({
+        [errMsgArr[errMsgArrLen - 2]]: errMsgArr[errMsgArrLen - 1],
+      });
     },
   });
 
@@ -233,10 +253,17 @@ function SelectCommunity({ history, location }) {
                 className="prev-btn bronze"
                 type="button"
                 onClick={() => {
-                  history.push({
-                    pathname: '/create-community',
-                    state: { isLoggedIn: true },
-                  });
+                  if (data.communities.length >= 5) {
+                    setPageError({
+                      code:
+                        'You have reached the maximum number of communities',
+                    });
+                  } else {
+                    history.push({
+                      pathname: '/create-community',
+                      state: { isLoggedIn: true },
+                    });
+                  }
                 }}
               >
                 Create Community
@@ -270,11 +297,18 @@ function SelectCommunity({ history, location }) {
             className="prev-btn bronze"
             type="button"
             onClick={() => {
-              setIsNewCommunity(true);
+              if (data.communities.length >= 5) {
+                setPageError({
+                  code: 'You have reached the maximum number of communities',
+                });
+              } else {
+                setIsNewCommunity(true);
+              }
             }}
           >
             New Community
           </button>
+          {pageError.code && <InlineError text={pageError.code} />}
         </>
       )}
       {mutationLoading && <Loading isCover />}

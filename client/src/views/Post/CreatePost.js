@@ -21,7 +21,7 @@ const CREATE_POST = gql`
   }
 `;
 
-function CreatePost({ communityId, history }) {
+function CreatePost({ communityId, history, location }) {
   let title, desc, isGiveaway;
   const [image, setImage] = useState(null);
   const [condition, setCondition] = useState(0);
@@ -73,6 +73,9 @@ function CreatePost({ communityId, history }) {
                   image,
                   condition: +condition,
                   isGiveaway: isGiveaway.checked,
+                  ...(location.state && {
+                    requesterId: location.state.requesterId,
+                  }),
                 },
                 communityId,
               },
@@ -80,10 +83,10 @@ function CreatePost({ communityId, history }) {
           }
         }}
       >
-        {history.location.state && (
+        {location.state && (
           <p className="prev-p">
-            {history.location.state.creatorName} will be notified when you post
-            the item for their request
+            {location.state.requesterName} will be notified when you post the
+            item for their request
           </p>
         )}
         <div className="image-upload">
@@ -227,12 +230,13 @@ CreatePost.propTypes = {
   communityId: PropTypes.string.isRequired,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
-    location: PropTypes.shape({
-      state: PropTypes.shape({
-        creatorName: PropTypes.string,
-      }),
-    }),
   }).isRequired,
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      requesterId: PropTypes.string,
+      requesterName: PropTypes.string,
+    }),
+  }),
 };
 
 export default CreatePost;

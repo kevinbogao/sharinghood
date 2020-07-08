@@ -14,6 +14,7 @@ import Threads from '../../components/Threads';
 import Loading from '../../components/Loading';
 import NotFound from '../../components/NotFound';
 import ItemDetails from '../../components/ItemDetails';
+import { GET_NOTIFICATIONS } from '../Notification/Notifications';
 
 const CONDITIONS = ['New', 'Used but good', 'Used but little damaged'];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
@@ -26,15 +27,9 @@ const MODAL_STYLE = {
     transform: 'translate(-50%, -50%)',
     borderWidth: 0,
     boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '20px 50px 230px 50px',
+    padding: '30px 30px 240px 30px',
   },
 };
-
-const GET_COMMUNITY_ID = gql`
-  query {
-    selCommunityId @client
-  }
-`;
 
 const GET_POST = gql`
   query Post($postId: ID!) {
@@ -86,34 +81,48 @@ const CREATE_THREAD = gql`
   }
 `;
 
-const CREATE_BOOKING = gql`
-  mutation CreateBooking($bookingInput: BookingInput!) {
-    createBooking(bookingInput: $bookingInput) {
+const CREATE_NOTIFICATION = gql`
+  mutation CreateNotification($notificationInput: NotificationInput) {
+    createNotification(notificationInput: $notificationInput) {
       _id
-      dateNeed
-      dateReturn
-      status
-      booker {
+      ofType
+      booking {
         _id
+        status
+        dateType
+        dateNeed
+        dateReturn
+        post {
+          _id
+          title
+          image
+        }
+        booker {
+          _id
+        }
       }
-      patcher {
+      participants {
         _id
+        name
+        image
+      }
+      isRead
+      messages {
+        _id
+        text
       }
     }
   }
 `;
 
-function PostDetails({ match, history }) {
+function PostDetails({ communityId, match, history }) {
   const [comment, setComment] = useState('');
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [dateType, setDateType] = useState(0);
   const [dateNeed, setDateNeed] = useState(new Date());
   const [dateReturn, setDateReturn] = useState(new Date());
-  const {
-    data: { selCommunityId },
-  } = useQuery(GET_COMMUNITY_ID);
   const { loading, error, data } = useQuery(GET_POST, {
-    skip: !selCommunityId,
-    variables: { postId: match.params.id, communityId: selCommunityId },
+    variables: { postId: match.params.id, communityId },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -128,7 +137,7 @@ function PostDetails({ match, history }) {
     update(cache, { data: { createThread } }) {
       const { post } = cache.readQuery({
         query: GET_POST,
-        variables: { postId: data.post._id, communityId: selCommunityId },
+        variables: { postId: data.post._id, communityId },
       });
       cache.writeQuery({
         query: GET_POST,
@@ -141,11 +150,26 @@ function PostDetails({ match, history }) {
       });
     },
   });
-  const [createBooking, { loading: mutationLoading }] = useMutation(
-    CREATE_BOOKING,
+
+  // Create a new booking notification for user and owner
+  const [createNotification, { loading: mutationLoading }] = useMutation(
+    CREATE_NOTIFICATION,
     {
-      onCompleted: () => {
-        history.push('/bookings');
+      // Add created notification to the beginning of the notifications array
+      update(cache, { data: { createNotification } }) {
+        try {
+          const { notifications } = cache.readQuery({
+            query: GET_NOTIFICATIONS,
+          });
+          cache.writeQuery({
+            query: GET_NOTIFICATIONS,
+            data: { notifications: [createNotification, ...notifications] },
+          });
+          // eslint-disable-next-line
+        } catch (err) {}
+
+        // Redirect user to notifications
+        history.push('/notifications');
       },
       onError: ({ message }) => {
         console.log(message);
@@ -159,7 +183,11 @@ function PostDetails({ match, history }) {
     `Error! ${error.message}`
   ) : data.post ? (
     <div className="item-control">
-      <ItemDetails item={data.post} userId={data.tokenPayload.userId}>
+      <ItemDetails
+        item={data.post}
+        userId={data.tokenPayload.userId}
+        history={history}
+      >
         <div className="item-desc">
           <h3>{data.post.title}</h3>
           <p className="prev-p">{data.post.desc}</p>
@@ -200,49 +228,69 @@ function PostDetails({ match, history }) {
         style={MODAL_STYLE}
         onRequestClose={() => setIsBookingOpen(false)}
       >
-        <p className="modal-p">By when do you need it?</p>
-        <DatePicker
-          className="prev-input date"
-          selected={dateNeed}
-          onChange={(date) => setDateNeed(date)}
-          dateFormat="yyyy.MM.dd"
-          minDate={new Date()}
-        />
-        <p className="modal-p">When would like to return it?</p>
-        <DatePicker
-          className="prev-input date"
-          selected={dateReturn}
-          onChange={(date) => setDateReturn(date)}
-          dateFormat="yyyy.MM.dd"
-          minDate={dateNeed}
-        />
+        <p className="modal-p">When do you need the item?</p>
+        <select name="dateType" onChange={(e) => setDateType(+e.target.value)}>
+          <option value="0">As soon as possible</option>
+          <option value="1">No timeframe</option>
+          <option value="2">Select timeframe</option>
+        </select>
+        {dateType === 2 && (
+          <>
+            <p className="modal-p">By when do you need it?</p>
+            <DatePicker
+              className="prev-input date"
+              selected={dateNeed}
+              onChange={(date) => setDateNeed(date)}
+              dateFormat="yyyy.MM.dd"
+              minDate={new Date()}
+            />
+            <p className="modal-p">When would like to return it?</p>
+            <DatePicker
+              className="prev-input date"
+              selected={dateReturn}
+              onChange={(date) => setDateReturn(date)}
+              dateFormat="yyyy.MM.dd"
+              minDate={dateNeed}
+            />
+          </>
+        )}
         <button
+          className="modal-btn full"
           type="submit"
-          className="prev-btn block"
           onClick={(e) => {
             e.preventDefault();
-            createBooking({
+            createNotification({
               variables: {
-                bookingInput: {
-                  dateNeed,
-                  dateReturn,
-                  status: 0,
-                  postId: data.post._id,
-                  ownerId: data.post.creator._id,
-                  communityId: selCommunityId,
+                notificationInput: {
+                  bookingInput: {
+                    postId: match.params.id,
+                    dateType,
+                    status: 0,
+                    communityId,
+                    ...(dateType === 2 && { dateNeed, dateReturn }),
+                  },
+                  ofType: 1,
+                  recipientId: data.post.creator._id,
                 },
               },
             });
           }}
         >
-          Confirm
+          Borrow item
+        </button>
+        <button
+          className="modal-btn full bronze"
+          type="button"
+          onClick={() => setIsBookingOpen(false)}
+        >
+          Close
         </button>
       </Modal>
       {mutationLoading && <Loading isCover />}
       <Threads
         threads={data.post.threads}
         members={data.community.members}
-        communityId={selCommunityId}
+        communityId={communityId}
       />
       <div className="new-thread-control">
         {data.community.members
@@ -267,8 +315,7 @@ function PostDetails({ match, history }) {
                             content: comment,
                             isPost: true,
                             parentId: data.post._id,
-                            recipientId: data.post.creator._id,
-                            communityId: selCommunityId,
+                            communityId,
                           },
                         },
                       });
@@ -306,10 +353,11 @@ function PostDetails({ match, history }) {
               }
 
               @include md {
-                margin: 20px 0 0 0;
+                margin: 20px 0 0 30px;
               }
 
               @include sm {
+                margin: 20px 0 0 0;
                 width: 100%;
               }
 
@@ -381,6 +429,23 @@ function PostDetails({ match, history }) {
           }
         `}
       </style>
+      <style jsx global>
+        {`
+          @import './src/assets/scss/index.scss';
+
+          select {
+            font-size: 18px;
+            padding-left: 10px;
+            color: $brown;
+            width: 300px;
+            height: 40px;
+            border-width: 0px;
+            background: $grey-200;
+            border-radius: 4px;
+            margin-bottom: 12px;
+          }
+        `}
+      </style>
     </div>
   ) : (
     <NotFound itemType="Item" />
@@ -390,6 +455,7 @@ function PostDetails({ match, history }) {
 Modal.setAppElement('#root');
 
 PostDetails.propTypes = {
+  communityId: PropTypes.string.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string.isRequired,

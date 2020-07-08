@@ -50,11 +50,12 @@ const usersResolvers = {
     },
   },
   Mutation: {
-    login: async (_, { email, password, communityId }) => {
+    login: async (_, { email, password }) => {
       try {
         // Get user
         const user = await User.findOne({ email });
-        if (!user) throw new AuthenticationError('User does not exist');
+        // if (!user) throw new AuthenticationError('User does not exist');
+        if (!user) throw new Error('email: User not found');
 
         // Re-hash user password if user is not migrated
         if (!user.isMigrated) {
@@ -70,33 +71,20 @@ const usersResolvers = {
 
             // Throw auth error if password is invalid
           } else {
-            throw new AuthenticationError('Password is incorrect');
+            throw new AuthenticationError('password: Invalid credentials');
           }
 
           // If user is migrated
         } else {
           // Check user password
           const isEqual = await bcryptjs.compare(password, user.password);
-          if (!isEqual) throw new AuthenticationError('Password is incorrect');
+          if (!isEqual) {
+            throw new AuthenticationError('password: Invalid credentials');
+          }
         }
 
         // Sign accessToken & refreshToken
         const { accessToken, refreshToken } = generateTokens(user);
-
-        // If a communityId id is given, check if user is in that community,
-        // add the user to community if the user is not in
-        if (communityId && !user.communities.includes(communityId)) {
-          // Update community
-          await Community.updateOne(
-            { _id: communityId },
-            {
-              $push: { members: user._id },
-            }
-          );
-
-          // Add community to user
-          user.communities.push(communityId);
-        }
 
         // Update user's last login date
         user.lastLogin = new Date();
@@ -230,28 +218,28 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
-    joinCommunity: async (_, { communityId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+    // joinCommunity: async (_, { communityId }, { user }) => {
+    //   if (!user) throw new AuthenticationError('Not Authenticated');
 
-      try {
-        // Get current user & community
-        const [currentUser, community] = await Promise.all([
-          await User.findById(user.userId),
-          await Community.findById(communityId),
-        ]);
+    //   try {
+    //     // Get current user & community
+    //     const [currentUser, community] = await Promise.all([
+    //       await User.findById(user.userId),
+    //       await Community.findById(communityId),
+    //     ]);
 
-        // Save user to community members and save community to
-        // user communities
-        currentUser.communities.push(communityId);
-        community.members.push(user.userId);
-        await Promise.all([currentUser.save(), community.save()]);
+    //     // Save user to community members and save community to
+    //     // user communities
+    //     currentUser.communities.push(communityId);
+    //     community.members.push(user.userId);
+    //     await Promise.all([currentUser.save(), community.save()]);
 
-        return community;
-      } catch (err) {
-        console.log(err);
-        throw new Error(err);
-      }
-    },
+    //     return community;
+    //   } catch (err) {
+    //     console.log(err);
+    //     throw new Error(err);
+    //   }
+    // },
     tokenRefresh: async (_, { token }) => {
       try {
         // Validate token & get userId if token is valid

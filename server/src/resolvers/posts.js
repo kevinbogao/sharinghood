@@ -93,8 +93,11 @@ const postsResolvers = {
   Mutation: {
     createPost: async (
       _,
-      { postInput: { title, desc, image, condition, isGiveaway }, communityId },
-      { user }
+      {
+        postInput: { title, desc, image, condition, isGiveaway, requesterId },
+        communityId,
+      },
+      { user, redis }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
       const { userId, userName } = user;
@@ -103,8 +106,9 @@ const postsResolvers = {
         // Upload image to Cloudinary
         const imgData = await uploadImg(image);
 
-        // Create & save post && get creator
-        const [post, creator] = await Promise.all([
+        // Create & save post && get creator && find creator's community
+        // && find requester if the post is in response to a request
+        const [post, creator, community, requester] = await Promise.all([
           Post.create({
             desc,
             title,
@@ -114,27 +118,38 @@ const postsResolvers = {
             creator: userId,
           }),
           User.findById(userId),
-        ]);
-
-        // Create & save notification && find creator's community
-        const [notification, community] = await Promise.all([
-          Notification.create({
-            onType: 0,
-            onDocId: post._id,
-            content: `${userName} shared ${title} in your community`,
-            creator: userId,
-            isRead: false,
-          }),
           communityId && Community.findById(communityId),
+          requesterId && User.findById(requesterId),
         ]);
 
-        // Save postId & notificationId to community && postId to creator
         // Only save to community if communityId is given, i.e user is
         // uploading the post to a specific community
         if (communityId) {
           community.posts.push(post);
-          community.notifications.push(notification);
         }
+
+        // Create notification if requesterId is given
+        if (requesterId) {
+          const notification = await Notification.create({
+            ofType: 2,
+            post: post._id,
+            participants: [requesterId, user.userId],
+            isRead: {
+              [requesterId]: false,
+              [user.userId]: false,
+            },
+          });
+
+          // Add notification to requester
+          requester.notifications.push(notification);
+
+          // Save requester & and add hasNotifications to requester
+          await Promise.all([
+            requester.save(),
+            redis.set(`notifications:${requesterId}`, true),
+          ]);
+        }
+
         creator.posts.push(post);
         await Promise.all([communityId && community.save(), creator.save()]);
 
@@ -204,11 +219,15 @@ const postsResolvers = {
     },
     deletePost: async (_, { postId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { communityId } = user;
+
+      console.log(user);
 
       try {
-        // Find post
-        const post = await Post.findById(postId);
+        // Find post & creator
+        const [post, creator] = await Promise.all([
+          Post.findById(postId),
+          User.findById(user.userId),
+        ]);
 
         // Save thread ids array
         const { threads, bookings } = post;
@@ -217,8 +236,8 @@ const postsResolvers = {
         // & notifications
         await Promise.all([
           post.remove(),
-          Community.updateOne(
-            { _id: communityId },
+          Community.updateMany(
+            { _id: { $in: creator.communities } },
             { $pull: { posts: postId } }
           ),
           User.updateOne({ _id: user.userId }, { $pull: { posts: postId } }),

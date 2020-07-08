@@ -131,7 +131,7 @@ function Register({
               variables: {
                 userInput: {
                   name,
-                  email: email.value,
+                  email: email.value.toLowerCase(),
                   password: password.value,
                   image,
                   apartment,

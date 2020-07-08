@@ -66,17 +66,17 @@ function Requests({ communityId }) {
           @import './src/assets/scss/index.scss';
 
           .item-card {
-            background: #fafafa;
+            background: $grey-100;
             margin: 20px 10px;
             padding: 10px;
             cursor: pointer;
 
             &:hover {
-              background: #f4f4f4;
+              background: $grey-200;
             }
 
             p {
-              color: $brown;
+              color: $black;
               font-size: 14px;
               width: 160px;
 
@@ -108,7 +108,7 @@ function Requests({ communityId }) {
               display: flex;
               align-items: center;
               font-size: 15px;
-              color: $bronze-100;
+              color: $beige;
 
               span {
                 font-size: 14px;

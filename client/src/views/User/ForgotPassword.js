@@ -52,13 +52,13 @@ function ForgotPassword({ location }) {
     <div className="forgot-password-control">
       {accessKey ? (
         <>
-          <p className="prev-p">Reset password instructions have been sent.</p>
-          <p className="prev-p">
+          <p className="main-p">Reset password instructions have been sent.</p>
+          <p className="main-p">
             Please check your email to recover your account.
           </p>
           {!isResent && (
             <button
-              className="prev-btn"
+              className="main-btn block"
               type="submit"
               onClick={(e) => {
                 e.preventDefault();
@@ -81,10 +81,10 @@ function ForgotPassword({ location }) {
         </>
       ) : (
         <>
-          <p className="prev-p">
+          <p className="main-p">
             You will receive the instructions to reset your password.
           </p>
-          <p className="prev-p">Enter your email</p>
+          <p className="main-p">Enter your email</p>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -97,13 +97,13 @@ function ForgotPassword({ location }) {
             }}
           >
             <input
-              className="prev-input"
+              className="main-input"
               type="text"
               placeholder="Email"
               onChange={(e) => setEmail(e.target.value)}
             />
             {error.email && <InlineError text={error.email} />}
-            <button className="prev-btn" type="submit">
+            <button className="main-btn block" type="submit">
               Continue
             </button>
           </form>
@@ -120,20 +120,6 @@ function ForgotPassword({ location }) {
             @include sm {
               max-width: 300px;
               width: 80vw;
-            }
-
-            .prev-p {
-              margin: 20px auto;
-              max-width: 300px;
-            }
-
-            .prev-input {
-              margin-top: 30px;
-            }
-
-            .prev-btn {
-              display: block;
-              margin-top: 30px;
             }
           }
         `}

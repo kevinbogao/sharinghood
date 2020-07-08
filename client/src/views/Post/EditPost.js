@@ -222,7 +222,9 @@ function EditPost({ history, match }) {
                   ...(title && { title }),
                   ...(desc && { desc }),
                   ...(image && { image }),
-                  ...(condition && { condition: +condition }),
+                  ...(condition && {
+                    condition: +condition || data.post.condition,
+                  }),
                 },
               },
             });
@@ -249,20 +251,21 @@ function EditPost({ history, match }) {
             }}
           />
         </div>
-        <p className="prev-p">Title</p>
+        <p className="main-p">Title</p>
         <input
-          className="prev-input"
+          className="main-input"
           defaultValue={data.post.title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <p className="prev-p">Description</p>
+        <p className="main-p">Description</p>
         <input
-          className="prev-input"
+          className="main-input"
           defaultValue={data.post.desc}
           onChange={(e) => setDesc(e.target.value)}
         />
-        <p className="prev-p">Condition: </p>
+        <p className="main-p">Condition: </p>
         <select
+          className="main-select"
           value={+condition || data.post.condition}
           name="condition"
           onChange={(e) => setCondition(e.target.value)}
@@ -278,11 +281,11 @@ function EditPost({ history, match }) {
         >
           Share this item in another community
         </button>
-        <button className="prev-btn" type="submit">
+        <button className="main-btn block" type="submit">
           Save
         </button>
         <button
-          className="prev-btn red"
+          className="main-btn block grey"
           type="button"
           onClick={() => setIsDeleteModalOpen(true)}
         >
@@ -307,7 +310,7 @@ function EditPost({ history, match }) {
           <button
             key={community._id}
             type="submit"
-            className="modal-btn full"
+            className="main-btn modal beige"
             onClick={(e) => {
               e.preventDefault();
               addPostToCommunity({
@@ -323,7 +326,7 @@ function EditPost({ history, match }) {
         ))}
         <button
           type="button"
-          className="modal-btn full bronze"
+          className="main-btn modal grey"
           onClick={() => {
             setIsAddModalOpen(false);
           }}
@@ -339,7 +342,7 @@ function EditPost({ history, match }) {
         <p className="modal-p">Are you sure you want to delete this post?</p>
         <button
           type="submit"
-          className="modal-btn full red"
+          className="main-btn modal"
           onClick={(e) => {
             e.preventDefault();
             deletePost({
@@ -353,7 +356,7 @@ function EditPost({ history, match }) {
         </button>
         <button
           type="button"
-          className="modal-btn full"
+          className="main-btn modal grey"
           onClick={() => setIsDeleteModalOpen(false)}
         >
           No
@@ -399,18 +402,12 @@ function EditPost({ history, match }) {
               max-width: 300px;
             }
 
-            .prev-p {
-              margin: 20px auto;
-              max-width: 300px;
-
-              &.bronze {
-                color: $bronze-200;
-              }
+            .main-input {
+              margin-top: 5px;
             }
 
-            .prev-btn {
-              display: block;
-              margin: 30px auto;
+            .main-p {
+              margin: 20px auto 10px auto;
             }
 
             .login-btn {
@@ -419,29 +416,13 @@ function EditPost({ history, match }) {
               padding: 0;
               border: none;
               font-size: 17px;
-              color: $green-100;
+              color: $beige;
               text-align: center;
               background: $background;
               text-decoration: underline;
 
               &:hover {
                 cursor: pointer;
-              }
-            }
-
-            select {
-              font-size: 18px;
-              padding-left: 10px;
-              color: $brown;
-              width: 300px;
-              height: 40px;
-              border-width: 0px;
-              background: $grey-200;
-              border-radius: 4px;
-              margin-bottom: 12px;
-
-              @include sm {
-                width: 100%;
               }
             }
           }

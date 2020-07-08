@@ -43,7 +43,7 @@ function CreateRequest({ communityId, history }) {
         cache.writeQuery({
           query: GET_REQUESTS,
           variables: { communityId },
-          data: { requests: requests.concat([createRequest]) },
+          data: { requests: [createRequest, ...requests] },
         });
       } catch (err) {
         console.log(err);
@@ -102,36 +102,36 @@ function CreateRequest({ communityId, history }) {
         </div>
         {error.image && <InlineError text={error.image} />}
         <input
-          className="prev-input desc"
+          className="main-input"
           name="title"
           placeholder="Title"
           ref={(node) => (title = node)}
         />
         {error.title && <InlineError text={error.title} />}
         <input
-          className="prev-input desc"
+          className="main-input"
           placeholder="Description"
           ref={(node) => (desc = node)}
         />
         {error.desc && <InlineError text={error.desc} />}
         {error.descExists && <InlineError text={error.descExists} />}
-        <p className="prev-p">Set a date by which you need to have this item</p>
+        <p className="main-p">Set a date by which you need to have this item</p>
         <DatePicker
-          className="prev-input date"
+          className="main-input date"
           selected={dateNeed}
           onChange={(date) => setDateNeed(date)}
           dateFormat="yyyy.MM.dd"
           minDate={new Date()}
         />
-        <p className="prev-p">Till when do you want to borrow this item?</p>
+        <p className="main-p">Till when do you want to borrow this item?</p>
         <DatePicker
-          className="prev-input date"
+          className="main-input date"
           selected={dateReturn}
           onChange={(date) => setDateReturn(date)}
           dateFormat="yyyy.MM.dd"
           minDate={dateNeed}
         />
-        <button className="prev-btn" type="submit">
+        <button className="main-btn" type="submit">
           Request
         </button>
       </form>
@@ -146,7 +146,6 @@ function CreateRequest({ communityId, history }) {
             display: flex;
             align-items: center;
             justify-content: center;
-            // width: 80vw;
 
             @include sm {
               max-width: 300px;
@@ -165,17 +164,19 @@ function CreateRequest({ communityId, history }) {
               box-shadow: 1px 1px 1px 1px #eeeeee;
             }
 
-            .prev-p {
+            .main-input {
+              &.date {
+                margin: 0 auto;
+              }
+            }
+
+            .main-p {
               max-width: 280px;
               font-size: 19px;
               margin: 20px 0;
             }
 
-            .desc {
-              margin-top: 30px;
-            }
-
-            .prev-btn {
+            .main-btn {
               margin: 40px 0 30px 0;
               display: block;
             }

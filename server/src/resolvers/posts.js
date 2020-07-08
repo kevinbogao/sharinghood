@@ -74,6 +74,11 @@ const postsResolvers = {
                   },
                 },
                 { $unwind: '$creator' },
+                {
+                  $sort: {
+                    createdAt: -1,
+                  },
+                },
               ],
               as: 'posts',
             },
@@ -184,7 +189,7 @@ const postsResolvers = {
         if (title) post.title = title;
         if (desc) post.desc = desc;
         if (image && imgData) post.image = imgData;
-        post.condition = condition; // 0 & bool conflict -> always update
+        if (condition) post.condition = condition;
 
         // Save & return post
         const updatedPost = await post.save();

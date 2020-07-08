@@ -40,11 +40,20 @@ const notificationSchema = new Schema(
 
     // Notification read status
     isRead: Schema.Types.Mixed,
+
+    // Notification community
+    community: {
+      type: Schema.Types.ObjectId,
+      ref: 'Community',
+    },
   },
   { timestamps: true }
 );
 
-// Index for user email
-notificationSchema.index({ ofType: 1, participants: 1 });
+// Compound index for ofType, participants & community
+notificationSchema.index({ ofType: 1, participants: 1, community: 1 });
+
+// Secondary index for community
+notificationSchema.index({ community: 1 });
 
 module.exports = model('Notification', notificationSchema);

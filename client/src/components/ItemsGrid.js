@@ -65,8 +65,8 @@ function ItemsGrid({ isPost, children }) {
               border-top-left-radius: 1px;
               border-top-right-radius: 1px;
               box-shadow: 0px 0px 8px $shadow;
-              background: $grey-200;
-              color: $brown;
+              background: $grey-100;
+              color: $black;
               font-size: 16px;
 
               @include sm {
@@ -81,17 +81,13 @@ function ItemsGrid({ isPost, children }) {
                 width: 160px;
                 height: 70%;
                 display: block;
-                background: $green-200;
+                background: #f17835;
                 border-width: 0;
                 border-radius: 4px;
                 cursor: pointer;
-                color: $grey-200;
+                color: $background;
                 font-size: 18px;
                 padding: 4px 2px;
-
-                &:hover {
-                  background: $green-100;
-                }
 
                 @include sm {
                   width: 100px;

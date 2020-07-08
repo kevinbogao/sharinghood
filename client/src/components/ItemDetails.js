@@ -20,8 +20,8 @@ const MODAL_STYLE = {
 };
 
 const FIND_NOTIFICATION = gql`
-  query FindNotification($recipientId: ID!) {
-    findNotification(recipientId: $recipientId) {
+  query FindNotification($recipientId: ID!, $communityId: ID!) {
+    findNotification(recipientId: $recipientId, communityId: $communityId) {
       _id
     }
   }
@@ -61,7 +61,7 @@ const CREATE_NOTIFICATION = gql`
   }
 `;
 
-function ItemDetails({ history, item, userId, children }) {
+function ItemDetails({ history, item, userId, communityId, children }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [findNotification] = useLazyQuery(FIND_NOTIFICATION, {
     onCompleted: ({ findNotification }) => {
@@ -115,7 +115,7 @@ function ItemDetails({ history, item, userId, children }) {
         <div className="item-creator">
           <img src={JSON.parse(item.creator.image).secure_url} alt="" />
           <div className="creator-info">
-            <p className="prev-p name">{item.creator.name}</p>
+            <p className="main-p name">{item.creator.name}</p>
             <h6>Find me: {item.creator.apartment}</h6>
             <p>
               Member since{' '}
@@ -132,6 +132,7 @@ function ItemDetails({ history, item, userId, children }) {
                   findNotification({
                     variables: {
                       recipientId: item.creator._id,
+                      communityId,
                     },
                   });
                 }}
@@ -161,6 +162,7 @@ function ItemDetails({ history, item, userId, children }) {
                 notificationInput: {
                   ofType: 0,
                   recipientId: item.creator._id,
+                  communityId,
                 },
               },
             });
@@ -188,16 +190,11 @@ function ItemDetails({ history, item, userId, children }) {
 
             .msg-btn {
               color: $background;
-              background: $green-200;
+              background: $beige;
               padding: 5px 12px;
               border: none;
               border-radius: 15px;
               font-size: 15px;
-
-              &:hover {
-                color: #fff;
-                background: $green-100;
-              }
             }
 
             @include lg {
@@ -279,7 +276,7 @@ function ItemDetails({ history, item, userId, children }) {
                 }
 
                 p {
-                  color: $brown;
+                  color: $grey-300;
                   margin: 7px 0;
                   max-width: 150px;
 
@@ -288,18 +285,14 @@ function ItemDetails({ history, item, userId, children }) {
                   }
 
                   &.name {
-                    color: $bronze-100;
+                    color: $black;
                     font-weight: bold;
-                  }
-
-                  span {
-                    color: $bronze-100;
                   }
                 }
 
                 h6 {
                   font-size: 16px;
-                  color: $brown;
+                  color: $grey-300;
                   max-width: 150px;
                 }
               }
@@ -318,7 +311,7 @@ function ItemDetails({ history, item, userId, children }) {
           @import './src/assets/scss/index.scss';
 
           .item-icon {
-            color: $bronze-200;
+            color: $grey-300;
             font-size: 18px;
           }
         `}
@@ -344,6 +337,7 @@ ItemDetails.propTypes = {
     }).isRequired,
   }).isRequired,
   userId: PropTypes.string.isRequired,
+  communityId: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
 };
 

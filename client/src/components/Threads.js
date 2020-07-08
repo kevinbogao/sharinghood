@@ -18,7 +18,7 @@ function Threads({ threads, members, communityId }) {
                       alt="Member"
                     />
                     <div className="thread-content">
-                      <span className="prev-p">{member.name}</span>
+                      <span className="">{member.name}</span>
                       <p>{thread.content}</p>
                     </div>
                   </Fragment>
@@ -49,11 +49,11 @@ function Threads({ threads, members, communityId }) {
               justify-content: space-evenly;
 
               span {
-                color: $bronze-200;
+                font-size: 20px;
               }
 
               p {
-                color: $brown;
+                color: $black;
                 font-size: 16px;
               }
             }

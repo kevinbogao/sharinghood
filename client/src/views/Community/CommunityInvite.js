@@ -178,7 +178,7 @@ function CommunityInvite({ match, history }) {
             </p>
             <p>You are only one registration away from an easier life.</p>
             <button
-              className="main-btn"
+              className="main-btn new"
               onClick={() => handleSubmit(data)}
               type="submit"
             >
@@ -198,7 +198,7 @@ function CommunityInvite({ match, history }) {
               </div>
             </div>
             <button
-              className="main-btn"
+              className="main-btn new"
               onClick={() => handleSubmit(data)}
               type="submit"
             >
@@ -212,9 +212,9 @@ function CommunityInvite({ match, history }) {
               setIsJoinModalOpen(false);
             }}
           >
-            <p className="modal-p">Join {data.community.name}?</p>
+            <p className="main-p">Join {data.community.name}?</p>
             <button
-              className="prev-btn"
+              className="main-btn modal"
               type="button"
               onClick={(e) => {
                 e.preventDefault();
@@ -230,7 +230,7 @@ function CommunityInvite({ match, history }) {
             </button>
             <button
               type="button"
-              className="modal-btn full bronze"
+              className="main-btn modal grey"
               onClick={() => {
                 setIsJoinModalOpen(false);
               }}
@@ -245,10 +245,10 @@ function CommunityInvite({ match, history }) {
               setIsErrModalOpen(false);
             }}
           >
-            <p className="modal-p">{pageError}</p>
+            <p className="main-p">{pageError}</p>
             <button
               type="button"
-              className="modal-btn full bronze"
+              className="main-btn modal grey"
               onClick={() => {
                 setIsErrModalOpen(false);
               }}

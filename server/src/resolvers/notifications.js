@@ -120,6 +120,12 @@ const notificationsResolvers = {
                         },
                       },
                       { $unwind: '$post' },
+                      // {
+                      //   $unwind: {
+                      //     path: '$post',
+                      //     preserveNullAndEmptyArrays: true,
+                      //   },
+                      // },
                     ],
                     as: 'booking',
                   },
@@ -208,6 +214,8 @@ const notificationsResolvers = {
         // Delete user has notifications status in redis
         await redis.del(`notifications:${user.userId}`);
 
+        console.log(userNotifications);
+
         // Return user's notifications to client
         return userNotifications[0].notifications;
       } catch (err) {
@@ -229,14 +237,15 @@ const notificationsResolvers = {
         return false;
       }
     },
-    findNotification: async (_, { recipientId }, { user }) => {
+    findNotification: async (_, { recipientId, communityId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Find a notification where both of users participates in and of type 2
+        // Find a notification where both of users participates in and of type 0 and in the given community
         const notification = await Notification.findOne({
           ofType: 0,
           participants: [recipientId, user.userId],
+          community: communityId,
         });
 
         // Return chat/notification object if it is found
@@ -250,7 +259,7 @@ const notificationsResolvers = {
   Mutation: {
     createNotification: async (
       _,
-      { notificationInput: { ofType, recipientId, bookingInput } },
+      { notificationInput: { ofType, recipientId, communityId, bookingInput } },
       { user, redis }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
@@ -261,10 +270,11 @@ const notificationsResolvers = {
 
         // If type is 0 (i.e chat), create chat notification
         if (ofType === 0) {
-          // Check if chat that contains both user exists
+          // Check if chat that contains both user exists and in the given community
           existingChat = await Notification.findOne({
             ofType: 0,
             participants: [recipientId, user.userId],
+            community: communityId,
           });
 
           // Return chat notification if it exists
@@ -279,7 +289,7 @@ const notificationsResolvers = {
             status,
             dateNeed,
             dateReturn,
-            communityId,
+            // communityId,
           } = bookingInput;
 
           // Create & save booking && get parent post && recipient
@@ -321,6 +331,7 @@ const notificationsResolvers = {
             [recipientId]: false,
             [user.userId]: false,
           },
+          community: communityId,
         });
 
         // Save notification to recipient & current user && save notification:recipientId to redis
@@ -333,7 +344,10 @@ const notificationsResolvers = {
               },
             }
           ),
-          redis.set(`notifications:${recipientId}`, true),
+          // Set hash in redis
+          redis.hset(`notifications:${recipientId}`, `${communityId}`, true),
+          // redis.set(`notifications:${recipientId}`, true),
+          // redis.set(`notifications:${recipientId}:${communityId}`, true),
         ]);
 
         // Get participants and add to return value

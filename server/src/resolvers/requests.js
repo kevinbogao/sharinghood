@@ -70,6 +70,11 @@ const requestsResolvers = {
                   },
                 },
                 { $unwind: '$creator' },
+                {
+                  $sort: {
+                    createdAt: -1,
+                  },
+                },
               ],
               as: 'requests',
             },

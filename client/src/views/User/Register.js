@@ -120,8 +120,8 @@ function Register({
 
   return (
     <div className="register-control">
-      <p className="prev-p">Thank you, you are a hero already!</p>
-      <p className="prev-p">Now create your login account.</p>
+      <p className="main-p">Thank you, you are a hero already!</p>
+      <p className="main-p">Now create your login account.</p>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -153,7 +153,7 @@ function Register({
       >
         <input
           type="text"
-          className="prev-input"
+          className="main-input"
           placeholder="Email"
           ref={(node) => (email = node)}
         />
@@ -161,20 +161,24 @@ function Register({
         {error.emailExists && <InlineError text={error.emailExists} />}
         <input
           type="password"
-          className="prev-input"
+          className="main-input"
           placeholder="Password"
           ref={(node) => (password = node)}
         />
         {error.password && <InlineError text={error.password} />}
         <input
           type="password"
-          className="prev-input"
+          className="main-input"
           placeholder="Confirm Password"
           ref={(node) => (confirmPassword = node)}
         />
         {error.confirmPassword && <InlineError text={error.confirmPassword} />}
         <div className="register-terms">
-          <input type="checkbox" ref={(node) => (isNotified = node)} />
+          <input
+            type="checkbox"
+            defaultChecked
+            ref={(node) => (isNotified = node)}
+          />
           <p>
             I want to get notified when my neighbours request and share items
           </p>
@@ -189,7 +193,7 @@ function Register({
           </p>
         </div>
         {error.agreed && <InlineError text={error.agreed} />}
-        <button className="prev-btn" type="submit">
+        <button className="main-btn" type="submit">
           Register
         </button>
       </form>
@@ -219,25 +223,17 @@ function Register({
               max-width: 300px;
             }
 
-            .prev-p {
-              margin: 20px auto;
-            }
-
             .p-center {
               margin: 16px 0;
               font-size: 16px;
-              color: $brown;
+              color: $black;
               max-width: 300px;
               text-align: center;
               margin-bottom: 3px;
             }
 
-            .prev-input {
-              margin-top: 30px;
-            }
-
-            .prev-btn {
-              margin: 20px auto 30px auto;
+            .main-btn {
+              margin: 20px auto 15px auto;
             }
 
             button.login-btn {
@@ -246,7 +242,7 @@ function Register({
               padding: 0;
               border: none;
               font-size: 16px;
-              color: $brown;
+              color: $orange;
               text-align: center;
               background: $background;
               text-decoration: underline;
@@ -262,7 +258,7 @@ function Register({
               p {
                 margin: 14px 0;
                 font-size: 16px;
-                color: $brown;
+                color: $black;
                 max-width: 280px;
               }
 
@@ -275,7 +271,7 @@ function Register({
               all: initial;
               border: none;
               margin: 0px !important;
-              color: $green-100;
+              color: $beige;
               font-family: $font-stack;
               text-decoration: underline;
 

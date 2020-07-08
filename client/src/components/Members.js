@@ -90,7 +90,7 @@ function Members() {
             display: flex;
             align-items: center;
             box-shadow: 0px 0px 8px $shadow;
-            color: $bronze-200;
+            color: $black;
             background: $grey-100;
             border-top-left-radius: 4px;
             border-bottom-left-radius: 4px;
@@ -161,15 +161,15 @@ function Members() {
                   .icon-tooltip {
                     visibility: hidden;
                     width: 120px;
-                    background-color: $brown;
+                    background-color: $grey-300;
                     color: white;
                     text-align: center;
                     border-radius: 6px;
                     padding: 5px 0;
                     position: absolute;
                     z-index: 9000 !important;
-                    margin-top: 10px;
-                    margin-left: 0px;
+                    margin-top: -28px;
+                    margin-left: -38px;
                   }
 
                   &:hover {

@@ -14,7 +14,7 @@ import Threads from '../../components/Threads';
 import Loading from '../../components/Loading';
 import NotFound from '../../components/NotFound';
 import ItemDetails from '../../components/ItemDetails';
-import { GET_NOTIFICATIONS } from '../Notification/Notifications';
+// import { GET_NOTIFICATIONS } from '../Notification/Notifications';
 
 const CONDITIONS = ['New', 'Used but good', 'Used but little damaged'];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
@@ -155,25 +155,29 @@ function PostDetails({ communityId, match, history }) {
   const [createNotification, { loading: mutationLoading }] = useMutation(
     CREATE_NOTIFICATION,
     {
-      // Add created notification to the beginning of the notifications array
-      update(cache, { data: { createNotification } }) {
-        try {
-          const { notifications } = cache.readQuery({
-            query: GET_NOTIFICATIONS,
-          });
-          cache.writeQuery({
-            query: GET_NOTIFICATIONS,
-            data: { notifications: [createNotification, ...notifications] },
-          });
-          // eslint-disable-next-line
-        } catch (err) {}
-
-        // Redirect user to notifications
-        history.push('/notifications');
+      onCompleted: ({ createNotification }) => {
+        // Redirect user to chat on mutation complete
+        history.push(`/notification/${createNotification._id}`);
       },
       onError: ({ message }) => {
         console.log(message);
       },
+      // // Add created notification to the beginning of the notifications array
+      // update(cache, { data: { createNotification } }) {
+      //   try {
+      //     const { notifications } = cache.readQuery({
+      //       query: GET_NOTIFICATIONS,
+      //     });
+      //     cache.writeQuery({
+      //       query: GET_NOTIFICATIONS,
+      //       data: { notifications: [createNotification, ...notifications] },
+      //     });
+      //     // eslint-disable-next-line
+      //   } catch (err) {}
+
+      //   // Redirect user to notifications
+      //   history.push('/notifications');
+      // },
     },
   );
 
@@ -185,12 +189,13 @@ function PostDetails({ communityId, match, history }) {
     <div className="item-control">
       <ItemDetails
         item={data.post}
-        userId={data.tokenPayload.userId}
         history={history}
+        userId={data.tokenPayload.userId}
+        communityId={communityId}
       >
         <div className="item-desc">
           <h3>{data.post.title}</h3>
-          <p className="prev-p">{data.post.desc}</p>
+          <p className="main-p">{data.post.desc}</p>
           <div className="item-misc">
             <FontAwesomeIcon
               className="item-icon"
@@ -207,7 +212,7 @@ function PostDetails({ communityId, match, history }) {
           {data.post.creator._id === data.tokenPayload.userId ? (
             <button
               type="button"
-              className="item-btn book"
+              className="main-btn item"
               onClick={() => history.push(`/shared/${match.params.id}/edit`)}
             >
               Edit
@@ -215,7 +220,7 @@ function PostDetails({ communityId, match, history }) {
           ) : (
             <button
               type="button"
-              className="item-btn book"
+              className="main-btn item"
               onClick={() => setIsBookingOpen(true)}
             >
               Book
@@ -228,7 +233,7 @@ function PostDetails({ communityId, match, history }) {
         style={MODAL_STYLE}
         onRequestClose={() => setIsBookingOpen(false)}
       >
-        <p className="modal-p">When do you need the item?</p>
+        <p className="main-p">When do you need the item?</p>
         <select name="dateType" onChange={(e) => setDateType(+e.target.value)}>
           <option value="0">As soon as possible</option>
           <option value="1">No timeframe</option>
@@ -236,17 +241,17 @@ function PostDetails({ communityId, match, history }) {
         </select>
         {dateType === 2 && (
           <>
-            <p className="modal-p">By when do you need it?</p>
+            <p className="main-p">By when do you need it?</p>
             <DatePicker
-              className="prev-input date"
+              className="main-input modal"
               selected={dateNeed}
               onChange={(date) => setDateNeed(date)}
               dateFormat="yyyy.MM.dd"
               minDate={new Date()}
             />
-            <p className="modal-p">When would like to return it?</p>
+            <p className="main-p">When would like to return it?</p>
             <DatePicker
-              className="prev-input date"
+              className="main-input modal"
               selected={dateReturn}
               onChange={(date) => setDateReturn(date)}
               dateFormat="yyyy.MM.dd"
@@ -255,7 +260,7 @@ function PostDetails({ communityId, match, history }) {
           </>
         )}
         <button
-          className="modal-btn full"
+          className="main-btn modal"
           type="submit"
           onClick={(e) => {
             e.preventDefault();
@@ -266,11 +271,11 @@ function PostDetails({ communityId, match, history }) {
                     postId: match.params.id,
                     dateType,
                     status: 0,
-                    communityId,
                     ...(dateType === 2 && { dateNeed, dateReturn }),
                   },
                   ofType: 1,
                   recipientId: data.post.creator._id,
+                  communityId,
                 },
               },
             });
@@ -279,7 +284,7 @@ function PostDetails({ communityId, match, history }) {
           Borrow item
         </button>
         <button
-          className="modal-btn full bronze"
+          className="main-btn modal grey"
           type="button"
           onClick={() => setIsBookingOpen(false)}
         >
@@ -299,10 +304,10 @@ function PostDetails({ communityId, match, history }) {
             <Fragment key={member._id}>
               <img src={JSON.parse(member.image).secure_url} alt="" />
               <div className="new-thread-content">
-                <span className="prev-p">{member.name}</span>
+                <span className="main-p">{member.name}</span>
                 <input
                   type="text"
-                  className="prev-input"
+                  className="main-input"
                   placeholder="Comment something..."
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -335,17 +340,17 @@ function PostDetails({ communityId, match, history }) {
             width: 80vw;
             max-width: $xl-max-width;
 
+            .main-p {
+              margin-left: 0;
+            }
+
             .item-desc {
               margin: 0 20px 0 40px;
 
               h3 {
                 font-size: 26px;
-                color: $bronze-100;
+                color: $black;
                 margin: 0;
-              }
-
-              .prev-p {
-                margin: 20px auto;
               }
 
               @include lg {
@@ -368,26 +373,8 @@ function PostDetails({ communityId, match, history }) {
 
                 span {
                   margin-left: 10px;
-                  color: $brown;
+                  color: $grey-300;
                   font-size: 18px;
-                }
-              }
-
-              .item-btn {
-                &.delete {
-                  background: $red-200;
-
-                  &:hover {
-                    background: $red-100;
-                  }
-                }
-
-                &.book {
-                  background: $bronze-200;
-
-                  &:hover {
-                    background: $bronze-100;
-                  }
                 }
               }
             }
@@ -411,12 +398,13 @@ function PostDetails({ communityId, match, history }) {
               display: flex;
               flex-direction: column;
 
-              .prev-p {
+              .main-p {
+                margin: initial;
                 margin-top: 16px;
-                color: $bronze-200;
+                color: $black;
               }
 
-              .prev-input {
+              .main-input {
                 height: initial;
                 width: initial;
                 max-width: initial;
@@ -436,11 +424,11 @@ function PostDetails({ communityId, match, history }) {
           select {
             font-size: 18px;
             padding-left: 10px;
-            color: $brown;
+            color: #a0998f;
             width: 300px;
             height: 40px;
             border-width: 0px;
-            background: $grey-200;
+            background: $grey-000;
             border-radius: 4px;
             margin-bottom: 12px;
           }

@@ -38,6 +38,9 @@ const GET_NOTIFICATIONS = gql`
         image
       }
       isRead
+      community {
+        _id
+      }
       messages {
         _id
         text
@@ -100,199 +103,209 @@ function Notifications({ history, communityId }) {
     <div className="notifications-control">
       {data.notifications.length ? (
         <>
-          {data.notifications.map((notification) => (
-            <div
-              key={notification._id}
-              className="notification-item"
-              role="presentation"
-              onClick={() => history.push(`/notification/${notification._id}`)}
-            >
-              {notification.ofType === 0 ? (
-                <>
-                  <img
-                    className={`${
-                      notification.isRead[data.tokenPayload.userId]
-                        ? undefined
-                        : 'unread'
-                    }`}
-                    src={
-                      JSON.parse(notification.participants[0].image).secure_url
-                    }
-                    alt=""
-                  />
-                  <div className="message-info">
-                    <div className="message-user">
-                      <p className="title name">
-                        {notification.participants[0].name}
-                      </p>
+          {data.notifications
+            .filter(
+              (notification) => notification.community._id === communityId,
+            )
+            .map((notification) => (
+              <div
+                key={notification._id}
+                className="notification-item"
+                role="presentation"
+                onClick={() =>
+                  history.push(`/notification/${notification._id}`)
+                }
+              >
+                {notification.ofType === 0 ? (
+                  <>
+                    <img
+                      className={`${
+                        notification.isRead[data.tokenPayload.userId]
+                          ? undefined
+                          : 'unread'
+                      }`}
+                      src={
+                        JSON.parse(notification.participants[0].image)
+                          .secure_url
+                      }
+                      alt=""
+                    />
+                    <div className="message-info">
+                      <div className="message-user">
+                        <p className="title name">
+                          {notification.participants[0].name}
+                        </p>
+                      </div>
+                      <div className="message-text">
+                        {notification.messages.length > 0 ? (
+                          <p className="text">
+                            {
+                              notification.messages[
+                                notification.messages.length - 1
+                              ].text
+                            }
+                          </p>
+                        ) : (
+                          <p className="text">
+                            Send a message to{' '}
+                            {notification.participants[0].name} now
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="message-text">
-                      {notification.messages.length > 0 ? (
-                        <p className="text">
-                          {
-                            notification.messages[
-                              notification.messages.length - 1
-                            ].text
-                          }
-                        </p>
-                      ) : (
-                        <p className="text">
-                          Send a message to {notification.participants[0].name}{' '}
-                          now
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </>
-              ) : notification.ofType === 1 ? (
-                <>
-                  <img
-                    className={`${
-                      notification.isRead[data.tokenPayload.userId]
-                        ? undefined
-                        : 'unread'
-                    }`}
-                    src={JSON.parse(notification.booking.post.image).secure_url}
-                    alt=""
-                  />
-                  <div className="item-info">
-                    <div className="item-status">
-                      {notification.booking.booker._id ===
-                      data.tokenPayload.userId ? (
-                        <p className="title">
-                          You requested {notification.participants[0].name}
-                          &apos;s {notification.booking.post.title}
-                        </p>
-                      ) : (
-                        <p className="title">
-                          {notification.participants[0].name} requested your{' '}
-                          {notification.booking.post.title}
-                        </p>
-                      )}
-                      {notification.booking.dateType === 0 ? (
-                        <span>As soon as possible</span>
-                      ) : notification.booking.dateType === 1 ? (
-                        <span>No timeframe</span>
-                      ) : (
-                        <span>
-                          {moment(+notification.booking.dateNeed).format(
-                            'DD.MM.Y',
-                          )}{' '}
-                          -{' '}
-                          {moment(+notification.booking.dateReturn).format(
-                            'DD.MM.Y',
-                          )}
-                        </span>
-                      )}
-                    </div>
-                    <div className="item-btns">
-                      {notification.booking.booker._id ===
-                      data.tokenPayload.userId ? (
-                        <>
-                          {notification.booking.status === 0 ? (
-                            <button type="button" className="status bronze">
-                              Pending
-                            </button>
-                          ) : notification.booking.status === 1 ? (
-                            <button type="button" className="status green">
-                              Accepted
-                            </button>
-                          ) : (
-                            <button type="button" className="status red">
-                              Denied
-                            </button>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          {notification.booking.status === 0 ? (
-                            <>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  updateBooking({
-                                    variables: {
-                                      bookingId: notification.booking._id,
-                                      bookingInput: {
-                                        status: 1,
-                                        notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${notification.booking.post.title}`,
-                                        notifyRecipientId:
-                                          notification.booking.booker._id,
-                                      },
-                                    },
-                                  });
-                                }}
-                              >
-                                Accept
+                  </>
+                ) : notification.ofType === 1 ? (
+                  <>
+                    <img
+                      className={`${
+                        notification.isRead[data.tokenPayload.userId]
+                          ? undefined
+                          : 'unread'
+                      }`}
+                      src={
+                        JSON.parse(notification.booking.post.image).secure_url
+                      }
+                      alt=""
+                    />
+                    <div className="item-info">
+                      <div className="item-status">
+                        {notification.booking.booker._id ===
+                        data.tokenPayload.userId ? (
+                          <p className="title">
+                            You requested {notification.participants[0].name}
+                            &apos;s {notification.booking.post.title}
+                          </p>
+                        ) : (
+                          <p className="title">
+                            {notification.participants[0].name} requested your{' '}
+                            {notification.booking.post.title}
+                          </p>
+                        )}
+                        {notification.booking.dateType === 0 ? (
+                          <span>As soon as possible</span>
+                        ) : notification.booking.dateType === 1 ? (
+                          <span>No timeframe</span>
+                        ) : (
+                          <span>
+                            {moment(+notification.booking.dateNeed).format(
+                              'DD.MM.Y',
+                            )}{' '}
+                            -{' '}
+                            {moment(+notification.booking.dateReturn).format(
+                              'DD.MM.Y',
+                            )}
+                          </span>
+                        )}
+                      </div>
+                      <div className="item-btns">
+                        {notification.booking.booker._id ===
+                        data.tokenPayload.userId ? (
+                          <>
+                            {notification.booking.status === 0 ? (
+                              <button type="button" className="status bronze">
+                                Pending
                               </button>
-                              <button
-                                type="button"
-                                className="red"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  updateBooking({
-                                    variables: {
-                                      bookingId: notification.booking._id,
-                                      bookingInput: {
-                                        status: 2,
-                                        notifyContent: `${data.tokenPayload.userName} has denied your booking on ${notification.booking.post.title}`,
-                                        notifyRecipientId:
-                                          notification.booking.booker._id,
-                                      },
-                                    },
-                                  });
-                                }}
-                              >
-                                Deny
+                            ) : notification.booking.status === 1 ? (
+                              <button type="button" className="status green">
+                                Accepted
                               </button>
-                            </>
-                          ) : notification.booking.status === 1 ? (
-                            <button type="button" className="status green">
-                              Accepted
-                            </button>
-                          ) : (
-                            <button type="button" className="status red">
-                              Denied
-                            </button>
-                          )}
-                        </>
-                      )}
+                            ) : (
+                              <button type="button" className="status red">
+                                Denied
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {notification.booking.status === 0 ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    updateBooking({
+                                      variables: {
+                                        bookingId: notification.booking._id,
+                                        bookingInput: {
+                                          status: 1,
+                                          notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${notification.booking.post.title}`,
+                                          notifyRecipientId:
+                                            notification.booking.booker._id,
+                                        },
+                                      },
+                                    });
+                                  }}
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  type="button"
+                                  className="red"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    updateBooking({
+                                      variables: {
+                                        bookingId: notification.booking._id,
+                                        bookingInput: {
+                                          status: 2,
+                                          notifyContent: `${data.tokenPayload.userName} has denied your booking on ${notification.booking.post.title}`,
+                                          notifyRecipientId:
+                                            notification.booking.booker._id,
+                                        },
+                                      },
+                                    });
+                                  }}
+                                >
+                                  Deny
+                                </button>
+                              </>
+                            ) : notification.booking.status === 1 ? (
+                              <button type="button" className="status green">
+                                Accepted
+                              </button>
+                            ) : (
+                              <button type="button" className="status red">
+                                Denied
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <img
-                    className={`${
-                      notification.isRead[data.tokenPayload.userId]
-                        ? undefined
-                        : 'unread'
-                    }`}
-                    src={
-                      JSON.parse(notification.participants[0].image).secure_url
-                    }
-                    alt=""
-                  />
-                  <div className="item-info">
-                    <div className="item-status">
-                      <p className="title">
-                        {notification.post.creator.name} uploaded a item for
-                        your request!
-                      </p>
+                  </>
+                ) : (
+                  <>
+                    <img
+                      className={`${
+                        notification.isRead[data.tokenPayload.userId]
+                          ? undefined
+                          : 'unread'
+                      }`}
+                      src={
+                        JSON.parse(notification.participants[0].image)
+                          .secure_url
+                      }
+                      alt=""
+                    />
+                    <div className="item-info">
+                      <div className="item-status">
+                        <p className="title">
+                          {notification.post.creator.name} uploaded a item for
+                          your request!
+                        </p>
+                      </div>
+                      <div className="item-btns">
+                        <button type="button" className="status brown">
+                          Request now
+                        </button>
+                      </div>
                     </div>
-                    <div className="item-btns">
-                      <button type="button" className="status brown">
-                        Request now
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
+                  </>
+                )}
+              </div>
+            ))}
         </>
       ) : (
         <p className="prev-p">You do not have any notifications yet</p>
@@ -312,12 +325,14 @@ function Notifications({ history, communityId }) {
             .notification-item {
               margin: 15px;
               display: flex;
-              background: #faf7f5;
+              // background: rgba(220, 216, 208, 0.2);
+              background: #f8f8f8;
               width: 320px;
 
               &:hover {
                 cursor: pointer;
-                background: #f3efed;
+                // background: #f3efed;
+                background: $grey-hover;
               }
 
               p {
@@ -347,7 +362,7 @@ function Notifications({ history, communityId }) {
                 border-radius: 50%;
                 border-color: transparent;
                 border-style: solid;
-                box-shadow: 1px 1px 1px 1px #eeeeee;
+                // box-shadow: 1px 1px 1px 1px #eeeeee;
 
                 &.unread {
                   border-color: #fc5e06;

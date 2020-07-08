@@ -156,6 +156,8 @@ function PostDetails({ communityId, match, history }) {
     CREATE_NOTIFICATION,
     {
       onCompleted: ({ createNotification }) => {
+        console.log(createNotification);
+
         // Redirect user to chat on mutation complete
         history.push(`/notification/${createNotification._id}`);
       },

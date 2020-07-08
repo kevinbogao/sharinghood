@@ -251,16 +251,37 @@ function App() {
             width: 2px;
           }
 
-          .item-btn {
-            width: max-content;
-            height: 40px;
-            border-width: 0;
-            border-radius: 4px;
-            cursor: pointer;
-            color: #fff;
-            font-size: 20px;
-            margin: 20px auto;
-            padding: 4px 18px;
+          .noti-btn {
+            border: none;
+            color: $black;
+            font-size: 17px;
+            width: 85px;
+            height: 30px;
+            border-radius: 15px;
+
+            &.status {
+              width: 160px;
+            }
+
+            &.pending {
+              border: 2px solid $beige;
+              background: $background;
+            }
+
+            &.accept {
+              border: 2px solid $green-100;
+              background: $green-000;
+            }
+
+            &.deny {
+              border: 2px solid $red-100;
+              background: $red-000;
+            }
+
+            &.request {
+              border: 2px solid $black;
+              background: $background;
+            }
           }
 
           .font-icon {

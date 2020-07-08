@@ -345,9 +345,7 @@ const notificationsResolvers = {
             }
           ),
           // Set hash in redis
-          redis.hset(`notifications:${recipientId}`, `${communityId}`, true),
-          // redis.set(`notifications:${recipientId}`, true),
-          // redis.set(`notifications:${recipientId}:${communityId}`, true),
+          // redis.hset(`notifications:${recipientId}`, `${communityId}`, true),
         ]);
 
         // Get participants and add to return value

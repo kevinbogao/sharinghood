@@ -112,9 +112,9 @@ function Notifications({ history, communityId }) {
                 key={notification._id}
                 className="notification-item"
                 role="presentation"
-                onClick={() =>
-                  history.push(`/notification/${notification._id}`)
-                }
+                onClick={() => {
+                  history.push(`/notification/${notification._id}`);
+                }}
               >
                 {notification.ofType === 0 ? (
                   <>
@@ -202,15 +202,24 @@ function Notifications({ history, communityId }) {
                         data.tokenPayload.userId ? (
                           <>
                             {notification.booking.status === 0 ? (
-                              <button type="button" className="status bronze">
+                              <button
+                                type="button"
+                                className="noti-btn status pending"
+                              >
                                 Pending
                               </button>
                             ) : notification.booking.status === 1 ? (
-                              <button type="button" className="status green">
+                              <button
+                                type="button"
+                                className="noti-btn status accept"
+                              >
                                 Accepted
                               </button>
                             ) : (
-                              <button type="button" className="status red">
+                              <button
+                                type="button"
+                                className="noti-btn status deny"
+                              >
                                 Denied
                               </button>
                             )}
@@ -221,6 +230,7 @@ function Notifications({ history, communityId }) {
                               <>
                                 <button
                                   type="button"
+                                  className="noti-btn accept"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
@@ -241,7 +251,7 @@ function Notifications({ history, communityId }) {
                                 </button>
                                 <button
                                   type="button"
-                                  className="red"
+                                  className="noti-btn deny"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
@@ -262,11 +272,17 @@ function Notifications({ history, communityId }) {
                                 </button>
                               </>
                             ) : notification.booking.status === 1 ? (
-                              <button type="button" className="status green">
+                              <button
+                                type="button"
+                                className="noti-btn status accept"
+                              >
                                 Accepted
                               </button>
                             ) : (
-                              <button type="button" className="status red">
+                              <button
+                                type="button"
+                                className="noti-btn status deny"
+                              >
                                 Denied
                               </button>
                             )}
@@ -297,7 +313,10 @@ function Notifications({ history, communityId }) {
                         </p>
                       </div>
                       <div className="item-btns">
-                        <button type="button" className="status brown">
+                        <button
+                          type="button"
+                          className="noti-btn status request"
+                        >
                           Request now
                         </button>
                       </div>
@@ -308,7 +327,7 @@ function Notifications({ history, communityId }) {
             ))}
         </>
       ) : (
-        <p className="prev-p">You do not have any notifications yet</p>
+        <p className="main-p">You do not have any notifications yet</p>
       )}
       {mutationLoading && <Loading isCover />}
       <style jsx>
@@ -325,14 +344,12 @@ function Notifications({ history, communityId }) {
             .notification-item {
               margin: 15px;
               display: flex;
-              // background: rgba(220, 216, 208, 0.2);
-              background: #f8f8f8;
+              background: $grey-100;
               width: 320px;
 
               &:hover {
                 cursor: pointer;
-                // background: #f3efed;
-                background: $grey-hover;
+                background: $grey-200;
               }
 
               p {
@@ -340,7 +357,6 @@ function Notifications({ history, communityId }) {
                   margin: auto 10px;
                   display: block;
                   font-size: 16px;
-                  color: $bronze-200;
 
                   &.name {
                     margin: 8px 10px;
@@ -362,61 +378,15 @@ function Notifications({ history, communityId }) {
                 border-radius: 50%;
                 border-color: transparent;
                 border-style: solid;
-                // box-shadow: 1px 1px 1px 1px #eeeeee;
 
                 &.unread {
-                  border-color: #fc5e06;
+                  border-color: $orange;
                   border-style: solid;
                 }
 
                 @include sm {
                   height: 80px;
                   width: 80px;
-                }
-              }
-
-              button {
-                border: none;
-                color: $background;
-                background: $green-200;
-                font-size: 17px;
-                width: 85px;
-                height: 30px;
-                border-radius: 15px;
-
-                &:hover {
-                  color: #fff;
-                  background: $green-100;
-                }
-
-                &.red {
-                  background: $red-200;
-
-                  &:hover {
-                    color: #fff;
-                    background: $red-100;
-                  }
-                }
-
-                &.status {
-                  color: $background;
-                  width: 160px;
-
-                  &.bronze {
-                    background: $bronze-200;
-                  }
-
-                  &.brown {
-                    background: $brown;
-                  }
-
-                  &.green {
-                    background: $green-200;
-                  }
-
-                  &.red {
-                    background: $red-200;
-                  }
                 }
               }
 

@@ -5,14 +5,19 @@ $font-stack: 'Karla', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
 // Colours
 $black: #000000;
 $white: #f2f2f2;
-$background: #fefefe;
+$beige: #d8d0be;
+$orange: #f17835;
+$red-000: #b000001a; // 10%
+$red-100: #b000004d; // 30%
+$red-200: #b00000;
 $grey-000: #f2f2f2;
 $grey-100: #f8f8f8;
 $grey-200: #e9e9e9;
 $grey-300: #c4c4c4;
-$orange: #f17835;
-$beige: #d8d0be;
-$red-200: #b00000;
+$green-000: #03ad001a; // 10%
+$green-100: #03ad004d; // 30%
+$green-200: #03ad00;
+$background: #fefefe;
 
 // Screen sizes
 $screen-sm-max: 576px;

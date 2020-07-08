@@ -242,15 +242,15 @@ function NotificationDetails({ communityId, match, history }) {
               data.tokenPayload.userId ? (
                 <>
                   {data.notification.booking.status === 0 ? (
-                    <button type="button" className="status bronze">
+                    <button type="button" className="noti-btn status pending">
                       Pending
                     </button>
                   ) : data.notification.booking.status === 1 ? (
-                    <button type="button" className="status green">
+                    <button type="button" className="noti-btn status accept">
                       Accepted
                     </button>
                   ) : (
-                    <button type="button" className="status red">
+                    <button type="button" className="noti-btn status deny">
                       Denied
                     </button>
                   )}
@@ -261,6 +261,7 @@ function NotificationDetails({ communityId, match, history }) {
                     <>
                       <button
                         type="button"
+                        className="noti-btn accept"
                         onClick={(e) => {
                           e.preventDefault();
                           updateBooking({
@@ -279,7 +280,7 @@ function NotificationDetails({ communityId, match, history }) {
                         Accept
                       </button>
                       <button
-                        className="red"
+                        className="noti-btn deny"
                         type="button"
                         onClick={(e) => {
                           e.preventDefault();
@@ -300,11 +301,11 @@ function NotificationDetails({ communityId, match, history }) {
                       </button>
                     </>
                   ) : data.notification.booking.status === 1 ? (
-                    <button type="button" className="status green">
+                    <button type="button" className="noti-btn status accept">
                       Accepted
                     </button>
                   ) : (
-                    <button type="button" className="status red">
+                    <button type="button" className="noti-btn status deny">
                       Denied
                     </button>
                   )}
@@ -384,7 +385,6 @@ function NotificationDetails({ communityId, match, history }) {
               margin: auto 10px;
               display: block;
               font-size: 16px;
-              color: $bronze-200;
             }
 
             span {
@@ -406,46 +406,8 @@ function NotificationDetails({ communityId, match, history }) {
               }
             }
 
-            button {
+            .noti-btn {
               margin: auto 5px;
-              border: none;
-              color: $background;
-              background: $green-200;
-              font-size: 17px;
-              width: 85px;
-              height: 30px;
-              border-radius: 15px;
-
-              &:hover {
-                color: #fff;
-                background: $green-100;
-              }
-
-              &.red {
-                background: $red-200;
-
-                &:hover {
-                  color: #fff;
-                  background: $red-100;
-                }
-              }
-
-              &.status {
-                color: $background;
-                width: 160px;
-
-                &.bronze {
-                  background: $bronze-200;
-                }
-
-                &.green {
-                  background: $green-200;
-                }
-
-                &.red {
-                  background: $red-200;
-                }
-              }
             }
 
             .notification-info {
@@ -453,7 +415,7 @@ function NotificationDetails({ communityId, match, history }) {
               justify-content: center;
               width: 100vw;
               height: 95px;
-              background: #faf7f5;
+              background: $grey-100;
 
               .info-imgs {
                 height: 100%;
@@ -493,8 +455,8 @@ function NotificationDetails({ communityId, match, history }) {
                     float: left;
                     line-height: 1.3;
                     max-width: 230px;
-                    color: #000000;
-                    background: #f1f0f0;
+                    color: $black;
+                    background: $grey-200;
                     border-radius: 20px;
                   }
                 }
@@ -508,8 +470,8 @@ function NotificationDetails({ communityId, match, history }) {
                     float: right;
                     line-height: 1.3;
                     max-width: 230px;
-                    color: #ffffff;
-                    background: $green-100;
+                    color: $background;
+                    background: #03ad008c;
                     border-radius: 20px;
                   }
                 }
@@ -518,7 +480,7 @@ function NotificationDetails({ communityId, match, history }) {
               .chat-input {
                 width: 100%;
                 height: 60px;
-                background: #f3efed;
+                background: $grey-200;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -529,7 +491,7 @@ function NotificationDetails({ communityId, match, history }) {
                   border-width: 0;
                   padding: 10px;
                   color: #a0998f;
-                  background: $grey-100;
+                  background: $background;
                   font-size: 15px;
                   border-radius: 18px;
                 }
@@ -544,7 +506,7 @@ function NotificationDetails({ communityId, match, history }) {
 
           .send-icon {
             margin-left: 20px;
-            color: $green-100;
+            color: $orange;
             font-size: 20px;
 
             &:hover {

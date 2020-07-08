@@ -143,6 +143,7 @@ const postsResolvers = {
               [requesterId]: false,
               [user.userId]: false,
             },
+            community: communityId,
           });
 
           // Add notification to requester

@@ -3,11 +3,20 @@ import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import moment from 'moment';
 import Loading from '../../components/Loading';
-import { GET_COMMUNITY } from '../../components/Navbar';
+
+const GET_USER_COMMUNITIES = gql`
+  query Communities {
+    communities {
+      _id
+      name
+      hasNotifications
+    }
+  }
+`;
 
 const GET_NOTIFICATIONS = gql`
-  query GetNotifications {
-    notifications {
+  query GetNotifications($communityId: ID) {
+    notifications(communityId: $communityId) {
       _id
       ofType
       booking {
@@ -62,20 +71,38 @@ const UPDATE_BOOKING = gql`
 function Notifications({ history, communityId }) {
   const client = useApolloClient();
   const { loading, error, data } = useQuery(GET_NOTIFICATIONS, {
-    // Use useCallback to prevent fetchPolicy's infinite requests
     // TODO: wait for package fix
+    // Use useCallback to prevent fetchPolicy's infinite requests
     // fetchPolicy: 'network-only',
+    variables: { communityId },
     fetchPolicy: 'cache-and-network',
     onCompleted: useCallback(() => {
-      // Mutate hasNotifications stats to false to remove notification red dot
-      client.writeQuery({
-        query: GET_COMMUNITY,
-        variables: { communityId },
-        data: {
-          ...data,
+      // Get communities from cache, and the current community's index in the communities array
+
+      try {
+        const { communities } = client.readQuery({
+          query: GET_USER_COMMUNITIES,
+        });
+        const communityIndex = communities.findIndex(
+          (community) => community._id === communityId,
+        );
+
+        // Create a new instance of communities array
+        const newCommunities = [...communities];
+
+        // Change current community's hasNotifications status in the new new communities array
+        newCommunities[communityIndex] = {
+          ...newCommunities[communityIndex],
           hasNotifications: false,
-        },
-      });
+        };
+
+        // Write the new notifications array cache
+        client.writeQuery({
+          query: GET_USER_COMMUNITIES,
+          data: { communities: newCommunities },
+        });
+        // eslint-disable-next-line
+      } catch (err) {}
       // eslint-disable-next-line
     }, []),
   });

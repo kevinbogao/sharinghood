@@ -149,11 +149,11 @@ function ItemDetails({ history, item, userId, communityId, children }) {
         style={MODAL_STYLE}
         onRequestClose={() => setIsModalOpen(false)}
       >
-        <p className="modal-p">
+        <p className="main-p">
           Would you like to sent a message to {item.creator.name} ?
         </p>
         <button
-          className="modal-btn full"
+          className="main-btn modal"
           type="submit"
           onClick={(e) => {
             e.preventDefault();
@@ -171,7 +171,7 @@ function ItemDetails({ history, item, userId, communityId, children }) {
           Yes
         </button>
         <button
-          className="modal-btn full bronze"
+          className="main-btn modal grey"
           type="button"
           onClick={() => setIsModalOpen(false)}
         >

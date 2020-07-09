@@ -224,9 +224,8 @@ const typeDefs = gql`
 
     # Notification
     notification(notificationId: ID!): Notification
-    notifications(userId: ID): [Notification]
+    notifications(userId: ID, communityId: ID): [Notification]
     findNotification(recipientId: ID!, communityId: ID!): Notification
-    hasNotifications: Boolean
 
     # Activity
     totalActivities: TotalActivities

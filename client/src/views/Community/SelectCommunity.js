@@ -12,9 +12,6 @@ const GET_USER_COMMUNITIES = gql`
       _id
       name
       hasNotifications
-      posts {
-        _id
-      }
     }
   }
 `;
@@ -78,8 +75,6 @@ function SelectCommunity({ history, location }) {
   // in localStorage or user is only in one community.
   const { loading, error, data } = useQuery(GET_USER_COMMUNITIES, {
     onCompleted: ({ selCommunityId, communities }) => {
-      console.log(communities);
-
       // Check if selectedCommunityId exists in communities array
       const isIdInArray = communities.some(
         (community) => community._id === selCommunityId,
@@ -125,8 +120,6 @@ function SelectCommunity({ history, location }) {
   // Find community, limit user communities to 5
   const [community] = useLazyQuery(FIND_COMMUNITY, {
     onCompleted: ({ community, tokenPayload }) => {
-      console.log(community);
-
       if (community) {
         // True if user is inside of community members array
         const userIsMember = community.members.some(
@@ -349,13 +342,17 @@ function SelectCommunity({ history, location }) {
               width: 80vw;
             }
 
+            .main-btn {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+
             .community-unread {
               margin-left: 15px;
               width: 10px;
               height: 10px;
-              text-align: center;
-              background: $red-200;
-              color: $red-200;
+              background: $blue;
               border-radius: 50%;
             }
           }

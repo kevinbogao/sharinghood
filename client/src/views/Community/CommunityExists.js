@@ -151,7 +151,7 @@ function CommunityExists({
 
             h1 {
               margin: 20px auto;
-              color: $bronze-200;
+              color: $orange;
               max-width: 300px;
             }
 

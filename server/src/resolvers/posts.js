@@ -149,10 +149,10 @@ const postsResolvers = {
           // Add notification to requester
           requester.notifications.push(notification);
 
-          // Save requester & and add hasNotifications to requester
+          // Save requester & set communityId key to notifications:userId hash in redis
           await Promise.all([
             requester.save(),
-            redis.set(`notifications:${requesterId}`, true),
+            redis.hset(`notifications:${requesterId}`, `${communityId}`, true),
           ]);
         }
 

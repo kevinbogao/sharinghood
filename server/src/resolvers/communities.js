@@ -41,9 +41,6 @@ const communitiesResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // const keys = await redis.hget(`notifications:${user.userId}`);
-        // console.log(keys);
-
         const userCommunities = await User.aggregate([
           { $match: { _id: mongoose.Types.ObjectId(user.userId) } },
           {
@@ -59,11 +56,10 @@ const communitiesResolvers = {
         // Get hasNotifications value from redis hash for each community of user
         const communities = await Promise.all(
           userCommunities[0].communities.map(async (community) => {
-            const hasNotifications = 'true';
-            // const hasNotifications = await redis.hget(
-            //   `notifications:${user.userId}`,
-            //   `${community._id}`
-            // );
+            const hasNotifications = await redis.hget(
+              `notifications:${user.userId}`,
+              `${community._id}`
+            );
             return {
               ...community,
               hasNotifications: hasNotifications === 'true' || false,

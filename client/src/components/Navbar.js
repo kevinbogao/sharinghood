@@ -12,6 +12,7 @@ import hamburger from '../assets/images/hamburger.png';
 
 const GET_TOKEN_PAYLOAD = gql`
   query {
+    accessToken @client
     tokenPayload @client
     selCommunityId @client
   }
@@ -37,7 +38,6 @@ const GET_COMMUNITY = gql`
       name
       hasNotifications
     }
-    hasNotifications
   }
 `;
 
@@ -48,11 +48,12 @@ function Navbar() {
   const [isMenuActive, setIsMenuActive] = useState(false);
   const [hasNotifications, setHasNotifications] = useState(false);
   const {
-    data: { tokenPayload, selCommunityId },
+    data: { accessToken, tokenPayload, selCommunityId },
     refetch,
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { data } = useQuery(GET_COMMUNITY, {
-    skip: !localStorage.getItem('@sharinghood:accessToken') || !selCommunityId,
+    // skip: !localStorage.getItem('@sharinghood:accessToken') || !selCommunityId,
+    skip: !accessToken || !selCommunityId,
     variables: { communityId: selCommunityId },
     onCompleted: (data) => {
       // Loop through all communities for hasNotifications if communities exists
@@ -147,7 +148,7 @@ function Navbar() {
       </div>
       <div className="nav-user">
         <div className="nav-user-content">
-          {tokenPayload ? (
+          {!!accessToken ? (
             <div className="nav-icons">
               {selCommunityId && (
                 <>
@@ -210,7 +211,7 @@ function Navbar() {
         </NavLink>
         {tokenPayload?.isAdmin && (
           <NavLink
-            className="nav-menu-item"
+            className="nav-menu-item dashboard"
             to="/dashboard"
             onClick={toggleMenu}
           >
@@ -265,7 +266,7 @@ function Navbar() {
                 width: 10px;
                 height: 10px;
                 text-align: center;
-                background: $red-200;
+                background: $blue;
                 border-radius: 50%;
               }
 
@@ -314,7 +315,7 @@ function Navbar() {
                   width: 10px;
                   height: 10px;
                   text-align: center;
-                  background: $red-200;
+                  background: $blue;
                   border-radius: 50%;
 
                   @include sm {
@@ -387,6 +388,10 @@ function Navbar() {
             font-size: 18px;
             padding-left: 20px;
 
+            &.dashboard {
+              color: $orange;
+            }
+
             &:hover {
               background: $grey-100;
 
@@ -399,11 +404,7 @@ function Navbar() {
               padding: 10px 20px;
               margin-left: 8px;
               color: $background;
-              background: $green-200;
-
-              &:hover {
-                background: $green-100;
-              }
+              background: $orange;
             }
           }
         `}

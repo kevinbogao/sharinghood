@@ -34,15 +34,19 @@ const messagesResolvers = {
           Notification.findById(notificationId),
         ]);
 
-        // Add essageId to notification & update recipient's isRead status to false
+        // Add message id to notification & update recipient's isRead status to false
         notification.messages.push(message);
         notification.isRead[recipientId] = false;
         notification.markModified('isRead');
 
-        // Save notification & set recipient's hasNotifications to true in redis
+        // Save notification & set communityId key to recipient's notifications:userId hash in redis
         await Promise.all([
           notification.save(),
-          redis.set(`notifications:${recipientId}`, true),
+          redis.hset(
+            `notifications:${recipientId}`,
+            `${notification.community}`,
+            true
+          ),
         ]);
 
         // Publish new message

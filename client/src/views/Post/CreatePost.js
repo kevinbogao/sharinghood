@@ -40,7 +40,7 @@ function CreatePost({ communityId, history, location }) {
         cache.writeQuery({
           query: GET_POSTS,
           variables: { communityId },
-          data: { posts: posts.concat([createPost]) },
+          data: { posts: [createPost, ...posts] },
         });
       } catch (err) {
         console.log(err);
@@ -84,7 +84,7 @@ function CreatePost({ communityId, history, location }) {
         }}
       >
         {location.state && (
-          <p className="prev-p">
+          <p className="main-p">
             {location.state.requesterName} will be notified when you post the
             item for their request
           </p>
@@ -108,22 +108,26 @@ function CreatePost({ communityId, history, location }) {
         </div>
         {error.image && <InlineError text={error.image} />}
         <input
-          className="prev-input"
+          className="main-input"
           name="title"
           placeholder="Title"
           ref={(node) => (title = node)}
         />
         {error.title && <InlineError text={error.title} />}
         <input
-          className="prev-input"
+          className="main-input"
           name="desc"
           placeholder="Description"
           ref={(node) => (desc = node)}
         />
         {error.desc && <InlineError text={error.desc} />}
         {error.descExists && <InlineError text={error.descExists} />}
-        <p className="prev-p">Condition: </p>
-        <select name="condition" onChange={(e) => setCondition(e.target.value)}>
+        <p className="main-p">Condition: </p>
+        <select
+          className="main-select"
+          name="condition"
+          onChange={(e) => setCondition(e.target.value)}
+        >
           <option value="0">New</option>
           <option value="1">Used but good</option>
           <option value="2">Used but little damaged</option>
@@ -134,11 +138,11 @@ function CreatePost({ communityId, history, location }) {
             type="checkbox"
             ref={(node) => (isGiveaway = node)}
           />
-          <p className="prev-p">
+          <p className="main-p">
             This is a giveaway! (People can borrow it for an indefinite time)
           </p>
         </div>
-        <button className="prev-btn" type="submit">
+        <button className="main-btn block" type="submit">
           Share
         </button>
       </form>
@@ -172,34 +176,8 @@ function CreatePost({ communityId, history, location }) {
               box-shadow: 1px 1px 1px 1px #eeeeee;
             }
 
-            .prev-p {
-              max-width: 280px;
-              font-size: 19px;
-              margin: 20px 0;
-            }
-
-            .prev-input {
-              margin-top: 30px;
-            }
-
-            .prev-btn {
+            .main-btn {
               margin: 20px 0 30px 0;
-            }
-
-            select {
-              font-size: 18px;
-              padding-left: 10px;
-              color: $brown;
-              width: 300px;
-              height: 40px;
-              border-width: 0px;
-              background: $grey-200;
-              border-radius: 4px;
-              margin-bottom: 12px;
-
-              @include sm {
-                width: 100%;
-              }
             }
 
             .giveaway {
@@ -209,7 +187,7 @@ function CreatePost({ communityId, history, location }) {
                 margin: 5px 10px auto auto;
               }
 
-              .prev-p {
+              .main-p {
                 max-width: 280px;
                 font-size: 19px;
                 margin: 0;

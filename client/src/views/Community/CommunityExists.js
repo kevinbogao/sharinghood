@@ -75,7 +75,7 @@ function CommunityExists({
       >
         <input
           type="text"
-          className="prev-input"
+          className="main-input"
           placeholder="Name"
           ref={(node) => {
             name = node;
@@ -106,14 +106,14 @@ function CommunityExists({
         <p>Where can the neighbours find you?</p>
         <input
           type="text"
-          className="prev-input"
+          className="main-input"
           placeholder="Floor or house number"
           ref={(node) => {
             apartment = node;
           }}
         />
         {error.apartment && <InlineError text={error.apartment} />}
-        <button className="prev-btn" type="submit">
+        <button className="main-btn" type="submit">
           Continue
         </button>
       </form>
@@ -140,7 +140,7 @@ function CommunityExists({
             p {
               margin: 16px 0;
               font-size: 16px;
-              color: $brown;
+              color: $black;
               max-width: 300px;
             }
 
@@ -151,7 +151,7 @@ function CommunityExists({
 
             h1 {
               margin: 20px auto;
-              color: $bronze-200;
+              color: $orange;
               max-width: 300px;
             }
 
@@ -173,7 +173,7 @@ function CommunityExists({
               padding: 0;
               border: none;
               font-size: 16px;
-              color: $brown;
+              color: $orange;
               text-align: center;
               background: $background;
               text-decoration: underline;
@@ -183,9 +183,8 @@ function CommunityExists({
               }
             }
 
-            .prev-btn {
-              margin: 30px auto;
-              display: block;
+            .main-btn {
+              margin: 30px auto 15px auto;
             }
 
             .community-members {

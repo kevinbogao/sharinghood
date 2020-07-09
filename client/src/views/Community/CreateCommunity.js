@@ -106,7 +106,7 @@ function CreateCommunity({ history, location }) {
     <div className="create-community-control">
       <h1>You are a hero already!</h1>
       <h5>Create a community now and invite your members via link later.</h5>
-      <p className="main-p">Give your community a name</p>
+      <p className="main-p new">Give your community a name</p>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -135,34 +135,34 @@ function CreateCommunity({ history, location }) {
       >
         <input
           type="text"
-          className="main-input"
+          className="main-input new"
           placeholder="Community Name"
           ref={(node) => {
             name = node;
           }}
         />
         {error.name && <InlineError text={error.name} />}
-        <p className="main-p">Create a unique code for your community</p>
+        <p className="main-p new">Create a unique code for your community</p>
         <input
           type="text"
-          className="main-input"
+          className="main-input new"
           placeholder="Community Code"
           ref={(node) => {
             code = node;
           }}
         />
         {error.code && <InlineError text={error.code} />}
-        <p className="main-p">Please enter your zip code</p>
+        <p className="main-p new">Please enter your zip code</p>
         <input
           type="text"
-          className="main-input"
+          className="main-input new"
           placeholder="Zip code"
           ref={(node) => {
             zipCode = node;
           }}
         />
         {error.zipCode && <InlineError text={error.zipCode} />}
-        <button className="main-btn" type="submit">
+        <button className="main-btn new" type="submit">
           Next
         </button>
       </form>
@@ -199,14 +199,6 @@ function CreateCommunity({ history, location }) {
               margin: 0 0 40px 0;
               font-size: 15px;
               color: $black;
-
-              @include sm {
-                max-width: 240px;
-              }
-            }
-
-            .main-p {
-              margin: 14px 0 7px 0;
 
               @include sm {
                 max-width: 240px;

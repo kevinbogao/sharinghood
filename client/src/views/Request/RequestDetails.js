@@ -101,19 +101,22 @@ function RequestDetails({ communityId, match, history }) {
       console.log(message);
     },
     update(cache, { data: { createThread } }) {
-      const { request } = cache.readQuery({
-        query: GET_REQUEST,
-        variables: { requestId: data.request._id, communityId },
-      });
-      cache.writeQuery({
-        query: GET_REQUEST,
-        data: {
-          request: {
-            ...request,
-            threads: [...request.threads, createThread],
+      try {
+        const { request } = cache.readQuery({
+          query: GET_REQUEST,
+          variables: { requestId: data.request._id, communityId },
+        });
+        cache.writeQuery({
+          query: GET_REQUEST,
+          data: {
+            request: {
+              ...request,
+              threads: [...request.threads, createThread],
+            },
           },
-        },
-      });
+        });
+        // eslint-disable-next-line
+      } catch (err) {}
     },
   });
   const [deleteRequest, { loading: mutationLoading }] = useMutation(
@@ -149,12 +152,13 @@ function RequestDetails({ communityId, match, history }) {
     <div className="item-control">
       <ItemDetails
         item={data.request}
-        userId={data.tokenPayload.userId}
         history={history}
+        userId={data.tokenPayload.userId}
+        communityId={communityId}
       >
         <div className="item-desc">
           <h3>{data.request.title}</h3>
-          <p className="prev-p">{data.request.desc}</p>
+          <p className="main-p">{data.request.desc}</p>
           <div className="item-misc">
             <FontAwesomeIcon className="item-icon" icon={faClock} />
             <span>
@@ -170,7 +174,7 @@ function RequestDetails({ communityId, match, history }) {
           {data.request.creator._id === data.tokenPayload.userId ? (
             <button
               type="button"
-              className="item-btn delete"
+              className="main-btn item"
               onClick={() => setIsModalOpen(true)}
             >
               Delete
@@ -185,7 +189,7 @@ function RequestDetails({ communityId, match, history }) {
                 },
               }}
             >
-              <button type="button" className="item-btn book">
+              <button type="button" className="main-btn item">
                 Help {data.request.creator.name}
               </button>
             </Link>
@@ -197,10 +201,10 @@ function RequestDetails({ communityId, match, history }) {
         style={MODAL_STYLE}
         onRequestClose={() => setIsModalOpen(false)}
       >
-        <p className="modal-p">Are you sure you want to delete this request?</p>
+        <p className="main-p">Are you sure you want to delete this request?</p>
         <button
           type="submit"
-          className="modal-btn"
+          className="main-btn modal"
           onClick={(e) => {
             e.preventDefault();
             deleteRequest({
@@ -214,7 +218,7 @@ function RequestDetails({ communityId, match, history }) {
         </button>
         <button
           type="button"
-          className="modal-btn"
+          className="main-btn modal grey"
           onClick={() => setIsModalOpen(false)}
         >
           No
@@ -233,10 +237,10 @@ function RequestDetails({ communityId, match, history }) {
             <Fragment key={member._id}>
               <img src={JSON.parse(member.image).secure_url} alt="" />
               <div className="new-thread-content">
-                <span className="prev-p">{member.name}</span>
+                <span className="main-p">{member.name}</span>
                 <input
                   type="text"
-                  className="prev-input"
+                  className="main-input"
                   placeholder="Comment something..."
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -269,17 +273,17 @@ function RequestDetails({ communityId, match, history }) {
             width: 80vw;
             max-width: $xl-max-width;
 
+            .main-p {
+              margin-left: 0;
+            }
+
             .item-desc {
               margin: 0 20px 0 40px;
 
               h3 {
                 font-size: 26px;
-                color: $bronze-100;
+                color: $black;
                 margin: 0 0 20px 0;
-              }
-
-              .prev-p {
-                margin: 20px auto;
               }
 
               @include lg {
@@ -306,24 +310,6 @@ function RequestDetails({ communityId, match, history }) {
                   font-size: 18px;
                 }
               }
-
-              .item-btn {
-                &.delete {
-                  background: $red-200;
-
-                  &:hover {
-                    background: $red-100;
-                  }
-                }
-
-                &.book {
-                  background: $bronze-200;
-
-                  &:hover {
-                    background: $bronze-100;
-                  }
-                }
-              }
             }
           }
 
@@ -345,12 +331,13 @@ function RequestDetails({ communityId, match, history }) {
               display: flex;
               flex-direction: column;
 
-              .prev-p {
+              .main-p {
+                margin: initial;
                 margin-top: 16px;
-                color: $bronze-200;
+                color: $black;
               }
 
-              .prev-input {
+              .main-input {
                 height: initial;
                 max-width: initial;
                 width: initial;

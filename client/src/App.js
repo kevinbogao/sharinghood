@@ -22,7 +22,6 @@ import ResetPassword from './views/User/ResetPassword';
 import ForgotPassword from './views/User/ForgotPassword';
 import SelectCommunity from './views/Community/SelectCommunity';
 import EditPost from './views/Post/EditPost';
-
 import { Notifications } from './views/Notification/Notifications';
 import NotificationDetails from './views/Notification/NotificationDetails';
 
@@ -100,21 +99,32 @@ function App() {
             text-decoration: none;
           }
 
-          .prev-p {
-            display: block;
-            font-size: 20px;
-            color: $brown;
-          }
-
           .main-p {
             display: block;
-            font-size: 14px;
-            color: $green-200;
+            font-size: 20px;
+            margin: 20px auto;
+            color: $black;
+            max-width: 300px;
+
+            &.new {
+              margin: 14px 0 7px 0;
+              font-size: 14px;
+
+              @include sm {
+                max-width: 240px;
+              }
+            }
+
+            &.full {
+              max-width: 80vw;
+              margin: auto;
+            }
           }
 
-          .prev-input {
+          .main-input {
             display: block;
-            background: $white;
+            background: $grey-000;
+            margin-top: 30px;
             border-width: 0;
             padding: 10px;
             color: #a0998f;
@@ -122,83 +132,97 @@ function App() {
             width: 280px;
 
             &.modal {
-              margin-left: auto;
-              margin-right: auto;
+              margin: 0 auto;
+            }
+
+            &.date {
+              margin: 0 auto;
+            }
+
+            &.new {
+              margin: initial;
+              max-width: 300px;
+
+              @include sm {
+                width: 70vw;
+                max-width: 80vw;
+              }
+
+              &::placeholder {
+                font-size: 17px;
+              }
             }
           }
 
-          .main-input {
-            @extend .prev-input;
-            max-width: 300px;
+          .main-select {
+            font-size: 18px;
+            padding-left: 10px;
+            color: #a0998f;
+            width: 300px;
+            height: 40px;
+            border-width: 0px;
+            background: $grey-000;
+            border-radius: 4px;
+            margin-bottom: 12px;
 
             @include sm {
-              width: 70vw;
-              max-width: 80vw;
-            }
-
-            &::placeholder {
-              font-size: 17px;
+              width: 100%;
             }
           }
 
-          .prev-btn {
+          .main-btn {
             height: 43px;
             width: 300px;
-            background: $green-200;
+            background: $orange;
             border-width: 0;
             border-radius: 4px;
             color: $background;
             font-family: $font-stack;
             font-size: 20px;
 
-            @include sm {
-              width: 100%;
-            }
-
             &.block {
               display: block;
               margin: 30px auto auto auto;
             }
 
-            &.bronze {
-              background: $bronze-200;
-
-              &:hover {
-                cursor: pointer;
-                background: $bronze-100;
-              }
+            &.modal {
+              display: block;
+              margin: 20px auto 20px auto;
+              padding: 8px 15px;
             }
 
-            &.red {
-              background: $red-200;
-
-              &:hover {
-                cursor: pointer;
-                background: $red-100;
-              }
+            &.grey {
+              background: $grey-300;
             }
 
-            &:hover {
+            &.beige {
+              background: $beige;
+            }
+
+            &.new {
+              height: initial;
+              width: initial;
+              min-width: 120px;
+              display: block;
+              margin: 30px auto 10px auto;
+              padding: 7px 15px;
+              font-size: 16px;
+              font-weight: 600;
+              color: $background;
+              border: none;
+              border-radius: 10px;
+            }
+
+            &.item {
+              width: max-content;
+              height: 40px;
+              border-width: 0;
+              border-radius: 4px;
               cursor: pointer;
-              background: $green-100;
-            }
-          }
-
-          .main-btn {
-            min-width: 120px;
-            display: block;
-            margin: 30px auto 10px auto;
-            padding: 7px 15px;
-            background-color: $green-200;
-            font-size: 16px;
-            font-weight: 600;
-            color: $background;
-            border: none;
-            border-radius: 10px;
-
-            &:hover {
-              cursor: pointer;
-              background: $green-100;
+              color: $background;
+              font-size: 20px;
+              margin: 20px auto;
+              padding: 4px 18px;
             }
           }
 
@@ -211,14 +235,14 @@ function App() {
             cursor: pointer;
             width: 100%;
             padding: 5px;
-            color: $brown;
+            color: $black;
 
             &:hover {
               background: $grey-100;
             }
 
             &.active {
-              color: $green-100;
+              color: $orange;
             }
 
             @include md {
@@ -227,76 +251,48 @@ function App() {
           }
 
           .switch-btn-separator {
-            background: $brown;
+            background: $grey-300;
             width: 2px;
           }
 
-          .item-btn {
-            width: max-content;
-            height: 40px;
-            border-width: 0;
-            border-radius: 4px;
-            cursor: pointer;
-            color: #fff;
-            font-size: 20px;
-            margin: 20px auto;
-            padding: 4px 18px;
+          .noti-btn {
+            border: none;
+            color: $black;
+            font-size: 17px;
+            width: 85px;
+            height: 30px;
+            border-radius: 15px;
+
+            &.status {
+              width: 160px;
+            }
+
+            &.pending {
+              border: 2px solid $beige;
+              background: $background;
+            }
+
+            &.accept {
+              border: 2px solid $green-100;
+              background: $green-000;
+            }
+
+            &.deny {
+              border: 2px solid $red-100;
+              background: $red-000;
+            }
+
+            &.request {
+              border: 2px solid $black;
+              background: $background;
+            }
           }
 
           .font-icon {
             font-size: 18px;
 
-            &.green {
-              color: $green-200;
-            }
-          }
-
-          .modal-p {
-            @extend .prev-p;
-            margin: 20px auto;
-          }
-
-          .modal-btn {
-            @extend .prev-btn;
-            width: initial;
-            height: initial;
-            margin: 20px 20px 0 0;
-            padding: 8px 15px;
-
-            &.full {
-              margin: 20px auto 20px auto;
-              display: block;
-              width: 300px;
-
-              &.red {
-                margin: 20px auto 20px auto;
-                background: $red-200;
-
-                &:hover {
-                  background: $red-100;
-                }
-              }
-
-              &.bronze {
-                margin: 20px auto 20px auto;
-                background: $bronze-200;
-
-                &:hover {
-                  background: $bronze-100;
-                }
-              }
-            }
-
-            &.red {
-              display: block;
-              margin: 20px 20px 0 0;
-              background: $red-200;
-            }
-
-            &.bronze {
-              display: block;
-              margin: 20px 0;
-              background: $bronze-200;
+            &.orange {
+              color: $orange;
             }
           }
 

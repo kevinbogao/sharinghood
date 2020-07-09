@@ -114,21 +114,21 @@ function Profile({ history }) {
         {data.user.posts.length > 0 && (
           <UserPosts posts={data.user.posts} history={history} />
         )}
-        <p className="prev-p">Your name</p>
+        <p className="main-p">Your name</p>
         <input
-          className="prev-input"
+          className="main-input"
           defaultValue={data.user.name}
           onChange={(e) => setName(e.target.value)}
         />
-        <p className="prev-p">Email address</p>
-        <input className="prev-input" defaultValue={data.user.email} disabled />
-        <p className="prev-p">Where can the neighbours find you?</p>
+        <p className="main-p">Email address</p>
+        <input className="main-input" defaultValue={data.user.email} disabled />
+        <p className="main-p">Where can the neighbours find you?</p>
         <input
-          className="prev-input"
+          className="main-input"
           defaultValue={data.user.apartment}
           onChange={(e) => setApartment(e.target.value)}
         />
-        <button className="prev-btn" type="submit">
+        <button className="main-btn block" type="submit">
           Save
         </button>
       </form>
@@ -159,29 +159,21 @@ function Profile({ history }) {
 
             h2 {
               margin: 20px auto;
-              color: $bronze-200;
               font-size: 20xp;
             }
 
             .profile-pic-p {
               margin: 15px auto 0px auto;
-              color: $brown;
               font-size: 14px;
               max-width: 300px;
             }
 
-            .prev-p {
-              margin: 20px auto;
-              max-width: 300px;
-
-              &.bronze {
-                color: $bronze-200;
-              }
+            .main-input {
+              margin-top: 5px;
             }
 
-            .prev-btn {
-              display: block;
-              margin: 30px auto;
+            .main-p {
+              margin: 20px auto 10px auto;
             }
           }
         `}

@@ -63,17 +63,17 @@ function Posts() {
           @import './src/assets/scss/index.scss';
 
           .item-card {
-            background: #fafafa;
+            background: $grey-100;
             margin: 20px 10px;
             padding: 10px;
             cursor: pointer;
 
             &:hover {
-              background: #f4f4f4;
+              background: $grey-200;
             }
 
             p {
-              color: $brown;
+              color: $black;
               font-size: 14px;
               width: 160px;
 
@@ -97,19 +97,6 @@ function Posts() {
               @include sm {
                 width: 200px;
                 height: 170px;
-              }
-            }
-
-            .item-needed-on {
-              margin-top: 5px;
-              display: flex;
-              align-items: center;
-              font-size: 15px;
-              color: $bronze-100;
-
-              span {
-                font-size: 14px;
-                margin-left: 6px;
               }
             }
           }

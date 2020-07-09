@@ -46,6 +46,7 @@ const typeDefs = gql`
     members: [User]
     posts: [Post]
     requests: [Request]
+    hasNotifications: Boolean
   }
 
   input CommunityInput {
@@ -167,12 +168,14 @@ const typeDefs = gql`
     participants: [User]
     messages: [Message]
     isRead: JSON
+    community: Community
   }
 
   input NotificationInput {
     ofType: Int
     recipientId: ID
     bookingInput: BookingInput
+    communityId: ID
   }
 
   # Activities
@@ -221,9 +224,8 @@ const typeDefs = gql`
 
     # Notification
     notification(notificationId: ID!): Notification
-    notifications(userId: ID): [Notification]
-    findNotification(recipientId: ID!): Notification
-    hasNotifications: Boolean
+    notifications(userId: ID, communityId: ID): [Notification]
+    findNotification(recipientId: ID!, communityId: ID!): Notification
 
     # Activity
     totalActivities: TotalActivities

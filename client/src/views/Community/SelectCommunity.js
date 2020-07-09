@@ -11,9 +11,7 @@ const GET_USER_COMMUNITIES = gql`
     communities {
       _id
       name
-      posts {
-        _id
-      }
+      hasNotifications
     }
   }
 `;
@@ -112,6 +110,7 @@ function SelectCommunity({ history, location }) {
           },
         });
       }
+      // eslint-disable-next-line
     },
     onError: ({ message }) => {
       console.log(message);
@@ -121,22 +120,27 @@ function SelectCommunity({ history, location }) {
   // Find community, limit user communities to 5
   const [community] = useLazyQuery(FIND_COMMUNITY, {
     onCompleted: ({ community, tokenPayload }) => {
-      // True if user is inside of community members array
-      const userIsMember = community.members.some(
-        (member) => member._id === tokenPayload.userId,
-      );
+      if (community) {
+        // True if user is inside of community members array
+        const userIsMember = community.members.some(
+          (member) => member._id === tokenPayload.userId,
+        );
 
-      // Throw erorr if user is in 5 communities already
-      if (data.communities.length >= 5)
-        setPageError({
-          code: 'You have reached the maximum number of communities',
-        });
-      // Check if user is part of the community
-      else if (userIsMember)
-        setPageError({
-          code: `You are already a member of ${community.name}`,
-        });
-      else setFoundCommunity(community);
+        // Throw erorr if user is in 5 communities already
+        if (data.communities.length >= 5)
+          setPageError({
+            code: 'You have reached the maximum number of communities',
+          });
+        // Check if user is part of the community
+        else if (userIsMember)
+          setPageError({
+            code: `You are already a member of ${community.name}`,
+          });
+        else setFoundCommunity(community);
+      } else {
+        // Set community error if community is not found
+        setPageError({ code: 'Community not found' });
+      }
     },
     onError: ({ message }) => {
       const errMsgArr = message.split(': ');
@@ -198,9 +202,9 @@ function SelectCommunity({ history, location }) {
         <>
           {foundCommunity ? (
             <div>
-              <p className="prev-p">Join {foundCommunity.name}</p>
+              <p className="main-p">Join {foundCommunity.name}</p>
               <button
-                className="prev-btn"
+                className="main-btn block"
                 type="button"
                 onClick={() => {
                   joinCommunity({
@@ -213,7 +217,7 @@ function SelectCommunity({ history, location }) {
                 Yes
               </button>
               <button
-                className="prev-btn red"
+                className="main-btn block grey"
                 type="button"
                 onClick={() => {
                   setFoundCommunity(null);
@@ -225,15 +229,15 @@ function SelectCommunity({ history, location }) {
             </div>
           ) : (
             <>
-              <p className="prev-p">Join an existing community</p>
+              <p className="main-p">Join an existing community</p>
               <input
-                className="prev-input"
+                className="main-input"
                 placeholder="Community Code"
                 ref={(node) => (code = node)}
               />
               {pageError.code && <InlineError text={pageError.code} />}
               <button
-                className="prev-btn"
+                className="main-btn block"
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
@@ -249,8 +253,9 @@ function SelectCommunity({ history, location }) {
               >
                 Find community
               </button>
+              <p className="main-p">Or create your own community</p>
               <button
-                className="prev-btn bronze"
+                className="main-btn block"
                 type="button"
                 onClick={() => {
                   if (data.communities.length >= 5) {
@@ -268,17 +273,27 @@ function SelectCommunity({ history, location }) {
               >
                 Create Community
               </button>
+              <button
+                className="main-btn block grey"
+                type="button"
+                onClick={() => {
+                  setIsNewCommunity(false);
+                  setPageError({});
+                }}
+              >
+                Return
+              </button>
             </>
           )}
         </>
       ) : (
         <>
-          <p className="prev-p">Select a community</p>
+          <p className="main-p">Select a community</p>
           {data &&
             data.communities.map((community) => (
               <button
                 key={community._id}
-                className="prev-btn"
+                className="main-btn block beige"
                 type="submit"
                 onClick={() => {
                   setSelectedId(community._id);
@@ -290,11 +305,14 @@ function SelectCommunity({ history, location }) {
                 }}
               >
                 {community.name}
+                {community.hasNotifications && (
+                  <span className="community-unread" />
+                )}
               </button>
             ))}
-          <p className="prev-p">Join an other community</p>
+          <p className="main-p">Join an other community</p>
           <button
-            className="prev-btn bronze"
+            className="main-btn block"
             type="button"
             onClick={() => {
               if (data.communities.length >= 5) {
@@ -324,17 +342,18 @@ function SelectCommunity({ history, location }) {
               width: 80vw;
             }
 
-            .prev-p {
-              margin: 20px auto;
-
-              span {
-                color: $green-100;
-              }
+            .main-btn {
+              display: flex;
+              align-items: center;
+              justify-content: center;
             }
 
-            .prev-btn {
-              display: block;
-              margin-top: 30px;
+            .community-unread {
+              margin-left: 15px;
+              width: 10px;
+              height: 10px;
+              background: $blue;
+              border-radius: 50%;
             }
           }
         `}

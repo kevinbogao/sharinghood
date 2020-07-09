@@ -61,20 +61,20 @@ function ResetPassword({ match }) {
           <>
             {success ? (
               <>
-                <p className="prev-p">
+                <p className="main-p">
                   Your password has been successfully reset!
                 </p>
 
-                <button className="prev-btn" type="button">
+                <button className="main-btn" type="button">
                   <Link to="/login">Back to login</Link>
                 </button>
               </>
             ) : (
               <>
-                <p className="prev-p">
+                <p className="main-p">
                   Reset password instructions have been sent.
                 </p>
-                <p className="prev-p">
+                <p className="main-p">
                   Please check your email to recover your account.
                 </p>
                 <form
@@ -93,7 +93,7 @@ function ResetPassword({ match }) {
                 >
                   <input
                     type="password"
-                    className="prev-input"
+                    className="main-input"
                     placeholder="Password"
                     ref={(node) => (password = node)}
                   />
@@ -102,14 +102,14 @@ function ResetPassword({ match }) {
                   )}
                   <input
                     type="password"
-                    className="prev-input"
+                    className="main-input"
                     placeholder="Confirm Password"
                     ref={(node) => (confirmPassword = node)}
                   />
                   {formError.confirmPassword && (
                     <InlineError text={formError.confirmPassword} />
                   )}
-                  <button className="prev-btn" type="submit">
+                  <button className="main-btn block" type="submit">
                     Confirm
                   </button>
                 </form>
@@ -119,9 +119,9 @@ function ResetPassword({ match }) {
           </>
         ) : (
           <>
-            <p className="prev-p">Your link is not longer valid.</p>
+            <p className="main-p">Your link is not longer valid.</p>
             <Link to="/forgot-password">
-              <button className="prev-btn" type="submit">
+              <button className="main-btn block" type="submit">
                 Try again
               </button>
             </Link>
@@ -137,20 +137,6 @@ function ResetPassword({ match }) {
               @include sm {
                 max-width: 300px;
                 width: 80vw;
-              }
-
-              .prev-p {
-                margin: 20px auto;
-                max-width: 300px;
-              }
-
-              .prev-input {
-                margin-top: 30px;
-              }
-
-              .prev-btn {
-                display: block;
-                margin-top: 30px;
               }
             }
           `}

@@ -74,6 +74,11 @@ const postsResolvers = {
                   },
                 },
                 { $unwind: '$creator' },
+                {
+                  $sort: {
+                    createdAt: -1,
+                  },
+                },
               ],
               as: 'posts',
             },
@@ -138,15 +143,16 @@ const postsResolvers = {
               [requesterId]: false,
               [user.userId]: false,
             },
+            community: communityId,
           });
 
           // Add notification to requester
           requester.notifications.push(notification);
 
-          // Save requester & and add hasNotifications to requester
+          // Save requester & set communityId key to notifications:userId hash in redis
           await Promise.all([
             requester.save(),
-            redis.set(`notifications:${requesterId}`, true),
+            redis.hset(`notifications:${requesterId}`, `${communityId}`, true),
           ]);
         }
 
@@ -184,7 +190,7 @@ const postsResolvers = {
         if (title) post.title = title;
         if (desc) post.desc = desc;
         if (image && imgData) post.image = imgData;
-        post.condition = condition; // 0 & bool conflict -> always update
+        if (condition) post.condition = condition;
 
         // Save & return post
         const updatedPost = await post.save();

@@ -37,7 +37,7 @@ const communitiesResolvers = {
         throw err;
       }
     },
-    communities: async (_, __, { user }) => {
+    communities: async (_, __, { user, redis }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
@@ -53,7 +53,21 @@ const communitiesResolvers = {
           },
         ]);
 
-        return userCommunities[0].communities;
+        // Get hasNotifications value from redis hash for each community of user
+        const communities = await Promise.all(
+          userCommunities[0].communities.map(async (community) => {
+            const hasNotifications = await redis.hget(
+              `notifications:${user.userId}`,
+              `${community._id}`
+            );
+            return {
+              ...community,
+              hasNotifications: hasNotifications === 'true' || false,
+            };
+          })
+        );
+
+        return communities;
       } catch (err) {
         console.log(err);
         throw new Error(err);

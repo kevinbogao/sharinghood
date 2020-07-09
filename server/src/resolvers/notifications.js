@@ -91,7 +91,9 @@ const notificationsResolvers = {
         throw new Error(err);
       }
     },
-    notifications: async (_, __, { user, redis }) => {
+    // TODO: filter notifications by communityId
+    notifications: async (_, { communityId }, { user, redis }) => {
+      console.log(communityId);
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
@@ -120,6 +122,12 @@ const notificationsResolvers = {
                         },
                       },
                       { $unwind: '$post' },
+                      // {
+                      //   $unwind: {
+                      //     path: '$post',
+                      //     preserveNullAndEmptyArrays: true,
+                      //   },
+                      // },
                     ],
                     as: 'booking',
                   },
@@ -205,8 +213,8 @@ const notificationsResolvers = {
           },
         ]);
 
-        // Delete user has notifications status in redis
-        await redis.del(`notifications:${user.userId}`);
+        // Delete community key of notifications:userId hash
+        await redis.hdel(`notifications:${user.userId}`, `${communityId}`);
 
         // Return user's notifications to client
         return userNotifications[0].notifications;
@@ -215,28 +223,16 @@ const notificationsResolvers = {
         throw new Error(err);
       }
     },
-    hasNotifications: async (_, __, { user, redis }) => {
-      try {
-        // Get string value of whether the user has notifications from
-        // redis, and convert it to boolean value
-        const userHasNotifications = await redis.get(
-          `notifications:${user.userId}`
-        );
-        const hasNotificationsBool = userHasNotifications === 'true';
-
-        return hasNotificationsBool;
-      } catch (err) {
-        return false;
-      }
-    },
-    findNotification: async (_, { recipientId }, { user }) => {
+    findNotification: async (_, { recipientId, communityId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Find a notification where both of users participates in and of type 2
+        // Find a notification where both of users participates in and of
+        // type 0 and in the given community
         const notification = await Notification.findOne({
           ofType: 0,
           participants: [recipientId, user.userId],
+          community: communityId,
         });
 
         // Return chat/notification object if it is found
@@ -250,21 +246,22 @@ const notificationsResolvers = {
   Mutation: {
     createNotification: async (
       _,
-      { notificationInput: { ofType, recipientId, bookingInput } },
+      { notificationInput: { ofType, recipientId, communityId, bookingInput } },
       { user, redis }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Declear top level variables
+        // Declare top level variables
         let booking, post, recipient, existingChat;
 
         // If type is 0 (i.e chat), create chat notification
         if (ofType === 0) {
-          // Check if chat that contains both user exists
+          // Check if chat that contains both user exists and in the given community
           existingChat = await Notification.findOne({
             ofType: 0,
             participants: [recipientId, user.userId],
+            community: communityId,
           });
 
           // Return chat notification if it exists
@@ -279,7 +276,6 @@ const notificationsResolvers = {
             status,
             dateNeed,
             dateReturn,
-            communityId,
           } = bookingInput;
 
           // Create & save booking && get parent post && recipient
@@ -321,6 +317,7 @@ const notificationsResolvers = {
             [recipientId]: false,
             [user.userId]: false,
           },
+          community: communityId,
         });
 
         // Save notification to recipient & current user && save notification:recipientId to redis
@@ -333,7 +330,8 @@ const notificationsResolvers = {
               },
             }
           ),
-          redis.set(`notifications:${recipientId}`, true),
+          // Set communityId key to notifications:userId hash in redis
+          redis.hset(`notifications:${recipientId}`, `${communityId}`, true),
         ]);
 
         // Get participants and add to return value

@@ -70,7 +70,7 @@ function Login({ history, location }) {
 
   return (
     <div className="login-control">
-      <p className="prev-p">Login and start sharing!</p>
+      <p className="main-p">Login and start sharing!</p>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -86,31 +86,31 @@ function Login({ history, location }) {
         }}
       >
         <input
-          className="prev-input"
+          className="main-input"
           type="text"
           placeholder="Email"
           ref={(node) => (email = node)}
         />
         {error.email && <InlineError text={error.email} />}
         <input
-          className="prev-input"
+          className="main-input"
           type="password"
           placeholder="Password"
           ref={(node) => (password = node)}
         />
         {error.password && <InlineError text={error.password} />}
-        <p className="prev-p">
+        <p className="main-p">
           <Link to="/forgot-password">
             <span>Forgot password?</span>
           </Link>
         </p>
-        <p className="prev-p">
+        <p className="main-p">
           Not a member yet?{' '}
           <Link to="/">
             <span>Become now!</span>
           </Link>
         </p>
-        <button className="prev-btn" type="submit">
+        <button className="main-btn" type="submit">
           Login
         </button>
       </form>
@@ -127,16 +127,8 @@ function Login({ history, location }) {
               width: 80vw;
             }
 
-            .prev-p {
-              margin: 20px auto;
-
-              span {
-                color: $green-100;
-              }
-            }
-
-            .prev-input {
-              margin-top: 30px;
+            span {
+              color: $beige;
             }
           }
         `}

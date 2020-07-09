@@ -42,7 +42,7 @@ function UserPosts({ posts, history }) {
   return (
     <>
       <div className="user-posts-title">
-        <p className="prev-p bronze">Items you shared</p>
+        <p className="main-p">Items you shared</p>
         <button
           type="button"
           className={isEditing ? 'editing' : undefined}
@@ -123,13 +123,8 @@ function UserPosts({ posts, history }) {
         {`
           @import './src/assets/scss/index.scss';
 
-          .prev-p {
+          .main-p {
             margin: 20px 10px 20px 0px;
-            max-width: 300px;
-
-            &.bronze {
-              color: $bronze-200;
-            }
           }
 
           .user-posts-title {
@@ -140,13 +135,13 @@ function UserPosts({ posts, history }) {
               font-size: 14px;
               border: none;
               color: $background;
-              background: $green-200;
+              background: $orange;
               padding: 2px 7px;
               height: 27px;
               border-radius: 5px;
 
               &.editing {
-                background: $green-100;
+                background: $beige;
               }
             }
           }
@@ -162,7 +157,7 @@ function UserPosts({ posts, history }) {
               p {
                 margin: auto;
                 font-size: 15px;
-                color: $bronze-200;
+                color: $beige;
                 text-align: center;
               }
 

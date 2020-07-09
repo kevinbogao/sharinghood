@@ -12,6 +12,7 @@ import hamburger from '../assets/images/hamburger.png';
 
 const GET_TOKEN_PAYLOAD = gql`
   query {
+    accessToken @client
     tokenPayload @client
     selCommunityId @client
   }
@@ -35,8 +36,8 @@ const GET_COMMUNITY = gql`
     communities {
       _id
       name
+      hasNotifications
     }
-    hasNotifications
   }
 `;
 
@@ -45,13 +46,26 @@ function Navbar() {
   const history = useHistory();
   const client = useApolloClient();
   const [isMenuActive, setIsMenuActive] = useState(false);
+  const [hasNotifications, setHasNotifications] = useState(false);
   const {
-    data: { tokenPayload, selCommunityId },
+    data: { accessToken, tokenPayload, selCommunityId },
     refetch,
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { data } = useQuery(GET_COMMUNITY, {
-    skip: !localStorage.getItem('@sharinghood:accessToken') || !selCommunityId,
+    // skip: !localStorage.getItem('@sharinghood:accessToken') || !selCommunityId,
+    skip: !accessToken || !selCommunityId,
     variables: { communityId: selCommunityId },
+    onCompleted: (data) => {
+      // Loop through all communities for hasNotifications if communities exists
+      if (data?.communities) {
+        for (let i = 0; i < data.communities.length; i++) {
+          if (data.communities[i].hasNotifications) {
+            setHasNotifications(true);
+            break;
+          }
+        }
+      }
+    },
     onError: () => {},
   });
 
@@ -74,6 +88,13 @@ function Navbar() {
     };
   }, [isMenuActive]);
 
+  // Set hasNotifications state to false if selCommunityId is null
+  useEffect(() => {
+    if (!selCommunityId) {
+      setHasNotifications(false);
+    }
+  }, [selCommunityId]);
+
   function toggleMenu() {
     setIsMenuActive(!isMenuActive);
   }
@@ -90,6 +111,7 @@ function Navbar() {
         />
       </div>
       <div className="nav-logo">
+        {hasNotifications && <span className="communities-unread" />}
         <h1>
           <Link
             to={
@@ -126,7 +148,7 @@ function Navbar() {
       </div>
       <div className="nav-user">
         <div className="nav-user-content">
-          {tokenPayload ? (
+          {!!accessToken ? (
             <div className="nav-icons">
               {selCommunityId && (
                 <>
@@ -140,7 +162,9 @@ function Navbar() {
                     icon={faBell}
                     onClick={() => history.push('/notifications')}
                   />
-                  {data?.hasNotifications && (
+                  {data?.communities.filter(
+                    (community) => community._id === selCommunityId,
+                  )[0]?.hasNotifications && (
                     <span className="notifications-unread" />
                   )}
                 </>
@@ -187,7 +211,7 @@ function Navbar() {
         </NavLink>
         {tokenPayload?.isAdmin && (
           <NavLink
-            className="nav-menu-item"
+            className="nav-menu-item dashboard"
             to="/dashboard"
             onClick={toggleMenu}
           >
@@ -237,10 +261,19 @@ function Navbar() {
             .nav-logo {
               display: flex;
 
+              .communities-unread {
+                margin: auto 10px auto 0;
+                width: 10px;
+                height: 10px;
+                text-align: center;
+                background: $blue;
+                border-radius: 50%;
+              }
+
               h1 {
                 font-size: 26px;
                 text-align: center;
-                color: $bronze-100;
+                color: $orange;
                 font-weight: bold;
 
                 @include sm {
@@ -267,7 +300,7 @@ function Navbar() {
                   background: none;
                   border-width: 0;
                   border-radius: 6px;
-                  color: $bronze-200;
+                  color: $orange;
                   font-family: $font-stack;
 
                   &:hover {
@@ -282,7 +315,7 @@ function Navbar() {
                   width: 10px;
                   height: 10px;
                   text-align: center;
-                  background: $red-200;
+                  background: $blue;
                   border-radius: 50%;
 
                   @include sm {
@@ -319,7 +352,7 @@ function Navbar() {
           @import './src/assets/scss/index.scss';
 
           .nav-icon {
-            color: $green-200;
+            color: $orange;
             font-size: 18px;
             margin-left: 10px;
             border-radius: 50%;
@@ -338,7 +371,7 @@ function Navbar() {
           }
 
           .logo-icon {
-            color: $green-100;
+            color: $beige;
             margin: auto 12px;
             font-size: 22px;
           }
@@ -350,10 +383,14 @@ function Navbar() {
             height: 60px;
             cursor: pointer;
             background: $background;
-            color: $bronze-100;
+            color: $black;
             font-weight: bold;
             font-size: 18px;
             padding-left: 20px;
+
+            &.dashboard {
+              color: $orange;
+            }
 
             &:hover {
               background: $grey-100;
@@ -367,11 +404,7 @@ function Navbar() {
               padding: 10px 20px;
               margin-left: 8px;
               color: $background;
-              background: $green-200;
-
-              &:hover {
-                background: $green-100;
-              }
+              background: $orange;
             }
           }
         `}

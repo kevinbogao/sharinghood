@@ -306,7 +306,7 @@ function RequestDetails({ communityId, match, history }) {
 
                 span {
                   margin-left: 10px;
-                  color: $brown;
+                  color: $grey-300;
                   font-size: 18px;
                 }
               }

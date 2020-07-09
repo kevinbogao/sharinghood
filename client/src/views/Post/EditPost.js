@@ -391,13 +391,11 @@ function EditPost({ history, match }) {
 
             h2 {
               margin: 20px auto;
-              // color: $bronze-200;
               font-size: 20xp;
             }
 
             .profile-pic-p {
               margin: 15px auto 0px auto;
-              // color: $brown;
               font-size: 14px;
               max-width: 300px;
             }

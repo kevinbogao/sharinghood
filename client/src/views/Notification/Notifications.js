@@ -146,19 +146,23 @@ function Notifications({ history, communityId }) {
                   <>
                     <div className="left-img">
                       <div
-                        className={`noti-img ${
+                        className={`noti-img-border ${
                           notification.isRead[data.tokenPayload.userId]
                             ? undefined
                             : 'unread'
                         }
                       `}
-                        style={{
-                          backgroundImage: `url(${
-                            JSON.parse(notification.participants[0].image)
-                              .secure_url
-                          })`,
-                        }}
-                      />
+                      >
+                        <div
+                          className="noti-img"
+                          style={{
+                            backgroundImage: `url(${
+                              JSON.parse(notification.participants[0].image)
+                                .secure_url
+                            })`,
+                          }}
+                        />
+                      </div>
                     </div>
                     <div className="message-info">
                       <div className="message-user">
@@ -188,19 +192,23 @@ function Notifications({ history, communityId }) {
                   <>
                     <div className="left-img">
                       <div
-                        className={`noti-img ${
+                        className={`noti-img-border ${
                           notification.isRead[data.tokenPayload.userId]
                             ? undefined
                             : 'unread'
                         }
-                    `}
-                        style={{
-                          backgroundImage: `url(${
-                            JSON.parse(notification.booking.post.image)
-                              .secure_url
-                          })`,
-                        }}
-                      />
+                  `}
+                      >
+                        <div
+                          className="noti-img"
+                          style={{
+                            backgroundImage: `url(${
+                              JSON.parse(notification.booking.post.image)
+                                .secure_url
+                            })`,
+                          }}
+                        />
+                      </div>
                     </div>
                     <div className="item-info">
                       <div className="item-status">
@@ -330,19 +338,23 @@ function Notifications({ history, communityId }) {
                   <>
                     <div className="left-img">
                       <div
-                        className={`noti-img ${
+                        className={`noti-img-border ${
                           notification.isRead[data.tokenPayload.userId]
                             ? undefined
                             : 'unread'
                         }
-                    `}
-                        style={{
-                          backgroundImage: `url(${
-                            JSON.parse(notification.participants[0].image)
-                              .secure_url
-                          })`,
-                        }}
-                      />
+                  `}
+                      >
+                        <div
+                          className="noti-img"
+                          style={{
+                            backgroundImage: `url(${
+                              JSON.parse(notification.participants[0].image)
+                                .secure_url
+                            })`,
+                          }}
+                        />
+                      </div>
                     </div>
                     <div className="item-info">
                       <div className="item-status">
@@ -409,18 +421,32 @@ function Notifications({ history, communityId }) {
                 font-size: 14px;
               }
 
+              .noti-img-border {
+                height: 96px;
+                width: 96px;
+                margin: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: transparent;
+                border-radius: 50%;
+
+                @include sm {
+                  height: 86px;
+                  width: 86px;
+                }
+
+                &.unread {
+                  background: $orange;
+                }
+              }
+
               .noti-img {
                 height: 90px;
                 width: 90px;
-                margin: 10px;
                 border-radius: 50%;
                 background-size: cover;
                 background-position: center;
-                border: 3px solid $grey-100;
-
-                &.unread {
-                  border: 3px solid $orange;
-                }
 
                 @include sm {
                   height: 80px;

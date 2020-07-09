@@ -2,6 +2,7 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
+import SelectCommunity from '../views/Community/SelectCommunity';
 
 const GET_ACCESS_TOKEN = gql`
   query {
@@ -19,7 +20,13 @@ function ProtectedRoute({ component: Component, ...rest }) {
         {...rest}
         render={(props) =>
           data?.accessToken ? (
-            <Component {...props} communityId={data?.selCommunityId} />
+            <>
+              {data?.selCommunityId ? (
+                <Component {...props} communityId={data?.selCommunityId} />
+              ) : (
+                <SelectCommunity {...props} />
+              )}
+            </>
           ) : (
             <Redirect
               to={{

@@ -354,7 +354,7 @@ function Notifications({ history, communityId }) {
             ))}
         </>
       ) : (
-        <p className="main-p">You do not have any notifications yet</p>
+        <p className="main-p full">You do not have any notifications yet</p>
       )}
       {mutationLoading && <Loading isCover />}
       <style jsx>
@@ -362,7 +362,7 @@ function Notifications({ history, communityId }) {
           @import './src/assets/scss/index.scss';
 
           .notifications-control {
-            margin: 30px auto;
+            margin: 20px auto 30px auto;
 
             @include sm {
               margin: 15px auto 30px auto;

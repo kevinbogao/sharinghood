@@ -6,33 +6,44 @@ const bookingSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Post',
     },
-    booker: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    dateNeed: {
-      type: Date,
-      required: true,
-    },
-    dateReturn: {
-      type: Date,
-      required: true,
-    },
-    pickupTime: Date,
+
+    // 0: pending
+    // 1: accepted
+    // 2: declined
     status: {
       type: Number,
       required: true,
     },
+
+    // 0: asap
+    // 1: any
+    // 2: need & return
+    dateType: {
+      type: Number,
+      required: true,
+    },
+
+    // dateNeed & dateReturn are not needed for
+    // date type 0 & 1
+    dateNeed: Date,
+    dateReturn: Date,
+
+    // User who booked the post
+    booker: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
+
+    // Which community is the booking part of
     community: {
       type: Schema.Types.ObjectId,
       ref: 'Community',
     },
-    patcher: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-    },
   },
   { timestamps: true }
 );
+
+// Index for booking community
+bookingSchema.index({ community: 1 });
 
 module.exports = model('Booking', bookingSchema);

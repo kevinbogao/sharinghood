@@ -1,17 +1,22 @@
 const { gql } = require('apollo-server');
+const GraphQLJSON = require('graphql-type-json');
 
 const typeDefs = gql`
+  ### JSON scalar
+  scalar JSON
+
   ### User
   type User {
     _id: ID
     name: String
     email: String
-    password: String
     image: String
     apartment: String
     isNotified: Boolean
     isAdmin: Boolean
     createdAt: String
+    communities: [Community]
+    posts: [Post]
   }
 
   input UserInput {
@@ -41,6 +46,7 @@ const typeDefs = gql`
     members: [User]
     posts: [Post]
     requests: [Request]
+    hasNotifications: Boolean
   }
 
   input CommunityInput {
@@ -50,6 +56,7 @@ const typeDefs = gql`
     password: String
   }
 
+  # Auth & Community
   type AuthAndOrCommunity {
     user: Auth!
     community: Community
@@ -70,11 +77,13 @@ const typeDefs = gql`
   }
 
   input PostInput {
-    title: String!
-    desc: String!
-    image: String!
-    condition: Int!
-    isGiveaway: Boolean!
+    postId: ID
+    title: String
+    desc: String
+    image: String
+    condition: Int
+    isGiveaway: Boolean
+    requesterId: ID
   }
 
   ### Request
@@ -104,30 +113,17 @@ const typeDefs = gql`
     _id: ID
     content: String
     poster: User
+    community: Community
   }
 
   input ThreadInput {
     content: String!
     isPost: Boolean!
     parentId: ID!
-    recipientId: ID!
+    communityId: ID!
   }
 
-  # Sent emails
-  input EmailInput {
-    email: String!
-  }
-
-  # Chat
-  type Chat {
-    _id: ID!
-    participants: [User]
-    contact: User
-    messages: [Message]
-    community: Community
-    updatedAt: String
-  }
-
+  # Messages
   type Message {
     _id: ID!
     text: String
@@ -136,51 +132,53 @@ const typeDefs = gql`
   }
 
   input MessageInput {
-    chatId: ID!
     text: String!
+    recipientId: ID!
+    notificationId: ID!
   }
 
+  # Bookings
   type Booking {
-    _id: ID!
+    _id: ID
     post: Post
+    status: Int
     booker: User
+    dateType: Int
     dateNeed: String
     dateReturn: String
-    pickupTime: String
-    status: Int
-    patcher: User
   }
 
   input BookingInput {
+    postId: ID
+    status: Int
+    dateType: Int
     dateNeed: String
     dateReturn: String
-    pickupTime: String
-    status: Int
-    ownerId: ID
-    postId: ID
+    communityId: ID
     notifyContent: String
     notifyRecipientId: ID
   }
 
+  # Notifications
   type Notification {
     _id: ID!
-    onType: Int
-    onDocId: ID
-    content: String
-    recipient: User
-    creator: User
-    isRead: Boolean
+    ofType: Int
+    post: Post
+    booking: Booking
+    participants: [User]
+    messages: [Message]
+    isRead: JSON
+    community: Community
   }
 
   input NotificationInput {
-    notificationId: ID!
-    onType: Int
-    content: String
+    ofType: Int
     recipientId: ID
-    creatorId: ID
-    isRead: Boolean
+    bookingInput: BookingInput
+    communityId: ID
   }
 
+  # Activities
   type TotalActivities {
     totalCommunities: Int
     totalUsers: Int
@@ -213,28 +211,21 @@ const typeDefs = gql`
     validateResetLink(userIdKey: String!): Boolean!
 
     # Community
-    community(communityCode: String): Community
+    community(communityId: ID, communityCode: String): Community
+    communities(userId: ID): [Community]
 
     # Post
     post(postId: ID!): Post
-    posts(communityId: ID): [Post]
+    posts(communityId: ID!): [Post]
 
     # Request
     request(requestId: ID!): Request
-    requests(communityId: ID): [Request]
-
-    # Chat
-    chat(chatId: ID!): Chat!
-    chats(userId: ID): [Chat]
-
-    # Message
-    messages(chatId: ID!): [Message]
-
-    # Booking
-    bookings(userId: ID): [Booking]
+    requests(communityId: ID!): [Request]
 
     # Notification
-    notifications(userId: ID): [Notification]
+    notification(notificationId: ID!): Notification
+    notifications(userId: ID, communityId: ID): [Notification]
+    findNotification(recipientId: ID!, communityId: ID!): Notification
 
     # Activity
     totalActivities: TotalActivities
@@ -258,38 +249,35 @@ const typeDefs = gql`
 
     # Community
     createCommunity(communityInput: CommunityInput!): Community!
+    joinCommunity(communityId: ID!): Community
 
     # Post
-    createPost(postInput: PostInput!): Post!
-    updatedPost(postInput: PostInput!): Post!
-    deletePost(postId: ID!): Post
+    createPost(postInput: PostInput!, communityId: ID): Post!
+    updatePost(postInput: PostInput!): Post!
+    inactivatePost(postId: ID): Boolean
+    deletePost(postId: ID!, communityId: ID): Post
+    addPostToCommunity(postId: ID, communityId: ID): Community
 
     # Request
-    createRequest(requestInput: RequestInput!): Request!
+    createRequest(requestInput: RequestInput!, communityId: ID!): Request!
     deleteRequest(requestId: ID!): Request
 
     # Thread
     createThread(threadInput: ThreadInput!): Thread!
 
-    # Chat
-    createChat(recipientId: ID!): Chat
-
     # Message
     createMessage(messageInput: MessageInput!): Message
 
     # Booking
-    createBooking(bookingInput: BookingInput!): Booking
     updateBooking(bookingId: ID!, bookingInput: BookingInput!): Booking
 
     # Notification
-    updateNotification(notificationInput: NotificationInput!): Notification
-
-    sentMail: Boolean
-    getEmails(communityId: ID!): Boolean
+    createNotification(notificationInput: NotificationInput): Notification
   }
 
   type Subscription {
-    newChatMessage(chatId: ID!): Message!
+    # Message
+    newNotificationMessage(notificationId: ID!): Message!
   }
 `;
 

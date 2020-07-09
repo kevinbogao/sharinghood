@@ -42,9 +42,13 @@ function CommunityExists({
           <div className="community-members">
             {members.map((member) => (
               <div key={member._id}>
-                <img
-                  src={JSON.parse(member.image).secure_url}
-                  alt="member's profile"
+                <div
+                  className="member-img"
+                  style={{
+                    backgroundImage: `url(${
+                      JSON.parse(member.image).secure_url
+                    })`,
+                  }}
                 />
               </div>
             ))}
@@ -75,7 +79,7 @@ function CommunityExists({
       >
         <input
           type="text"
-          className="prev-input"
+          className="main-input"
           placeholder="Name"
           ref={(node) => {
             name = node;
@@ -106,17 +110,30 @@ function CommunityExists({
         <p>Where can the neighbours find you?</p>
         <input
           type="text"
-          className="prev-input"
+          className="main-input"
           placeholder="Floor or house number"
           ref={(node) => {
             apartment = node;
           }}
         />
         {error.apartment && <InlineError text={error.apartment} />}
-        <button className="prev-btn" type="submit">
+        <button className="main-btn" type="submit">
           Continue
         </button>
       </form>
+      <p className="p-center">Already have an account</p>
+      <button
+        className="login-btn"
+        type="button"
+        onClick={() => {
+          history.push({
+            pathname: '/login',
+            state: { communityCode },
+          });
+        }}
+      >
+        Login
+      </button>
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -127,13 +144,18 @@ function CommunityExists({
             p {
               margin: 16px 0;
               font-size: 16px;
-              color: $brown;
+              color: $black;
               max-width: 300px;
+            }
+
+            .p-center {
+              text-align: center;
+              margin-bottom: 3px;
             }
 
             h1 {
               margin: 20px auto;
-              color: $bronze-200;
+              color: $orange;
               max-width: 300px;
             }
 
@@ -149,9 +171,24 @@ function CommunityExists({
               box-shadow: 1px 1px 1px 1px #eeeeee;
             }
 
-            .prev-btn {
-              margin: 30px auto;
+            button.login-btn {
               display: block;
+              margin: auto auto 30px auto;
+              padding: 0;
+              border: none;
+              font-size: 16px;
+              color: $orange;
+              text-align: center;
+              background: $background;
+              text-decoration: underline;
+
+              &:hover {
+                cursor: pointer;
+              }
+            }
+
+            .main-btn {
+              margin: 30px auto 15px auto;
             }
 
             .community-members {
@@ -159,11 +196,13 @@ function CommunityExists({
               overflow-x: scroll;
               display: flex;
 
-              img {
+              .member-img {
                 margin: 0 5px 0 0;
                 height: 60px;
                 width: 60px;
                 border-radius: 50%;
+                background-size: cover;
+                background-position: center;
               }
             }
           }

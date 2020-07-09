@@ -44,11 +44,12 @@ function Home({ history }) {
           },
         });
       } else {
-        setError({ community: 'Community not found' });
+        setError({ code: 'Community not found' });
       }
     },
     onError: ({ message }) => {
-      setError({ community: message });
+      const errMsgArr = message.split(': ');
+      setError({ [errMsgArr[0]]: errMsgArr[1] });
     },
   });
 
@@ -68,8 +69,8 @@ function Home({ history }) {
     <div className="home-control">
       <div className="home-content">
         <div className="home-intro">
-          <p className="prev-p">Refuse. Dispose. Separate.</p>
-          <p className="prev-p">
+          <p className="main-p">Refuse. Dispose. Separate.</p>
+          <p className="main-p">
             Find appreciation for your items by consuming less and sharing more.
           </p>
         </div>
@@ -93,7 +94,7 @@ function Home({ history }) {
           </div>
           {isCreate ? (
             <Link to="/create-community">
-              <button type="button" className="prev-btn create">
+              <button type="button" className="main-btn create">
                 Create Community
               </button>
             </Link>
@@ -112,13 +113,12 @@ function Home({ history }) {
               }}
             >
               <input
-                className="prev-input"
+                className="main-input"
                 placeholder="Community Code"
                 ref={(node) => (code = node)}
               />
               {error.code && <InlineError text={error.code} />}
-              {error.community && <InlineError text={error.community} />}
-              <button className="prev-btn" type="submit">
+              <button className="main-btn" type="submit">
                 Find my community
               </button>
             </form>
@@ -135,6 +135,10 @@ function Home({ history }) {
           .home-control {
             display: flex;
             flex-direction: column;
+
+            .main-p {
+              max-width: initial;
+            }
 
             .home-content {
               flex: 1 1 0%;
@@ -196,24 +200,19 @@ function Home({ history }) {
                     background: none;
                     border-width: 0;
                     cursor: pointer;
-                    color: $bronze-200;
-
-                    &:hover {
-                      background: $grey-100;
-                    }
+                    color: $black;
 
                     &.active {
-                      color: $green-100;
+                      color: $orange;
                     }
                   }
                 }
 
-                .prev-input {
-                  margin-top: 30px;
+                .main-input {
                   width: 220px;
                 }
 
-                .prev-btn {
+                .main-btn {
                   margin-top: 20px;
                   display: block;
                   width: 240px;
@@ -228,7 +227,7 @@ function Home({ history }) {
             .home-footer {
               width: 100vw;
               height: 60px;
-              background-color: $grey-200;
+              background-color: $grey-100;
 
               img {
                 position: absolute;

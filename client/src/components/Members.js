@@ -3,10 +3,16 @@ import { gql, useQuery } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDoubleLeft } from '@fortawesome/free-solid-svg-icons';
 
+const GET_COMMUNITY_ID = gql`
+  query {
+    selCommunityId @client
+  }
+`;
+
 const GET_MEMBERS = gql`
   {
     tokenPayload @client
-    community @client {
+    community(communityId: $communityId) @client {
       members {
         _id
         name
@@ -19,7 +25,13 @@ const GET_MEMBERS = gql`
 function Members() {
   const node = useRef();
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data } = useQuery(GET_MEMBERS);
+  const {
+    data: { selCommunityId },
+  } = useQuery(GET_COMMUNITY_ID);
+  const { data } = useQuery(GET_MEMBERS, {
+    skip: !selCommunityId,
+    variables: { communityId: selCommunityId },
+  });
 
   function handleClickOutside(e) {
     if (node.current.contains(e.target)) {
@@ -47,26 +59,31 @@ function Members() {
         onClick={() => setIsExpanded(!isExpanded)}
       />
       <div className="members-content">
-        {data && data.community.members.length < 2 ? (
+        {data?.community?.members?.length < 2 ? (
           <p>You are the only member in your community.</p>
         ) : (
           <p>
-            {data && data.community.members.length - 1} members in your
-            community
+            {data?.community?.members?.length - 1} members in your community
           </p>
         )}
         <div className="members-icon">
-          {data &&
-            data.community.members
-              .filter((member) => member._id !== data.tokenPayload.userId)
-              .map((member) => (
-                <div key={member._id} className="member-icon">
-                  {isExpanded && (
-                    <span className="icon-tooltip">{member.name}</span>
-                  )}
-                  <img src={JSON.parse(member.image).secure_url} alt="" />
-                </div>
-              ))}
+          {data?.community?.members
+            .filter((member) => member._id !== data.tokenPayload.userId)
+            .map((member) => (
+              <div key={member._id} className="member-icon">
+                {isExpanded && (
+                  <span className="icon-tooltip">{member.name}</span>
+                )}
+                <div
+                  className="member-img"
+                  style={{
+                    backgroundImage: `url(${
+                      JSON.parse(member.image).secure_url
+                    })`,
+                  }}
+                />
+              </div>
+            ))}
         </div>
       </div>
       <style jsx global>
@@ -79,8 +96,8 @@ function Members() {
             bottom: 7%;
             display: flex;
             align-items: center;
-            box-shadow: 0px 0px 8px $shadow;
-            color: $bronze-200;
+            box-shadow: 0px 0px 8px $grey-300;
+            color: $black;
             background: $grey-100;
             border-top-left-radius: 4px;
             border-bottom-left-radius: 4px;
@@ -141,25 +158,27 @@ function Members() {
                 display: flex;
 
                 .member-icon {
-                  img {
+                  .member-img {
                     margin: 5px 5px 7px 0;
                     height: 45px;
                     width: 45px;
                     border-radius: 50%;
+                    background-size: cover;
+                    background-position: center;
                   }
 
                   .icon-tooltip {
                     visibility: hidden;
                     width: 120px;
-                    background-color: $brown;
+                    background-color: $grey-300;
                     color: white;
                     text-align: center;
                     border-radius: 6px;
                     padding: 5px 0;
                     position: absolute;
                     z-index: 9000 !important;
-                    margin-top: 10px;
-                    margin-left: 0px;
+                    margin-top: -28px;
+                    margin-left: -38px;
                   }
 
                   &:hover {

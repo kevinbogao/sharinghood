@@ -4,9 +4,15 @@ import { gql, useQuery } from '@apollo/client';
 import ItemsGrid from '../../components/ItemsGrid';
 import Loading from '../../components/Loading';
 
+const GET_COMMUNITY_ID = gql`
+  query {
+    selCommunityId @client
+  }
+`;
+
 const GET_POSTS = gql`
-  query Posts {
-    posts {
+  query Posts($communityId: ID!) {
+    posts(communityId: $communityId) {
       _id
       title
       image
@@ -19,7 +25,12 @@ const GET_POSTS = gql`
 `;
 
 function Posts() {
+  const {
+    data: { selCommunityId },
+  } = useQuery(GET_COMMUNITY_ID);
   const { loading, error, data } = useQuery(GET_POSTS, {
+    skip: !selCommunityId,
+    variables: { communityId: selCommunityId },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -31,7 +42,7 @@ function Posts() {
     `Error ${error.message}`
   ) : (
     <ItemsGrid isPost>
-      {data.posts.map((post) => (
+      {data?.posts?.map((post) => (
         <div key={post._id} className="item-card">
           <Link
             to={{
@@ -39,7 +50,12 @@ function Posts() {
               state: { image: post.image },
             }}
           >
-            <img alt="item" src={JSON.parse(post.image).secure_url} />
+            <div
+              className="item-img"
+              style={{
+                backgroundImage: `url(${JSON.parse(post.image).secure_url})`,
+              }}
+            />
             <div className="item-info">
               <p className="item-title">{post.title}</p>
               <p>by {post.creator.name}</p>
@@ -52,31 +68,16 @@ function Posts() {
           @import './src/assets/scss/index.scss';
 
           .item-card {
-            background: #fafafa;
+            background: $grey-100;
             margin: 20px 10px;
             padding: 10px;
             cursor: pointer;
 
-            &:hover {
-              background: #f4f4f4;
-            }
-
-            p {
-              color: $brown;
-              font-size: 14px;
-              width: 160px;
-
-              &.item-title {
-                margin-top: 10px;
-                margin-bottom: 5px;
-                font-size: 18px;
-              }
-            }
-
-            img {
+            .item-img {
               width: 160px;
               height: 136px;
-              object-fit: cover;
+              background-size: cover;
+              background-position: center;
 
               @include md {
                 width: 190px;
@@ -89,16 +90,19 @@ function Posts() {
               }
             }
 
-            .item-needed-on {
-              margin-top: 5px;
-              display: flex;
-              align-items: center;
-              font-size: 15px;
-              color: $bronze-100;
+            &:hover {
+              background: $grey-200;
+            }
 
-              span {
-                font-size: 14px;
-                margin-left: 6px;
+            p {
+              color: $black;
+              font-size: 14px;
+              width: 160px;
+
+              &.item-title {
+                margin-top: 10px;
+                margin-bottom: 5px;
+                font-size: 18px;
               }
             }
           }

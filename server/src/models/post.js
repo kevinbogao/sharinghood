@@ -26,10 +26,6 @@ const postSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
     },
-    community: {
-      type: Schema.Types.ObjectId,
-      ref: 'Community',
-    },
     bookings: [
       {
         type: Schema.Types.ObjectId,

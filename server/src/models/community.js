@@ -41,20 +41,11 @@ const communitySchema = new Schema(
         ref: 'Requests',
       },
     ],
-    chats: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Chat',
-      },
-    ],
-    notifications: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Notification',
-      },
-    ],
   },
   { timestamps: true }
 );
+
+// Create index for community code
+communitySchema.index({ code: 1 });
 
 module.exports = model('Community', communitySchema);

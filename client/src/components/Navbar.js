@@ -5,20 +5,22 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUser,
   faBell,
+  faCaretDown,
   faSignOutAlt,
 } from '@fortawesome/free-solid-svg-icons';
-import Notifications from './Notifications';
 import hamburger from '../assets/images/hamburger.png';
 
 const GET_TOKEN_PAYLOAD = gql`
-  {
+  query {
+    accessToken @client
     tokenPayload @client
+    selCommunityId @client
   }
 `;
 
 const GET_COMMUNITY = gql`
-  query Community {
-    community {
+  query Community($communityId: ID) {
+    community(communityId: $communityId) {
       _id
       name
       code
@@ -31,6 +33,11 @@ const GET_COMMUNITY = gql`
         image
       }
     }
+    communities {
+      _id
+      name
+      hasNotifications
+    }
   }
 `;
 
@@ -39,13 +46,27 @@ function Navbar() {
   const history = useHistory();
   const client = useApolloClient();
   const [isMenuActive, setIsMenuActive] = useState(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [hasNotifications, setHasNotifications] = useState(false);
   const {
-    data: { tokenPayload },
+    data: { accessToken, tokenPayload, selCommunityId },
+    refetch,
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { data } = useQuery(GET_COMMUNITY, {
-    skip: !tokenPayload,
+    // skip: !localStorage.getItem('@sharinghood:accessToken') || !selCommunityId,
+    skip: !accessToken || !selCommunityId,
+    variables: { communityId: selCommunityId },
+    onCompleted: (data) => {
+      // Loop through all communities for hasNotifications if communities exists
+      if (data?.communities) {
+        for (let i = 0; i < data.communities.length; i++) {
+          if (data.communities[i].hasNotifications) {
+            setHasNotifications(true);
+            break;
+          }
+        }
+      }
+    },
+    onError: () => {},
   });
 
   function handleClickOutside(e) {
@@ -67,12 +88,15 @@ function Navbar() {
     };
   }, [isMenuActive]);
 
+  // Set hasNotifications state to false if selCommunityId is null
+  useEffect(() => {
+    if (!selCommunityId) {
+      setHasNotifications(false);
+    }
+  }, [selCommunityId]);
+
   function toggleMenu() {
     setIsMenuActive(!isMenuActive);
-  }
-
-  function toggleNotifications() {
-    setIsNotificationsOpen(!isNotificationsOpen);
   }
 
   return (
@@ -87,57 +111,81 @@ function Navbar() {
         />
       </div>
       <div className="nav-logo">
+        {hasNotifications && <span className="communities-unread" />}
         <h1>
-          <Link to={tokenPayload ? '/find' : '/'}>
-            {data ? data.community.name : 'Sharinghood'}
+          <Link
+            to={
+              tokenPayload && selCommunityId
+                ? '/find'
+                : tokenPayload && !selCommunityId
+                ? '/communities'
+                : '/'
+            }
+          >
+            {data?.community?.name || 'Sharinghood'}
           </Link>
         </h1>
+        {data?.communities && (
+          <FontAwesomeIcon
+            className="logo-icon"
+            icon={faCaretDown}
+            onClick={() => {
+              client.writeQuery({
+                query: gql`
+                  query {
+                    selCommunityId
+                  }
+                `,
+                data: {
+                  selCommunityId: null,
+                },
+              });
+              localStorage.removeItem('@sharinghood:selCommunityId');
+              history.push('/communities');
+            }}
+          />
+        )}
       </div>
       <div className="nav-user">
         <div className="nav-user-content">
-          {tokenPayload ? (
+          {!!accessToken ? (
             <div className="nav-icons">
-              <FontAwesomeIcon
-                className="nav-icon"
-                icon={faUser}
-                onClick={() => {
-                  history.push('/profile');
-                }}
-              />
-              <FontAwesomeIcon
-                className="nav-icon"
-                icon={faBell}
-                onClick={toggleNotifications}
-              />
-              {unreadCount > 0 && (
-                <span className="notifications-count">{unreadCount}</span>
+              {selCommunityId && (
+                <>
+                  <FontAwesomeIcon
+                    className="nav-icon"
+                    icon={faUser}
+                    onClick={() => history.push('/profile')}
+                  />
+                  <FontAwesomeIcon
+                    className="nav-icon"
+                    icon={faBell}
+                    onClick={() => history.push('/notifications')}
+                  />
+                  {data?.communities.filter(
+                    (community) => community._id === selCommunityId,
+                  )[0]?.hasNotifications && (
+                    <span className="notifications-unread" />
+                  )}
+                </>
               )}
-              <Notifications
-                isNotificationsOpen={isNotificationsOpen}
-                setIsNotificationsOpen={setIsNotificationsOpen}
-                unreadCount={unreadCount}
-                setUnreadCount={setUnreadCount}
-              />
               <FontAwesomeIcon
                 className="nav-icon"
                 icon={faSignOutAlt}
-                onClick={() => {
-                  client.writeQuery({
-                    query: gql`
-                      {
-                        accessToken
-                        refreshToken
-                        tokenPayload
-                      }
-                    `,
-                    data: {
-                      accessToken: null,
-                      refreshToken: null,
-                      tokenPayload: null,
-                    },
-                  });
+                onClick={async () => {
+                  // Clear localStorage
                   localStorage.removeItem('@sharinghood:accessToken');
                   localStorage.removeItem('@sharinghood:refreshToken');
+                  localStorage.removeItem('@sharinghood:selCommunityId');
+
+                  // Clear loacl cache
+                  await client.clearStore();
+
+                  // Fetch tokenPayload to clean local state
+                  refetch();
+
+                  // Return to login page
+                  history.push('/login');
                 }}
               />
             </div>
@@ -161,30 +209,24 @@ function Navbar() {
         <NavLink className="nav-menu-item" to="/share" onClick={toggleMenu}>
           Share
         </NavLink>
-        <NavLink className="nav-menu-item" to="/bookings" onClick={toggleMenu}>
-          My Bookings & Lendings
-        </NavLink>
-        <NavLink className="nav-menu-item" to="/chats" onClick={toggleMenu}>
-          Messages
-        </NavLink>
         {tokenPayload?.isAdmin && (
           <NavLink
-            className="nav-menu-item"
+            className="nav-menu-item dashboard"
             to="/dashboard"
             onClick={toggleMenu}
           >
             Dashboard
           </NavLink>
         )}
-        {data && data.community.creator._id === tokenPayload.userId && (
+        {data?.community?.creator._id === tokenPayload?.userId && (
           <div className="nav-menu-item invite">
             <NavLink
               className="invite-btn"
               to={{
                 pathname: '/community-link',
                 state: {
-                  communityId: data.community._id,
-                  communityCode: data.community.code,
+                  communityId: data?.community?._id,
+                  communityCode: data?.community?.code,
                   isRegistered: true,
                 },
               }}
@@ -217,16 +259,28 @@ function Navbar() {
             }
 
             .nav-logo {
-              // flex: 1;
+              display: flex;
+
+              .communities-unread {
+                margin: auto 10px auto 0;
+                width: 10px;
+                height: 10px;
+                text-align: center;
+                background: $blue;
+                border-radius: 50%;
+              }
 
               h1 {
                 font-size: 26px;
                 text-align: center;
-                color: $bronze-100;
+                color: $orange;
                 font-weight: bold;
 
                 @include sm {
                   font-size: 21px;
+                  width: 120px;
+                  white-space: nowrap;
+                  overflow: hidden;
                 }
               }
             }
@@ -246,7 +300,7 @@ function Navbar() {
                   background: none;
                   border-width: 0;
                   border-radius: 6px;
-                  color: $bronze-200;
+                  color: $orange;
                   font-family: $font-stack;
 
                   &:hover {
@@ -254,20 +308,18 @@ function Navbar() {
                   }
                 }
 
-                .notifications-count {
+                .notifications-unread {
                   position: absolute;
-                  top: 11px;
-                  right: 66px;
-                  color: $background;
-                  padding: 2px;
-                  width: 13px;
+                  top: 14px;
+                  right: 73px;
+                  width: 10px;
+                  height: 10px;
                   text-align: center;
-                  background: $red-200;
+                  background: $blue;
                   border-radius: 50%;
-                  font-size: 11px;
 
                   @include sm {
-                    right: 39px;
+                    right: 46px;
                   }
                 }
               }
@@ -300,7 +352,7 @@ function Navbar() {
           @import './src/assets/scss/index.scss';
 
           .nav-icon {
-            color: $green-200;
+            color: $orange;
             font-size: 18px;
             margin-left: 10px;
             border-radius: 50%;
@@ -318,6 +370,12 @@ function Navbar() {
             }
           }
 
+          .logo-icon {
+            color: $beige;
+            margin: auto 12px;
+            font-size: 22px;
+          }
+
           .nav-menu-item {
             display: block;
             line-height: 60px;
@@ -325,10 +383,14 @@ function Navbar() {
             height: 60px;
             cursor: pointer;
             background: $background;
-            color: $bronze-100;
+            color: $black;
             font-weight: bold;
             font-size: 18px;
             padding-left: 20px;
+
+            &.dashboard {
+              color: $orange;
+            }
 
             &:hover {
               background: $grey-100;
@@ -342,11 +404,7 @@ function Navbar() {
               padding: 10px 20px;
               margin-left: 8px;
               color: $background;
-              background: $green-200;
-
-              &:hover {
-                background: $green-100;
-              }
+              background: $orange;
             }
           }
         `}
@@ -355,4 +413,4 @@ function Navbar() {
   );
 }
 
-export default Navbar;
+export { GET_COMMUNITY, Navbar };

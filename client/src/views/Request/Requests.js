@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -8,8 +9,8 @@ import Loading from '../../components/Loading';
 import ItemsGrid from '../../components/ItemsGrid';
 
 const GET_REQUESTS = gql`
-  query Requests {
-    requests {
+  query Requests($communityId: ID!) {
+    requests(communityId: $communityId) {
       _id
       title
       desc
@@ -23,8 +24,10 @@ const GET_REQUESTS = gql`
   }
 `;
 
-function Requests() {
+function Requests({ communityId }) {
   const { loading, error, data } = useQuery(GET_REQUESTS, {
+    skip: !communityId,
+    variables: { communityId },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -36,7 +39,7 @@ function Requests() {
     `Error! ${error.message}`
   ) : (
     <ItemsGrid isPost={false}>
-      {data.requests.map((request) => (
+      {data?.requests.map((request) => (
         <div key={request._id} className="item-card">
           <Link
             to={{
@@ -44,7 +47,13 @@ function Requests() {
               state: { image: request.image },
             }}
           >
-            <img alt="item" src={JSON.parse(request.image).secure_url} />
+            <div
+              className="item-img"
+              style={{
+                backgroundImage: `url(${JSON.parse(request.image).secure_url})`,
+              }}
+            />
+            {/* <img alt="item" src={JSON.parse(request.image).secure_url} /> */}
             <div className="item-info">
               <p className="item-title">{request.title}</p>
               <p>by {request.creator.name}</p>
@@ -63,17 +72,17 @@ function Requests() {
           @import './src/assets/scss/index.scss';
 
           .item-card {
-            background: #fafafa;
+            background: $grey-100;
             margin: 20px 10px;
             padding: 10px;
             cursor: pointer;
 
             &:hover {
-              background: #f4f4f4;
+              background: $grey-200;
             }
 
             p {
-              color: $brown;
+              color: $black;
               font-size: 14px;
               width: 160px;
 
@@ -84,10 +93,11 @@ function Requests() {
               }
             }
 
-            img {
+            .item-img {
               width: 160px;
               height: 136px;
-              object-fit: cover;
+              background-size: cover;
+              background-position: center;
 
               @include md {
                 width: 190px;
@@ -105,7 +115,7 @@ function Requests() {
               display: flex;
               align-items: center;
               font-size: 15px;
-              color: $bronze-100;
+              color: $beige;
 
               span {
                 font-size: 14px;
@@ -118,5 +128,9 @@ function Requests() {
     </ItemsGrid>
   );
 }
+
+Requests.propTypes = {
+  communityId: PropTypes.string.isRequired,
+};
 
 export { GET_REQUESTS, Requests };

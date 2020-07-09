@@ -2,33 +2,61 @@ const { Schema, model } = require('mongoose');
 
 const notificationSchema = new Schema(
   {
-    onType: {
+    // 0: Chats
+    // 1: Bookings
+    // 2: Requests
+    ofType: {
       type: Number,
       required: true,
     },
-    onDocId: {
+
+    // For ofType 1
+    booking: {
       type: Schema.Types.ObjectId,
-      required: true,
+      ref: 'Booking',
     },
-    content: {
-      type: String,
-      required: true,
-    },
-    recipient: {
+
+    // For ofType 2
+    post: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'Post',
     },
-    creator: {
+
+    // All messages associated with booking or chat
+    messages: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+
+    // User participated in the notification model
+    participants: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+
+    // Notification read status
+    isRead: Schema.Types.Mixed,
+
+    // Notification community
+    community: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    isRead: {
-      type: Boolean,
-      required: true,
-      default: false,
+      ref: 'Community',
     },
   },
   { timestamps: true }
 );
+
+// Compound index for ofType, participants & community
+notificationSchema.index({ ofType: 1, participants: 1, community: 1 });
+
+// Secondary index for community
+notificationSchema.index({ community: 1 });
+
+// Secondary index for booking
+notificationSchema.index({ booking: 1 });
 
 module.exports = model('Notification', notificationSchema);

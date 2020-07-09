@@ -3,13 +3,11 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './views/Home';
 import { Posts } from './views/Post/Posts';
-import Chats from './views/Chat/Chats';
-import Navbar from './components/Navbar';
+import { Navbar } from './components/Navbar';
 import Profile from './views/User/Profile';
 import Login from './views/User/Login';
 import Register from './views/User/Register';
 import { Requests } from './views/Request/Requests';
-import Bookings from './views/Bookings';
 import Dashboard from './views/Dashboard';
 import DashboardDetails from './views/DashboardDetails';
 import CreatePost from './views/Post/CreatePost';
@@ -22,6 +20,10 @@ import CreateCommunity from './views/Community/CreateCommunity';
 import CommunityExists from './views/Community/CommunityExists';
 import ResetPassword from './views/User/ResetPassword';
 import ForgotPassword from './views/User/ForgotPassword';
+import SelectCommunity from './views/Community/SelectCommunity';
+import EditPost from './views/Post/EditPost';
+import { Notifications } from './views/Notification/Notifications';
+import NotificationDetails from './views/Notification/NotificationDetails';
 
 function App() {
   return (
@@ -43,10 +45,19 @@ function App() {
         <Switch>
           <Route path="/login" component={Login} />
           <ProtectedRoute path="/find" component={Posts} />
-          <ProtectedRoute path="/chats" component={Chats} />
           <ProtectedRoute path="/profile" component={Profile} />
           <ProtectedRoute path="/share" component={CreatePost} />
-          <ProtectedRoute path="/bookings" component={Bookings} />
+          <ProtectedRoute path="/communities" component={SelectCommunity} />
+          <ProtectedRoute
+            exact
+            path="/notifications"
+            component={Notifications}
+          />
+          <ProtectedRoute
+            exact
+            path="/notification/:id"
+            component={NotificationDetails}
+          />
           <ProtectedRoute exact path="/dashboard" component={Dashboard} />
           <ProtectedRoute
             exact
@@ -54,7 +65,8 @@ function App() {
             component={DashboardDetails}
           />
           <ProtectedRoute path="/request" component={CreateRequest} />
-          <ProtectedRoute path="/shared/:id" component={PostDetails} />
+          <ProtectedRoute exact path="/shared/:id" component={PostDetails} />
+          <ProtectedRoute exact path="/shared/:id/edit" component={EditPost} />
           <ProtectedRoute exact path="/requests" component={Requests} />
           <ProtectedRoute
             exact
@@ -87,91 +99,130 @@ function App() {
             text-decoration: none;
           }
 
-          .prev-p {
-            display: block;
-            font-size: 20px;
-            color: $brown;
-          }
-
           .main-p {
             display: block;
-            font-size: 14px;
-            color: $green-200;
+            font-size: 20px;
+            margin: 20px auto;
+            color: $black;
+            max-width: 300px;
+
+            &.new {
+              margin: 14px 0 7px 0;
+              font-size: 14px;
+
+              @include sm {
+                max-width: 240px;
+              }
+            }
+
+            &.full {
+              max-width: 80vw;
+              margin: auto;
+            }
           }
 
-          .prev-input {
+          .main-input {
             display: block;
-            background: $white;
+            background: $grey-000;
+            margin-top: 30px;
             border-width: 0;
             padding: 10px;
             color: #a0998f;
             font-size: 20px;
             width: 280px;
 
-            @include sm {
-              max-width: 280px;
-              width: calc(100% - 20px);
+            &.modal {
+              margin: 0 auto;
+            }
 
-              &.date {
-                width: 80vw;
+            &.date {
+              margin: 0 auto;
+            }
+
+            &.new {
+              margin: initial;
+              max-width: 300px;
+
+              @include sm {
+                width: 70vw;
+                max-width: 80vw;
+              }
+
+              &::placeholder {
+                font-size: 17px;
               }
             }
           }
 
-          .main-input {
-            @extend .prev-input;
-            max-width: 300px;
+          .main-select {
+            font-size: 18px;
+            padding-left: 10px;
+            color: #a0998f;
+            width: 300px;
+            height: 40px;
+            border-width: 0px;
+            background: $grey-000;
+            border-radius: 4px;
+            margin-bottom: 12px;
 
             @include sm {
-              width: 70vw;
-              max-width: 80vw;
-            }
-
-            &::placeholder {
-              font-size: 17px;
+              width: 100%;
             }
           }
 
-          .prev-btn {
+          .main-btn {
             height: 43px;
             width: 300px;
-            background: $green-200;
+            background: $orange;
             border-width: 0;
             border-radius: 4px;
             color: $background;
             font-family: $font-stack;
             font-size: 20px;
 
-            @include sm {
-              width: 100%;
-            }
-
             &.block {
               display: block;
               margin: 30px auto auto auto;
             }
 
-            &:hover {
-              cursor: pointer;
-              background: $green-100;
+            &.modal {
+              display: block;
+              margin: 20px auto 20px auto;
+              padding: 8px 15px;
             }
-          }
 
-          .main-btn {
-            min-width: 120px;
-            display: block;
-            margin: 30px auto 10px auto;
-            padding: 7px 15px;
-            background-color: $green-200;
-            font-size: 16px;
-            font-weight: 600;
-            color: $background;
-            border: none;
-            border-radius: 10px;
+            &.grey {
+              background: $grey-300;
+            }
 
-            &:hover {
+            &.beige {
+              background: $beige;
+            }
+
+            &.new {
+              height: initial;
+              width: initial;
+              min-width: 120px;
+              display: block;
+              margin: 30px auto 10px auto;
+              padding: 7px 15px;
+              font-size: 16px;
+              font-weight: 600;
+              color: $background;
+              border: none;
+              border-radius: 10px;
+            }
+
+            &.item {
+              width: max-content;
+              height: 40px;
+              border-width: 0;
+              border-radius: 4px;
               cursor: pointer;
-              background: $green-100;
+              color: $background;
+              font-size: 20px;
+              margin: 20px auto;
+              padding: 4px 18px;
             }
           }
 
@@ -184,14 +235,14 @@ function App() {
             cursor: pointer;
             width: 100%;
             padding: 5px;
-            color: $brown;
+            color: $black;
 
             &:hover {
               background: $grey-100;
             }
 
             &.active {
-              color: $green-100;
+              color: $orange;
             }
 
             @include md {
@@ -200,52 +251,48 @@ function App() {
           }
 
           .switch-btn-separator {
-            background: $brown;
+            background: $grey-300;
             width: 2px;
           }
 
-          .item-btn {
-            width: max-content;
-            height: 40px;
-            border-width: 0;
-            border-radius: 4px;
-            cursor: pointer;
-            color: #fff;
-            font-size: 20px;
-            margin: 20px auto;
-            padding: 4px 18px;
+          .noti-btn {
+            border: none;
+            color: $black;
+            font-size: 17px;
+            width: 85px;
+            height: 30px;
+            border-radius: 15px;
+
+            &.status {
+              width: 160px;
+            }
+
+            &.pending {
+              border: 2px solid $beige;
+              background: $background;
+            }
+
+            &.accept {
+              border: 2px solid $green-100;
+              background: $green-000;
+            }
+
+            &.deny {
+              border: 2px solid $red-100;
+              background: $red-000;
+            }
+
+            &.request {
+              border: 2px solid $black;
+              background: $background;
+            }
           }
 
           .font-icon {
             font-size: 18px;
 
-            &.green {
-              color: $green-200;
-            }
-          }
-
-          .modal-p {
-            @extend .prev-p;
-            margin: 20px auto;
-          }
-
-          .modal-btn {
-            @extend .prev-btn;
-            width: initial;
-            height: initial;
-            margin: 20px 20px 0 0;
-            padding: 8px 15px;
-
-            &.red {
-              display: block;
-              margin: 20px 20px 0 0;
-              background: $red-200;
-            }
-
-            &.bronze {
-              display: block;
-              margin: 20px 0;
-              background: $bronze-200;
+            &.orange {
+              color: $orange;
             }
           }
 
@@ -256,7 +303,8 @@ function App() {
           }
 
           .base-control {
-            margin-top: 4px;
+            // margin-top: 4px;
+            margin-top: 3px;
             flex: 1 1 0%;
             display: flex;
             overflow-y: scroll;

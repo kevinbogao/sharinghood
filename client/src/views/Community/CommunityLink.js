@@ -129,7 +129,7 @@ function CommunityLink({
           <div className="community-link">
             <p className="invite-link">{invite}</p>
             <FontAwesomeIcon
-              className="font-icon green"
+              className="font-icon orange"
               icon={faCopy}
               onClick={copyToClipboard}
             />
@@ -148,8 +148,15 @@ function CommunityLink({
       {!isRegistered && (
         <div className="link-register">
           <h5>Start sharing now.</h5>
-          <Link to="/find">
-            <button className="main-btn" type="submit">
+          <Link
+            to={{
+              pathname: '/communities',
+              state: {
+                fromLogin: true,
+              },
+            }}
+          >
+            <button className="main-btn new" type="submit">
               Continue
             </button>
           </Link>
@@ -179,7 +186,7 @@ function CommunityLink({
             h3 {
               padding: 25px;
               font-size: 20px;
-              background: $beige;
+              background: $grey-200;
               text-align: center;
               width: 420px;
 
@@ -205,7 +212,7 @@ function CommunityLink({
                   margin: 20px 0;
 
                   &.copy-tooltip {
-                    color: $green-100;
+                    color: $beige;
                   }
 
                   &.invite-link {
@@ -226,7 +233,7 @@ function CommunityLink({
                   padding: 0;
                   border: none;
                   font-size: 16px;
-                  color: $green-100;
+                  color: $beige;
                   text-align: left;
                   background: $background;
                   text-decoration: underline;
@@ -253,7 +260,7 @@ function CommunityLink({
               text-align: center;
               padding: 50px;
               float: right;
-              background: $beige;
+              background: $grey-200;
               margin: 40px;
               min-width: 250px;
 

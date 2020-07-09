@@ -48,9 +48,8 @@ const postsResolvers = {
         throw err;
       }
     },
-    posts: async (_, __, { user }) => {
+    posts: async (_, { communityId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { communityId } = user;
 
       try {
         // Get all posts from given community
@@ -75,6 +74,11 @@ const postsResolvers = {
                   },
                 },
                 { $unwind: '$creator' },
+                {
+                  $sort: {
+                    createdAt: -1,
+                  },
+                },
               ],
               as: 'posts',
             },
@@ -94,18 +98,22 @@ const postsResolvers = {
   Mutation: {
     createPost: async (
       _,
-      { postInput: { title, desc, image, condition, isGiveaway } },
-      { user }
+      {
+        postInput: { title, desc, image, condition, isGiveaway, requesterId },
+        communityId,
+      },
+      { user, redis }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { userId, userName, communityId } = user;
+      const { userId, userName } = user;
 
       try {
         // Upload image to Cloudinary
         const imgData = await uploadImg(image);
 
-        // Create & save post && get creator
-        const [post, creator] = await Promise.all([
+        // Create & save post && get creator && find creator's community
+        // && find requester if the post is in response to a request
+        const [post, creator, community, requester] = await Promise.all([
           Post.create({
             desc,
             title,
@@ -113,28 +121,43 @@ const postsResolvers = {
             isGiveaway,
             image: imgData,
             creator: userId,
-            community: communityId,
           }),
           User.findById(userId),
+          communityId && Community.findById(communityId),
+          requesterId && User.findById(requesterId),
         ]);
 
-        // Create & save notification && find creator's community
-        const [notification, community] = await Promise.all([
-          Notification.create({
-            onType: 0,
-            onDocId: post._id,
-            content: `${userName} shared ${title} in your community`,
-            creator: userId,
-            isRead: false,
-          }),
-          Community.findById(communityId),
-        ]);
+        // Only save to community if communityId is given, i.e user is
+        // uploading the post to a specific community
+        if (communityId) {
+          community.posts.push(post);
+        }
 
-        // Save postId & notificationId to community && postId to creator
-        community.posts.push(post);
-        community.notifications.push(notification);
+        // Create notification if requesterId is given
+        if (requesterId) {
+          const notification = await Notification.create({
+            ofType: 2,
+            post: post._id,
+            participants: [requesterId, user.userId],
+            isRead: {
+              [requesterId]: false,
+              [user.userId]: false,
+            },
+            community: communityId,
+          });
+
+          // Add notification to requester
+          requester.notifications.push(notification);
+
+          // Save requester & set communityId key to notifications:userId hash in redis
+          await Promise.all([
+            requester.save(),
+            redis.hset(`notifications:${requesterId}`, `${communityId}`, true),
+          ]);
+        }
+
         creator.posts.push(post);
-        await Promise.all([community.save(), creator.save()]);
+        await Promise.all([communityId && community.save(), creator.save()]);
 
         return {
           ...post._doc,
@@ -148,33 +171,103 @@ const postsResolvers = {
         throw err;
       }
     },
-    deletePost: async (_, { postId }, { user }) => {
+    updatePost: async (
+      _,
+      { postInput: { postId, title, desc, image, condition } },
+      { user }
+    ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
-      const { communityId } = user;
 
       try {
-        // Find post
+        // Find post by id
         const post = await Post.findById(postId);
+
+        // Upload image if it exists
+        let imgData;
+        if (image) imgData = await uploadImg(image);
+
+        // Conditionally update post
+        if (title) post.title = title;
+        if (desc) post.desc = desc;
+        if (image && imgData) post.image = imgData;
+        if (condition) post.condition = condition;
+
+        // Save & return post
+        const updatedPost = await post.save();
+        return updatedPost;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
+    inactivatePost: async (_, { postId }, { user }) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
+      try {
+        const userInfo = await User.findById(user.userId);
+
+        // Find user's communities and remove post from
+        // all communities' posts array
+        await Community.updateMany(
+          {
+            _id: { $in: userInfo.communities },
+          },
+          {
+            $pull: { posts: postId },
+          }
+        );
+
+        return true;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
+    deletePost: async (_, { postId }, { user }) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
+      try {
+        // Find post & creator
+        const [post, creator] = await Promise.all([
+          Post.findById(postId),
+          User.findById(user.userId),
+        ]);
 
         // Save thread ids array
         const { threads, bookings } = post;
 
         // Delete post, postId from community && delete post threads
-        // & notifications
+        // bookings & notifications
         await Promise.all([
           post.remove(),
-          Community.updateOne(
-            { _id: communityId },
+          Community.updateMany(
+            { _id: { $in: creator.communities } },
             { $pull: { posts: postId } }
           ),
+          User.updateOne({ _id: user.userId }, { $pull: { posts: postId } }),
           Thread.deleteMany({ _id: threads }),
           Booking.deleteMany({ _id: bookings }),
+          Notification.deleteMany({ booking: { $in: bookings } }),
         ]);
 
         return post;
       } catch (err) {
         console.log(err);
         throw err;
+      }
+    },
+    addPostToCommunity: async (_, { postId, communityId }) => {
+      try {
+        // Get community by id and add post if to the community's
+        // posts array; return community
+        const community = await Community.findById(communityId);
+        community.posts.push(postId);
+        await community.save();
+
+        return community;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
       }
     },
   },

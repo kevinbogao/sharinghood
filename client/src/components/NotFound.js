@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 function NotFound({ itemType }) {
   return (
     <div className="not-found-control">
-      <p className="prev-p">{itemType} not found</p>
+      <p className="main-p">{itemType} not found</p>
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

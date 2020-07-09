@@ -48,10 +48,13 @@ const GET_REQUEST = gql`
         poster {
           _id
         }
+        community {
+          _id
+        }
       }
     }
     tokenPayload @client
-    community @client {
+    community(communityId: $communityId) @client {
       members {
         _id
         name
@@ -81,11 +84,11 @@ const DELETE_REQUEST = gql`
   }
 `;
 
-function RequestDetails({ match, history }) {
+function RequestDetails({ communityId, match, history }) {
   const [comment, setComment] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { loading, error, data } = useQuery(GET_REQUEST, {
-    variables: { requestId: match.params.id },
+    variables: { requestId: match.params.id, communityId },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -98,19 +101,22 @@ function RequestDetails({ match, history }) {
       console.log(message);
     },
     update(cache, { data: { createThread } }) {
-      const { request } = cache.readQuery({
-        query: GET_REQUEST,
-        variables: { requestId: data.request._id },
-      });
-      cache.writeQuery({
-        query: GET_REQUEST,
-        data: {
-          request: {
-            ...request,
-            threads: [...request.threads, createThread],
+      try {
+        const { request } = cache.readQuery({
+          query: GET_REQUEST,
+          variables: { requestId: data.request._id, communityId },
+        });
+        cache.writeQuery({
+          query: GET_REQUEST,
+          data: {
+            request: {
+              ...request,
+              threads: [...request.threads, createThread],
+            },
           },
-        },
-      });
+        });
+        // eslint-disable-next-line
+      } catch (err) {}
     },
   });
   const [deleteRequest, { loading: mutationLoading }] = useMutation(
@@ -120,9 +126,13 @@ function RequestDetails({ match, history }) {
         console.log(message);
       },
       update(store, { data: { deleteRequest } }) {
-        const { requests } = store.readQuery({ query: GET_REQUESTS });
+        const { requests } = store.readQuery({
+          query: GET_REQUESTS,
+          variables: { communityId },
+        });
         store.writeQuery({
           query: GET_REQUESTS,
+          variables: { communityId },
           data: {
             requests: requests.filter(
               (request) => request._id !== deleteRequest._id,
@@ -140,10 +150,15 @@ function RequestDetails({ match, history }) {
     `Error! ${error.message}`
   ) : data.request ? (
     <div className="item-control">
-      <ItemDetails item={data.request} userId={data.tokenPayload.userId}>
+      <ItemDetails
+        item={data.request}
+        history={history}
+        userId={data.tokenPayload.userId}
+        communityId={communityId}
+      >
         <div className="item-desc">
           <h3>{data.request.title}</h3>
-          <p className="prev-p">{data.request.desc}</p>
+          <p className="main-p">{data.request.desc}</p>
           <div className="item-misc">
             <FontAwesomeIcon className="item-icon" icon={faClock} />
             <span>
@@ -159,7 +174,7 @@ function RequestDetails({ match, history }) {
           {data.request.creator._id === data.tokenPayload.userId ? (
             <button
               type="button"
-              className="item-btn delete"
+              className="main-btn item"
               onClick={() => setIsModalOpen(true)}
             >
               Delete
@@ -169,11 +184,12 @@ function RequestDetails({ match, history }) {
               to={{
                 pathname: '/share',
                 state: {
-                  creatorName: data.request.creator.name,
+                  requesterId: data.request.creator._id,
+                  requesterName: data.request.creator.name,
                 },
               }}
             >
-              <button type="button" className="item-btn book">
+              <button type="button" className="main-btn item">
                 Help {data.request.creator.name}
               </button>
             </Link>
@@ -185,10 +201,10 @@ function RequestDetails({ match, history }) {
         style={MODAL_STYLE}
         onRequestClose={() => setIsModalOpen(false)}
       >
-        <p className="modal-p">Are you sure you want to delete this request?</p>
+        <p className="main-p">Are you sure you want to delete this request?</p>
         <button
           type="submit"
-          className="modal-btn"
+          className="main-btn modal"
           onClick={(e) => {
             e.preventDefault();
             deleteRequest({
@@ -202,7 +218,7 @@ function RequestDetails({ match, history }) {
         </button>
         <button
           type="button"
-          className="modal-btn"
+          className="main-btn modal grey"
           onClick={() => setIsModalOpen(false)}
         >
           No
@@ -212,6 +228,7 @@ function RequestDetails({ match, history }) {
       <Threads
         threads={data.request.threads}
         members={data.community.members}
+        communityId={communityId}
       />
       <div className="new-thread-control">
         {data.community.members
@@ -220,10 +237,10 @@ function RequestDetails({ match, history }) {
             <Fragment key={member._id}>
               <img src={JSON.parse(member.image).secure_url} alt="" />
               <div className="new-thread-content">
-                <span className="prev-p">{member.name}</span>
+                <span className="main-p">{member.name}</span>
                 <input
                   type="text"
-                  className="prev-input"
+                  className="main-input"
                   placeholder="Comment something..."
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -236,7 +253,7 @@ function RequestDetails({ match, history }) {
                             content: comment,
                             isPost: false,
                             parentId: data.request._id,
-                            recipientId: data.request.creator._id,
+                            communityId,
                           },
                         },
                       });
@@ -256,17 +273,17 @@ function RequestDetails({ match, history }) {
             width: 80vw;
             max-width: $xl-max-width;
 
+            .main-p {
+              margin-left: 0;
+            }
+
             .item-desc {
               margin: 0 20px 0 40px;
 
               h3 {
                 font-size: 26px;
-                color: $bronze-100;
+                color: $black;
                 margin: 0 0 20px 0;
-              }
-
-              .prev-p {
-                margin: 20px auto;
               }
 
               @include lg {
@@ -274,10 +291,11 @@ function RequestDetails({ match, history }) {
               }
 
               @include md {
-                margin: 20px 0 0 0;
+                margin: 20px 0 0 30px;
               }
 
               @include sm {
+                margin: 20px 0 0 0;
                 width: 100%;
               }
 
@@ -288,26 +306,8 @@ function RequestDetails({ match, history }) {
 
                 span {
                   margin-left: 10px;
-                  color: $brown;
+                  color: $grey-300;
                   font-size: 18px;
-                }
-              }
-
-              .item-btn {
-                &.delete {
-                  background: $red-200;
-
-                  &:hover {
-                    background: $red-100;
-                  }
-                }
-
-                &.book {
-                  background: $bronze-200;
-
-                  &:hover {
-                    background: $bronze-100;
-                  }
                 }
               }
             }
@@ -331,12 +331,13 @@ function RequestDetails({ match, history }) {
               display: flex;
               flex-direction: column;
 
-              .prev-p {
+              .main-p {
+                margin: initial;
                 margin-top: 16px;
-                color: $bronze-200;
+                color: $black;
               }
 
-              .prev-input {
+              .main-input {
                 height: initial;
                 max-width: initial;
                 width: initial;
@@ -356,6 +357,7 @@ function RequestDetails({ match, history }) {
 }
 
 RequestDetails.propTypes = {
+  communityId: PropTypes.string.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string.isRequired,

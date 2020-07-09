@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import Loading from '../../components/Loading';
+import UserPosts from '../../components/UserPosts';
 
 const GET_USER = gql`
   query User {
@@ -11,6 +12,15 @@ const GET_USER = gql`
       name
       email
       apartment
+      isAdmin
+      communities {
+        _id
+      }
+      posts {
+        _id
+        title
+        image
+      }
     }
   }
 `;
@@ -31,11 +41,12 @@ function Profile({ history }) {
   const [name, setName] = useState('');
   const [image, setImage] = useState(null);
   const [apartment, setApartment] = useState('');
-  const { data, error, loading } = useQuery(GET_USER);
-  const [updateUser, { loading: mutationLoading }] = useMutation(UPDATE_USER, {
+  const { data, error, loading } = useQuery(GET_USER, {
     onError: ({ message }) => {
       console.log(message);
     },
+  });
+  const [updateUser, { loading: mutationLoading }] = useMutation(UPDATE_USER, {
     update(cache, { data: { updateUser } }) {
       cache.writeQuery({
         query: GET_USER,
@@ -44,6 +55,9 @@ function Profile({ history }) {
         },
       });
       history.push('/find');
+    },
+    onError: ({ message }) => {
+      console.log(message);
     },
   });
 
@@ -56,7 +70,7 @@ function Profile({ history }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          // Redirect to /find if no changes were made
+          // Redirect to posts page if no changes were made
           if (!name && !apartment && !image) {
             history.push('/find');
           } else {
@@ -97,21 +111,24 @@ function Profile({ history }) {
           Pictures increase trust by 80%. Feel free to make your profile more
           trustworthy by uploading a picture.
         </p>
-        <p className="prev-p">Your name</p>
+        {data.user.posts.length > 0 && (
+          <UserPosts posts={data.user.posts} history={history} />
+        )}
+        <p className="main-p">Your name</p>
         <input
-          className="prev-input"
+          className="main-input"
           defaultValue={data.user.name}
           onChange={(e) => setName(e.target.value)}
         />
-        <p className="prev-p">Email address</p>
-        <input className="prev-input" defaultValue={data.user.email} disabled />
-        <p className="prev-p">Where can the neighbours find you?</p>
+        <p className="main-p">Email address</p>
+        <input className="main-input" defaultValue={data.user.email} disabled />
+        <p className="main-p">Where can the neighbours find you?</p>
         <input
-          className="prev-input"
+          className="main-input"
           defaultValue={data.user.apartment}
           onChange={(e) => setApartment(e.target.value)}
         />
-        <button className="prev-btn" type="submit">
+        <button className="main-btn block" type="submit">
           Save
         </button>
       </form>
@@ -122,6 +139,11 @@ function Profile({ history }) {
 
           .profile-control {
             margin: auto;
+
+            @include sm {
+              max-width: 300px;
+              width: 80vw;
+            }
 
             .image-upload > input {
               display: none;
@@ -135,32 +157,23 @@ function Profile({ history }) {
               box-shadow: 1px 1px 1px 1px #eeeeee;
             }
 
-            @include sm {
-              max-width: 300px;
-              width: 80vw;
-            }
-
             h2 {
               margin: 20px auto;
-              color: $bronze-200;
               font-size: 20xp;
             }
 
             .profile-pic-p {
               margin: 15px auto 0px auto;
-              color: $brown;
               font-size: 14px;
               max-width: 300px;
             }
 
-            .prev-p {
-              margin: 20px auto;
-              max-width: 300px;
+            .main-input {
+              margin-top: 5px;
             }
 
-            .prev-btn {
-              display: block;
-              margin: 30px auto;
+            .main-p {
+              margin: 20px auto 10px auto;
             }
           }
         `}

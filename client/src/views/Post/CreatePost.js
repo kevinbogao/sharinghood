@@ -7,8 +7,8 @@ import Loading from '../../components/Loading';
 import { GET_POSTS } from './Posts';
 
 const CREATE_POST = gql`
-  mutation CreatePost($postInput: PostInput!) {
-    createPost(postInput: $postInput) {
+  mutation CreatePost($postInput: PostInput!, $communityId: ID) {
+    createPost(postInput: $postInput, communityId: $communityId) {
       _id
       title
       desc
@@ -21,29 +21,34 @@ const CREATE_POST = gql`
   }
 `;
 
-function CreatePost({ history }) {
+function CreatePost({ communityId, history, location }) {
   let title, desc, isGiveaway;
   const [image, setImage] = useState(null);
   const [condition, setCondition] = useState(0);
   const [error, setError] = useState({});
-  const [
-    createPost,
-    { loading: mutationLoading, error: mutationError },
-  ] = useMutation(CREATE_POST, {
+  const [createPost, { loading: mutationLoading }] = useMutation(CREATE_POST, {
     update(cache, { data: { createPost } }) {
       // Try catch block to avoid empty requests cache error
       try {
         const { posts } = cache.readQuery({
           query: GET_POSTS,
+          variables: { communityId },
         });
         cache.writeQuery({
           query: GET_POSTS,
-          data: { posts: posts.concat([createPost]) },
+          variables: { communityId },
+          data: { posts: [createPost, ...posts] },
         });
       } catch (err) {
         console.log(err);
       }
       history.push('/find');
+    },
+    onError: () => {
+      setError({
+        res:
+          'We are experiencing difficulties right now :( Please try again later',
+      });
     },
   });
 
@@ -71,16 +76,20 @@ function CreatePost({ history }) {
                   image,
                   condition: +condition,
                   isGiveaway: isGiveaway.checked,
+                  ...(location.state && {
+                    requesterId: location.state.requesterId,
+                  }),
                 },
+                communityId,
               },
             });
           }
         }}
       >
-        {history.location.state && (
-          <p className="prev-p">
-            {history.location.state.creatorName} will be notified when you post
-            the item for their request
+        {location.state && (
+          <p className="main-p">
+            {location.state.requesterName} will be notified when you post the
+            item for their request
           </p>
         )}
         <div className="image-upload">
@@ -102,22 +111,26 @@ function CreatePost({ history }) {
         </div>
         {error.image && <InlineError text={error.image} />}
         <input
-          className="prev-input"
+          className="main-input"
           name="title"
           placeholder="Title"
           ref={(node) => (title = node)}
         />
         {error.title && <InlineError text={error.title} />}
         <input
-          className="prev-input"
+          className="main-input"
           name="desc"
           placeholder="Description"
           ref={(node) => (desc = node)}
         />
         {error.desc && <InlineError text={error.desc} />}
         {error.descExists && <InlineError text={error.descExists} />}
-        <p className="prev-p">Condition: </p>
-        <select name="condition" onChange={(e) => setCondition(e.target.value)}>
+        <p className="main-p">Condition: </p>
+        <select
+          className="main-select"
+          name="condition"
+          onChange={(e) => setCondition(e.target.value)}
+        >
           <option value="0">New</option>
           <option value="1">Used but good</option>
           <option value="2">Used but little damaged</option>
@@ -128,16 +141,16 @@ function CreatePost({ history }) {
             type="checkbox"
             ref={(node) => (isGiveaway = node)}
           />
-          <p className="prev-p">
+          <p className="main-p">
             This is a giveaway! (People can borrow it for an indefinite time)
           </p>
         </div>
-        <button className="prev-btn" type="submit">
+        {error.res && <InlineError text={error.res} />}
+        <button className="main-btn block" type="submit">
           Share
         </button>
       </form>
       {mutationLoading && <Loading isCover />}
-      {mutationError && <p>Error :( Please try again</p>}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -166,34 +179,8 @@ function CreatePost({ history }) {
               box-shadow: 1px 1px 1px 1px #eeeeee;
             }
 
-            .prev-p {
-              max-width: 280px;
-              font-size: 19px;
-              margin: 20px 0;
-            }
-
-            .prev-input {
-              margin-top: 30px;
-            }
-
-            .prev-btn {
+            .main-btn {
               margin: 20px 0 30px 0;
-            }
-
-            select {
-              font-size: 18px;
-              padding-left: 10px;
-              color: $brown;
-              width: 300px;
-              height: 40px;
-              border-width: 0px;
-              background: $grey-200;
-              border-radius: 4px;
-              margin-bottom: 12px;
-
-              @include sm {
-                width: 100%;
-              }
             }
 
             .giveaway {
@@ -203,7 +190,7 @@ function CreatePost({ history }) {
                 margin: 5px 10px auto auto;
               }
 
-              .prev-p {
+              .main-p {
                 max-width: 280px;
                 font-size: 19px;
                 margin: 0;
@@ -221,12 +208,14 @@ function CreatePost({ history }) {
 }
 
 CreatePost.propTypes = {
+  communityId: PropTypes.string.isRequired,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
-    location: PropTypes.shape({
-      state: PropTypes.shape({
-        creatorName: PropTypes.string,
-      }),
+  }).isRequired,
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      requesterId: PropTypes.string,
+      requesterName: PropTypes.string,
     }),
   }).isRequired,
 };

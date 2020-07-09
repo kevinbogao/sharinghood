@@ -1,27 +1,36 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 
-function Threads({ threads, members }) {
+function Threads({ threads, members, communityId }) {
   return (
     <div className="threads-container">
-      {threads.map((thread) => (
-        <Fragment key={thread._id}>
-          <div className="thread-control">
-            {members
-              .filter((member) => member._id === thread.poster._id)
-              .map((member) => (
-                <Fragment key={member._id}>
-                  <img src={JSON.parse(member.image).secure_url} alt="Member" />
-                  <div className="thread-content">
-                    <span className="prev-p">{member.name}</span>
-                    <p>{thread.content}</p>
-                  </div>
-                </Fragment>
-              ))}
-          </div>
-          <div className="item-separator" />
-        </Fragment>
-      ))}
+      {threads
+        .filter((thread) => thread.community._id === communityId)
+        .map((thread) => (
+          <Fragment key={thread._id}>
+            <div className="thread-control">
+              {members
+                .filter((member) => member._id === thread.poster._id)
+                .map((member) => (
+                  <Fragment key={member._id}>
+                    <div
+                      className="member-img"
+                      style={{
+                        backgroundImage: `url(${
+                          JSON.parse(member.image).secure_url
+                        })`,
+                      }}
+                    />
+                    <div className="thread-content">
+                      <span className="">{member.name}</span>
+                      <p>{thread.content}</p>
+                    </div>
+                  </Fragment>
+                ))}
+            </div>
+            <div className="item-separator" />
+          </Fragment>
+        ))}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -30,12 +39,13 @@ function Threads({ threads, members }) {
             width: 100%;
             display: flex;
 
-            img {
+            .member-img {
               margin: 20px 20px 20px 0;
               width: 50px;
               height: 50px;
               border-radius: 50%;
-              object-fit: fill;
+              background-size: cover;
+              background-position: center;
             }
 
             .thread-content {
@@ -44,11 +54,11 @@ function Threads({ threads, members }) {
               justify-content: space-evenly;
 
               span {
-                color: $bronze-200;
+                font-size: 20px;
               }
 
               p {
-                color: $brown;
+                color: $black;
                 font-size: 16px;
               }
             }
@@ -66,6 +76,7 @@ function Threads({ threads, members }) {
 }
 
 Threads.propTypes = {
+  communityId: PropTypes.string.isRequired,
   threads: PropTypes.arrayOf(
     PropTypes.shape({
       _id: PropTypes.string.isRequired,

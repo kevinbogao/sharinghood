@@ -50,7 +50,12 @@ function Posts() {
               state: { image: post.image },
             }}
           >
-            <img alt="item" src={JSON.parse(post.image).secure_url} />
+            <div
+              className="item-img"
+              style={{
+                backgroundImage: `url(${JSON.parse(post.image).secure_url})`,
+              }}
+            />
             <div className="item-info">
               <p className="item-title">{post.title}</p>
               <p>by {post.creator.name}</p>
@@ -68,6 +73,23 @@ function Posts() {
             padding: 10px;
             cursor: pointer;
 
+            .item-img {
+              width: 160px;
+              height: 136px;
+              background-size: cover;
+              background-position: center;
+
+              @include md {
+                width: 190px;
+                height: 160px;
+              }
+
+              @include sm {
+                width: 200px;
+                height: 170px;
+              }
+            }
+
             &:hover {
               background: $grey-200;
             }
@@ -81,22 +103,6 @@ function Posts() {
                 margin-top: 10px;
                 margin-bottom: 5px;
                 font-size: 18px;
-              }
-            }
-
-            img {
-              width: 160px;
-              height: 136px;
-              object-fit: cover;
-
-              @include md {
-                width: 190px;
-                height: 160px;
-              }
-
-              @include sm {
-                width: 200px;
-                height: 170px;
               }
             }
           }

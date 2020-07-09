@@ -42,9 +42,13 @@ function CommunityExists({
           <div className="community-members">
             {members.map((member) => (
               <div key={member._id}>
-                <img
-                  src={JSON.parse(member.image).secure_url}
-                  alt="member's profile"
+                <div
+                  className="member-img"
+                  style={{
+                    backgroundImage: `url(${
+                      JSON.parse(member.image).secure_url
+                    })`,
+                  }}
                 />
               </div>
             ))}
@@ -192,11 +196,13 @@ function CommunityExists({
               overflow-x: scroll;
               display: flex;
 
-              img {
+              .member-img {
                 margin: 0 5px 0 0;
                 height: 60px;
                 width: 60px;
                 border-radius: 50%;
+                background-size: cover;
+                background-position: center;
               }
             }
           }

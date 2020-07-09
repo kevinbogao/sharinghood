@@ -74,7 +74,14 @@ function Members() {
                 {isExpanded && (
                   <span className="icon-tooltip">{member.name}</span>
                 )}
-                <img src={JSON.parse(member.image).secure_url} alt="" />
+                <div
+                  className="member-img"
+                  style={{
+                    backgroundImage: `url(${
+                      JSON.parse(member.image).secure_url
+                    })`,
+                  }}
+                />
               </div>
             ))}
         </div>
@@ -151,11 +158,13 @@ function Members() {
                 display: flex;
 
                 .member-icon {
-                  img {
+                  .member-img {
                     margin: 5px 5px 7px 0;
                     height: 45px;
                     width: 45px;
                     border-radius: 50%;
+                    background-size: cover;
+                    background-position: center;
                   }
 
                   .icon-tooltip {

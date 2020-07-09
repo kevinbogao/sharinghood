@@ -199,17 +199,23 @@ function NotificationDetails({ communityId, match, history }) {
           {data.community.members
             .filter((member) => member._id === data.tokenPayload.userId)
             .map((member) => (
-              <img
-                className="user"
+              <div
                 key={member._id}
-                src={JSON.parse(member.image).secure_url}
-                alt="Your profile"
+                className="user-img user"
+                style={{
+                  backgroundImage: `url(${
+                    JSON.parse(member.image).secure_url
+                  })`,
+                }}
               />
             ))}
-          <img
-            className="recipient"
-            src={JSON.parse(data.notification.participants[0].image).secure_url}
-            alt="Booker profile"
+          <div
+            className="user-img recipient"
+            style={{
+              backgroundImage: `url(${
+                JSON.parse(data.notification.participants[0].image).secure_url
+              })`,
+            }}
           />
         </div>
         {data.notification.ofType === 0 && (
@@ -220,7 +226,15 @@ function NotificationDetails({ communityId, match, history }) {
         {data.notification.ofType === 1 && (
           <div className="item-info">
             <div className="item-status">
-              <p>{data.notification.booking.post.title}</p>
+              <p
+                className="p-link"
+                role="presentation"
+                onClick={() => {
+                  history.push(`/shared/${data.notification.booking.post._id}`);
+                }}
+              >
+                {data.notification.booking.post.title}
+              </p>
               {data.notification.booking.dateType === 0 ? (
                 <span>As soon as possible</span>
               ) : data.notification.booking.dateType === 1 ? (
@@ -385,25 +399,18 @@ function NotificationDetails({ communityId, match, history }) {
               margin: auto 10px;
               display: block;
               font-size: 16px;
+
+              &.p-link {
+                &:hover {
+                  cursor: pointer;
+                }
+              }
             }
 
             span {
               margin: auto 10px;
               display: block;
               font-size: 14px;
-            }
-
-            img {
-              position: relative;
-              top: 25%;
-              height: 45px;
-              width: 45px;
-              border-radius: 50%;
-              box-shadow: 1px 1px 1px 1px #eeeeee;
-
-              &.recipient {
-                left: -7%;
-              }
             }
 
             .noti-btn {
@@ -419,6 +426,22 @@ function NotificationDetails({ communityId, match, history }) {
 
               .info-imgs {
                 height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                .user-img {
+                  height: 45px;
+                  width: 45px;
+                  border-radius: 50%;
+                  background-size: cover;
+                  background-position: center;
+
+                  &.recipient {
+                    position: relative;
+                    left: -7%;
+                  }
+                }
               }
 
               .item-info {

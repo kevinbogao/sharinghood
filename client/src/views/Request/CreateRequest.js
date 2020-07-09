@@ -29,28 +29,34 @@ function CreateRequest({ communityId, history }) {
   const [dateNeed, setDateNeed] = useState(new Date());
   const [dateReturn, setDateReturn] = useState(new Date());
   const [error, setError] = useState({});
-  const [
-    createRequest,
-    { loading: mutationLoading, error: mutationError },
-  ] = useMutation(CREATE_REQUEST, {
-    update(cache, { data: { createRequest } }) {
-      // Try catch block to avoid empty requests cache error
-      try {
-        const { requests } = cache.readQuery({
-          query: GET_REQUESTS,
-          variables: { communityId },
+  const [createRequest, { loading: mutationLoading }] = useMutation(
+    CREATE_REQUEST,
+    {
+      update(cache, { data: { createRequest } }) {
+        // Try catch block to avoid empty requests cache error
+        try {
+          const { requests } = cache.readQuery({
+            query: GET_REQUESTS,
+            variables: { communityId },
+          });
+          cache.writeQuery({
+            query: GET_REQUESTS,
+            variables: { communityId },
+            data: { requests: [createRequest, ...requests] },
+          });
+        } catch (err) {
+          console.log(err);
+        }
+        history.push('/requests');
+      },
+      onError: () => {
+        setError({
+          res:
+            'We are experiencing difficulties right now :( Please try again later',
         });
-        cache.writeQuery({
-          query: GET_REQUESTS,
-          variables: { communityId },
-          data: { requests: [createRequest, ...requests] },
-        });
-      } catch (err) {
-        console.log(err);
-      }
-      history.push('/requests');
+      },
     },
-  });
+  );
 
   function validate() {
     const errors = {};
@@ -131,12 +137,12 @@ function CreateRequest({ communityId, history }) {
           dateFormat="yyyy.MM.dd"
           minDate={dateNeed}
         />
+        {error.res && <InlineError text={error.res} />}
         <button className="main-btn" type="submit">
           Request
         </button>
       </form>
       {mutationLoading && <Loading isCover />}
-      {mutationError && <p>Error :( Please try again</p>}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

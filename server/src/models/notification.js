@@ -56,4 +56,7 @@ notificationSchema.index({ ofType: 1, participants: 1, community: 1 });
 // Secondary index for community
 notificationSchema.index({ community: 1 });
 
+// Secondary index for booking
+notificationSchema.index({ booking: 1 });
+
 module.exports = model('Notification', notificationSchema);

@@ -121,9 +121,8 @@ function EditPost({ history, match }) {
           variables: { communityId: addPostToCommunity._id },
           data: { posts: [...posts, postSel] },
         });
-      } catch (err) {
-        console.log(err);
-      }
+        // eslint-disable-next-line
+      } catch (err) {}
 
       // Add post to select community's posts array in cache
       const { communities } = cache.readQuery({

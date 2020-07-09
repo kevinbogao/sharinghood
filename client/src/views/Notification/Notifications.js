@@ -77,9 +77,8 @@ function Notifications({ history, communityId }) {
     variables: { communityId },
     fetchPolicy: 'cache-and-network',
     onCompleted: useCallback(() => {
-      // Get communities from cache, and the current community's index in the communities array
-
       try {
+        // Get communities from cache, and the current community's index in the communities array
         const { communities } = client.readQuery({
           query: GET_USER_COMMUNITIES,
         });
@@ -145,18 +144,22 @@ function Notifications({ history, communityId }) {
               >
                 {notification.ofType === 0 ? (
                   <>
-                    <img
-                      className={`${
-                        notification.isRead[data.tokenPayload.userId]
-                          ? undefined
-                          : 'unread'
-                      }`}
-                      src={
-                        JSON.parse(notification.participants[0].image)
-                          .secure_url
-                      }
-                      alt=""
-                    />
+                    <div className="left-img">
+                      <div
+                        className={`noti-img ${
+                          notification.isRead[data.tokenPayload.userId]
+                            ? undefined
+                            : 'unread'
+                        }
+                      `}
+                        style={{
+                          backgroundImage: `url(${
+                            JSON.parse(notification.participants[0].image)
+                              .secure_url
+                          })`,
+                        }}
+                      />
+                    </div>
                     <div className="message-info">
                       <div className="message-user">
                         <p className="title name">
@@ -183,17 +186,22 @@ function Notifications({ history, communityId }) {
                   </>
                 ) : notification.ofType === 1 ? (
                   <>
-                    <img
-                      className={`${
-                        notification.isRead[data.tokenPayload.userId]
-                          ? undefined
-                          : 'unread'
-                      }`}
-                      src={
-                        JSON.parse(notification.booking.post.image).secure_url
-                      }
-                      alt=""
-                    />
+                    <div className="left-img">
+                      <div
+                        className={`noti-img ${
+                          notification.isRead[data.tokenPayload.userId]
+                            ? undefined
+                            : 'unread'
+                        }
+                    `}
+                        style={{
+                          backgroundImage: `url(${
+                            JSON.parse(notification.booking.post.image)
+                              .secure_url
+                          })`,
+                        }}
+                      />
+                    </div>
                     <div className="item-info">
                       <div className="item-status">
                         {notification.booking.booker._id ===
@@ -320,18 +328,22 @@ function Notifications({ history, communityId }) {
                   </>
                 ) : (
                   <>
-                    <img
-                      className={`${
-                        notification.isRead[data.tokenPayload.userId]
-                          ? undefined
-                          : 'unread'
-                      }`}
-                      src={
-                        JSON.parse(notification.participants[0].image)
-                          .secure_url
-                      }
-                      alt=""
-                    />
+                    <div className="left-img">
+                      <div
+                        className={`noti-img ${
+                          notification.isRead[data.tokenPayload.userId]
+                            ? undefined
+                            : 'unread'
+                        }
+                    `}
+                        style={{
+                          backgroundImage: `url(${
+                            JSON.parse(notification.participants[0].image)
+                              .secure_url
+                          })`,
+                        }}
+                      />
+                    </div>
                     <div className="item-info">
                       <div className="item-status">
                         <p className="title">
@@ -397,18 +409,17 @@ function Notifications({ history, communityId }) {
                 font-size: 14px;
               }
 
-              img {
+              .noti-img {
                 height: 90px;
                 width: 90px;
                 margin: 10px;
-                border-width: 3px;
                 border-radius: 50%;
-                border-color: transparent;
-                border-style: solid;
+                background-size: cover;
+                background-position: center;
+                border: 3px solid $grey-100;
 
                 &.unread {
-                  border-color: $orange;
-                  border-style: solid;
+                  border: 3px solid $orange;
                 }
 
                 @include sm {

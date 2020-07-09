@@ -47,7 +47,13 @@ function Requests({ communityId }) {
               state: { image: request.image },
             }}
           >
-            <img alt="item" src={JSON.parse(request.image).secure_url} />
+            <div
+              className="item-img"
+              style={{
+                backgroundImage: `url(${JSON.parse(request.image).secure_url})`,
+              }}
+            />
+            {/* <img alt="item" src={JSON.parse(request.image).secure_url} /> */}
             <div className="item-info">
               <p className="item-title">{request.title}</p>
               <p>by {request.creator.name}</p>
@@ -87,10 +93,11 @@ function Requests({ communityId }) {
               }
             }
 
-            img {
+            .item-img {
               width: 160px;
               height: 136px;
-              object-fit: cover;
+              background-size: cover;
+              background-position: center;
 
               @include md {
                 width: 190px;

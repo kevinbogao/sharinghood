@@ -32,16 +32,18 @@
     tslib "^1.10.0"
     zen-observable "^0.8.14"
 
-"@apollo/client@^3.0.0-rc.10":
-  version "3.0.0-rc.10"
-  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.0.0-rc.10.tgz#5af7efd98166657f0446e4a3185af69ef12709c9"
-  integrity sha512-iE7w3HS3iVLVfENaZBGqlQrUEWQa7ZwhNfXzaYuxMVgnbzT9MCkklq/xWHy8xsuaK3rgHOlTN3AyTF+InV5xpQ==
+"@apollo/client@^3.0.0-rc.11":
+  version "3.0.0-rc.11"
+  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.0.0-rc.11.tgz#9ff6d6730c6b9bbb72f906a74a3fda5253a6c6c4"
+  integrity sha512-f6xFS6R3BACAGUlX5MFqWUBvsgMe0bOGMuX6ELwN7PLD35RgH3zqxv6iCLUc8xVATceqw0Nei2RIYb5YUU6Zaw==
   dependencies:
     "@types/zen-observable" "^0.8.0"
     "@wry/equality" "^0.1.9"
     fast-json-stable-stringify "^2.0.0"
-    graphql-tag "^2.10.2"
+    graphql-tag "^2.10.4"
+    hoist-non-react-statics "^3.3.2"
     optimism "^0.12.1"
+    prop-types "^15.7.2"
     symbol-observable "^1.2.0"
     ts-invariant "^0.4.4"
     tslib "^1.10.0"
@@ -1699,13 +1701,14 @@
     lodash "^4.17.15"
     redent "^3.0.0"
 
-"@testing-library/react@^10.4.3":
-  version "10.4.3"
-  resolved "https://registry.yarnpkg.com/@testing-library/react/-/react-10.4.3.tgz#c6f356688cffc51f6b35385583d664bb11a161f4"
-  integrity sha512-A/ydYXcwAcfY7vkPrfUkUTf9HQLL3/GtixTefcu3OyGQtAYQ7XBQj1S9FWbLEhfWa0BLwFwTBFS3Ao1O0tbMJg==
+"@testing-library/react@^10.4.5":
+  version "10.4.5"
+  resolved "https://registry.yarnpkg.com/@testing-library/react/-/react-10.4.5.tgz#e66e004d6beb60a26b4e5d4e4d9989738d7077f3"
+  integrity sha512-M5A0W4VphBiEm4vgnq7vHC+/e4Bp/3iIOAWap1FtIiA+Zom6BtXpY3RSTOqc8bZsCcu9gFBZ/lxaiMW6uJddWg==
   dependencies:
     "@babel/runtime" "^7.10.3"
     "@testing-library/dom" "^7.17.1"
+    semver "^7.3.2"
 
 "@testing-library/user-event@^12.0.11":
   version "12.0.11"
@@ -4671,10 +4674,10 @@ eslint-plugin-jsx-a11y@^6.3.1:
     jsx-ast-utils "^2.4.1"
     language-tags "^1.0.5"
 
-eslint-plugin-react-hooks@4.0.5:
-  version "4.0.5"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-react-hooks/-/eslint-plugin-react-hooks-4.0.5.tgz#4879003aa38e5d05d0312175beb6e4a1f617bfcf"
-  integrity sha512-3YLSjoArsE2rUwL8li4Yxx1SUg3DQWp+78N3bcJQGWVZckcp+yeQGsap/MSq05+thJk57o+Ww4PtZukXGL02TQ==
+eslint-plugin-react-hooks@4.0.6:
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react-hooks/-/eslint-plugin-react-hooks-4.0.6.tgz#4027ae451b5cd219928edd0ff9eab54a8ea82901"
+  integrity sha512-RDrsUR/BjwCECcWS+5bc7mWiU/M1IOizKt40Zuei5mn0Eydubiooh87aSCiZ/BGMSUF7P8AqyMEqQL0RsAihmw==
 
 eslint-plugin-react-hooks@^1.6.1:
   version "1.7.0"
@@ -4699,10 +4702,10 @@ eslint-plugin-react@7.19.0:
     string.prototype.matchall "^4.0.2"
     xregexp "^4.3.0"
 
-eslint-plugin-react@^7.20.2:
-  version "7.20.2"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.20.2.tgz#b0d72abcd94c59c842338aa09c800808219ea77d"
-  integrity sha512-J3BdtsPNbcF/CG9HdyLx7jEtC7tuODODGldkS9P1zU2WMoHPdcsN2enUopgIaec5f9eYhSFI5zQAaWA/dgv2zw==
+eslint-plugin-react@^7.20.3:
+  version "7.20.3"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.20.3.tgz#0590525e7eb83890ce71f73c2cf836284ad8c2f1"
+  integrity sha512-txbo090buDeyV0ugF3YMWrzLIUqpYTsWSDZV9xLSmExE1P/Kmgg9++PD931r+KEWS66O1c9R4srLVVHmeHpoAg==
   dependencies:
     array-includes "^3.1.1"
     array.prototype.flatmap "^1.2.3"
@@ -5618,10 +5621,15 @@ graphql-tag@^2.10.2:
   resolved "https://registry.yarnpkg.com/graphql-tag/-/graphql-tag-2.10.3.tgz#ea1baba5eb8fc6339e4c4cf049dabe522b0edf03"
   integrity sha512-4FOv3ZKfA4WdOKJeHdz6B3F/vxBLSgmBcGeAFPf4n1F64ltJUvOOerNj0rsJxONQGdhUMynQIvd6LzB+1J5oKA==
 
-graphql@^15.2.0:
-  version "15.2.0"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.2.0.tgz#d9c655a523a3196d4b23657ec6ec5963b3bd4970"
-  integrity sha512-tsceRyHfgzZo+ee0YK3o8f0CR0cXAXxRlxoORWFo/CoM1bVy3UXGWeyzBcf+Y6oqPvO27BDmOEVATcunOO/MrQ==
+graphql-tag@^2.10.4:
+  version "2.10.4"
+  resolved "https://registry.yarnpkg.com/graphql-tag/-/graphql-tag-2.10.4.tgz#2f301a98219be8b178a6453bb7e33b79b66d8f83"
+  integrity sha512-O7vG5BT3w6Sotc26ybcvLKNTdfr4GfsIVMD+LdYqXCeJIYPRyp8BIsDOUtxw7S1PYvRw5vH3278J2EDezR6mfA==
+
+graphql@^15.3.0:
+  version "15.3.0"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.3.0.tgz#3ad2b0caab0d110e3be4a5a9b2aa281e362b5278"
+  integrity sha512-GTCJtzJmkFLWRfFJuoo9RWWa/FfamUHgiFosxi/X1Ani4AVWbeyBenZTNX6dM+7WSbbFfTo/25eh0LLkwHMw2w==
 
 growly@^1.3.0:
   version "1.3.0"
@@ -5777,7 +5785,7 @@ hmac-drbg@^1.0.0:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.1"
 
-hoist-non-react-statics@^3.1.0:
+hoist-non-react-statics@^3.1.0, hoist-non-react-statics@^3.3.2:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-3.3.2.tgz#ece0acaf71d62c2969c2ec59feff42a4b1a85b45"
   integrity sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==
@@ -9732,10 +9740,10 @@ react-app-rewired@^2.1.6:
   dependencies:
     semver "^5.6.0"
 
-react-datepicker@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/react-datepicker/-/react-datepicker-3.0.0.tgz#a6fba3aa2738656fbadebce9a3c8e34ad6cde83b"
-  integrity sha512-Yrxan1tERAiWS0EzitpiaiXOIz0APTUtV75uWbaS+jSaKoGCR6wUN2FDwr1ACGlnEoGhR9QQ2Vq3odnWtgJsOA==
+react-datepicker@^3.1.3:
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/react-datepicker/-/react-datepicker-3.1.3.tgz#4bde7aae405deab72a6c102b95a6a0749b7df759"
+  integrity sha512-4KbdWWAxa/AZJIDhQZwiBpZE9hCYZ4/gTVstdo9WEpFCsfh69xHklB/FZrR95mgkIU7ecU36V2eCuGgIO+ci0A==
   dependencies:
     classnames "^2.2.6"
     date-fns "^2.0.1"

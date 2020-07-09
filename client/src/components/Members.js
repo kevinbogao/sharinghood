@@ -89,7 +89,7 @@ function Members() {
             bottom: 7%;
             display: flex;
             align-items: center;
-            box-shadow: 0px 0px 8px $shadow;
+            box-shadow: 0px 0px 8px $grey-300;
             color: $black;
             background: $grey-100;
             border-top-left-radius: 4px;

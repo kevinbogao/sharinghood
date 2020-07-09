@@ -64,7 +64,7 @@ function ItemsGrid({ isPost, children }) {
               border-width: 0;
               border-top-left-radius: 1px;
               border-top-right-radius: 1px;
-              box-shadow: 0px 0px 8px $shadow;
+              box-shadow: 0px 0px 8px $grey-300;
               background: $grey-100;
               color: $black;
               font-size: 16px;

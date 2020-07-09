@@ -268,6 +268,7 @@ function ItemDetails({ history, item, userId, communityId, children }) {
                   width: 90px;
                   height: 90px;
                   padding-right: 0;
+                  margin: 10px 0px 10px 10px;
                 }
               }
 
@@ -281,6 +282,10 @@ function ItemDetails({ history, item, userId, communityId, children }) {
 
                 @include lg {
                   width: 70%;
+                }
+
+                @include sm {
+                  padding: 10px 10px 10px 0px;
                 }
 
                 p {

@@ -114,6 +114,7 @@ function Members() {
 
             @include sm {
               max-width: 75px;
+              bottom: 10%;
             }
 
             &.expanded {

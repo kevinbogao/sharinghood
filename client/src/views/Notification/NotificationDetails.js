@@ -199,17 +199,23 @@ function NotificationDetails({ communityId, match, history }) {
           {data.community.members
             .filter((member) => member._id === data.tokenPayload.userId)
             .map((member) => (
-              <img
-                className="user"
+              <div
                 key={member._id}
-                src={JSON.parse(member.image).secure_url}
-                alt="Your profile"
+                className="user-img user"
+                style={{
+                  backgroundImage: `url(${
+                    JSON.parse(member.image).secure_url
+                  })`,
+                }}
               />
             ))}
-          <img
-            className="recipient"
-            src={JSON.parse(data.notification.participants[0].image).secure_url}
-            alt="Booker profile"
+          <div
+            className="user-img recipient"
+            style={{
+              backgroundImage: `url(${
+                JSON.parse(data.notification.participants[0].image).secure_url
+              })`,
+            }}
           />
         </div>
         {data.notification.ofType === 0 && (
@@ -393,15 +399,19 @@ function NotificationDetails({ communityId, match, history }) {
               font-size: 14px;
             }
 
-            img {
+            .user-img {
               position: relative;
               top: 25%;
+              left: -95%;
               height: 45px;
               width: 45px;
               border-radius: 50%;
-              box-shadow: 1px 1px 1px 1px #eeeeee;
+              background-size: cover;
+              background-position: center;
+              // box-shadow: 1px 1px 1px 1px #eeeeee;
 
               &.recipient {
+                top: -21%;
                 left: -7%;
               }
             }

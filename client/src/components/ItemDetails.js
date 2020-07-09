@@ -113,7 +113,14 @@ function ItemDetails({ history, item, userId, communityId, children }) {
           {children}
         </div>
         <div className="item-creator">
-          <img src={JSON.parse(item.creator.image).secure_url} alt="" />
+          <div
+            className="creator-img"
+            style={{
+              backgroundImage: `url(${
+                JSON.parse(item.creator.image).secure_url
+              })`,
+            }}
+          />
           <div className="creator-info">
             <p className="main-p name">{item.creator.name}</p>
             <h6>Find me: {item.creator.apartment}</h6>
@@ -244,12 +251,13 @@ function ItemDetails({ history, item, userId, communityId, children }) {
                 justify-content: start;
               }
 
-              img {
-                padding: 10px;
+              .creator-img {
+                margin: 10px;
                 width: 140px;
                 height: 140px;
+                background-size: cover;
+                background-position: center;
                 border-radius: 50%;
-                object-fit: fill;
 
                 @include lg {
                   width: 110px;

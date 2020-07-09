@@ -13,9 +13,13 @@ function Threads({ threads, members, communityId }) {
                 .filter((member) => member._id === thread.poster._id)
                 .map((member) => (
                   <Fragment key={member._id}>
-                    <img
-                      src={JSON.parse(member.image).secure_url}
-                      alt="Member"
+                    <div
+                      className="member-img"
+                      style={{
+                        backgroundImage: `url(${
+                          JSON.parse(member.image).secure_url
+                        })`,
+                      }}
                     />
                     <div className="thread-content">
                       <span className="">{member.name}</span>
@@ -35,12 +39,13 @@ function Threads({ threads, members, communityId }) {
             width: 100%;
             display: flex;
 
-            img {
+            .member-img {
               margin: 20px 20px 20px 0;
               width: 50px;
               height: 50px;
               border-radius: 50%;
-              object-fit: fill;
+              background-size: cover;
+              background-position: center;
             }
 
             .thread-content {

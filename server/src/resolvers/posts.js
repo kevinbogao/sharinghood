@@ -226,8 +226,6 @@ const postsResolvers = {
     deletePost: async (_, { postId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
-      console.log(user);
-
       try {
         // Find post & creator
         const [post, creator] = await Promise.all([
@@ -239,7 +237,7 @@ const postsResolvers = {
         const { threads, bookings } = post;
 
         // Delete post, postId from community && delete post threads
-        // & notifications
+        // bookings & notifications
         await Promise.all([
           post.remove(),
           Community.updateMany(
@@ -249,6 +247,7 @@ const postsResolvers = {
           User.updateOne({ _id: user.userId }, { $pull: { posts: postId } }),
           Thread.deleteMany({ _id: threads }),
           Booking.deleteMany({ _id: bookings }),
+          Notification.deleteMany({ booking: { $in: bookings } }),
         ]);
 
         return post;

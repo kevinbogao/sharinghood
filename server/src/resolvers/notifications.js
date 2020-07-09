@@ -93,7 +93,6 @@ const notificationsResolvers = {
     },
     // TODO: filter notifications by communityId
     notifications: async (_, { communityId }, { user, redis }) => {
-      console.log(communityId);
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
@@ -121,13 +120,13 @@ const notificationsResolvers = {
                           as: 'post',
                         },
                       },
-                      { $unwind: '$post' },
-                      // {
-                      //   $unwind: {
-                      //     path: '$post',
-                      //     preserveNullAndEmptyArrays: true,
-                      //   },
-                      // },
+                      // { $unwind: '$post' },
+                      {
+                        $unwind: {
+                          path: '$post',
+                          preserveNullAndEmptyArrays: true,
+                        },
+                      },
                     ],
                     as: 'booking',
                   },

@@ -101,16 +101,15 @@ function DashboardDetails({ location, match }) {
   const { from } = location.state || { from: { pathname: '/' } };
   const [selectedStat, setSelectedStat] = useState('members');
   const [selectedCol, setSelectedCol] = useState('_id');
-  // console.log(selectedStat);
   const {
     data: { tokenPayload },
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { loading, error, data } = useQuery(GET_COMMUNITY_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
     variables: { communityId: match.params.id },
-    onCompleted: (data) => {
-      console.log(data);
-    },
+    // onCompleted: (data) => {
+    //   console.log(data);
+    // },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -192,7 +191,14 @@ function DashboardDetails({ location, match }) {
                     // eslint-disable-next-line
                     <td key={key} onClick={() => findById(stat, key)}>
                       {key === 'image' ? (
-                        <img src={JSON.parse(stat[key]).secure_url} alt="" />
+                        <div
+                          className="item-img"
+                          style={{
+                            backgroundImage: `url(${
+                              JSON.parse(stat[key]).secure_url
+                            })`,
+                          }}
+                        />
                       ) : ID_SET.has(key) ? (
                         stat[key]._id
                       ) : DATE_SET.has(key) ? (
@@ -233,7 +239,7 @@ function DashboardDetails({ location, match }) {
               margin: 0 auto;
               border-bottom-style: solid;
               border-bottom-width: 1px;
-              background-color: $green-200;
+              background-color: $orange;
               color: $white;
 
               .dashboard-overview-highlight {
@@ -254,13 +260,13 @@ function DashboardDetails({ location, match }) {
                 .stat-clickable {
                   width: 25%;
                   cursor: pointer;
-                  background-color: $white;
-                  color: $green-200;
+                  background-color: $grey-200;
+                  color: $orange;
                   padding: 5px 0px;
                 }
 
                 .stat-active {
-                  background-color: $green-200;
+                  background-color: $orange;
                   color: $white;
                 }
               }
@@ -310,9 +316,12 @@ function DashboardDetails({ location, match }) {
               color: #000;
               align-items: center;
 
-              img {
+              .item-img {
+                margin: 2px;
                 width: 40px;
                 height: 40px;
+                background-size: cover;
+                background-position: center;
               }
             }
           }

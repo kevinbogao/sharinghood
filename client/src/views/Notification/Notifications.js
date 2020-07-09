@@ -77,9 +77,8 @@ function Notifications({ history, communityId }) {
     variables: { communityId },
     fetchPolicy: 'cache-and-network',
     onCompleted: useCallback(() => {
-      // Get communities from cache, and the current community's index in the communities array
-
       try {
+        // Get communities from cache, and the current community's index in the communities array
         const { communities } = client.readQuery({
           query: GET_USER_COMMUNITIES,
         });

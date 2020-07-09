@@ -38,9 +38,9 @@ function Dashboard({ location, history }) {
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { loading, error, data } = useQuery(GET_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
-    onCompleted: (data) => {
-      console.log(data);
-    },
+    // onCompleted: (data) => {
+    //   console.log(data);
+    // },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -138,7 +138,7 @@ function Dashboard({ location, history }) {
               margin: 0 auto;
               border-bottom-style: solid;
               border-bottom-width: 1px;
-              background-color: $green-200;
+              background-color: $orange;
               color: $white;
 
               .dashboard-overview-highlight {
@@ -155,19 +155,6 @@ function Dashboard({ location, history }) {
                 flex-wrap: wrap;
                 justify-content: space-around;
                 align-items: center;
-
-                .stat-clickable {
-                  width: 25%;
-                  cursor: pointer;
-                  background-color: $white;
-                  color: $green-200;
-                  padding: 5px 0px;
-                }
-
-                .stat-active {
-                  background-color: $green-200;
-                  color: $white;
-                }
               }
             }
 

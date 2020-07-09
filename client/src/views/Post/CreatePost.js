@@ -26,10 +26,7 @@ function CreatePost({ communityId, history, location }) {
   const [image, setImage] = useState(null);
   const [condition, setCondition] = useState(0);
   const [error, setError] = useState({});
-  const [
-    createPost,
-    { loading: mutationLoading, error: mutationError },
-  ] = useMutation(CREATE_POST, {
+  const [createPost, { loading: mutationLoading }] = useMutation(CREATE_POST, {
     update(cache, { data: { createPost } }) {
       // Try catch block to avoid empty requests cache error
       try {
@@ -46,6 +43,12 @@ function CreatePost({ communityId, history, location }) {
         console.log(err);
       }
       history.push('/find');
+    },
+    onError: () => {
+      setError({
+        res:
+          'We are experiencing difficulties right now :( Please try again later',
+      });
     },
   });
 
@@ -142,12 +145,12 @@ function CreatePost({ communityId, history, location }) {
             This is a giveaway! (People can borrow it for an indefinite time)
           </p>
         </div>
+        {error.res && <InlineError text={error.res} />}
         <button className="main-btn block" type="submit">
           Share
         </button>
       </form>
       {mutationLoading && <Loading isCover />}
-      {mutationError && <p>Error :( Please try again</p>}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -214,7 +217,7 @@ CreatePost.propTypes = {
       requesterId: PropTypes.string,
       requesterName: PropTypes.string,
     }),
-  }),
+  }).isRequired,
 };
 
 export default CreatePost;

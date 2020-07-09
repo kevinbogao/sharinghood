@@ -54,10 +54,11 @@ function UserPosts({ posts, history }) {
       <div className="user-posts">
         {posts.map((post) => (
           <div key={post._id} className="post-instance">
-            <img
-              className={isEditing ? 'editing' : undefined}
-              src={JSON.parse(post.image).secure_url}
-              alt=""
+            <div
+              className={`post-img ${isEditing ? 'editing' : undefined}`}
+              style={{
+                backgroundImage: `url(${JSON.parse(post.image).secure_url})`,
+              }}
             />
             <p>{post.title}</p>
             <div className={`post-img-btn ${isEditing ? 'active' : undefined}`}>
@@ -181,11 +182,12 @@ function UserPosts({ posts, history }) {
                 }
               }
 
-              img {
+              .post-img {
                 margin: 0 5px 0 0;
                 width: 160px;
                 height: 136px;
-                object-fit: cover;
+                background-size: cover;
+                background-position: center;
 
                 &.editing {
                   -webkit-filter: grayscale(100%);

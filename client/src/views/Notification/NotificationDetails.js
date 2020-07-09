@@ -226,7 +226,15 @@ function NotificationDetails({ communityId, match, history }) {
         {data.notification.ofType === 1 && (
           <div className="item-info">
             <div className="item-status">
-              <p>{data.notification.booking.post.title}</p>
+              <p
+                className="p-link"
+                role="presentation"
+                onClick={() => {
+                  history.push(`/shared/${data.notification.booking.post._id}`);
+                }}
+              >
+                {data.notification.booking.post.title}
+              </p>
               {data.notification.booking.dateType === 0 ? (
                 <span>As soon as possible</span>
               ) : data.notification.booking.dateType === 1 ? (
@@ -391,29 +399,18 @@ function NotificationDetails({ communityId, match, history }) {
               margin: auto 10px;
               display: block;
               font-size: 16px;
+
+              &.p-link {
+                &:hover {
+                  cursor: pointer;
+                }
+              }
             }
 
             span {
               margin: auto 10px;
               display: block;
               font-size: 14px;
-            }
-
-            .user-img {
-              position: relative;
-              top: 25%;
-              left: -95%;
-              height: 45px;
-              width: 45px;
-              border-radius: 50%;
-              background-size: cover;
-              background-position: center;
-              // box-shadow: 1px 1px 1px 1px #eeeeee;
-
-              &.recipient {
-                top: -21%;
-                left: -7%;
-              }
             }
 
             .noti-btn {
@@ -429,6 +426,22 @@ function NotificationDetails({ communityId, match, history }) {
 
               .info-imgs {
                 height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                .user-img {
+                  height: 45px;
+                  width: 45px;
+                  border-radius: 50%;
+                  background-size: cover;
+                  background-position: center;
+
+                  &.recipient {
+                    position: relative;
+                    left: -7%;
+                  }
+                }
               }
 
               .item-info {

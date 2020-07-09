@@ -184,8 +184,8 @@ function writeInitialData() {
     query: gql`
       query {
         accessToken
-        tokenPayload
         refreshToken
+        tokenPayload
         selCommunityId
       }
     `,

@@ -3,12 +3,12 @@ import { useHistory, Link, NavLink } from 'react-router-dom';
 import { gql, useQuery, useApolloClient } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faBars,
   faUser,
   faBell,
   faCaretDown,
   faSignOutAlt,
 } from '@fortawesome/free-solid-svg-icons';
-import hamburger from '../assets/images/hamburger.png';
 
 const GET_TOKEN_PAYLOAD = gql`
   query {
@@ -102,17 +102,17 @@ function Navbar() {
   return (
     <div ref={node} className="nav-control">
       <div className="nav-toggle">
-        <img
-          role="presentation"
-          alt="hamburger"
-          className="hamburger-menu"
-          src={hamburger}
-          onClick={toggleMenu}
-        />
+        {!!accessToken && (
+          <FontAwesomeIcon
+            className="hamburger-icon"
+            icon={faBars}
+            onClick={toggleMenu}
+          />
+        )}
       </div>
       <div className="nav-logo">
         {hasNotifications && <span className="communities-unread" />}
-        <h1>
+        <h1 className={selCommunityId && 'select'}>
           <Link
             to={
               tokenPayload && selCommunityId
@@ -278,9 +278,12 @@ function Navbar() {
 
                 @include sm {
                   font-size: 21px;
-                  width: 120px;
-                  white-space: nowrap;
-                  overflow: hidden;
+
+                  &.select {
+                    width: 120px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                  }
                 }
               }
             }
@@ -350,6 +353,15 @@ function Navbar() {
       <style jsx global>
         {`
           @import './src/assets/scss/index.scss';
+
+          .hamburger-icon {
+            font-size: 23px;
+            transform: scale(1.3, 1);
+
+            @include sm {
+              font-size: 19px;
+            }
+          }
 
           .nav-icon {
             color: $orange;

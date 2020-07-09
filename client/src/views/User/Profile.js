@@ -145,6 +145,12 @@ function Profile({ history }) {
               width: 80vw;
             }
 
+            h2 {
+              @include sm {
+                margin-top: 30px;
+              }
+            }
+
             .image-upload > input {
               display: none;
             }
@@ -174,6 +180,10 @@ function Profile({ history }) {
 
             .main-p {
               margin: 20px auto 10px auto;
+            }
+
+            .main-btn {
+              margin-bottom: 40px;
             }
           }
         `}

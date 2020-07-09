@@ -229,7 +229,7 @@ function App() {
           .switch-btn {
             margin: 0 auto;
             display: block;
-            font-size: 18px;
+            font-size: 19px;
             background: none;
             border-width: 0;
             cursor: pointer;
@@ -246,13 +246,13 @@ function App() {
             }
 
             @include md {
-              font-size: 17px;
+              font-size: 18px;
             }
           }
 
           .switch-btn-separator {
             background: $grey-300;
-            width: 2px;
+            width: 3px;
           }
 
           .noti-btn {

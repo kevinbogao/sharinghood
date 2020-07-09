@@ -85,8 +85,8 @@ function Posts() {
               }
 
               @include sm {
-                width: 200px;
-                height: 170px;
+                width: 60vw;
+                height: 200px;
               }
             }
 

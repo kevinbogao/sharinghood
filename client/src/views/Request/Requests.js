@@ -105,7 +105,7 @@ function Requests({ communityId }) {
               }
 
               @include sm {
-                width: 60vw;
+                width: 250px;
                 height: 200px;
               }
             }

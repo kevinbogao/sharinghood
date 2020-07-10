@@ -164,6 +164,9 @@ function EditPost({ history, match }) {
         ),
       );
     },
+    onError: ({ message }) => {
+      console.log(message);
+    },
   });
 
   // Update post mutation & redirect user to home

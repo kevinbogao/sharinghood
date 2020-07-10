@@ -4,7 +4,6 @@ const User = require('../models/user');
 const Thread = require('../models/thread');
 const Request = require('../models/request');
 const Community = require('../models/community');
-const Notification = require('../models/notification');
 const uploadImg = require('../utils/uploadImg');
 const newRequestMail = require('../utils/sendMail/newRequestMail');
 
@@ -165,19 +164,25 @@ const requestsResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Find request & it's creator & get request's threads
-        const [request, creator] = await Promise.all([
+        // Find request & currentUser
+        const [request, currentUser] = await Promise.all([
           Request.findById(requestId),
           User.findById(user.userId),
         ]);
 
+        // Throw error if user is not post creator
+        if (!request.creator.equals(user.userId)) {
+          throw new Error('Anauthorised user');
+        }
+
+        // Destruct threads from request
         const { threads } = request;
 
         // Delete request, requestId from community & delete request threads
         await Promise.all([
           request.remove(),
           Community.updateMany(
-            { _id: { $in: creator.communities } },
+            { _id: { $in: currentUser.communities } },
             {
               $pull: { requests: requestId },
             }

@@ -220,8 +220,6 @@ const notificationsResolvers = {
         // Delete community key of notifications:userId hash
         await redis.hdel(`notifications:${user.userId}`, `${communityId}`);
 
-        console.log(userNotifications[0].notifications.length);
-
         // Return user's notifications to client
         return userNotifications[0].notifications;
       } catch (err) {

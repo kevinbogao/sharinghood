@@ -18,6 +18,7 @@ const FORGOT_PASSWORD = gql`
 `;
 
 function ForgotPassword({ location }) {
+  const { from } = location.state || { from: { pathname: '/' } };
   const [email, setEmail] = useState('');
   const [error, setError] = useState({});
   const [isSuccess, setIsSuccess] = useState(false);
@@ -50,7 +51,7 @@ function ForgotPassword({ location }) {
   }
 
   return accessToken ? (
-    <Redirect to={location.state} />
+    <Redirect to={from} />
   ) : (
     <div className="forgot-password-control">
       {isSuccess ? (

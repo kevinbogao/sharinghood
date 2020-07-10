@@ -38,43 +38,42 @@ function Dashboard({ location, history }) {
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { loading, error, data } = useQuery(GET_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
-    // onCompleted: (data) => {
-    //   console.log(data);
-    // },
     onError: ({ message }) => {
       console.log(message);
     },
   });
 
-  return loading ? (
+  return !tokenPayload.isAdmin ? (
+    <Redirect to={from} />
+  ) : loading ? (
     <Loading />
   ) : error ? (
     `Error ${error.message}`
-  ) : !tokenPayload.isAdmin ? (
-    <Redirect to={from} />
   ) : (
     <div className="dashboard-control">
       <div className="dashboard-overview">
-        <div className="dashboard-overview-highlight">
-          <h1>{data.totalActivities.totalCommunities}</h1>
-          <h3>Total Communities</h3>
-        </div>
-        <div className="dashboard-overview-stats">
-          <div className="stat-unclickable">
-            <h2>{data.totalActivities.totalUsers}</h2>
-            <h4>Total Users</h4>
+        <div className="dashboard-header">
+          <div className="dashboard-overview-highlight">
+            <h1>{data.totalActivities.totalCommunities}</h1>
+            <h3>Total Communities</h3>
           </div>
-          <div className="stat-unclickable">
-            <h2>{data.totalActivities.totalPosts}</h2>
-            <h4>Total Posts</h4>
-          </div>
-          <div className="stat-unclickable">
-            <h2>{data.totalActivities.totalRequests}</h2>
-            <h4>Total Requests</h4>
-          </div>
-          <div className="stat-unclickable">
-            <h2>{data.totalActivities.totalBookings}</h2>
-            <h4>Total Bookings</h4>
+          <div className="dashboard-overview-stats">
+            <div className="stat-unclickable">
+              <h2>{data.totalActivities.totalUsers}</h2>
+              <h4>Total Users</h4>
+            </div>
+            <div className="stat-unclickable">
+              <h2>{data.totalActivities.totalPosts}</h2>
+              <h4>Total Posts</h4>
+            </div>
+            <div className="stat-unclickable">
+              <h2>{data.totalActivities.totalRequests}</h2>
+              <h4>Total Requests</h4>
+            </div>
+            <div className="stat-unclickable">
+              <h2>{data.totalActivities.totalBookings}</h2>
+              <h4>Total Bookings</h4>
+            </div>
           </div>
         </div>
       </div>
@@ -117,12 +116,8 @@ function Dashboard({ location, history }) {
           @import './src/assets/scss/index.scss';
 
           .dashboard-control {
-            display: block;
-            position: relative;
-            max-width: $xl-max-width;
-            width: 90%;
-            margin: 10px auto;
-            box-shadow: 0px 0px 10px $grey-200;
+            margin: 0 auto auto auto;
+            width: 100vw;
 
             h1,
             h2,
@@ -130,36 +125,62 @@ function Dashboard({ location, history }) {
             h4 {
               margin: 2px;
               font-weight: bold;
+              letter-spacing: 1px;
             }
 
             .dashboard-overview {
-              width: 100%;
-              text-align: center;
               margin: 0 auto;
-              border-bottom-style: solid;
-              border-bottom-width: 1px;
-              background-color: $orange;
-              color: $white;
+              text-align: center;
+              color: $background;
+
+              .dashboard-header {
+                width: 100vw;
+                background: $orange;
+              }
 
               .dashboard-overview-highlight {
                 padding: 10px 0px;
+                margin: auto;
+                width: $xl-max-width;
 
-                h4 {
-                  letter-spacing: 1px;
+                @include lg {
+                  width: 90vw;
+                }
+
+                @include sm {
+                  width: 100vw;
                 }
               }
 
               .dashboard-overview-stats {
-                width: 100%;
+                margin: auto;
                 display: flex;
                 flex-wrap: wrap;
                 justify-content: space-around;
                 align-items: center;
+                width: $xl-max-width;
+
+                @include lg {
+                  width: 90vw;
+                }
+
+                @include sm {
+                  width: 100vw;
+                }
               }
             }
 
             table {
-              width: 100%;
+              width: $xl-max-width;
+
+              @include lg {
+                width: 90vw;
+              }
+
+              @include sm {
+                width: 100vw;
+              }
+
               text-align: center;
               margin: 0px auto;
               border-collapse: collapse;

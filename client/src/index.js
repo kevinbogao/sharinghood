@@ -14,8 +14,8 @@ import { WebSocketLink } from '@apollo/link-ws';
 import { setContext } from 'apollo-link-context';
 import { TokenRefreshLink } from 'apollo-link-token-refresh';
 import jwtDecode from 'jwt-decode';
-import App from './App';
 import TagManager from 'react-gtm-module';
+import App from './App';
 import * as serviceWorker from './serviceWorker';
 
 // Dotenv config
@@ -26,11 +26,11 @@ const TAG_MANAGER_ARGS = {
   gtmId: process.env.REACT_APP_GTM_ID,
 };
 
-// Get accessToken from localStorage
-let accessToken = localStorage.getItem('@sharinghood:accessToken');
-
 // Init Google Tag Manager Module
 TagManager.initialize(TAG_MANAGER_ARGS);
+
+// Get accessToken from localStorage
+let accessToken = localStorage.getItem('@sharinghood:accessToken');
 
 // Create an http link
 const httpLink = new HttpLink({

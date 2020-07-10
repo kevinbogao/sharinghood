@@ -260,7 +260,7 @@ function App() {
 
           .switch-btn-separator {
             background: $grey-300;
-            width: 3px;
+            width: 2px;
           }
 
           .noti-btn {
@@ -311,7 +311,6 @@ function App() {
           }
 
           .base-control {
-            // margin-top: 4px;
             margin-top: 3px;
             flex: 1 1 0%;
             display: flex;

@@ -253,8 +253,6 @@ const usersResolvers = {
           await redis.get(`reset_key:${email}`),
         ]);
 
-        console.log(existingResetKey);
-
         // Throw error if user is not found
         if (!user) throw new Error('email: User not found');
 
@@ -304,16 +302,13 @@ const usersResolvers = {
         ]);
 
         // Update user's password & migration status
-        const user = await User.findOneAndUpdate(
-          { _id: userId },
-          {
-            password: hashedPassword,
-            isMigrated: true,
-          }
-        );
+        const user = await User.findById(userId);
+        user.password = hashedPassword;
+        user.isMigrated = true;
 
-        // Delete reset_password key & reset_key in redis cache
+        // Save user && delete reset_password key & reset_key in redis cache
         await Promise.all([
+          user.save(),
           redis.del(`reset_password:${resetKey}`),
           redis.del(`reset_key:${user.email}`),
         ]);

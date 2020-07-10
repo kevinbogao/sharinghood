@@ -78,6 +78,7 @@ const USER_KEYS = ['creator', 'booker'];
 const ID_SET = new Set(ID_KEYS);
 const DATE_SET = new Set(DATE_KEYS);
 const USER_SET = new Set(USER_KEYS);
+const BOOKING_STATUS = ['Pending', 'Accepted', 'Denied'];
 const FORMATED_KEYS = {
   _id: 'ID',
   post: 'Post ID',
@@ -110,6 +111,9 @@ function DashboardDetails({ location, match }) {
     variables: { communityId: match.params.id },
     onError: ({ message }) => {
       console.log(message);
+    },
+    onCompleted: (data) => {
+      console.log(data);
     },
   });
 
@@ -221,6 +225,8 @@ function DashboardDetails({ location, match }) {
                       />
                     ) : key === '_id' ? (
                       `...${stat[key].slice(19)}`
+                    ) : key === 'status' ? (
+                      BOOKING_STATUS[stat[key]]
                     ) : ID_SET.has(key) ? (
                       `...${stat[key]._id.slice(19)}`
                     ) : DATE_SET.has(key) ? (
@@ -387,7 +393,7 @@ function DashboardDetails({ location, match }) {
               }
 
               .item-img {
-                margin: 2px;
+                margin: 2px auto;
                 width: 40px;
                 height: 40px;
                 background-size: cover;

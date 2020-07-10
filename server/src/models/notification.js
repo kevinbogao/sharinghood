@@ -59,4 +59,7 @@ notificationSchema.index({ community: 1 });
 // Secondary index for booking
 notificationSchema.index({ booking: 1 });
 
+// Secondary index for post
+notificationSchema.index({ post: 1 });
+
 module.exports = model('Notification', notificationSchema);

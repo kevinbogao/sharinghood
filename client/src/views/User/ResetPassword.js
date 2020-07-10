@@ -6,14 +6,14 @@ import InlineError from '../../components/InlineError';
 import Loading from '../../components/Loading';
 
 const VALIDATE_RESET_LINK = gql`
-  query ValidateResetLink($userIdKey: String!) {
-    validateResetLink(userIdKey: $userIdKey)
+  query ValidateResetLink($resetKey: String!) {
+    validateResetLink(resetKey: $resetKey)
   }
 `;
 
 const RESET_PASSWORD = gql`
-  mutation ResetPassword($userIdKey: String!, $password: String!) {
-    resetPassword(userIdKey: $userIdKey, password: $password)
+  mutation ResetPassword($resetKey: String!, $password: String!) {
+    resetPassword(resetKey: $resetKey, password: $password)
   }
 `;
 
@@ -22,7 +22,7 @@ function ResetPassword({ match }) {
   const [formError, setFormError] = useState({});
   const [success, setSuccess] = useState(false);
   const { loading, error, data } = useQuery(VALIDATE_RESET_LINK, {
-    variables: { userIdKey: match.params.id },
+    variables: { resetKey: match.params.resetKey },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -84,7 +84,7 @@ function ResetPassword({ match }) {
                     if (Object.keys(errors).length === 0) {
                       resetPassword({
                         variables: {
-                          userIdKey: match.params.id,
+                          resetKey: match.params.resetKey,
                           password: password.value,
                         },
                       });
@@ -149,7 +149,7 @@ function ResetPassword({ match }) {
 ResetPassword.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
-      id: PropTypes.string.isRequired,
+      resetKey: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
 };

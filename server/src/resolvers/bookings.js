@@ -1,5 +1,6 @@
 const { AuthenticationError } = require('apollo-server');
 const User = require('../models/user');
+const Post = require('../models/post');
 const Booking = require('../models/booking');
 const updateBookingMail = require('../utils/sendMail/updateBookingMail');
 
@@ -16,8 +17,15 @@ const bookingsResolvers = {
         // Find booking and recipient by id
         const [booking, recipient] = await Promise.all([
           Booking.findById(bookingId),
-          User.findById(notifyRecipientId),
+          User.findById(notifyRecipientId).lean(),
         ]);
+
+        // Get post & check if current user is post creator
+        // && throw error if not
+        const post = await Post.findById(booking.post).lean();
+        if (!post.creator.equals(user.userId)) {
+          throw new Error('Anauthorised user');
+        }
 
         // Update booking status
         booking.status = status;

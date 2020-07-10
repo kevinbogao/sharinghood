@@ -36,6 +36,9 @@ function UserPosts({ posts, history }) {
         setIsModalOpen(false);
         setSelPost(null);
       },
+      onError: ({ message }) => {
+        console.log(message);
+      },
     },
   );
 
@@ -93,12 +96,12 @@ function UserPosts({ posts, history }) {
           setSelPost(null);
         }}
       >
-        <p className="modal-p">
+        <p className="main-p">
           Are you sure you want remove this post from all communities?
         </p>
         <button
           type="submit"
-          className="modal-btn"
+          className="main-btn modal"
           onClick={(e) => {
             e.preventDefault();
             inactivatePost({
@@ -110,7 +113,7 @@ function UserPosts({ posts, history }) {
         </button>
         <button
           type="button"
-          className="modal-btn"
+          className="main-btn modal grey"
           onClick={() => {
             setIsModalOpen(false);
             setSelPost(null);

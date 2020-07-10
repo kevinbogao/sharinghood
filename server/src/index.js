@@ -58,6 +58,7 @@ const server = new ApolloServer({
       useNewUrlParser: true,
       useUnifiedTopology: true,
       useCreateIndex: true,
+      useFindAndModify: false,
       sslValidate: false,
     });
     // Server listener

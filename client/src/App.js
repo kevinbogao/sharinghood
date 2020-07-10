@@ -40,7 +40,11 @@ function App() {
           path="/community/:communityCode"
           component={CommunityInvite}
         />
-        <Route exact path="/reset-password/:id" component={ResetPassword} />
+        <Route
+          exact
+          path="/reset-password/:resetKey"
+          component={ResetPassword}
+        />
         <Route exact path="/forgot-password" component={ForgotPassword} />
         <Switch>
           <Route path="/login" component={Login} />
@@ -191,6 +195,10 @@ function App() {
               padding: 8px 15px;
             }
 
+            &.bottom {
+              margin-bottom: 40px;
+            }
+
             &.grey {
               background: $grey-300;
             }
@@ -252,7 +260,7 @@ function App() {
 
           .switch-btn-separator {
             background: $grey-300;
-            width: 3px;
+            width: 2px;
           }
 
           .noti-btn {
@@ -303,7 +311,6 @@ function App() {
           }
 
           .base-control {
-            // margin-top: 4px;
             margin-top: 3px;
             flex: 1 1 0%;
             display: flex;

@@ -40,7 +40,11 @@ function App() {
           path="/community/:communityCode"
           component={CommunityInvite}
         />
-        <Route exact path="/reset-password/:id" component={ResetPassword} />
+        <Route
+          exact
+          path="/reset-password/:resetKey"
+          component={ResetPassword}
+        />
         <Route exact path="/forgot-password" component={ForgotPassword} />
         <Switch>
           <Route path="/login" component={Login} />
@@ -189,6 +193,10 @@ function App() {
               display: block;
               margin: 20px auto 20px auto;
               padding: 8px 15px;
+            }
+
+            &.bottom {
+              margin-bottom: 40px;
             }
 
             &.grey {

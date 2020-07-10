@@ -40,6 +40,7 @@ const GET_POST = gql`
         _id
       }
     }
+    tokenPayload @client
   }
 `;
 
@@ -80,7 +81,12 @@ function EditPost({ history, match }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { loading, error, data } = useQuery(GET_POST, {
     variables: { postId: match.params.id },
-    onCompleted: ({ communities }) => {
+    onCompleted: ({ post, communities, tokenPayload }) => {
+      // Redirect user back to post details page if user is not post creator
+      if (post.creator._id !== tokenPayload.userId) {
+        history.replace(`/shared/${post._id}`);
+      }
+
       // Look through all user's communities and check if
       // the post exists in posts arrays
       const communityArr = [];
@@ -284,7 +290,7 @@ function EditPost({ history, match }) {
           Save
         </button>
         <button
-          className="main-btn block grey"
+          className="main-btn block grey bottom"
           type="button"
           onClick={() => setIsDeleteModalOpen(true)}
         >
@@ -440,6 +446,7 @@ EditPost.propTypes = {
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
+    replace: PropTypes.func.isRequired,
   }).isRequired,
 };
 

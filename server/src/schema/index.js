@@ -208,7 +208,7 @@ const typeDefs = gql`
   type Query {
     # User
     user(userId: ID): User!
-    validateResetLink(userIdKey: String!): Boolean!
+    validateResetLink(resetKey: String!): Boolean!
 
     # Community
     community(communityId: ID, communityCode: String): Community
@@ -238,8 +238,8 @@ const typeDefs = gql`
     login(email: String!, password: String!): Auth!
     updateUser(userInput: UserInput): User
     tokenRefresh(token: String!): Auth
-    forgotPassword(email: String, accessKey: String): String
-    resetPassword(userIdKey: String!, password: String!): Boolean
+    forgotPassword(email: String!): Boolean!
+    resetPassword(resetKey: String!, password: String!): Boolean
 
     # User & Community
     registerAndOrCreateCommunity(

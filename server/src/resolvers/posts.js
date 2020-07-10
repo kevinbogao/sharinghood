@@ -182,6 +182,11 @@ const postsResolvers = {
         // Find post by id
         const post = await Post.findById(postId);
 
+        // Throw error if user is not creator
+        if (!post._doc.creator.equals(user.userId)) {
+          throw new Error('Anauthorised user');
+        }
+
         // Upload image if it exists
         let imgData;
         if (image) imgData = await uploadImg(image);
@@ -204,13 +209,22 @@ const postsResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        const userInfo = await User.findById(user.userId);
+        // Get user & post
+        const [currentUser, post] = await Promise.all([
+          User.findById(user.userId).lean(),
+          Post.findById(postId).lean(),
+        ]);
+
+        // Throw error if user is not post creator
+        if (!post.creator.equals(currentUser._id)) {
+          throw new Error('Anauthorised user');
+        }
 
         // Find user's communities and remove post from
         // all communities' posts array
         await Community.updateMany(
           {
-            _id: { $in: userInfo.communities },
+            _id: { $in: currentUser.communities },
           },
           {
             $pull: { posts: postId },

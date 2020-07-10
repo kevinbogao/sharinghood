@@ -105,7 +105,13 @@ const notificationsResolvers = {
               from: 'notifications',
               let: { notifications: '$notifications' },
               pipeline: [
-                { $match: { $expr: { $in: ['$_id', '$$notifications'] } } },
+                {
+                  $match: {
+                    // Filter notification by community id
+                    community: mongoose.Types.ObjectId(communityId),
+                    $expr: { $in: ['$_id', '$$notifications'] },
+                  },
+                },
                 {
                   $lookup: {
                     from: 'bookings',
@@ -120,7 +126,6 @@ const notificationsResolvers = {
                           as: 'post',
                         },
                       },
-                      // { $unwind: '$post' },
                       {
                         $unwind: {
                           path: '$post',
@@ -214,6 +219,8 @@ const notificationsResolvers = {
 
         // Delete community key of notifications:userId hash
         await redis.hdel(`notifications:${user.userId}`, `${communityId}`);
+
+        console.log(userNotifications[0].notifications.length);
 
         // Return user's notifications to client
         return userNotifications[0].notifications;

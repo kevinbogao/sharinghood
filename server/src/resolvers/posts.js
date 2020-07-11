@@ -182,6 +182,11 @@ const postsResolvers = {
         // Find post by id
         const post = await Post.findById(postId);
 
+        // Throw error if user is not creator
+        if (!post._doc.creator.equals(user.userId)) {
+          throw new Error('Anauthorised user');
+        }
+
         // Upload image if it exists
         let imgData;
         if (image) imgData = await uploadImg(image);
@@ -204,13 +209,22 @@ const postsResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        const userInfo = await User.findById(user.userId);
+        // Get user & post
+        const [currentUser, post] = await Promise.all([
+          User.findById(user.userId).lean(),
+          Post.findById(postId).lean(),
+        ]);
+
+        // Throw error if user is not post creator
+        if (!post.creator.equals(currentUser._id)) {
+          throw new Error('Anauthorised user');
+        }
 
         // Find user's communities and remove post from
         // all communities' posts array
         await Community.updateMany(
           {
-            _id: { $in: userInfo.communities },
+            _id: { $in: currentUser.communities },
           },
           {
             $pull: { posts: postId },
@@ -227,27 +241,34 @@ const postsResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Find post & creator
-        const [post, creator] = await Promise.all([
+        // Find post & currentUser
+        const [post, currentUser] = await Promise.all([
           Post.findById(postId),
           User.findById(user.userId),
         ]);
 
+        // Throw error if user is not post creator
+        if (!post.creator.equals(user.userId)) {
+          throw new Error('Anauthorised user');
+        }
+
         // Save thread ids array
         const { threads, bookings } = post;
 
-        // Delete post, postId from community && delete post threads
-        // bookings & notifications
+        // Delete post, postId from community && delete post threads,
+        // delete bookings & post notifications
         await Promise.all([
           post.remove(),
           Community.updateMany(
-            { _id: { $in: creator.communities } },
+            { _id: { $in: currentUser.communities } },
             { $pull: { posts: postId } }
           ),
           User.updateOne({ _id: user.userId }, { $pull: { posts: postId } }),
           Thread.deleteMany({ _id: threads }),
           Booking.deleteMany({ _id: bookings }),
-          Notification.deleteMany({ booking: { $in: bookings } }),
+          Notification.deleteMany({
+            $or: [{ booking: { $in: bookings } }, { post: postId }],
+          }),
         ]);
 
         return post;
@@ -256,11 +277,23 @@ const postsResolvers = {
         throw err;
       }
     },
-    addPostToCommunity: async (_, { postId, communityId }) => {
+    addPostToCommunity: async (_, { postId, communityId }, { user }) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
       try {
         // Get community by id and add post if to the community's
         // posts array; return community
-        const community = await Community.findById(communityId);
+        const [community, post] = await Promise.all([
+          Community.findById(communityId),
+          Post.findById(postId),
+        ]);
+
+        // Throw error if user is not post creator
+        if (!post.creator.equals(user.userId)) {
+          throw new Error('Anauthorised user');
+        }
+
+        // Add post to community & save community
         community.posts.push(postId);
         await community.save();
 

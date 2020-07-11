@@ -12,8 +12,8 @@ const GET_ACCESS_TOKEN = gql`
 `;
 
 const FORGOT_PASSWORD = gql`
-  mutation ForgotPassword($email: String, $accessKey: String) {
-    forgotPassword(email: $email, accessKey: $accessKey)
+  mutation ForgotPassword($email: String!) {
+    forgotPassword(email: $email)
   }
 `;
 
@@ -21,8 +21,8 @@ function ForgotPassword({ location }) {
   const { from } = location.state || { from: { pathname: '/' } };
   const [email, setEmail] = useState('');
   const [error, setError] = useState({});
-  const [accessKey, setAccessKey] = useState(null);
-  const [isResent, setIsResent] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isReSend, setIsReSend] = useState(false);
   const {
     data: { accessToken },
   } = useQuery(GET_ACCESS_TOKEN);
@@ -31,10 +31,14 @@ function ForgotPassword({ location }) {
     {
       onCompleted: ({ forgotPassword }) => {
         // Set success if true is returned
-        if (forgotPassword) setAccessKey(forgotPassword);
+        if (forgotPassword) setIsSuccess(true);
       },
       onError: ({ message }) => {
-        setError({ email: message });
+        const errMsgArr = message.split(': ');
+        const errMsgArrLen = errMsgArr.length;
+        setError({
+          [errMsgArr[errMsgArrLen - 2]]: errMsgArr[errMsgArrLen - 1],
+        });
       },
     },
   );
@@ -50,13 +54,13 @@ function ForgotPassword({ location }) {
     <Redirect to={from} />
   ) : (
     <div className="forgot-password-control">
-      {accessKey ? (
+      {isSuccess ? (
         <>
           <p className="main-p">Reset password instructions have been sent.</p>
           <p className="main-p">
             Please check your email to recover your account.
           </p>
-          {!isResent && (
+          {!isReSend && (
             <button
               className="main-btn block"
               type="submit"
@@ -65,12 +69,12 @@ function ForgotPassword({ location }) {
                 const errors = validate();
                 if (Object.keys(errors).length === 0) {
                   forgotPassword({
-                    variables: { email, accessKey },
+                    variables: { email },
                   });
                   // Stop render resend button for 5 sec, and re-render again
-                  setIsResent(true);
+                  setIsReSend(true);
                   setTimeout(() => {
-                    setIsResent(false);
+                    setIsReSend(false);
                   }, 5000);
                 }
               }}

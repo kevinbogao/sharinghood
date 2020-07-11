@@ -15,7 +15,7 @@ const GET_USER_COMMUNITIES = gql`
 `;
 
 const GET_NOTIFICATIONS = gql`
-  query GetNotifications($communityId: ID) {
+  query GetNotifications($communityId: ID!) {
     notifications(communityId: $communityId) {
       _id
       ofType
@@ -129,253 +129,246 @@ function Notifications({ history, communityId }) {
     <div className="notifications-control">
       {data.notifications.length ? (
         <>
-          {data.notifications
-            .filter(
-              (notification) => notification.community._id === communityId,
-            )
-            .map((notification) => (
-              <div
-                key={notification._id}
-                className="notification-item"
-                role="presentation"
-                onClick={() => {
-                  history.push(`/notification/${notification._id}`);
-                }}
-              >
-                {notification.ofType === 0 ? (
-                  <>
-                    <div className="left-img">
-                      <div
-                        className={`noti-img-border ${
-                          notification.isRead[data.tokenPayload.userId]
-                            ? undefined
-                            : 'unread'
-                        }
+          {data.notifications.map((notification) => (
+            <div
+              key={notification._id}
+              className="notification-item"
+              role="presentation"
+              onClick={() => {
+                history.push(`/notification/${notification._id}`);
+              }}
+            >
+              {notification.ofType === 0 ? (
+                <>
+                  <div className="left-img">
+                    <div
+                      className={`noti-img-border ${
+                        notification.isRead[data.tokenPayload.userId]
+                          ? undefined
+                          : 'unread'
+                      }
                       `}
-                      >
-                        <div
-                          className="noti-img"
-                          style={{
-                            backgroundImage: `url(${
-                              JSON.parse(notification.participants[0].image)
-                                .secure_url
-                            })`,
-                          }}
-                        />
-                      </div>
+                    >
+                      <div
+                        className="noti-img"
+                        style={{
+                          backgroundImage: `url(${
+                            JSON.parse(notification.participants[0].image)
+                              .secure_url
+                          })`,
+                        }}
+                      />
                     </div>
-                    <div className="message-info">
-                      <div className="message-user">
-                        <p className="title name">
-                          {notification.participants[0].name}
+                  </div>
+                  <div className="message-info">
+                    <div className="message-user">
+                      <p className="title name">
+                        {notification.participants[0].name}
+                      </p>
+                    </div>
+                    <div className="message-text">
+                      {notification.messages.length > 0 ? (
+                        <p className="text">
+                          {
+                            notification.messages[
+                              notification.messages.length - 1
+                            ].text
+                          }
                         </p>
-                      </div>
-                      <div className="message-text">
-                        {notification.messages.length > 0 ? (
-                          <p className="text">
-                            {
-                              notification.messages[
-                                notification.messages.length - 1
-                              ].text
-                            }
-                          </p>
-                        ) : (
-                          <p className="text">
-                            Send a message to{' '}
-                            {notification.participants[0].name} now
-                          </p>
-                        )}
-                      </div>
+                      ) : (
+                        <p className="text">
+                          Send a message to {notification.participants[0].name}{' '}
+                          now
+                        </p>
+                      )}
                     </div>
-                  </>
-                ) : notification.ofType === 1 ? (
-                  <>
-                    <div className="left-img">
-                      <div
-                        className={`noti-img-border ${
-                          notification.isRead[data.tokenPayload.userId]
-                            ? undefined
-                            : 'unread'
-                        }
+                  </div>
+                </>
+              ) : notification.ofType === 1 ? (
+                <>
+                  <div className="left-img">
+                    <div
+                      className={`noti-img-border ${
+                        notification.isRead[data.tokenPayload.userId]
+                          ? undefined
+                          : 'unread'
+                      }
                   `}
-                      >
-                        <div
-                          className="noti-img"
-                          style={{
-                            backgroundImage: `url(${
-                              JSON.parse(notification.booking.post.image)
-                                .secure_url
-                            })`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="item-info">
-                      <div className="item-status">
-                        {notification.booking.booker._id ===
-                        data.tokenPayload.userId ? (
-                          <p className="title">
-                            You requested {notification.participants[0].name}
-                            &apos;s {notification.booking.post.title}
-                          </p>
-                        ) : (
-                          <p className="title">
-                            {notification.participants[0].name} requested your{' '}
-                            {notification.booking.post.title}
-                          </p>
-                        )}
-                        {notification.booking.dateType === 0 ? (
-                          <span>As soon as possible</span>
-                        ) : notification.booking.dateType === 1 ? (
-                          <span>No timeframe</span>
-                        ) : (
-                          <span>
-                            {moment(+notification.booking.dateNeed).format(
-                              'DD.MM.Y',
-                            )}{' '}
-                            -{' '}
-                            {moment(+notification.booking.dateReturn).format(
-                              'DD.MM.Y',
-                            )}
-                          </span>
-                        )}
-                      </div>
-                      <div className="item-btns">
-                        {notification.booking.booker._id ===
-                        data.tokenPayload.userId ? (
-                          <>
-                            {notification.booking.status === 0 ? (
-                              <button
-                                type="button"
-                                className="noti-btn status pending"
-                              >
-                                Pending
-                              </button>
-                            ) : notification.booking.status === 1 ? (
-                              <button
-                                type="button"
-                                className="noti-btn status accept"
-                              >
-                                Accepted
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                className="noti-btn status deny"
-                              >
-                                Denied
-                              </button>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            {notification.booking.status === 0 ? (
-                              <>
-                                <button
-                                  type="button"
-                                  className="noti-btn accept"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    updateBooking({
-                                      variables: {
-                                        bookingId: notification.booking._id,
-                                        bookingInput: {
-                                          status: 1,
-                                          notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${notification.booking.post.title}`,
-                                          notifyRecipientId:
-                                            notification.booking.booker._id,
-                                        },
-                                      },
-                                    });
-                                  }}
-                                >
-                                  Accept
-                                </button>
-                                <button
-                                  type="button"
-                                  className="noti-btn deny"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    updateBooking({
-                                      variables: {
-                                        bookingId: notification.booking._id,
-                                        bookingInput: {
-                                          status: 2,
-                                          notifyContent: `${data.tokenPayload.userName} has denied your booking on ${notification.booking.post.title}`,
-                                          notifyRecipientId:
-                                            notification.booking.booker._id,
-                                        },
-                                      },
-                                    });
-                                  }}
-                                >
-                                  Deny
-                                </button>
-                              </>
-                            ) : notification.booking.status === 1 ? (
-                              <button
-                                type="button"
-                                className="noti-btn status accept"
-                              >
-                                Accepted
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                className="noti-btn status deny"
-                              >
-                                Denied
-                              </button>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="left-img">
+                    >
                       <div
-                        className={`noti-img-border ${
-                          notification.isRead[data.tokenPayload.userId]
-                            ? undefined
-                            : 'unread'
-                        }
-                  `}
-                      >
-                        <div
-                          className="noti-img"
-                          style={{
-                            backgroundImage: `url(${
-                              JSON.parse(notification.participants[0].image)
-                                .secure_url
-                            })`,
-                          }}
-                        />
-                      </div>
+                        className="noti-img"
+                        style={{
+                          backgroundImage: `url(${
+                            JSON.parse(notification.booking.post.image)
+                              .secure_url
+                          })`,
+                        }}
+                      />
                     </div>
-                    <div className="item-info">
-                      <div className="item-status">
+                  </div>
+                  <div className="item-info">
+                    <div className="item-status">
+                      {notification.booking.booker._id ===
+                      data.tokenPayload.userId ? (
                         <p className="title">
-                          {notification.post.creator.name} uploaded a item for
-                          your request!
+                          You requested {notification.participants[0].name}
+                          &apos;s {notification.booking.post.title}
                         </p>
-                      </div>
-                      <div className="item-btns">
-                        <button
-                          type="button"
-                          className="noti-btn status request"
-                        >
-                          Request now
-                        </button>
-                      </div>
+                      ) : (
+                        <p className="title">
+                          {notification.participants[0].name} requested your{' '}
+                          {notification.booking.post.title}
+                        </p>
+                      )}
+                      {notification.booking.dateType === 0 ? (
+                        <span>As soon as possible</span>
+                      ) : notification.booking.dateType === 1 ? (
+                        <span>No timeframe</span>
+                      ) : (
+                        <span>
+                          {moment(+notification.booking.dateNeed).format(
+                            'DD.MM.Y',
+                          )}{' '}
+                          -{' '}
+                          {moment(+notification.booking.dateReturn).format(
+                            'DD.MM.Y',
+                          )}
+                        </span>
+                      )}
                     </div>
-                  </>
-                )}
-              </div>
-            ))}
+                    <div className="item-btns">
+                      {notification.booking.booker._id ===
+                      data.tokenPayload.userId ? (
+                        <>
+                          {notification.booking.status === 0 ? (
+                            <button
+                              type="button"
+                              className="noti-btn status pending"
+                            >
+                              Pending
+                            </button>
+                          ) : notification.booking.status === 1 ? (
+                            <button
+                              type="button"
+                              className="noti-btn status accept"
+                            >
+                              Accepted
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="noti-btn status deny"
+                            >
+                              Denied
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {notification.booking.status === 0 ? (
+                            <>
+                              <button
+                                type="button"
+                                className="noti-btn accept"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  updateBooking({
+                                    variables: {
+                                      bookingId: notification.booking._id,
+                                      bookingInput: {
+                                        status: 1,
+                                        notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${notification.booking.post.title}`,
+                                        notifyRecipientId:
+                                          notification.booking.booker._id,
+                                      },
+                                    },
+                                  });
+                                }}
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                className="noti-btn deny"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  updateBooking({
+                                    variables: {
+                                      bookingId: notification.booking._id,
+                                      bookingInput: {
+                                        status: 2,
+                                        notifyContent: `${data.tokenPayload.userName} has denied your booking on ${notification.booking.post.title}`,
+                                        notifyRecipientId:
+                                          notification.booking.booker._id,
+                                      },
+                                    },
+                                  });
+                                }}
+                              >
+                                Deny
+                              </button>
+                            </>
+                          ) : notification.booking.status === 1 ? (
+                            <button
+                              type="button"
+                              className="noti-btn status accept"
+                            >
+                              Accepted
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="noti-btn status deny"
+                            >
+                              Denied
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="left-img">
+                    <div
+                      className={`noti-img-border ${
+                        notification.isRead[data.tokenPayload.userId]
+                          ? undefined
+                          : 'unread'
+                      }
+                  `}
+                    >
+                      <div
+                        className="noti-img"
+                        style={{
+                          backgroundImage: `url(${
+                            JSON.parse(notification.participants[0].image)
+                              .secure_url
+                          })`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="item-info">
+                    <div className="item-status">
+                      <p className="title">
+                        {notification.post.creator.name} uploaded a item for
+                        your request!
+                      </p>
+                    </div>
+                    <div className="item-btns">
+                      <button type="button" className="noti-btn status request">
+                        Request now
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
         </>
       ) : (
         <p className="main-p full">You do not have any notifications yet</p>

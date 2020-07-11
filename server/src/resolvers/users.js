@@ -1,5 +1,5 @@
 const { AuthenticationError } = require('apollo-server');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const bcryptjs = require('bcryptjs');
 const mongoose = require('mongoose');
 const User = require('../models/user');
@@ -36,13 +36,14 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
-    validateResetLink: async (_, { userIdKey }, { redis }) => {
+    validateResetLink: async (_, { resetKey }, { redis }) => {
       try {
         // Check if key is still valid
-        const userId = await redis.get(userIdKey);
+        const userId = await redis.get(`reset_password:${resetKey}`);
+
+        // Return true if user id id found, else return false
         if (userId) return true;
         return false;
-        // return userId ? true : false;
       } catch (err) {
         console.log(err);
         throw new Error(err);
@@ -218,28 +219,6 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
-    // joinCommunity: async (_, { communityId }, { user }) => {
-    //   if (!user) throw new AuthenticationError('Not Authenticated');
-
-    //   try {
-    //     // Get current user & community
-    //     const [currentUser, community] = await Promise.all([
-    //       await User.findById(user.userId),
-    //       await Community.findById(communityId),
-    //     ]);
-
-    //     // Save user to community members and save community to
-    //     // user communities
-    //     currentUser.communities.push(communityId);
-    //     community.members.push(user.userId);
-    //     await Promise.all([currentUser.save(), community.save()]);
-
-    //     return community;
-    //   } catch (err) {
-    //     console.log(err);
-    //     throw new Error(err);
-    //   }
-    // },
     tokenRefresh: async (_, { token }) => {
       try {
         // Validate token & get userId if token is valid
@@ -266,68 +245,72 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
-    forgotPassword: async (_, { email, accessKey }, { redis }) => {
+    forgotPassword: async (_, { email }, { redis }) => {
       try {
-        // When accessKey is not entered as an argument, i.e. when
-        // user is not in the resent page
-        if (!accessKey) {
-          const user = await User.findOne({ email }).lean();
-          if (!user) throw new AuthenticationError('Cannot find email');
+        // Find user by email & check if reset_key exists
+        const [user, existingResetKey] = await Promise.all([
+          await User.findOne({ email }).lean(),
+          await redis.get(`reset_key:${email}`),
+        ]);
 
-          // Generate uuid key for userId and key for the generated uuidKey
-          const userIdKey = uuidv4();
-          const uuidKey = uuidv4();
+        // Throw error if user is not found
+        if (!user) throw new Error('email: User not found');
 
-          // Save userIdKey & uuidKey in redis cache && send email to user
+        // Create and send reset password link to email if existing resetkey is not found
+        if (!existingResetKey) {
+          // Generate random reset key
+          const resetKey = crypto.randomBytes(16).toString('hex');
+
+          // Save reset_password key & reset_key in redis cache && send reset link to user
           await Promise.all([
-            redis.set(userIdKey, user._id, 'ex', 60 * 60 * 48),
-            redis.set(uuidKey, userIdKey, 'ex', 60 * 60 * 48),
+            redis.set(
+              `reset_password:${resetKey}`,
+              user._id,
+              'ex',
+              60 * 60 * 24
+            ),
+            redis.set(`reset_key:${email}`, resetKey, 'ex', 60 * 60 * 2),
             sendMail(
               user.email,
               'Reset your Sharinghood password',
-              `${process.env.ORIGIN}/reset-password/${userIdKey}`
+              `${process.env.ORIGIN}/reset-password/${resetKey}`
             ),
           ]);
 
-          // Return uuidKey onSuccess
-          return uuidKey;
+          return true;
         }
 
-        // Else get userIdKey
-        const userIdKey = await redis.get(accessKey);
-
-        // Resend reset email
+        // Re-send reset link if existing resetkey is found
         await sendMail(
           email,
           'Reset your Sharinghood password',
-          `${process.env.ORIGIN}/reset-password/${userIdKey}`
+          `${process.env.ORIGIN}/reset-password/${existingResetKey}`
         );
 
-        // Return empty array for resend email
-        return '';
+        return true;
       } catch (err) {
         console.log(err);
         throw new Error(err);
       }
     },
-    resetPassword: async (_, { userIdKey, password }, { redis }) => {
+    resetPassword: async (_, { resetKey, password }, { redis }) => {
       try {
-        // Get userId via userIdKey from redis & hash user password
+        // Get userId via resetKey from redis & hash user password
         const [userId, hashedPassword] = await Promise.all([
-          redis.get(userIdKey),
+          redis.get(`reset_password:${resetKey}`),
           bcryptjs.hash(password, 12),
         ]);
 
-        // Update user's password & delete userIdKey
+        // Update user's password & migration status
+        const user = await User.findById(userId);
+        user.password = hashedPassword;
+        user.isMigrated = true;
+
+        // Save user && delete reset_password key & reset_key in redis cache
         await Promise.all([
-          User.findOneAndUpdate(
-            { _id: userId },
-            {
-              password: hashedPassword,
-              isMigrated: true,
-            }
-          ),
-          redis.del(userIdKey),
+          user.save(),
+          redis.del(`reset_password:${resetKey}`),
+          redis.del(`reset_key:${user.email}`),
         ]);
 
         return true;

@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useMutation } from '@apollo/client';
-import 'react-datepicker/dist/react-datepicker.css';
-import 'react-dates/initialize';
-import 'react-dates/lib/css/_datepicker.css';
-import DatePicker from 'react-datepicker';
-import { DateRangePicker } from 'react-dates';
 import moment from 'moment';
+import DatePicker from '../../components/DatePicker';
 import InlineError from '../../components/InlineError';
 import Loading from '../../components/Loading';
 import uploadImg from '../../assets/images/upload.png';
 import { GET_REQUESTS } from './Requests';
-
-// import Thing from './DatePicker';
 
 const CREATE_REQUEST = gql`
   mutation CreateRequest($requestInput: RequestInput!, $communityId: ID!) {
@@ -31,29 +25,23 @@ const CREATE_REQUEST = gql`
 
 function CreateRequest({ communityId, history }) {
   let title, desc;
-  const [isMobile, setIsMobile] = useState(false);
   const [image, setImage] = useState(null);
-  const [dateType, setDateType] = useState(0);
-  const [dateNeed, setDateNeed] = useState(new Date());
-
-  console.log(dateNeed);
-
-  const [dateReturn, setDateReturn] = useState(new Date());
   const [error, setError] = useState({});
-
-  const [startDate, setStartDate] = useState(moment());
-
-  console.log(new Date(startDate));
-
-  const [endDate, setEndDate] = useState(moment());
-  const [focusedInput, setFocusedInput] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [dateNeed, setDateNeed] = useState(moment());
+  const [dateReturn, setDateReturn] = useState(moment());
 
   // Set isMobile boolean value based on window width
   useEffect(() => {
+    // Set isMobile on init
+    setIsMobile(window.matchMedia('(max-width: 576px)').matches);
+
+    // Set isMobile on screen size
     function handleWindowResize() {
       setIsMobile(window.matchMedia('(max-width: 576px)').matches);
     }
 
+    // Event listener for screen resizing
     window.addEventListener('resize', handleWindowResize);
 
     // Return a function from the effect that removes the event listener
@@ -111,8 +99,8 @@ function CreateRequest({ communityId, history }) {
                   title: title.value,
                   desc: desc.value,
                   image,
-                  dateNeed,
-                  dateReturn,
+                  dateNeed: new Date(dateNeed),
+                  dateReturn: new Date(dateReturn),
                 },
                 communityId,
               },
@@ -152,44 +140,14 @@ function CreateRequest({ communityId, history }) {
         />
         {error.desc && <InlineError text={error.desc} />}
         {error.descExists && <InlineError text={error.descExists} />}
-        <p className="main-p">When do you need the item?</p>
-        <select
-          name="dateType"
-          className="main-select"
-          onChange={(e) => setDateType(+e.target.value)}
-        >
-          <option value="0">As soon as possible</option>
-          <option value="1">No timeframe</option>
-          <option value="2">Select timeframe</option>
-        </select>
+        <p className="main-p">Please select a timeframe</p>
         <DatePicker
-          className="main-input date"
-          selected={dateNeed}
-          onChange={(date) => setDateNeed(date)}
-          dateFormat="yyyy.MM.dd"
-          minDate={new Date()}
+          isMobile={isMobile}
+          dateNeed={dateNeed}
+          dateReturn={dateReturn}
+          setDateNeed={setDateNeed}
+          setDateReturn={setDateReturn}
         />
-        {dateType === 2 && (
-          <>
-            <p className="main-p">Please select a timeframe</p>
-            <DateRangePicker
-              startDate={startDate}
-              startDateId="your_unique_start_date_id"
-              endDate={endDate}
-              endDateId="your_unique_end_date_id"
-              onDatesChange={({ startDate, endDate }) => {
-                setStartDate(startDate);
-                setEndDate(endDate);
-              }}
-              focusedInput={focusedInput}
-              onFocusChange={(focusedInput) => setFocusedInput(focusedInput)}
-              orientation={isMobile ? 'vertical' : 'horizontal'}
-              withFullScreenPortal={!!isMobile}
-              displayFormat="yyyy.MM.DD"
-              hideKeyboardShortcutsPanel
-            />
-          </>
-        )}
         {error.res && <InlineError text={error.res} />}
         <button className="main-btn" type="submit">
           Request
@@ -239,64 +197,6 @@ function CreateRequest({ communityId, history }) {
               margin: 40px 0 30px 0;
               display: block;
             }
-          }
-        `}
-      </style>
-      <style jsx global>
-        {`
-          @import './src/assets/scss/index.scss';
-
-          .DateRangePicker {
-            display: block;
-            margin: 20px auto;
-          }
-
-          .DateInput {
-            width: 127px;
-            position: static;
-          }
-
-          .DateInput_input {
-            color: #a0998f;
-            font-size: 20px;
-            background: $grey-000;
-          }
-
-          .DateInput_input__focused {
-            border-bottom: 2px solid $orange;
-          }
-
-          .DateRangePickerInput__withBorder {
-            border: none;
-            background: $grey-000;
-          }
-
-          .DayPickerNavigation__verticalDefault {
-            display: flex;
-          }
-
-          .CalendarDay__selected_span {
-            background: $beige;
-            border: 1px double $beige-100;
-          }
-
-          .CalendarDay__selected,
-          .CalendarDay__selected:active,
-          .CalendarDay__selected:hover {
-            background: $orange;
-            border: 1px double $orange;
-          }
-
-          .CalendarDay__selected_span:hover {
-            background: $beige-100;
-            border: 1px double $beige-100;
-          }
-
-          .CalendarDay__hovered_span,
-          .CalendarDay__hovered_span:hover {
-            color: $black;
-            background: $beige;
-            border: 1px double $beige-100;
           }
         `}
       </style>

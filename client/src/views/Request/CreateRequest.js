@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useMutation } from '@apollo/client';
-import 'react-datepicker/dist/react-datepicker.css';
-import DatePicker from 'react-datepicker';
+import moment from 'moment';
+import DatePicker from '../../components/DatePicker';
 import InlineError from '../../components/InlineError';
 import Loading from '../../components/Loading';
 import uploadImg from '../../assets/images/upload.png';
@@ -26,9 +26,28 @@ const CREATE_REQUEST = gql`
 function CreateRequest({ communityId, history }) {
   let title, desc;
   const [image, setImage] = useState(null);
-  const [dateNeed, setDateNeed] = useState(new Date());
-  const [dateReturn, setDateReturn] = useState(new Date());
   const [error, setError] = useState({});
+  const [isMobile, setIsMobile] = useState(false);
+  const [dateNeed, setDateNeed] = useState(moment());
+  const [dateReturn, setDateReturn] = useState(moment());
+
+  // Set isMobile boolean value based on window width
+  useEffect(() => {
+    // Set isMobile on init
+    setIsMobile(window.matchMedia('(max-width: 576px)').matches);
+
+    // Set isMobile on screen size
+    function handleWindowResize() {
+      setIsMobile(window.matchMedia('(max-width: 576px)').matches);
+    }
+
+    // Event listener for screen resizing
+    window.addEventListener('resize', handleWindowResize);
+
+    // Return a function from the effect that removes the event listener
+    return () => window.removeEventListener('resize', handleWindowResize);
+  }, []);
+
   const [createRequest, { loading: mutationLoading }] = useMutation(
     CREATE_REQUEST,
     {
@@ -80,8 +99,8 @@ function CreateRequest({ communityId, history }) {
                   title: title.value,
                   desc: desc.value,
                   image,
-                  dateNeed,
-                  dateReturn,
+                  dateNeed: new Date(dateNeed),
+                  dateReturn: new Date(dateReturn),
                 },
                 communityId,
               },
@@ -121,21 +140,13 @@ function CreateRequest({ communityId, history }) {
         />
         {error.desc && <InlineError text={error.desc} />}
         {error.descExists && <InlineError text={error.descExists} />}
-        <p className="main-p">Set a date by which you need to have this item</p>
+        <p className="main-p">Please select a timeframe</p>
         <DatePicker
-          className="main-input date"
-          selected={dateNeed}
-          onChange={(date) => setDateNeed(date)}
-          dateFormat="yyyy.MM.dd"
-          minDate={new Date()}
-        />
-        <p className="main-p">Till when do you want to borrow this item?</p>
-        <DatePicker
-          className="main-input date"
-          selected={dateReturn}
-          onChange={(date) => setDateReturn(date)}
-          dateFormat="yyyy.MM.dd"
-          minDate={dateNeed}
+          isMobile={isMobile}
+          dateNeed={dateNeed}
+          dateReturn={dateReturn}
+          setDateNeed={setDateNeed}
+          setDateReturn={setDateReturn}
         />
         {error.res && <InlineError text={error.res} />}
         <button className="main-btn" type="submit">

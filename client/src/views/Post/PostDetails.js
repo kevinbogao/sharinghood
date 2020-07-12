@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -8,8 +8,9 @@ import {
   faExclamationTriangle,
   faGifts,
 } from '@fortawesome/free-solid-svg-icons';
-import DatePicker from 'react-datepicker';
+import moment from 'moment';
 import Modal from 'react-modal';
+import DatePicker from '../../components/DatePicker';
 import Threads from '../../components/Threads';
 import Loading from '../../components/Loading';
 import NotFound from '../../components/NotFound';
@@ -27,7 +28,8 @@ const MODAL_STYLE = {
     transform: 'translate(-50%, -50%)',
     borderWidth: 0,
     boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '30px 30px 240px 30px',
+    padding: '30px',
+    minWidth: '300px',
   },
 };
 
@@ -117,10 +119,11 @@ const CREATE_NOTIFICATION = gql`
 
 function PostDetails({ communityId, match, history }) {
   const [comment, setComment] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [dateType, setDateType] = useState(0);
-  const [dateNeed, setDateNeed] = useState(new Date());
-  const [dateReturn, setDateReturn] = useState(new Date());
+  const [dateNeed, setDateNeed] = useState(moment());
+  const [dateReturn, setDateReturn] = useState(moment());
   const { loading, error, data } = useQuery(GET_POST, {
     variables: { postId: match.params.id, communityId },
     onError: ({ message }) => {
@@ -180,6 +183,23 @@ function PostDetails({ communityId, match, history }) {
       // },
     },
   );
+
+  // Set isMobile boolean value based on window width
+  useEffect(() => {
+    // Set isMobile on init
+    setIsMobile(window.matchMedia('(max-width: 576px)').matches);
+
+    // Set isMobile on screen size
+    function handleWindowResize() {
+      setIsMobile(window.matchMedia('(max-width: 576px)').matches);
+    }
+
+    // Event listener for screen resizing
+    window.addEventListener('resize', handleWindowResize);
+
+    // Return a function from the effect that removes the event listener
+    return () => window.removeEventListener('resize', handleWindowResize);
+  }, []);
 
   return loading ? (
     <Loading />
@@ -243,19 +263,12 @@ function PostDetails({ communityId, match, history }) {
           <>
             <p className="main-p">By when do you need it?</p>
             <DatePicker
-              className="main-input modal"
-              selected={dateNeed}
-              onChange={(date) => setDateNeed(date)}
-              dateFormat="yyyy.MM.dd"
-              minDate={new Date()}
-            />
-            <p className="main-p">When would like to return it?</p>
-            <DatePicker
-              className="main-input modal"
-              selected={dateReturn}
-              onChange={(date) => setDateReturn(date)}
-              dateFormat="yyyy.MM.dd"
-              minDate={dateNeed}
+              isVertical
+              isMobile={isMobile}
+              dateNeed={dateNeed}
+              dateReturn={dateReturn}
+              setDateNeed={setDateNeed}
+              setDateReturn={setDateReturn}
             />
           </>
         )}

@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { DateRangePicker } from 'react-dates';
 import 'react-dates/initialize';
 import 'react-dates/lib/css/_datepicker.css';
-import 'react-datepicker/dist/react-datepicker.css';
 
 function DatePicker({
   isMobile,

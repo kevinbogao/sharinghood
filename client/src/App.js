@@ -159,15 +159,14 @@ function App() {
           }
 
           .main-select {
-            font-size: 18px;
+            font-size: 20px;
             padding-left: 10px;
+            padding-right: 10px;
             color: #a0998f;
             width: 300px;
-            height: 40px;
+            height: 43px;
             border-width: 0px;
             background: $grey-000;
-            border-radius: 4px;
-            margin-bottom: 12px;
 
             @include sm {
               width: 100%;

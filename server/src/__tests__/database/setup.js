@@ -28,6 +28,28 @@ const mockUploadResponse = {
     'https://res.cloudinary.com/dyr3b99uj/image/upload/v1582569792/w9hb72biqpmowzyhwohy.png',
 };
 
+const updatedMockUploadResponse = {
+  asset_id: '95baa1dfe24e3ab86f3343ee32512752',
+  public_id: 'hp0ffukc6xoeipwm929c',
+  version: 1594160379,
+  version_id: 'daaedb96a3446b3d94c648355355a6a8',
+  signature: '306736485677e3e16f8a2ef482830a400ee6ec90',
+  width: 213,
+  height: 213,
+  format: 'png',
+  resource_type: 'image',
+  created_at: '2020-07-07T22:19:39Z',
+  tags: [],
+  bytes: 8582,
+  type: 'upload',
+  etag: '7ef2ec78ef5314bbad366054d2fc4399',
+  placeholder: false,
+  url:
+    'http://res.cloudinary.com/dc87yxcas/image/upload/v1594160379/hp0ffukc6xoeipwm929c.png',
+  secure_url:
+    'https://res.cloudinary.com/dc87yxcas/image/upload/v1594160379/hp0ffukc6xoeipwm929c.png',
+};
+
 // Create mock user & community mongoose ids
 const mockUser01Id = new mongoose.Types.ObjectId();
 const mockCommunity01Id = new mongoose.Types.ObjectId();
@@ -95,7 +117,6 @@ async function connectToTestDB() {
       useUnifiedTopology: true,
       useCreateIndex: true,
       useFindAndModify: false,
-      sslValidate: false,
     });
 
     // Hash password for mock user 01
@@ -138,6 +159,8 @@ async function closeTestDBConnection() {
 
 module.exports = {
   mockUploadResponse,
+  updatedMockUploadResponse,
+  mockUser01,
   mockUser01Id,
   mockCommunity01Id,
   mockCommunityCreatorUserInput,

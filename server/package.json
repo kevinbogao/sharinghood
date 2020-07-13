@@ -58,7 +58,9 @@
             "api_secret",
             "public_id",
             "resource_type",
-            "created_at"
+            "created_at",
+            "asset_id",
+            "version_id"
           ]
         }
       ]

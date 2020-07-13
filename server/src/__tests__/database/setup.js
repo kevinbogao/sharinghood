@@ -52,9 +52,11 @@ const updatedMockUploadResponse = {
 
 // Create mock user & community mongoose ids
 const mockUser01Id = new mongoose.Types.ObjectId();
+const mockUser02Id = new mongoose.Types.ObjectId();
 const mockCommunity01Id = new mongoose.Types.ObjectId();
+const mockCommunity02Id = new mongoose.Types.ObjectId();
 
-// Mock user
+// Mock user01
 const mockUser01 = {
   _id: mockUser01Id,
   name: 'MockUser01',
@@ -67,7 +69,20 @@ const mockUser01 = {
   communities: [mockCommunity01Id],
 };
 
-// Mock community
+// Mock user02
+const mockUser02 = {
+  _id: mockUser02Id,
+  name: 'MockUser02',
+  email: 'mock.user02@email.com',
+  password: '1234567',
+  apartment: '002',
+  isNotified: true,
+  isCreator: true,
+  image: JSON.stringify(mockUploadResponse),
+  communities: [mockCommunity01Id],
+};
+
+// Mock community01
 const mockCommunity01 = {
   _id: mockCommunity01Id,
   name: 'MockCommunity01',
@@ -77,6 +92,15 @@ const mockCommunity01 = {
   members: [mockUser01Id],
 };
 
+// Mock community02
+const mockCommunity02 = {
+  _id: mockCommunity02Id,
+  name: 'MockCommunity01',
+  code: 'mockCommunity01',
+  zipCode: '00001',
+  creator: mockUser01Id,
+  members: [mockUser01Id],
+};
 /**
  * Mock input data
  */
@@ -128,7 +152,12 @@ async function connectToTestDB() {
         ...mockUser01,
         password: mockUser01PasswordHash,
       }),
+      User.create({
+        ...mockUser02,
+        password: mockUser01PasswordHash,
+      }),
       Community.create(mockCommunity01),
+      Community.create(mockCommunity02),
     ]);
   } catch (err) {
     throw new Error(err);
@@ -161,7 +190,10 @@ module.exports = {
   mockUploadResponse,
   updatedMockUploadResponse,
   mockUser01,
+  mockUser02,
   mockUser01Id,
+  mockCommunity01,
+  mockCommunity02,
   mockCommunity01Id,
   mockCommunityCreatorUserInput,
   mockRegisterUserCommunityInput,

@@ -5,7 +5,8 @@
     "start": "node src/index.js",
     "client": "cd ../client && yarn start",
     "server": "nodemon src/index.js",
-    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\"",
+    "test": "jest"
   },
   "main": "index.js",
   "license": "MIT",
@@ -13,13 +14,22 @@
     "node": "14.x",
     "yarn": "1.x"
   },
+  "jest": {
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/__utils",
+      "/database/"
+    ]
+  },
   "eslintConfig": {
     "extends": [
       "airbnb-base"
     ],
     "env": {
       "node": true,
-      "es6": true
+      "es6": true,
+      "jest": true
     },
     "rules": {
       "no-console": "off",
@@ -45,7 +55,10 @@
             "secure_url",
             "cloud_name",
             "api_key",
-            "api_secret"
+            "api_secret",
+            "public_id",
+            "resource_type",
+            "created_at"
           ]
         }
       ]
@@ -58,6 +71,7 @@
   },
   "dependencies": {
     "apollo-server": "^2.15.1",
+    "apollo-server-testing": "^2.15.1",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.22.0",
     "dotenv": "^8.2.0",
@@ -75,6 +89,9 @@
     "eslint": "^7.4.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
-    "nodemon": "^2.0.4"
+    "eslint-plugin-jest": "^23.18.0",
+    "jest": "^26.1.0",
+    "nodemon": "^2.0.4",
+    "sinon": "^9.0.2"
   }
 }

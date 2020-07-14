@@ -157,7 +157,8 @@ const usersResolvers = {
           community.save(),
 
           // Sent new account mail if user is notified
-          isNotified &&
+          process.env.NODE_ENV === 'production' &&
+            isNotified &&
             newAccountMail(
               `${process.env.ORIGIN}/share`,
               community.name,
@@ -166,7 +167,8 @@ const usersResolvers = {
             ),
 
           // Sent new community mail if user is notified & isCreator
-          isNotified &&
+          process.env.NODE_ENV === 'production' &&
+            isNotified &&
             isCreator &&
             newCommunityMail(
               `${process.env.ORIGIN}/community/${community.code}`,

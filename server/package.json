@@ -6,7 +6,7 @@
     "client": "cd ../client && yarn start",
     "server": "nodemon src/index.js",
     "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\"",
-    "test": "jest"
+    "test": "env-cmd -e test -r ./.env-cmdrc.json jest"
   },
   "main": "index.js",
   "license": "MIT",
@@ -88,6 +88,7 @@
   },
   "devDependencies": {
     "concurrently": "^5.2.0",
+    "env-cmd": "^10.1.0",
     "eslint": "^7.4.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",

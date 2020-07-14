@@ -1,7 +1,7 @@
 const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
-const { constructTestServer } = require('./__utils');
 const {
+  constructTestServer,
   connectToTestDB,
   dropTestDB,
   closeTestDBConnection,
@@ -9,16 +9,15 @@ const {
   updatedMockUploadResponse,
   mockUser01,
   mockUser01Id,
-  mockCommunity01,
   mockCommunity01Id,
   mockCommunityCreatorUserInput,
   mockRegisterUserCommunityInput,
   mockExistingCommunityUserInput,
-} = require('./database/setup');
+} = require('../__utils');
 
 // Mocking dependencies
-jest.mock('../utils/uploadImg');
-const uploadImg = require('../utils/uploadImg');
+jest.mock('../../utils/uploadImg');
+const uploadImg = require('../../utils/uploadImg');
 
 beforeAll(async (done) => {
   await connectToTestDB();
@@ -31,7 +30,6 @@ afterAll(async (done) => {
   done();
 });
 
-// Register & community mutation
 const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
   mutation RegisterAndOrCreateCommunity(
     $userInput: UserInput!
@@ -53,25 +51,6 @@ const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
         creator {
           _id
         }
-      }
-    }
-  }
-`;
-
-// Community query
-const FIND_COMMUNITY = gql`
-  query Community($communityCode: String, $communityId: ID) {
-    community(communityCode: $communityCode, communityId: $communityId) {
-      _id
-      name
-      code
-      creator {
-        _id
-      }
-      members {
-        _id
-        name
-        image
       }
     }
   }
@@ -113,6 +92,8 @@ describe('[Query.users]', () => {
     const res = await query({
       query: GET_USER,
     });
+
+    console.log(res);
 
     // Check if user response is the same of mockUser01 data
     expect(res.data.user).toMatchObject({
@@ -283,102 +264,5 @@ describe('[Mutation.users]', () => {
       apartment: mutationInput.apartment,
       image: JSON.stringify(updatedMockUploadResponse),
     });
-  });
-});
-
-describe('[Query.communities]', () => {
-  it('Get community by community code', async () => {
-    // Create an instance of ApolloServer
-    const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
-    });
-
-    // Create test interface
-    const { query } = createTestClient(server);
-    const res = await query({
-      query: FIND_COMMUNITY,
-      variables: { communityCode: mockCommunity01.code },
-    });
-
-    // Check community response
-    expect(res.data.community).toMatchObject({
-      name: mockCommunity01.name,
-      code: mockCommunity01.code,
-      creator: {
-        _id: mockUser01Id.toString(),
-      },
-    });
-
-    // Check members's array in community response
-    expect(res.data.community.members).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          _id: expect.any(String),
-          name: expect.any(String),
-          image: expect.any(String),
-        }),
-      ])
-    );
-  });
-});
-
-describe('[Mutation.communities]', () => {
-  it('Create community with registered user', async () => {
-    // Create community mutation
-    const CREATE_COMMUNITY = gql`
-      mutation CreateCommunity($communityInput: CommunityInput!) {
-        createCommunity(communityInput: $communityInput) {
-          _id
-          name
-          code
-          zipCode
-          creator {
-            _id
-          }
-        }
-      }
-    `;
-
-    // Create an instance of ApolloServer
-    const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
-    });
-
-    // Create community mutation input
-    const createCommunityInput = {
-      name: 'TestCommunity02',
-      code: 'testCommunity02',
-      zipCode: '10002',
-    };
-
-    // Create test instance
-    const { mutate } = createTestClient(server);
-    const res = await mutate({
-      mutation: CREATE_COMMUNITY,
-      variables: {
-        communityInput: {
-          name: createCommunityInput.name,
-          code: createCommunityInput.code,
-          zipCode: createCommunityInput.zipCode,
-        },
-      },
-    });
-
-    // Check create community response against mutation input
-    expect(res.data.createCommunity).toMatchObject({
-      name: createCommunityInput.name,
-      code: createCommunityInput.code,
-      zipCode: createCommunityInput.zipCode,
-      creator: {
-        _id: mockUser01Id.toString(),
-      },
-    });
-  });
-
-  it('Join community for registered user', async () => {
-    const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
-    });
-    const { mutate } = createTestClient(server);
   });
 });

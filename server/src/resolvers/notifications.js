@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const User = require('../models/user');
 const Post = require('../models/post');
 const Booking = require('../models/booking');
-// const Community = require('../models/community');
 const Notification = require('../models/notification');
 const updateBookingMail = require('../utils/sendMail/updateBookingMail');
 
@@ -302,7 +301,8 @@ const notificationsResolvers = {
           // Save post & sent booking email to recipient if recipient is subscribed to email
           await Promise.all([
             post.save(),
-            recipient.isNotified &&
+            process.env.NODE_ENV === 'production' &&
+              recipient.isNotified &&
               updateBookingMail(
                 `${process.env.ORIGIN}/notifications`,
                 recipient.email,

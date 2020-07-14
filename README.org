@@ -43,7 +43,8 @@
 * Server
   Explore Sharinghood's GraphQL API on [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQl Playground]] at ~http://localhost:4000/graphql~
 ** Query
-    * ~user~ - Get current user or a specific & user posts
+*** Users
+    ~user~ - Get current user or a specific & user posts
     | Arguments | Required | Type | Description            |
     |-----------+----------+------+------------------------|
     | ~userId~  | false    | ~ID~ | Select a specific user |

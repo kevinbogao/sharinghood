@@ -137,11 +137,78 @@
 
 *** Communities
     ~createCommunity~ - Create community and save user as community creator
-    | Arguments        | Required | Type             | Description                                                    |
-    |------------------+----------+------------------+----------------------------------------------------------------|
-    | ~communityInput~ | true     | ~CommunityInput~ | Various ~Community~ type input data; Create community if given |
+    | Arguments        | Required | Type             | Description                         |
+    |------------------+----------+------------------+-------------------------------------|
+    | ~communityInput~ | true     | ~CommunityInput~ | Various ~Community~ type input data |
 
     ~joinCommunity~ - Add current user to a specific community
     | Arguments     | Required | Type | Description         |
     |---------------+----------+------+---------------------|
     | ~communityId~ | true     | ~ID~ | Specify a community |
+
+*** Posts
+    ~createPost~ - Create a post
+    | Arguments     | Required | Type        | Description                    |
+    |---------------+----------+-------------+--------------------------------|
+    | ~postInput~   | true     | ~PostInput~ | Various ~Post~ type input data |
+    | ~communityId~ | true     | ~ID~        | Specify a community            |
+
+    ~updatePost~ - Update a specific post
+    | Arguments   | Required | Type        | Description                    |
+    |-------------+----------+-------------+--------------------------------|
+    | ~postInput~ | true     | ~PostInput~ | Various ~Post~ type input data |
+
+    ~inactivatePost~ - Remove a specific post from all of the current user's communities
+    | Arguments | Required | Type | Description    |
+    |-----------+----------+------+----------------|
+    | ~postId~  | true     | ~ID~ | Specify a post |
+
+    ~deletePost~ - Delete a specific post, its related threads, bookings, and notifications; and remove the post from all of the current user's communities
+    | Arguments     | Required | Type | Description         |
+    |---------------+----------+------+---------------------|
+    | ~postId~      | true     | ~ID~ | Specify a post      |
+    | ~communityId~ | false    | ~ID~ | Specify a community |
+
+    ~addPostToCommunity~ - Add a specific post to a specific community
+    | Arguments     | Required | Type | Description         |
+    |---------------+----------+------+---------------------|
+    | ~postId~      | false    | ~ID~ | Specify a post      |
+    | ~communityId~ | false    | ~ID~ | Specify a community |
+
+*** Requests
+    ~createRequest~ - Create a post
+    | Arguments      | Required | Type           | Description                       |
+    |----------------+----------+----------------+-----------------------------------|
+    | ~requestInput~ | true     | ~RequestInput~ | Various ~Request~ type input data |
+    | ~communityId~  | true     | ~ID~           | Specify a community               |
+
+    ~deleteRequest~ - Delete a specific request, its related threads
+    | Arguments     | Required | Type | Description         |
+    |---------------+----------+------+---------------------|
+    | ~requestId~   | true     | ~ID~ | Specify a post      |
+
+*** Threads
+    ~createThread~ - Add thread to a specific post or request
+    | Arguments     | Required | Type          | Description                      |
+    |---------------+----------+---------------+----------------------------------|
+    | ~threadInput~ | true     | ~ThreadInput~ | Various ~Thread~ type input data |
+
+*** Messages
+    ~createMessage~ - Add a message to a specific notification
+    | Arguments      | Required | Type           | Description                      |
+    |----------------+----------+----------------+----------------------------------|
+    | ~messageInput~ | true     | ~MessageInput~ | Various ~Message~ type input data |
+
+*** Bookings
+    ~updateBooking~ - Update a specific booking's status
+    | Arguments      | Required | Type           | Description                       |
+    |----------------+----------+----------------+-----------------------------------|
+    | ~bookingId~    | true     | ~ID~           | Specify a booking                 |
+    | ~bookingInput~ | true     | ~BookingInput~ | Various ~Booking~ type input data |
+
+** Subscription 
+*** Messages
+    ~newNotificationMessage~ - Subscribe to messages from a give notification
+    | Arguments        | Required | Type | Description            |
+    |------------------+----------+------+------------------------|
+    | ~notificationId~ | true     | ~ID~ | Specify a notification |

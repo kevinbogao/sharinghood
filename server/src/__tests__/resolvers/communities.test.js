@@ -4,6 +4,8 @@ const {
   constructTestServer,
   mockUser01Id,
   mockCommunity01,
+  mockCommunity02,
+  mockCommunity02Id,
   initTestDB,
 } = require('../__utils');
 
@@ -27,6 +29,7 @@ const FIND_COMMUNITY = gql`
   }
 `;
 
+/* COMMUNITIES QUERY */
 describe('[Query.communities]', () => {
   it('Get community by community code', async () => {
     // Create an instance of ApolloServer
@@ -59,50 +62,52 @@ describe('[Query.communities]', () => {
     );
   });
 
-  it("Get user's communities", async () => {
-    const GET_USER_COMMUNITIES = gql`
-      query Communities {
-        communities {
-          _id
-          name
-          hasNotifications
-        }
-      }
-    `;
+  // it("Get user's communities", async () => {
+  //   const GET_USER_COMMUNITIES = gql`
+  //     query Communities {
+  //       communities {
+  //         _id
+  //         name
+  //         hasNotifications
+  //       }
+  //     }
+  //   `;
 
-    // Create an instance of ApolloServer
-    const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
-    });
+  //   // Create an instance of ApolloServer
+  //   const { server } = constructTestServer({
+  //     context: () => ({ user: { userId: mockUser01Id } }),
+  //   });
 
-    // Create test interface
-    const { query } = createTestClient(server);
-    const res = await query({
-      query: GET_USER_COMMUNITIES,
-    });
+  //   // Create test interface
+  //   const { query } = createTestClient(server);
+  //   const res = await query({
+  //     query: GET_USER_COMMUNITIES,
+  //   });
 
-    console.log(res.data);
+  //   console.log(res.data);
 
-    // // Check community response
-    // expect(res.data.community).toMatchObject({
-    //   name: mockCommunity01.name,
-    //   code: mockCommunity01.code,
-    // });
+  //   // // Check community response
+  //   // expect(res.data.community).toMatchObject({
+  //   //   name: mockCommunity01.name,
+  //   //   code: mockCommunity01.code,
+  //   // });
 
-    // // Check members's array in community response
-    // expect(res.data.community.members).toEqual(
-    //   expect.arrayContaining([
-    //     expect.objectContaining({
-    //       _id: expect.any(String),
-    //       name: expect.any(String),
-    //       image: expect.any(String),
-    //     }),
-    //   ])
-    // );
-  });
+  //   // // Check members's array in community response
+  //   // expect(res.data.community.members).toEqual(
+  //   //   expect.arrayContaining([
+  //   //     expect.objectContaining({
+  //   //       _id: expect.any(String),
+  //   //       name: expect.any(String),
+  //   //       image: expect.any(String),
+  //   //     }),
+  //   //   ])
+  //   // );
+  // });
 });
 
+/* COMMUNITIES MUTATIONS */
 describe('[Mutation.communities]', () => {
+  // communities resolvers
   it('Create community with registered user', async () => {
     // Create community mutation
     const CREATE_COMMUNITY = gql`
@@ -149,10 +154,27 @@ describe('[Mutation.communities]', () => {
     });
   });
 
-  // it('Join community for registered user', async () => {
-  //   const { server } = constructTestServer({
-  //     context: () => ({ user: { userId: mockUser01Id } }),
-  //   });
-  //   const { mutate } = createTestClient(server);
-  // });
+  // joinCommunity resolver
+  it('Join community for registered user', async () => {
+    const JOIN_COMMUNITY = gql`
+      mutation JoinCommunity($communityId: ID!) {
+        joinCommunity(communityId: $communityId) {
+          _id
+          name
+        }
+      }
+    `;
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01Id } }),
+    });
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: JOIN_COMMUNITY,
+      variables: { communityId: mockCommunity02Id.toString() },
+    });
+    expect(res.data.joinCommunity).toMatchObject({
+      _id: mockCommunity02._id.toString(),
+      name: mockCommunity02.name,
+    });
+  });
 });

@@ -4,6 +4,7 @@ const bcryptjs = require('bcryptjs');
 const typeDefs = require('../schema');
 const resolvers = require('../resolvers');
 const User = require('../models/user');
+const Post = require('../models/post');
 const Community = require('../models/community');
 
 // Integration test unit
@@ -66,7 +67,10 @@ const updatedMockUploadResponse = {
 
 // Create mock user & community mongoose ids
 const mockUser01Id = new mongoose.Types.ObjectId();
+const mockUser02Id = new mongoose.Types.ObjectId();
+const mockPost01Id = new mongoose.Types.ObjectId();
 const mockCommunity01Id = new mongoose.Types.ObjectId();
+const mockCommunity02Id = new mongoose.Types.ObjectId();
 
 // Mock user01
 const mockUser01 = {
@@ -79,16 +83,51 @@ const mockUser01 = {
   isCreator: true,
   image: JSON.stringify(mockUploadResponse),
   communities: [mockCommunity01Id],
+  posts: [mockPost01Id],
+};
+
+// Mock user02
+const mockUser02 = {
+  _id: mockUser02Id,
+  name: 'MockUser02',
+  email: 'mock.user02@email.com',
+  password: '1234567',
+  apartment: '002',
+  isNotified: true,
+  isCreator: true,
+  image: JSON.stringify(mockUploadResponse),
+  communities: [mockCommunity02Id],
 };
 
 // Mock community01
 const mockCommunity01 = {
   _id: mockCommunity01Id,
-  name: 'MockCommunity01',
+  name: 'Mock Community 01',
   code: 'mockCommunity01',
   zipCode: '00001',
   creator: mockUser01Id,
   members: [mockUser01Id],
+};
+
+// Mock community02
+const mockCommunity02 = {
+  _id: mockCommunity02Id,
+  name: 'Mock Community 02',
+  code: 'mockCommunity02',
+  zipCode: '00002',
+  creator: mockUser02Id,
+  members: [mockUser02Id],
+};
+
+// Mock post01
+const mockPost01 = {
+  _id: mockPost01Id,
+  title: 'Mock Post 01',
+  desc: 'mockPost01',
+  image: JSON.stringify(mockUploadResponse),
+  condition: 0,
+  isGiveaway: true,
+  creator: mockUser01,
 };
 
 async function initTestDB() {
@@ -103,10 +142,17 @@ async function initTestDB() {
     });
 
     // Delete all data from give collections
-    await Promise.all([User.deleteMany(), Community.deleteMany()]);
+    await Promise.all([
+      User.deleteMany(),
+      Community.deleteMany(),
+      Post.deleteMany(),
+    ]);
 
-    // Hash password for mock user 01
-    const mockUser01PasswordHash = await bcryptjs.hash(mockUser01.password, 12);
+    // Hash password for mock user 01 & mock user 02
+    const [mockUser01PasswordHash, mockUser02PasswordHash] = await Promise.all([
+      bcryptjs.hash(mockUser01.password, 12),
+      bcryptjs.hash(mockUser02.password, 12),
+    ]);
 
     // Write initial data to datebase
     await Promise.all([
@@ -114,7 +160,13 @@ async function initTestDB() {
         ...mockUser01,
         password: mockUser01PasswordHash,
       }).save(),
+      new User({
+        ...mockUser02,
+        password: mockUser02PasswordHash,
+      }).save(),
       new Community(mockCommunity01).save(),
+      new Community(mockCommunity02).save(),
+      new Post(mockPost01).save(),
     ]);
   } catch (err) {
     throw new Error(err);
@@ -129,5 +181,9 @@ module.exports = {
   mockUser01Id,
   mockCommunity01,
   mockCommunity01Id,
+  mockUser02,
+  mockUser02Id,
+  mockCommunity02,
+  mockCommunity02Id,
   initTestDB,
 };

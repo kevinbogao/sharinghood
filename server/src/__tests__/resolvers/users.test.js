@@ -7,7 +7,7 @@ const {
   updatedMockUploadResponse,
   mockUser01,
   mockUser01Id,
-  mockCommunity01,
+  // mockCommunity01,
   mockCommunity01Id,
 } = require('../__utils');
 
@@ -45,10 +45,9 @@ const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
   }
 `;
 
+/* USERS QUERY */
 describe('[Query.users]', () => {
-  /**
-   * Get user data and user posts
-   */
+  // user query
   it('Get user data and user posts', async () => {
     const GET_USER = gql`
       query User {
@@ -97,10 +96,9 @@ describe('[Query.users]', () => {
   });
 });
 
+/* USERS MUTATION */
 describe('[Mutation.users]', () => {
-  /**
-   * Login registered user
-   */
+  // login mutation
   it('Login user', async () => {
     // Login mutation
     const LOGIN = gql`

@@ -1,27 +1,8 @@
-const { ApolloServer } = require('apollo-server');
 const mongoose = require('mongoose');
 const bcryptjs = require('bcryptjs');
-const typeDefs = require('../schema');
-const resolvers = require('../resolvers');
-const User = require('../models/user');
-const Community = require('../models/community');
-
-// const { ApolloServer, typeDefs, resolvers } = require('../index');
-
-// Integration test unit
-function constructTestServer({ context }) {
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    context,
-  });
-
-  return { server };
-}
-
-/**
- * Mock test data
- */
+const User = require('../../models/user');
+const Post = require('../../models/post');
+const Community = require('../../models/community');
 
 // Mock response for uploadImg (to cloudinary) function
 const mockUploadResponse = {
@@ -69,6 +50,7 @@ const updatedMockUploadResponse = {
 // Create mock user & community mongoose ids
 const mockUser01Id = new mongoose.Types.ObjectId();
 const mockUser02Id = new mongoose.Types.ObjectId();
+const mockPost01Id = new mongoose.Types.ObjectId();
 const mockCommunity01Id = new mongoose.Types.ObjectId();
 const mockCommunity02Id = new mongoose.Types.ObjectId();
 
@@ -83,6 +65,7 @@ const mockUser01 = {
   isCreator: true,
   image: JSON.stringify(mockUploadResponse),
   communities: [mockCommunity01Id],
+  posts: [mockPost01Id],
 };
 
 // Mock user02
@@ -95,13 +78,13 @@ const mockUser02 = {
   isNotified: true,
   isCreator: true,
   image: JSON.stringify(mockUploadResponse),
-  communities: [mockCommunity01Id],
+  communities: [mockCommunity02Id],
 };
 
 // Mock community01
 const mockCommunity01 = {
   _id: mockCommunity01Id,
-  name: 'MockCommunity01',
+  name: 'Mock Community 01',
   code: 'mockCommunity01',
   zipCode: '00001',
   creator: mockUser01Id,
@@ -111,102 +94,62 @@ const mockCommunity01 = {
 // Mock community02
 const mockCommunity02 = {
   _id: mockCommunity02Id,
-  name: 'MockCommunity02',
+  name: 'Mock Community 02',
   code: 'mockCommunity02',
-  zipCode: '00001',
-  creator: mockUser01Id,
-  members: [mockUser01Id],
+  zipCode: '00002',
+  creator: mockUser02Id,
+  members: [mockUser02Id],
 };
 
-/**
- * Mock input data
- */
-
-// Mock userInput for create community
-const mockCommunityCreatorUserInput = {
-  name: 'TestUser01',
-  email: 'test.user01@email.com',
-  password: '1234567',
-  apartment: '101',
-  isNotified: true,
-  isCreator: true,
+// Mock post01
+const mockPost01 = {
+  _id: mockPost01Id,
+  title: 'Mock Post 01',
+  desc: 'mockPost01',
+  image: JSON.stringify(mockUploadResponse),
+  condition: 0,
+  isGiveaway: true,
+  creator: mockUser01,
 };
 
-// Mock community input for register user
-const mockRegisterUserCommunityInput = {
-  name: 'TestCommunity01',
-  code: 'testCommunity01',
-  zipCode: '10001',
-};
-
-// Mock userInput for existing community
-const mockExistingCommunityUserInput = {
-  name: 'TestUser02',
-  email: 'test.user02@email.com',
-  password: '1234567',
-  apartment: '102',
-  isNotified: true,
-  communityId: mockCommunity01Id.toString(),
-};
-
-// Connect to test database from dotenv
-async function connectToTestDB() {
+async function createInitData() {
   try {
-    // Connect mongodb database
-    await mongoose.connect(process.env.MONGO_PATH, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      useCreateIndex: true,
-      useFindAndModify: false,
-      autoIndex: false,
-    });
-
-    // Hash password for mock user 01
-    const mockUser01PasswordHash = await bcryptjs.hash(mockUser01.password, 12);
+    // Hash password for mock user 01 & mock user 02
+    const [mockUser01PasswordHash, mockUser02PasswordHash] = await Promise.all([
+      bcryptjs.hash(mockUser01.password, 12),
+      bcryptjs.hash(mockUser02.password, 12),
+    ]);
 
     // Write initial data to datebase
     await Promise.all([
-      User.create({
-        ...mockUser01,
-        password: mockUser01PasswordHash,
-      }),
-      User.create({
-        ...mockUser02,
-        password: mockUser01PasswordHash,
-      }),
-      Community.create(mockCommunity01),
-      Community.create(mockCommunity02),
+      User.create([
+        {
+          ...mockUser01,
+          password: mockUser01PasswordHash,
+        },
+        {
+          ...mockUser02,
+          password: mockUser02PasswordHash,
+        },
+      ]),
+      Community.create([mockCommunity01, mockCommunity02]),
+      Post.create(mockPost01),
     ]);
   } catch (err) {
     throw new Error(err);
   }
 }
 
-// Disconnect from test database
-async function closeTestDBConnection() {
-  try {
-    if (process.env.NODE_ENV === 'test') {
-      await mongoose.connection.db.dropDatabase();
-    }
-    await mongoose.connection.close();
-  } catch (err) {
-    throw new Error(err);
-  }
-}
-
 module.exports = {
-  constructTestServer,
-  mockUploadResponse,
-  updatedMockUploadResponse,
+  createInitData,
   mockUser01,
-  mockUser02,
   mockUser01Id,
   mockCommunity01,
-  mockCommunity02,
   mockCommunity01Id,
-  mockCommunityCreatorUserInput,
-  mockRegisterUserCommunityInput,
-  mockExistingCommunityUserInput,
-  connectToTestDB,
-  closeTestDBConnection,
+  mockUser02,
+  mockUser02Id,
+  mockCommunity02,
+  mockCommunity02Id,
+  mockUploadResponse,
+  updatedMockUploadResponse,
 };

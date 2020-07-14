@@ -1,22 +1,37 @@
 const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
+const { constructTestServer } = require('../__utils');
+const inMemoryDb = require('../fixtures/inMemoryDb');
 const {
-  initTestDB,
-  constructTestServer,
-  mockUploadResponse,
-  updatedMockUploadResponse,
+  createInitData,
   mockUser01,
   mockUser01Id,
-  // mockCommunity01,
   mockCommunity01Id,
-} = require('../__utils');
+  mockUploadResponse,
+  updatedMockUploadResponse,
+} = require('../fixtures/createInitData');
 
 // Mocking dependencies
 jest.mock('../../utils/uploadImg');
 const uploadImg = require('../../utils/uploadImg');
 
+// Connect to a new in-memory database before running any tests.
+beforeAll(async () => {
+  await inMemoryDb.connect();
+});
+
 beforeEach(async () => {
-  await initTestDB();
+  await createInitData();
+});
+
+// Clear all test data after every test.
+afterEach(async () => {
+  await inMemoryDb.cleanup();
+});
+
+// Remove and close the db and server
+afterAll(async () => {
+  await inMemoryDb.close();
 });
 
 const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
@@ -100,7 +115,6 @@ describe('[Query.users]', () => {
 describe('[Mutation.users]', () => {
   // login mutation
   it('Login user', async () => {
-    // Login mutation
     const LOGIN = gql`
       mutation Login($email: String!, $password: String!) {
         login(email: $email, password: $password) {
@@ -179,9 +193,7 @@ describe('[Mutation.users]', () => {
     );
   });
 
-  /**
-   * Register user to existing community
-   */
+  // registerAndOrCreateCommunity mutation
   it('Register user to existing community', async () => {
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
@@ -217,9 +229,7 @@ describe('[Mutation.users]', () => {
     );
   });
 
-  /**
-   * Edit user profile
-   */
+  // updateUser mutation
   it('Update user data', async () => {
     // User update mutation
     const UPDATE_USER = gql`

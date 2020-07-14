@@ -1,16 +1,32 @@
 const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
+const { constructTestServer } = require('../__utils');
+const inMemoryDb = require('../fixtures/inMemoryDb');
 const {
-  constructTestServer,
+  createInitData,
   mockUser01Id,
   mockCommunity01,
   mockCommunity02,
   mockCommunity02Id,
-  initTestDB,
-} = require('../__utils');
+} = require('../fixtures/createInitData');
+
+// Connect to a new in-memory database before running any tests.
+beforeAll(async () => {
+  await inMemoryDb.connect();
+});
 
 beforeEach(async () => {
-  await initTestDB();
+  await createInitData();
+});
+
+// Clear all test data after every test.
+afterEach(async () => {
+  await inMemoryDb.cleanup();
+});
+
+// Remove and close the db and server
+afterAll(async () => {
+  await inMemoryDb.close();
 });
 
 // Community query

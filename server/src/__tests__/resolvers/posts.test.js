@@ -1,19 +1,35 @@
 const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
+const { constructTestServer } = require('../__utils');
+const inMemoryDb = require('../fixtures/inMemoryDb');
 const {
-  initTestDB,
-  constructTestServer,
+  createInitData,
   mockUser01Id,
   mockCommunity01Id,
   mockUploadResponse,
-} = require('../__utils');
+} = require('../fixtures/createInitData');
 
 // Mocking dependencies
 jest.mock('../../utils/uploadImg');
 const uploadImg = require('../../utils/uploadImg');
 
+// Connect to a new in-memory database before running any tests.
+beforeAll(async () => {
+  await inMemoryDb.connect();
+});
+
 beforeEach(async () => {
-  await initTestDB();
+  await createInitData();
+});
+
+// Clear all test data after every test.
+afterEach(async () => {
+  await inMemoryDb.cleanup();
+});
+
+// Remove and close the db and server
+afterAll(async () => {
+  await inMemoryDb.close();
 });
 
 /* POSTS MUTATIONS */
@@ -67,9 +83,9 @@ describe('[Mutation.posts]', () => {
       condition: postInput.condition,
       isGiveaway: postInput.isGiveaway,
       image: JSON.stringify(mockUploadResponse),
-      // creator: {
-      //   _id: mockUser01Id.toString(),
-      // },
+      creator: {
+        _id: mockUser01Id.toString(),
+      },
     });
   });
 });

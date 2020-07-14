@@ -43,12 +43,43 @@
 * Server
   Explore Sharinghood's GraphQL API on [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQl Playground]] at ~http://localhost:4000/graphql~
 ** Query
+    ~user~ - Get current user or a specific & user posts
+    | Arguments | Required | Type | Description            |
+    |-----------+----------+------+------------------------|
+    | ~userId~  | false    | ~ID~ | Select a specific user |
+
+    ~validateResetLink~ - Check user password reset link validity
+    | Arguments  | Required | Type     | Description                |
+    |------------+----------+----------+----------------------------|
+    | ~resetKey~ | true     | ~String~ | Specify reset password key |
+
+    ~community~ - Get a specific community by id or community code
+    | Arguments       | Required | Type     | Description            |
+    |-----------------+----------+----------+------------------------|
+    | ~communityId~   | false    | ~String~ | Specify community id   |
+    | ~communityCode~ | false    | ~String~ | Specify community code |
+
+    ~communities~ - Get all communities that the current user is a member of
+    | Arguments | Required | Type | Description            |
+    |-----------+----------+------+------------------------|
+    | ~userId~ | false    | ~ID~ | Select a specific user |
+
     ~post~ - Get a specific post
     | Arguments | Required | Type | Description            |
     |-----------+----------+------+------------------------|
     | ~postId~  | true     | ~ID~ | Select a specific post |
 
     ~posts~ - Get all the posts from a given community
+    | Arguments     | Required | Type | Description         |
+    |---------------+----------+------+---------------------|
+    | ~communityId~ | true     | ~ID~ | Select from a specific community |
+
+    ~request~ - Get a specific request
+    | Arguments   | Required | Type | Description            |
+    |-------------+----------+------+------------------------|
+    | ~requestId~ | true     | ~ID~ | Select a specific post |
+
+    ~posts~ - Get all the requests from a given community
     | Arguments     | Required | Type | Description                      |
     |---------------+----------+------+----------------------------------|
-    | ~communityId~ | false    | ~ID~ | Select from a specific community |
+    | ~communityId~ | true     | ~ID~ | Select from a specific community |

@@ -1,33 +1,22 @@
 const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
 const {
+  initTestDB,
   constructTestServer,
-  connectToTestDB,
-  dropTestDB,
-  closeTestDBConnection,
   mockUploadResponse,
   updatedMockUploadResponse,
   mockUser01,
   mockUser01Id,
+  mockCommunity01,
   mockCommunity01Id,
-  mockCommunityCreatorUserInput,
-  mockRegisterUserCommunityInput,
-  mockExistingCommunityUserInput,
 } = require('../__utils');
 
 // Mocking dependencies
 jest.mock('../../utils/uploadImg');
 const uploadImg = require('../../utils/uploadImg');
 
-beforeAll(async (done) => {
-  await connectToTestDB();
-  done();
-});
-
-afterAll(async (done) => {
-  await dropTestDB();
-  await closeTestDBConnection();
-  done();
+beforeEach(async () => {
+  await initTestDB();
 });
 
 const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
@@ -93,8 +82,6 @@ describe('[Query.users]', () => {
       query: GET_USER,
     });
 
-    console.log(res);
-
     // Check if user response is the same of mockUser01 data
     expect(res.data.user).toMatchObject({
       _id: mockUser01Id.toString(),
@@ -157,22 +144,32 @@ describe('[Mutation.users]', () => {
     // Mock uploadImg function
     uploadImg.mockImplementation(() => JSON.stringify(mockUploadResponse));
 
+    // userInput & communityInput
+    const userInput = {
+      name: 'TestUser01',
+      email: 'test.user01@email.com',
+      password: '1234567',
+      apartment: '101',
+      isNotified: true,
+      isCreator: true,
+      image: uploadImg(),
+    };
+    const communityInput = {
+      name: 'TestCommunity01',
+      code: 'testCommunity01',
+      zipCode: '10001',
+    };
+
     // Create test interface
     const { mutate } = createTestClient(server);
     const res = await mutate({
       mutation: REGISTER_AND_OR_CREATE_COMMUNITY,
-      variables: {
-        userInput: {
-          ...mockCommunityCreatorUserInput,
-          image: uploadImg(),
-        },
-        communityInput: mockRegisterUserCommunityInput,
-      },
+      variables: { userInput, communityInput },
     });
 
     // Create community response should match input
     expect(res.data.registerAndOrCreateCommunity.community).toMatchObject(
-      mockRegisterUserCommunityInput
+      communityInput
     );
 
     // Register user response should return accessToken & refreshToken strings
@@ -196,16 +193,21 @@ describe('[Mutation.users]', () => {
     // Mock uploadImg function
     uploadImg.mockImplementation(() => JSON.stringify(mockUploadResponse));
 
+    const userInput = {
+      name: 'TestUser02',
+      email: 'test.user02@email.com',
+      password: '1234567',
+      apartment: '102',
+      isNotified: true,
+      communityId: mockCommunity01Id.toString(),
+      image: uploadImg(),
+    };
+
     // Create test interface
     const { mutate } = createTestClient(server);
     const res = await mutate({
       mutation: REGISTER_AND_OR_CREATE_COMMUNITY,
-      variables: {
-        userInput: {
-          ...mockExistingCommunityUserInput,
-          image: uploadImg(),
-        },
-      },
+      variables: { userInput },
     });
 
     // Register user response should return accessToken & refreshToken strings
@@ -218,7 +220,7 @@ describe('[Mutation.users]', () => {
   });
 
   /**
-   * Register user to existing community
+   * Edit user profile
    */
   it('Update user data', async () => {
     // User update mutation

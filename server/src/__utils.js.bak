@@ -102,8 +102,43 @@ async function initTestDB() {
       autoIndex: false,
     });
 
-    // Delete all data from give collections
+    // Hash password for mock user 01
+    const mockUser01PasswordHash = await bcryptjs.hash(mockUser01.password, 12);
+
     await Promise.all([User.deleteMany(), Community.deleteMany()]);
+
+    // await Promise.all([User.collection.drop(), Community.collection.drop()]);
+
+    // Write initial data to datebase
+    await Promise.all([
+      new User({
+        ...mockUser01,
+        password: mockUser01PasswordHash,
+      }).save(),
+      new Community(mockCommunity01).save(),
+      // User.create({
+
+      //   ...mockUser01,
+      //   password: mockUser01PasswordHash,
+      // }),
+      // Community.create(mockCommunity01),
+    ]);
+  } catch (err) {
+    throw new Error(err);
+  }
+}
+
+// Connect to test database from dotenv
+async function connectToTestDB() {
+  try {
+    // Connect mongodb database
+    await mongoose.connect(process.env.MONGO_PATH, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+      autoIndex: false,
+    });
 
     // Hash password for mock user 01
     const mockUser01PasswordHash = await bcryptjs.hash(mockUser01.password, 12);
@@ -115,7 +150,25 @@ async function initTestDB() {
         password: mockUser01PasswordHash,
       }).save(),
       new Community(mockCommunity01).save(),
+      // User.create({
+
+      //   ...mockUser01,
+      //   password: mockUser01PasswordHash,
+      // }),
+      // Community.create(mockCommunity01),
     ]);
+  } catch (err) {
+    throw new Error(err);
+  }
+}
+
+// Disconnect from test database
+async function closeTestDBConnection() {
+  try {
+    if (process.env.NODE_ENV === 'test') {
+      await mongoose.connection.db.dropDatabase();
+    }
+    await mongoose.connection.close();
   } catch (err) {
     throw new Error(err);
   }
@@ -129,5 +182,7 @@ module.exports = {
   mockUser01Id,
   mockCommunity01,
   mockCommunity01Id,
+  connectToTestDB,
+  closeTestDBConnection,
   initTestDB,
 };

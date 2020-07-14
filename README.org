@@ -99,7 +99,7 @@
     |---------------+----------+------+----------------------------------|
     | ~communityId~ | true     | ~ID~ | Select from a specific community |
 
-** Query
+** Mutation
 *** Users
     ~login~ - User authentication
     | Arguments  | Required | Type     | Description   |

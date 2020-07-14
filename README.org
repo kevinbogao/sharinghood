@@ -99,3 +99,49 @@
     |---------------+----------+------+----------------------------------|
     | ~communityId~ | true     | ~ID~ | Select from a specific community |
 
+** Query
+*** Users
+    ~login~ - User authentication
+    | Arguments  | Required | Type     | Description   |
+    |------------+----------+----------+---------------|
+    | ~email~    | true     | ~String~ | User email    |
+    | ~password~ | true     | ~String~ | User password |
+
+    ~updateUser~ - Update current user's data
+    | Arguments   | Required | Type        | Description                    |
+    |-------------+----------+-------------+--------------------------------|
+    | ~userInput~ | true     | ~UserInput~ | Various ~User~ type input data |
+
+    ~tokenRefresh~ - Refresh current user's ~accessToken~
+    | Arguments | Required | Type     | Description                  |
+    |-----------+----------+----------+------------------------------|
+    | ~token~   | true     | ~String~ | Specify user's ~accesstoken~ |
+
+    ~forgotPassword~ - Send reset password word email containing generated reset password link to user
+    | Arguments | Required | Type     | Description |
+    |-----------+----------+----------+-------------|
+    | ~email~   | true     | ~String~ | User email  |
+
+    ~resetPassword~ - Reset user's password
+    | Arguments  | Required | Type     | Description                |
+    |------------+----------+----------+----------------------------|
+    | ~resetKey~ | true     | ~String~ | Specify reset password key |
+    | ~password~ | true     | ~String~ | Specify new password       |
+    
+*** Users & Communities
+    ~registerAndOrCreateCommunity~ - Register user and/or create community for user (saves user as community creator)
+    | Arguments        | Required | Type             | Description                                                    |
+    |------------------+----------+------------------+----------------------------------------------------------------|
+    | ~userInput~      | true     | ~UserInput~      | Various ~User~ type input data                                 |
+    | ~communityInput~ | false    | ~CommunityInput~ | Various ~Community~ type input data; Create community if given |
+
+*** Communities
+    ~createCommunity~ - Create community and save user as community creator
+    | Arguments        | Required | Type             | Description                                                    |
+    |------------------+----------+------------------+----------------------------------------------------------------|
+    | ~communityInput~ | true     | ~CommunityInput~ | Various ~Community~ type input data; Create community if given |
+
+    ~joinCommunity~ - Add current user to a specific community
+    | Arguments     | Required | Type | Description         |
+    |---------------+----------+------+---------------------|
+    | ~communityId~ | true     | ~ID~ | Specify a community |

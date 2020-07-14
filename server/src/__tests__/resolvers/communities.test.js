@@ -58,6 +58,48 @@ describe('[Query.communities]', () => {
       ])
     );
   });
+
+  it("Get user's communities", async () => {
+    const GET_USER_COMMUNITIES = gql`
+      query Communities {
+        communities {
+          _id
+          name
+          hasNotifications
+        }
+      }
+    `;
+
+    // Create an instance of ApolloServer
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01Id } }),
+    });
+
+    // Create test interface
+    const { query } = createTestClient(server);
+    const res = await query({
+      query: GET_USER_COMMUNITIES,
+    });
+
+    console.log(res.data);
+
+    // // Check community response
+    // expect(res.data.community).toMatchObject({
+    //   name: mockCommunity01.name,
+    //   code: mockCommunity01.code,
+    // });
+
+    // // Check members's array in community response
+    // expect(res.data.community.members).toEqual(
+    //   expect.arrayContaining([
+    //     expect.objectContaining({
+    //       _id: expect.any(String),
+    //       name: expect.any(String),
+    //       image: expect.any(String),
+    //     }),
+    //   ])
+    // );
+  });
 });
 
 describe('[Mutation.communities]', () => {

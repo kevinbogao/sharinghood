@@ -54,6 +54,7 @@
     |------------+----------+----------+----------------------------|
     | ~resetKey~ | true     | ~String~ | Specify reset password key |
 
+*** Communities
     ~community~ - Get a specific community by id or community code
     | Arguments       | Required | Type     | Description            |
     |-----------------+----------+----------+------------------------|
@@ -65,6 +66,7 @@
     |-----------+----------+------+------------------------|
     | ~userId~ | false    | ~ID~ | Select a specific user |
 
+*** Posts
     ~post~ - Get a specific post
     | Arguments | Required | Type | Description            |
     |-----------+----------+------+------------------------|
@@ -75,6 +77,7 @@
     |---------------+----------+------+---------------------|
     | ~communityId~ | true     | ~ID~ | Select from a specific community |
 
+*** Requests
     ~request~ - Get a specific request
     | Arguments   | Required | Type | Description            |
     |-------------+----------+------+------------------------|
@@ -84,3 +87,15 @@
     | Arguments     | Required | Type | Description                      |
     |---------------+----------+------+----------------------------------|
     | ~communityId~ | true     | ~ID~ | Select from a specific community |
+
+*** Notifications
+    ~notification~ - Get a specific notification
+    | Arguments        | Required | Type | Description                    |
+    |------------------+----------+------+--------------------------------|
+    | ~notificationId~ | true     | ~ID~ | Select a specific notification |
+
+    ~notifications~ - Get all the notifications of the current user from a given community
+    | Arguments     | Required | Type | Description                      |
+    |---------------+----------+------+----------------------------------|
+    | ~communityId~ | true     | ~ID~ | Select from a specific community |
+

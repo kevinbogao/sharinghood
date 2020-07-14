@@ -1,13 +1,13 @@
 const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
 const { constructTestServer } = require('../__utils');
-const inMemoryDb = require('../fixtures/inMemoryDb');
+const inMemoryDb = require('../__fixtures__/inMemoryDb');
 const {
   createInitData,
   mockUser01Id,
   mockCommunity01Id,
   mockUploadResponse,
-} = require('../fixtures/createInitData');
+} = require('../__fixtures__/createInitData');
 
 // Mocking dependencies
 jest.mock('../../utils/uploadImg');

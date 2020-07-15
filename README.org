@@ -1,7 +1,9 @@
 * Sharinghood
   When in doubt, consult [[https://github.com/kelseyhightower/nocode][nocode]]
-
-  Staging Link: https://sharinghood-staging.herokuapp.com
+  * Production Link: https://sharinghood.herokuapp.com
+  * Staging Link:    https://sharinghood-staging.herokuapp.com
+  * [[https://sharinghood.herokuapp.com][Production Link]]
+  * [[https://sharinghood-staging.herokuapp.com][Staging Link]]
 ** Quick Overview
    #+begin_src bash
    cd server && yarn dev
@@ -64,7 +66,7 @@
     ~communities~ - Get all communities that the current user is a member of
     | Arguments | Required | Type | Description            |
     |-----------+----------+------+------------------------|
-    | ~userId~ | false    | ~ID~ | Select a specific user |
+    | ~userId~  | false    | ~ID~ | Select a specific user |
 
 *** Posts
     ~post~ - Get a specific post
@@ -195,8 +197,8 @@
 
 *** Messages
     ~createMessage~ - Add a message to a specific notification
-    | Arguments      | Required | Type           | Description                      |
-    |----------------+----------+----------------+----------------------------------|
+    | Arguments      | Required | Type           | Description                       |
+    |----------------+----------+----------------+-----------------------------------|
     | ~messageInput~ | true     | ~MessageInput~ | Various ~Message~ type input data |
 
 *** Bookings
@@ -212,3 +214,6 @@
     | Arguments        | Required | Type | Description            |
     |------------------+----------+------+------------------------|
     | ~notificationId~ | true     | ~ID~ | Specify a notification |
+
+** Authentication
+

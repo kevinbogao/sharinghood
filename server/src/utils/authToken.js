@@ -17,7 +17,6 @@ function generateTokens(user) {
       userId: user._id,
       userName: user.name,
       email: user.email,
-      // communityId: user.community,
       ...(user.isAdmin && { isAdmin: true }),
     },
     process.env.JWT_SECRET,

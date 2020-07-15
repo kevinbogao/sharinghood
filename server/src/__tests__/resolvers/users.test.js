@@ -20,6 +20,7 @@ beforeAll(async () => {
   await inMemoryDb.connect();
 });
 
+// Write initial data to to database
 beforeEach(async () => {
   await createInitData();
 });
@@ -144,9 +145,7 @@ describe('[Mutation.users]', () => {
     expect(typeof res.data.login.accessToken).toBe('string');
   });
 
-  /**
-   * Register user & create community
-   */
+  // registerAndOrCreateCommunity mutation for user & community
   it('Register user and create community', async () => {
     // Create an instance of ApolloServer
     const { server } = constructTestServer({

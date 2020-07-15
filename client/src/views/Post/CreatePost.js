@@ -141,7 +141,7 @@ function CreatePost({ communityId, history, location }) {
             type="checkbox"
             ref={(node) => (isGiveaway = node)}
           />
-          <p className="main-p">
+          <p className="main-p checkbox">
             This is a giveaway! (People can borrow it for an indefinite time)
           </p>
         </div>
@@ -188,12 +188,21 @@ function CreatePost({ communityId, history, location }) {
 
               input {
                 margin: 5px 10px auto auto;
+
+                &.checkbox {
+                  margin: 20px 10px 0 0;
+                }
               }
 
               .main-p {
                 max-width: 280px;
                 font-size: 19px;
                 margin: 0;
+
+                &.checkbox {
+                  margin: 14px 0;
+                  font-size: 16px;
+                }
 
                 @include sm {
                   max-width: calc(100% - 20px);

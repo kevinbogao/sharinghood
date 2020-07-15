@@ -159,9 +159,6 @@ function NotificationDetails({ communityId, match, history }) {
       loading: { mutationLoading },
     },
   ] = useMutation(UPDATE_BOOKING, {
-    onCompleted: (data) => {
-      console.log(data);
-    },
     onError: ({ message }) => {
       console.log(message);
     },

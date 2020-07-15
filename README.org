@@ -3,8 +3,33 @@
   * [[https://sharinghood-staging.herokuapp.com][Staging link]]
   * [[https://sharinghood.herokuapp.com][Production link]]
 
+
+** Table of Contents                                               :noexport:
+   :PROPERTIES:
+   :TOC:      :include all
+   :END:
+   :CONTENTS:
+   - [[#sharinghood][Introduction]]
+     - [[#quick-overview][Quick Overview]]
+       - [[#architecture-and-tech-stack][Architecture and Tech Stack]]
+       - [[#getting-started][Getting Started]]
+   - [[#client][Client]]
+     - [[#notification-type][Notification Type]]
+     - [[#booking-status][Booking Status]]
+   - [[#server][Server]]
+     - [[#query][Query]]
+     - [[#mutation][Mutation]]
+     - [[#subscription][Subscription]]
+     - [[#authentication][Authentication]]
+     - [[#mongodb][MongoDB]]
+     - [[#redis][Redis]]
+     - [[#dependencies][Dependencies]]
+     - [[#testing][Testing]]
+   - [[#contributors][Contributors]]
+   :END: 
+
 ** Quick Overview
-*** Architecture
+*** Architecture and Tech Stack
     #+begin_src
        CLIENT        |                      SERVER
                      |
@@ -37,7 +62,7 @@
      * [[https://redis.io/][Redis]]
      * [[http://cloudinary.com/][Cloudinary]]
 
-*** Getting started
+*** Getting Started
     Start server and client
     #+begin_src bash
     cd server && yarn dev

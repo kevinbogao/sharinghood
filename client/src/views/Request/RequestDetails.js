@@ -72,6 +72,9 @@ const CREATE_THREAD = gql`
       poster {
         _id
       }
+      community {
+        _id
+      }
     }
   }
 `;

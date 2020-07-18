@@ -33,7 +33,8 @@ const bookingsResolvers = {
         // Save booking & send booking notification email if user is notified
         await Promise.all([
           booking.save(),
-          recipient.isNotified &&
+          process.env.NODE_ENV === 'production' &&
+            recipient.isNotified &&
             updateBookingMail(
               `${process.env.ORIGIN}/notifications`,
               recipient.email,

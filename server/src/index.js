@@ -71,3 +71,11 @@ const server = new ApolloServer({
     console.log(err);
   }
 })();
+
+// export all the important pieces for tests
+module.exports = {
+  typeDefs,
+  resolvers,
+  ApolloServer,
+  server,
+};

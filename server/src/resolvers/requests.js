@@ -137,7 +137,8 @@ const requestsResolvers = {
         await Promise.all([
           community.save(),
           creator.save(),
-          emails.length &&
+          process.env.NODE_ENV === 'production' &&
+            emails.length &&
             newRequestMail(
               userName,
               title,

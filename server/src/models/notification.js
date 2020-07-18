@@ -26,7 +26,7 @@ const notificationSchema = new Schema(
     messages: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Message',
       },
     ],
 

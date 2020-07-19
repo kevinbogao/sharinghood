@@ -56,12 +56,14 @@
 **** Client
      * [[https://reactjs.org/][React]]
      * [[https://www.apollographql.com/docs/react/][Apollo Client]]
+     * [[https://firebase.google.com/docs/cloud-messaging][Firebase Cloud Messaging]]
 
 **** Server
      * [[https://www.apollographql.com/docs/apollo-server/][Apollo Server]]
      * [[https://www.mongodb.com/][MongoDB]]
      * [[https://redis.io/][Redis]]
      * [[http://cloudinary.com/][Cloudinary]]
+     * [[https://firebase.google.com/docs/cloud-messaging][Firebase Cloud Messaging]]
 
 *** Getting Started
     Start server and client
@@ -291,6 +293,9 @@
 ** Redis
    [[https://redis.io/][Redis]] is used as in-memory data store, and ~PubSubEngine~ for messages. Data such as password reset key and notifications read status are stored as key-value pairs for quick access. The chat functionality is a GraphQl subscription operation that utilizes Redis' ~Pub/Sub~ implementation.
 
+** Firebase
+   [[https://firebase.google.com/docs/cloud-messaging][Firebase Cloud Messaging]] is used as messaging server for push notifications to the web and mobile clients. Each user's FCM token are stored on MongoDB database server.
+
 ** Dependencies
   * [[https://www.npmjs.com/package/apollo-server][apollo-server]] - GraphQl server
   * [[https://www.npmjs.com/package/bcrypt][bcryptjs]] - Password hashing library
@@ -300,7 +305,7 @@
   * [[https://www.npmjs.com/package/jsonwebtoken][jsonwebtoken]] - JSON Web Token implementation
   * [[https://www.npmjs.com/package/mongoose][mongoose]] - ODM for MongoDB
   * [[https://www.npmjs.com/package/nodemailer][nodemailer]] - Email sender for Node.js
-
+  * [[https://www.npmjs.com/package/node-gcm][node-gcm]] - Firebase Cloud Messaging interface
 
 ** Testing
    Run tests on local server

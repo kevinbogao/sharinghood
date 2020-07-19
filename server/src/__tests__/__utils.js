@@ -1,5 +1,5 @@
 const { ApolloServer } = require('apollo-server');
-const typeDefs = require('../schema');
+const typeDefs = require('../typeDefs');
 const resolvers = require('../resolvers');
 
 // Integration test unit

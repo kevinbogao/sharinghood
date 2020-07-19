@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { gql, useQuery, useMutation } from '@apollo/client';
+import firebase from 'firebase/app';
+import 'firebase/messaging';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './views/Home';
 import { Posts } from './views/Post/Posts';
@@ -25,7 +28,73 @@ import EditPost from './views/Post/EditPost';
 import { Notifications } from './views/Notification/Notifications';
 import NotificationDetails from './views/Notification/NotificationDetails';
 
+// Initialize firebase
+firebase.initializeApp({
+  apiKey: 'AIzaSyAHYmlwfITzo7-F-ubw3Y9oQjtZQ-vah8w',
+  authDomain: 'sharinghood-testing.firebaseapp.com',
+  databaseURL: 'https://sharinghood-testing.firebaseio.com',
+  projectId: 'sharinghood-testing',
+  storageBucket: 'sharinghood-testing.appspot.com',
+  messagingSenderId: '103410129857',
+  appId: '1:103410129857:web:52e44f3b1c9e1213e6ed40',
+});
+
+// Add fcm token mutation
+const ADD_FCM_TOKEN_TO_USER = gql`
+  mutation AddFcmToken($fcmToken: String!) {
+    addFcmToken(fcmToken: $fcmToken)
+  }
+`;
+
+const GET_ACCESS_TOKEN = gql`
+  query {
+    accessToken @client
+  }
+`;
+
 function App() {
+  const {
+    data: { accessToken },
+  } = useQuery(GET_ACCESS_TOKEN);
+  // Mutation to add FCM token to user
+  const [addFcmToken] = useMutation(ADD_FCM_TOKEN_TO_USER, {
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
+
+  // Get token and run mutation on mount
+  useEffect(() => {
+    (async () => {
+      // Retrieve object if browser supports it
+      if (firebase.messaging.isSupported()) {
+        // Retrieve messaging object
+        const messaging = firebase.messaging();
+
+        // Ask permission if user is logged in
+        if (accessToken) {
+          try {
+            // Request permission for notification
+            await messaging.requestPermission();
+
+            // Get token
+            const token = await messaging.getToken();
+
+            // Add token to user
+            if (token) {
+              addFcmToken({
+                variables: { fcmToken: token },
+              });
+            }
+          } catch (err) {
+            console.log(err);
+          }
+        }
+      }
+    })();
+    // eslint-disable-next-line
+  }, [accessToken]);
+
   return (
     <BrowserRouter>
       <Navbar />

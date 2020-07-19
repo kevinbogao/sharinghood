@@ -321,6 +321,25 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
+    addFcmToken: async (_, { fcmToken }, { user }) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
+      try {
+        // Add FCM token to user's fcmTokens array
+        await User.updateOne(
+          {
+            _id: user.userId,
+          },
+          // $addToSet ensures no duplications
+          { $addToSet: { fcmTokens: fcmToken } }
+        );
+
+        return true;
+      } catch (err) {
+        console.log(err);
+        throw new Error(err);
+      }
+    },
   },
 };
 

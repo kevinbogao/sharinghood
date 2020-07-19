@@ -121,6 +121,7 @@ const typeDefs = gql`
     isPost: Boolean!
     parentId: ID!
     communityId: ID!
+    recipientId: ID
   }
 
   # Messages
@@ -240,6 +241,7 @@ const typeDefs = gql`
     tokenRefresh(token: String!): Auth
     forgotPassword(email: String!): Boolean!
     resetPassword(resetKey: String!, password: String!): Boolean
+    addFcmToken(fcmToken: String): Boolean
 
     # User & Community
     registerAndOrCreateCommunity(

@@ -5,6 +5,7 @@ const Post = require('../models/post');
 const Booking = require('../models/booking');
 const Notification = require('../models/notification');
 const updateBookingMail = require('../utils/sendMail/updateBookingMail');
+const pushNotification = require('../utils/pushNotification');
 
 const notificationsResolvers = {
   Query: {
@@ -90,7 +91,6 @@ const notificationsResolvers = {
         throw new Error(err);
       }
     },
-    // TODO: filter notifications by communityId
     notifications: async (_, { communityId }, { user, redis }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
@@ -323,6 +323,13 @@ const notificationsResolvers = {
           },
           community: communityId,
         });
+
+        // Send push notification to item owner
+        pushNotification(
+          'Booking on your item',
+          `${user.userName} booked your ${post.title}`,
+          recipient.fcmTokens
+        );
 
         // Save notification to recipient & current user && save notification:recipientId to redis
         await Promise.all([

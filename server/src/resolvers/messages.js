@@ -1,7 +1,9 @@
 const { withFilter, AuthenticationError } = require('apollo-server');
 const pubsub = require('../utils/pubsub');
+const User = require('../models/user');
 const Message = require('../models/message');
 const Notification = require('../models/notification');
+const pushNotification = require('../utils/pushNotification');
 
 const NEW_NOTIFICATION_MESSAGE = 'NEW_NOTIFICATION_MESSAGE';
 
@@ -24,14 +26,15 @@ const messagesResolvers = {
       const { userId } = user;
 
       try {
-        // Create and save message & get notification
-        const [message, notification] = await Promise.all([
+        // Create and save message && get notification & recipient
+        const [message, notification, recipient] = await Promise.all([
           Message.create({
             text,
             sender: userId,
             notification: notificationId,
           }),
           Notification.findById(notificationId),
+          User.findById(recipientId).lean(),
         ]);
 
         // Add message id to notification & update recipient's isRead status to false
@@ -61,6 +64,13 @@ const messagesResolvers = {
             createdAt: message.createdAt,
           },
         });
+
+        // Sent push notification
+        pushNotification(
+          'You got a new message',
+          `${user.userName}: ${text}`,
+          recipient.fcmTokens
+        );
 
         return message;
       } catch (err) {

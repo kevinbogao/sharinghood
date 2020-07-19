@@ -7,6 +7,7 @@ const Booking = require('../models/booking');
 const Community = require('../models/community');
 const Notification = require('../models/notification');
 const uploadImg = require('../utils/uploadImg');
+const pushNotification = require('../utils/pushNotification');
 
 const postsResolvers = {
   Query: {
@@ -123,7 +124,12 @@ const postsResolvers = {
             creator: userId,
           }),
           User.findById(userId),
-          communityId && Community.findById(communityId),
+          communityId &&
+            Community.findById(communityId).populate({
+              path: 'members',
+              match: { _id: { $ne: userId } },
+              select: 'fcmTokens',
+            }),
           requesterId && User.findById(requesterId),
         ]);
 
@@ -131,6 +137,18 @@ const postsResolvers = {
         // uploading the post to a specific community
         if (communityId) {
           community.posts.push(post);
+
+          // Get a list FCM tokens from community members
+          const fcmTokens = community.members
+            .map((member) => member.fcmTokens)
+            .flat(1);
+
+          // Sent push notification
+          pushNotification(
+            'New item shared in your community',
+            `${userName} shared ${title} in the ${community.name} community`,
+            fcmTokens
+          );
         }
 
         // Create notification if requesterId is given
@@ -145,6 +163,12 @@ const postsResolvers = {
             },
             community: communityId,
           });
+
+          pushNotification(
+            'Your request is fulfilled',
+            `${userName} shared ${title} in the ${community.name} community for your request`,
+            requester.fcmTokens
+          );
 
           // Add notification to requester
           requester.notifications.push(notification);

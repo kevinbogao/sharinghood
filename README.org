@@ -31,25 +31,26 @@
 ** Quick Overview
 *** Architecture and Tech Stack
     #+begin_src
-       CLIENT        |                      SERVER
-                     |
-                     |                                     /-----------\
-                     |                                     |           |
-    +----------+     |     +--------------------+          |  MongoDB  |
-    |   Web    |     |     |                    |          |  Replica  |
-    |  Client  +-----|-----+                    +----------+    Set    |
-    +----------+     |     |     Monolithic     |          |           |
-                     |     |      GraphQl       |          \-----------/
-    +----------+     |     |       Server       |
-    |  Mobile  +-----|-----+                    |          +-----------+
-    |  Client  |     |     |                    +----------+   Redis   |
-    +----------+     |     +----------+---------+          |   Server  |
-                     |                |                    +-----------+
-                     |         +------+-----+
-                     |         | Cloudinary |
-                     |         |   Image    |
-                     |         |   Server   |
-                     |         +------------+
+       CLIENT                               SERVER
+
+                                                         /-----------\
+                                                         |           |
+    +----------+         +--------------------+          |  MongoDB  |
+    |   Web    +---------+                    |          |  Replica  |
+    |  Client  |<---+    |                    +----------+    Set    |
+    +----------+    |    |     Monolithic     |          |           |
+                    |    |      GraphQl       |          \-----------/
+    +----------+    |    |       Server       |
+    |  Mobile  +----|----+                    |          +-----------+
+    |  Client  |    |    |                    +----------+   Redis   |
+    +----+-----+    |    +--+---------+-------+          |   Server  |
+         ^          |       |         |                  +-----------+
+         |          |       V         |
+         |       +--+----------+      |      +------+-----+
+         |       |  Firebase   |      |      | Cloudinary |
+         +-------|    Cloud    |      +----->|   Image    |
+                 |  Messaging  |             |   Server   |
+                 +-------------+             +------------+
    #+end_src
 
 **** Client

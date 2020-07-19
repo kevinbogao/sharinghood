@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@apollo/client@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.0.0.tgz#d620fdd660e590920a3fcfed85b8602b74d3fe45"
-  integrity sha512-r9fYhjUpcwcvLJuNmJQlY1gkPyU08icXtekxY3ZNYMR5FUrml0QTIBHsgJTsVQX7HecNF+bPHJyrJhmv5O1jWQ==
+"@apollo/client@^3.0.0-beta.48":
+  version "3.0.0-rc.12"
+  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.0.0-rc.12.tgz#dbe2b0263efabcb57aa3460fafbc4a8d2144c3ad"
+  integrity sha512-Ok6nmlM631rYrSV5wT4Cx/JUXqMrThX2bwLMvKOfA7s7MG0B8MQivVxIeQK7k2rDNDltQSQ8/Byigws8Ebe06g==
   dependencies:
     "@types/zen-observable" "^0.8.0"
     "@wry/context" "^0.5.2"
@@ -20,10 +20,10 @@
     tslib "^1.10.0"
     zen-observable "^0.8.14"
 
-"@apollo/client@^3.0.0-beta.48":
-  version "3.0.0-rc.12"
-  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.0.0-rc.12.tgz#dbe2b0263efabcb57aa3460fafbc4a8d2144c3ad"
-  integrity sha512-Ok6nmlM631rYrSV5wT4Cx/JUXqMrThX2bwLMvKOfA7s7MG0B8MQivVxIeQK7k2rDNDltQSQ8/Byigws8Ebe06g==
+"@apollo/client@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.0.2.tgz#fadb2b39a0e32950baaef2566442cb3f6de74a52"
+  integrity sha512-4ighan5Anlj4tK/tdUHs4Mi1njqXZ7AxRCVolz/H702DjPphAJfm+FRkIadPTmwz+OLO+d+tX+6V1VBshf02rg==
   dependencies:
     "@types/zen-observable" "^0.8.0"
     "@wry/context" "^0.5.2"
@@ -1407,24 +1407,24 @@
   resolved "https://registry.yarnpkg.com/@firebase/webchannel-wrapper/-/webchannel-wrapper-0.2.41.tgz#4e470c25a99fa0b1f629f1c5ef180a318d399fd0"
   integrity sha512-XcdMT5PSZHiuf7LJIhzKIe+RyYa25S3LHRRvLnZc6iFjwXkrSDJ8J/HWO6VT8d2ZTbawp3VcLEjRF/VN8glCrA==
 
-"@fortawesome/fontawesome-common-types@^0.2.29":
-  version "0.2.29"
-  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.2.29.tgz#e1a456b643237462d390304cab6975ff3fd68397"
-  integrity sha512-cY+QfDTbZ7XVxzx7jxbC98Oxr/zc7R2QpTLqTxqlfyXDrAJjzi/xUIqAUsygELB62JIrbsWxtSRhayKFkGI7MA==
+"@fortawesome/fontawesome-common-types@^0.2.30":
+  version "0.2.30"
+  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.2.30.tgz#2f1cc5b46bd76723be41d0013a8450c9ba92b777"
+  integrity sha512-TsRwpTuKwFNiPhk1UfKgw7zNPeV5RhNp2Uw3pws+9gDAkPGKrtjR1y2lI3SYn7+YzyfuNknflpBA1LRKjt7hMg==
 
-"@fortawesome/fontawesome-svg-core@^1.2.29":
-  version "1.2.29"
-  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-svg-core/-/fontawesome-svg-core-1.2.29.tgz#34ef32824664534f9e4ef37982ebf286b899a189"
-  integrity sha512-xmPmP2t8qrdo8RyKihTkGb09RnZoc+7HFBCnr0/6ZhStdGDSLeEd7ajV181+2W29NWIFfylO13rU+s3fpy3cnA==
+"@fortawesome/fontawesome-svg-core@^1.2.30":
+  version "1.2.30"
+  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-svg-core/-/fontawesome-svg-core-1.2.30.tgz#f56dc6791861fe5d1af04fb8abddb94658c576db"
+  integrity sha512-E3sAXATKCSVnT17HYmZjjbcmwihrNOCkoU7dVMlasrcwiJAHxSKeZ+4WN5O+ElgO/FaYgJmASl8p9N7/B/RttA==
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.29"
+    "@fortawesome/fontawesome-common-types" "^0.2.30"
 
-"@fortawesome/free-solid-svg-icons@^5.13.1":
-  version "5.13.1"
-  resolved "https://registry.yarnpkg.com/@fortawesome/free-solid-svg-icons/-/free-solid-svg-icons-5.13.1.tgz#010a846b718a0f110b3cd137d072639b4e8bd41a"
-  integrity sha512-LQH/0L1p4+rqtoSHa9qFYR84hpuRZKqaQ41cfBQx8b68p21zoWSekTAeA54I/2x9VlCHDLFlG74Nmdg4iTPQOg==
+"@fortawesome/free-solid-svg-icons@^5.14.0":
+  version "5.14.0"
+  resolved "https://registry.yarnpkg.com/@fortawesome/free-solid-svg-icons/-/free-solid-svg-icons-5.14.0.tgz#970453f5e8c4915ad57856c3a0252ac63f6fec18"
+  integrity sha512-M933RDM8cecaKMWDSk3FRYdnzWGW7kBBlGNGfvqLVwcwhUPNj9gcw+xZMrqBdRqxnSXdl3zWzTCNNGEtFUq67Q==
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.29"
+    "@fortawesome/fontawesome-common-types" "^0.2.30"
 
 "@fortawesome/react-fontawesome@^0.1.11":
   version "0.1.11"
@@ -1942,26 +1942,26 @@
     dom-accessibility-api "^0.4.5"
     pretty-format "^25.5.0"
 
-"@testing-library/jest-dom@^5.11.0":
-  version "5.11.0"
-  resolved "https://registry.yarnpkg.com/@testing-library/jest-dom/-/jest-dom-5.11.0.tgz#1439f08dc85ce7c6d3bbad0ee5d53b2206f55768"
-  integrity sha512-mhaCySy7dZlyfcxcYy+0jLllODHEiHkVdmwQ00wD0HrWiSx0fSVHz/0WmdlRkvhfSOuqsRsBUreXOtBvruWGQA==
+"@testing-library/jest-dom@^5.11.1":
+  version "5.11.1"
+  resolved "https://registry.yarnpkg.com/@testing-library/jest-dom/-/jest-dom-5.11.1.tgz#b9541d7625cec9e5feb647f49a96c43f7c055cdd"
+  integrity sha512-NHOHjDwyBoqM7mXjNLieSp/6vJ17DILzhNTw7+RarluaBkyWRzWgFj+d6xnd1adMBlwfQSeR2FWGTxHXCxeMSA==
   dependencies:
     "@babel/runtime" "^7.9.2"
     "@types/testing-library__jest-dom" "^5.9.1"
     aria-query "^4.2.2"
     chalk "^3.0.0"
-    css "^2.2.4"
+    css "^3.0.0"
     css.escape "^1.5.1"
     jest-diff "^25.1.0"
     jest-matcher-utils "^25.1.0"
     lodash "^4.17.15"
     redent "^3.0.0"
 
-"@testing-library/react@^10.4.6":
-  version "10.4.6"
-  resolved "https://registry.yarnpkg.com/@testing-library/react/-/react-10.4.6.tgz#70a7cac35ac8256c22a8cb0c4779e0efefd218c6"
-  integrity sha512-pVcm8v0HxCEzrtasbC2bdhWM0P5X9o8a/xfBugC97uVVTmhVeGHj+5CdE1JYi/i2K+mCyeq5YqzHLW/gB+K12w==
+"@testing-library/react@^10.4.7":
+  version "10.4.7"
+  resolved "https://registry.yarnpkg.com/@testing-library/react/-/react-10.4.7.tgz#fc14847fb70a5e93576b8f7f0d1490ead02a9061"
+  integrity sha512-hUYbum3X2f1ZKusKfPaooKNYqE/GtPiQ+D2HJaJ4pkxeNJQFVUEvAvEh9+3QuLdBeTWkDMNY5NSijc5+pGdM4Q==
   dependencies:
     "@babel/runtime" "^7.10.3"
     "@testing-library/dom" "^7.17.1"
@@ -4114,7 +4114,7 @@ css.escape@^1.5.1:
   resolved "https://registry.yarnpkg.com/css.escape/-/css.escape-1.5.1.tgz#42e27d4fa04ae32f931a4b4d4191fa9cddee97cb"
   integrity sha1-QuJ9T6BK4y+TGktNQZH6nN3ul8s=
 
-css@^2.0.0, css@^2.2.4:
+css@^2.0.0:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/css/-/css-2.2.4.tgz#c646755c73971f2bba6a601e2cf2fd71b1298929"
   integrity sha512-oUnjmWpy0niI3x/mPL8dVEI1l7MnG3+HHyRPHf+YFSbK+svOhXpmSOcDURUh2aOCgl2grzrOPt1nHLuCVFULLw==
@@ -4123,6 +4123,15 @@ css@^2.0.0, css@^2.2.4:
     source-map "^0.6.1"
     source-map-resolve "^0.5.2"
     urix "^0.1.0"
+
+css@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/css/-/css-3.0.0.tgz#4447a4d58fdd03367c516ca9f64ae365cee4aa5d"
+  integrity sha512-DG9pFfwOrzc+hawpmqX/dHYHJG+Bsdb0klhyi1sDneOgGOXy9wQIC8hzyVp1e4NRYDBdxcylvywPkkXCHAzTyQ==
+  dependencies:
+    inherits "^2.0.4"
+    source-map "^0.6.1"
+    source-map-resolve "^0.6.0"
 
 cssdb@^4.4.0:
   version "4.4.0"
@@ -11249,6 +11258,14 @@ source-map-resolve@^0.5.0, source-map-resolve@^0.5.2:
     resolve-url "^0.2.1"
     source-map-url "^0.4.0"
     urix "^0.1.0"
+
+source-map-resolve@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/source-map-resolve/-/source-map-resolve-0.6.0.tgz#3d9df87e236b53f16d01e58150fc7711138e5ed2"
+  integrity sha512-KXBr9d/fO/bWo97NXsPIAW1bFSBOuCnjbNTBMO7N59hsv5i9yzRDfcYwwt0l04+VqnKC+EwzvJZIP/qkuMgR/w==
+  dependencies:
+    atob "^2.1.2"
+    decode-uri-component "^0.2.0"
 
 source-map-support@^0.5.6, source-map-support@~0.5.12:
   version "0.5.19"

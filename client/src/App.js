@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import { gql, useMutation } from '@apollo/client';
+import { gql, useQuery, useMutation } from '@apollo/client';
 import firebase from 'firebase/app';
 import 'firebase/messaging';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -39,9 +39,6 @@ firebase.initializeApp({
   appId: '1:103410129857:web:52e44f3b1c9e1213e6ed40',
 });
 
-// Retrieve messaging object
-const messaging = firebase.messaging();
-
 // Add fcm token mutation
 const ADD_FCM_TOKEN_TO_USER = gql`
   mutation AddFcmToken($fcmToken: String!) {
@@ -49,7 +46,16 @@ const ADD_FCM_TOKEN_TO_USER = gql`
   }
 `;
 
+const GET_ACCESS_TOKEN = gql`
+  query {
+    accessToken @client
+  }
+`;
+
 function App() {
+  const {
+    data: { accessToken },
+  } = useQuery(GET_ACCESS_TOKEN);
   // Mutation to add FCM token to user
   const [addFcmToken] = useMutation(ADD_FCM_TOKEN_TO_USER, {
     onError: ({ message }) => {
@@ -60,21 +66,34 @@ function App() {
   // Get token and run mutation on mount
   useEffect(() => {
     (async () => {
-      try {
-        await messaging.requestPermission();
-        const token = await messaging.getToken();
-        // Add token to user
-        if (token) {
-          addFcmToken({
-            variables: { fcmToken: token },
-          });
+      // Retrieve object if browser supports it
+      if (firebase.messaging.isSupported()) {
+        // Retrieve messaging object
+        const messaging = firebase.messaging();
+
+        // Ask permission if user is logged in
+        if (accessToken) {
+          try {
+            // Request permission for notification
+            await messaging.requestPermission();
+
+            // Get token
+            const token = await messaging.getToken();
+
+            // Add token to user
+            if (token) {
+              addFcmToken({
+                variables: { fcmToken: token },
+              });
+            }
+          } catch (err) {
+            console.log(err);
+          }
         }
-      } catch (err) {
-        console.log(err);
       }
     })();
     // eslint-disable-next-line
-  }, []);
+  }, [accessToken]);
 
   return (
     <BrowserRouter>

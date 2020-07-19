@@ -257,6 +257,7 @@ function RequestDetails({ communityId, match, history }) {
                             isPost: false,
                             parentId: data.request._id,
                             communityId,
+                            recipientId: data.request.creator._id,
                           },
                         },
                       });

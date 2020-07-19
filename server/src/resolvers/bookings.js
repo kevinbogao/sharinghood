@@ -3,6 +3,7 @@ const User = require('../models/user');
 const Post = require('../models/post');
 const Booking = require('../models/booking');
 const updateBookingMail = require('../utils/sendMail/updateBookingMail');
+const pushNotification = require('../utils/pushNotification');
 
 const bookingsResolvers = {
   Mutation: {
@@ -16,7 +17,7 @@ const bookingsResolvers = {
       try {
         // Find booking and recipient by id
         const [booking, recipient] = await Promise.all([
-          Booking.findById(bookingId),
+          Booking.findById(bookingId).populate('post'),
           User.findById(notifyRecipientId).lean(),
         ]);
 
@@ -41,6 +42,15 @@ const bookingsResolvers = {
               notifyContent
             ),
         ]);
+
+        // Send push notification to requester
+        pushNotification(
+          `Update on your booking on ${post.title}`,
+          `${user.userName} ${
+            status === 1 ? 'accepted' : 'denied'
+          } your booking on ${post.title}`,
+          recipient.fcmTokens
+        );
 
         return booking;
       } catch (err) {

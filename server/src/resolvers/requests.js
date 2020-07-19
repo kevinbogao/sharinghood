@@ -6,6 +6,7 @@ const Request = require('../models/request');
 const Community = require('../models/community');
 const uploadImg = require('../utils/uploadImg');
 const newRequestMail = require('../utils/sendMail/newRequestMail');
+const pushNotification = require('../utils/pushNotification');
 
 const requestsResolvers = {
   Query: {
@@ -121,8 +122,8 @@ const requestsResolvers = {
           // & only return email
           Community.findById(communityId).populate({
             path: 'members',
-            match: { _id: { $ne: userId }, isNotified: true },
-            select: 'email',
+            match: { _id: { $ne: userId } },
+            select: 'email isNotified fcmTokens',
           }),
         ]);
 
@@ -130,8 +131,10 @@ const requestsResolvers = {
         community.requests.push(request);
         creator.requests.push(request);
 
-        // parse array of members object into array of emails
-        const emails = community.members.map((member) => member.email);
+        // Parse array of members object into array of emails if member is notified
+        const emails = community.members
+          .filter((member) => member.isNotified === true)
+          .map((member) => member.email);
 
         // Save community & sent email to subscribed users
         await Promise.all([
@@ -149,6 +152,18 @@ const requestsResolvers = {
               `${userName} requested ${title} in your community.`
             ),
         ]);
+
+        // Get a list FCM tokens from community members
+        const fcmTokens = community.members
+          .map((member) => member.fcmTokens)
+          .flat(1);
+
+        // Sent push notification
+        pushNotification(
+          'New request in your community',
+          `${userName} requested ${title} in the ${community.name} community`,
+          fcmTokens
+        );
 
         return {
           ...request._doc,

@@ -2,7 +2,7 @@ require('dotenv').config();
 const { ApolloServer, AuthenticationError } = require('apollo-server');
 const Redis = require('ioredis');
 const mongoose = require('mongoose');
-const typeDefs = require('./schema');
+const typeDefs = require('./typeDefs');
 const resolvers = require('./resolvers');
 const { verifyToken } = require('./utils/authToken');
 

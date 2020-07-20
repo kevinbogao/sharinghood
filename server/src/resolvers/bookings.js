@@ -2,6 +2,7 @@ const { AuthenticationError } = require('apollo-server');
 const User = require('../models/user');
 const Post = require('../models/post');
 const Booking = require('../models/booking');
+const Notification = require('../models/notification');
 const updateBookingMail = require('../utils/sendMail/updateBookingMail');
 const pushNotification = require('../utils/pushNotification');
 
@@ -9,15 +10,25 @@ const bookingsResolvers = {
   Mutation: {
     updateBooking: async (
       _,
-      { bookingId, bookingInput: { status, notifyContent, notifyRecipientId } },
-      { user }
+      {
+        bookingInput: {
+          status,
+          bookingId,
+          communityId,
+          notificationId,
+          notifyContent,
+          notifyRecipientId,
+        },
+      },
+      { user, redis }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Find booking and recipient by id
-        const [booking, recipient] = await Promise.all([
+        // Find booking, notification & recipient by id
+        const [booking, notification, recipient] = await Promise.all([
           Booking.findById(bookingId).populate('post'),
+          Notification.findById(notificationId),
           User.findById(notifyRecipientId).lean(),
         ]);
 
@@ -31,9 +42,14 @@ const bookingsResolvers = {
         // Update booking status
         booking.status = status;
 
+        // Set recipient's notification isRead status to false
+        notification.isRead[notifyRecipientId] = false;
+        notification.markModified('isRead');
+
         // Save booking & send booking notification email if user is notified
         await Promise.all([
           booking.save(),
+          notification.save(),
           process.env.NODE_ENV === 'production' &&
             recipient.isNotified &&
             updateBookingMail(
@@ -41,11 +57,17 @@ const bookingsResolvers = {
               recipient.email,
               notifyContent
             ),
+          // Set communityId key to notifications:userId hash in redis
+          redis.hset(
+            `notifications:${notifyRecipientId}`,
+            `${communityId}`,
+            true
+          ),
         ]);
 
         // Send push notification to requester
         pushNotification(
-          `Update on your booking on ${post.title}`,
+          { communityId },
           `${user.userName} ${
             status === 1 ? 'accepted' : 'denied'
           } your booking on ${post.title}`,

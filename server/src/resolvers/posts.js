@@ -145,7 +145,7 @@ const postsResolvers = {
 
           // Sent push notification
           pushNotification(
-            'New item shared in your community',
+            {},
             `${userName} shared ${title} in the ${community.name} community`,
             fcmTokens
           );
@@ -165,7 +165,7 @@ const postsResolvers = {
           });
 
           pushNotification(
-            'Your request is fulfilled',
+            {},
             `${userName} shared ${title} in the ${community.name} community for your request`,
             requester.fcmTokens
           );

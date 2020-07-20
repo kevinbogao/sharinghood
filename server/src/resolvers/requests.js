@@ -160,7 +160,7 @@ const requestsResolvers = {
 
         // Sent push notification
         pushNotification(
-          'New request in your community',
+          {},
           `${userName} requested ${title} in the ${community.name} community`,
           fcmTokens
         );

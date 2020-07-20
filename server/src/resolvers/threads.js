@@ -34,10 +34,10 @@ const threadsResolvers = {
         // Send push notification to recipient if current user is not the owner
         if (recipient) {
           pushNotification(
+            {},
             `${user.userName} commented your ${
               isPost ? 'post' : 'request'
-            } for ${parent.title}`,
-            `${user.userName}: ${content}`,
+            } of ${parent.title}`,
             recipient.fcmTokens
           );
         }

@@ -19,7 +19,7 @@ const messagesResolvers = {
   Mutation: {
     createMessage: async (
       _,
-      { messageInput: { text, recipientId, notificationId } },
+      { messageInput: { text, communityId, recipientId, notificationId } },
       { user, redis }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
@@ -67,7 +67,10 @@ const messagesResolvers = {
 
         // Sent push notification
         pushNotification(
-          'You got a new message',
+          {
+            communityId,
+            recipientId,
+          },
           `${user.userName}: ${text}`,
           recipient.fcmTokens
         );

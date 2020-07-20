@@ -324,13 +324,6 @@ const notificationsResolvers = {
           community: communityId,
         });
 
-        // Send push notification to item owner
-        pushNotification(
-          'Booking on your item',
-          `${user.userName} booked your ${post.title}`,
-          recipient.fcmTokens
-        );
-
         // Save notification to recipient & current user && save notification:recipientId to redis
         await Promise.all([
           User.updateMany(
@@ -349,6 +342,19 @@ const notificationsResolvers = {
         const participants = await User.find({
           _id: { $in: [recipientId, user.userId] },
         });
+
+        // Send push notification if created notification is not chat
+        if (ofType !== 0) {
+          // Send push notification to item owner
+          pushNotification(
+            {
+              communityId,
+              recipientId,
+            },
+            `${user.userName} has requested to book your ${post.title}`,
+            recipient.fcmTokens
+          );
+        }
 
         // Return notification object with participants & booking if it is type 1
         return {

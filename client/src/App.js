@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import firebase from 'firebase/app';
 import 'firebase/messaging';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -39,20 +39,32 @@ firebase.initializeApp({
   appId: '1:103410129857:web:52e44f3b1c9e1213e6ed40',
 });
 
-// Add fcm token mutation
+// Add FCM token mutation
 const ADD_FCM_TOKEN_TO_USER = gql`
   mutation AddFcmToken($fcmToken: String!) {
     addFcmToken(fcmToken: $fcmToken)
   }
 `;
 
+// Get local accessToken
 const GET_ACCESS_TOKEN = gql`
   query {
     accessToken @client
   }
 `;
 
+const GET_USER_COMMUNITIES = gql`
+  query Communities {
+    communities {
+      _id
+      name
+      hasNotifications
+    }
+  }
+`;
+
 function App() {
+  const client = useApolloClient();
   const {
     data: { accessToken },
   } = useQuery(GET_ACCESS_TOKEN);
@@ -65,33 +77,68 @@ function App() {
 
   // Get token and run mutation on mount
   useEffect(() => {
-    (async () => {
-      // Retrieve object if browser supports it
-      if (firebase.messaging.isSupported()) {
-        // Retrieve messaging object
-        const messaging = firebase.messaging();
+    // Check if firebase messaging is supported by browser
+    if (firebase.messaging.isSupported()) {
+      // Retrieve messaging object
+      const messaging = firebase.messaging();
 
-        // Ask permission if user is logged in
-        if (accessToken) {
-          try {
-            // Request permission for notification
-            await messaging.requestPermission();
+      (async () => {
+        // Check if firebase messaging is supported by browser
+        if (firebase.messaging.isSupported()) {
+          // Ask permission if user is logged in
+          if (accessToken) {
+            try {
+              // Request permission for notification
+              await messaging.requestPermission();
 
-            // Get token
-            const token = await messaging.getToken();
+              // Get token
+              const token = await messaging.getToken();
 
-            // Add token to user
-            if (token) {
-              addFcmToken({
-                variables: { fcmToken: token },
-              });
+              // Add token to user
+              if (token) {
+                addFcmToken({
+                  variables: { fcmToken: token },
+                });
+              }
+            } catch (err) {
+              console.log(err);
             }
-          } catch (err) {
-            console.log(err);
           }
         }
-      }
-    })();
+      })();
+
+      // Subscribe to new FCM
+      messaging.onMessage((payload) => {
+        // Get all user's communities
+        try {
+          const { communities } = client.readQuery({
+            query: GET_USER_COMMUNITIES,
+          });
+
+          // Find the index of push notification's community
+          const communityIndex = communities.findIndex(
+            (community) => community._id === payload.data.communityId,
+          );
+
+          // Create a new instance of communities array
+          const newCommunities = [...communities];
+
+          // Change current community's hasNotifications status in the new new communities array
+          newCommunities[communityIndex] = {
+            ...newCommunities[communityIndex],
+            hasNotifications: true,
+          };
+
+          // Write the new notifications array cache
+          client.writeQuery({
+            query: GET_USER_COMMUNITIES,
+            data: { communities: newCommunities },
+          });
+          // eslint-disable-next-line
+        } catch {}
+      });
+    }
+
     // eslint-disable-next-line
   }, [accessToken]);
 

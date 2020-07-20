@@ -59,9 +59,18 @@ const GET_NOTIFICATIONS = gql`
   }
 `;
 
+// const UPDATE_BOOKING = gql`
+//   mutation UpdateBooking($bookingId: ID!, $bookingInput: BookingInput!) {
+//     updateBooking(bookingId: $bookingId, bookingInput: $bookingInput) {
+//       _id
+//       status
+//     }
+//   }
+// `;
+
 const UPDATE_BOOKING = gql`
-  mutation UpdateBooking($bookingId: ID!, $bookingInput: BookingInput!) {
-    updateBooking(bookingId: $bookingId, bookingInput: $bookingInput) {
+  mutation UpdateBooking($bookingInput: BookingInput!) {
+    updateBooking(bookingInput: $bookingInput) {
       _id
       status
     }
@@ -275,9 +284,11 @@ function Notifications({ history, communityId }) {
                                   e.preventDefault();
                                   updateBooking({
                                     variables: {
-                                      bookingId: notification.booking._id,
                                       bookingInput: {
                                         status: 1,
+                                        bookingId: notification.booking._id,
+                                        communityId,
+                                        notificationId: notification._id,
                                         notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${notification.booking.post.title}`,
                                         notifyRecipientId:
                                           notification.booking.booker._id,
@@ -296,9 +307,11 @@ function Notifications({ history, communityId }) {
                                   e.preventDefault();
                                   updateBooking({
                                     variables: {
-                                      bookingId: notification.booking._id,
                                       bookingInput: {
                                         status: 2,
+                                        bookingId: notification.booking._id,
+                                        communityId,
+                                        notificationId: notification._id,
                                         notifyContent: `${data.tokenPayload.userName} has denied your booking on ${notification.booking.post.title}`,
                                         notifyRecipientId:
                                           notification.booking.booker._id,

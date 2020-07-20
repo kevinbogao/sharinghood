@@ -57,8 +57,8 @@ const GET_NOTIFICATION = gql`
 `;
 
 const UPDATE_BOOKING = gql`
-  mutation UpdateBooking($bookingId: ID!, $bookingInput: BookingInput!) {
-    updateBooking(bookingId: $bookingId, bookingInput: $bookingInput) {
+  mutation UpdateBooking($bookingInput: BookingInput!) {
+    updateBooking(bookingInput: $bookingInput) {
       _id
       status
     }
@@ -277,9 +277,11 @@ function NotificationDetails({ communityId, match, history }) {
                           e.preventDefault();
                           updateBooking({
                             variables: {
-                              bookingId: data.notification.booking._id,
                               bookingInput: {
                                 status: 1,
+                                bookingId: data.notification.booking._id,
+                                communityId,
+                                notificationId: data.notification._id,
                                 notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${data.notification.booking.post.title}`,
                                 notifyRecipientId:
                                   data.notification.booking.booker._id,
@@ -297,9 +299,11 @@ function NotificationDetails({ communityId, match, history }) {
                           e.preventDefault();
                           updateBooking({
                             variables: {
-                              bookingId: data.notification.booking._id,
                               bookingInput: {
                                 status: 2,
+                                bookingId: data.notification.booking._id,
+                                communityId,
+                                notificationId: data.notification._id,
                                 notifyContent: `${data.tokenPayload.userName} has denied your booking on ${data.notification.booking.post.title}`,
                                 notifyRecipientId:
                                   data.notification.booking.booker._id,
@@ -354,6 +358,7 @@ function NotificationDetails({ communityId, match, history }) {
                   variables: {
                     messageInput: {
                       text,
+                      communityId,
                       recipientId: data.notification.participants[0]._id,
                       notificationId: match.params.id,
                     },
@@ -372,6 +377,7 @@ function NotificationDetails({ communityId, match, history }) {
                   variables: {
                     messageInput: {
                       text,
+                      communityId,
                       recipientId: data.notification.participants[0]._id,
                       notificationId: match.params.id,
                     },

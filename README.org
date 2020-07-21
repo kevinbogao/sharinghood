@@ -48,7 +48,7 @@
          |          |       V         |
          |       +--+----------+      |      +------------+
          |       |  Firebase   |      |      | Cloudinary |
-         +-------|    Cloud    |      +----->|   Image    |
+         +-------+    Cloud    |      +----->|   Image    |
                  |  Messaging  |             |   Server   |
                  +-------------+             +------------+
    #+end_src

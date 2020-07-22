@@ -39,6 +39,8 @@
       "comma-dangle": "off",
       "indent": "off",
       "operator-linebreak": "off",
+      "function-paren-newline": "off",
+      "implicit-arrow-linebreak": "off",
       "no-underscore-dangle": [
         "error",
         {

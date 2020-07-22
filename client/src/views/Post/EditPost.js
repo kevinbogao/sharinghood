@@ -87,16 +87,12 @@ function EditPost({ history, match }) {
         history.replace(`/shared/${post._id}`);
       }
 
-      // Look through all user's communities and check if
-      // the post exists in posts arrays
-      const communityArr = [];
-      for (let i = 0; i < communities.length; i++) {
-        const itemExists = communities[i].posts.some(
-          (post) => post._id === match.params.id,
-        );
-        if (!itemExists) communityArr.push(communities[i]);
-      }
-      setCommunityArr(communityArr);
+      // Create a list of communities where the post is not present in
+      const remainCommunities = communities.filter(
+        (community) =>
+          !community.posts.some((post) => post._id === match.params.id),
+      );
+      setCommunityArr(remainCommunities);
     },
     onError: ({ message }) => {
       console.log(message);
@@ -183,13 +179,15 @@ function EditPost({ history, match }) {
   const [deletePost] = useMutation(DELETE_POST, {
     update(cache, { data: { deletePost } }) {
       try {
-        // Loop over user's communities and query posts with community ids
-        // delete post from posts array
+        // Delete post from all communities in cache
         for (let i = 0; i < data.communities.length; i++) {
+          // Get post by community id from cache
           const { posts } = cache.readQuery({
             query: GET_POSTS,
             variables: { communityId: data.communities[i]._id },
           });
+
+          // Remove the post from posts array
           cache.writeQuery({
             query: GET_POSTS,
             variables: { communityId: data.communities[i]._id },

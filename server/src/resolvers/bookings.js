@@ -36,7 +36,7 @@ const bookingsResolvers = {
         // && throw error if not
         const post = await Post.findById(booking.post).lean();
         if (!post.creator.equals(user.userId)) {
-          throw new Error('Anauthorised user');
+          throw new Error('Unauthorized user');
         }
 
         // Update booking status

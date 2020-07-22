@@ -272,7 +272,7 @@ const notificationsResolvers = {
 
           // If type is 1 (i.e booking), create booking
         } else if (ofType === 1) {
-          // Destructure variables from bookingInput
+          // Destruct variables from bookingInput
           const {
             postId,
             dateType,

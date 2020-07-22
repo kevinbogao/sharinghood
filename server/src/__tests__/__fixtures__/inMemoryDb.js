@@ -29,11 +29,11 @@ async function close() {
 // Clean data from in-memory DB
 async function cleanup() {
   const { collections } = mongoose.connection;
-
-  for (const key in collections) {
-    const collection = collections[key];
-    await collection.deleteMany();
-  }
+  await Promise.all(
+    Object.keys(collections).map((collection) =>
+      collections[collection].deleteMany()
+    )
+  );
 }
 
 module.exports = { connect, close, cleanup };

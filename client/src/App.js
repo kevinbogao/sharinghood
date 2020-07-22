@@ -109,31 +109,29 @@ function App() {
 
       // Subscribe to new FCM
       messaging.onMessage((payload) => {
-        // Get all user's communities
         try {
+          // Get all user's communities from cache
           const { communities } = client.readQuery({
             query: GET_USER_COMMUNITIES,
           });
 
-          // Find the index of push notification's community
-          const communityIndex = communities.findIndex(
-            (community) => community._id === payload.data.communityId,
-          );
+          // New communities array with target community's has notifications to true
+          const newCommunitiesArr = communities.map((community) => {
+            if (community._id === payload.data.communityId) {
+              return {
+                ...community,
+                hasNotifications: true,
+              };
+            }
+            return community;
+          });
 
-          // Create a new instance of communities array
-          const newCommunities = [...communities];
-
-          // Change current community's hasNotifications status in the new new communities array
-          newCommunities[communityIndex] = {
-            ...newCommunities[communityIndex],
-            hasNotifications: true,
-          };
-
-          // Write the new notifications array cache
+          // Write the new communities array to cache
           client.writeQuery({
             query: GET_USER_COMMUNITIES,
-            data: { communities: newCommunities },
+            data: { communities: newCommunitiesArr },
           });
+
           // eslint-disable-next-line
         } catch {}
       });

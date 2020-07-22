@@ -334,6 +334,8 @@ const usersResolvers = {
           { $addToSet: { fcmTokens: fcmToken } }
         );
 
+        console.log(fcmToken);
+
         return true;
       } catch (err) {
         console.log(err);

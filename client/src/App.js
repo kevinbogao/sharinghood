@@ -1,8 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import firebase from 'firebase/app';
 import 'firebase/messaging';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './views/Home';
 import { Posts } from './views/Post/Posts';
@@ -65,15 +67,27 @@ const GET_USER_COMMUNITIES = gql`
 
 function App() {
   const client = useApolloClient();
+  const [isRequestOpen, setIsRequestOpen] = useState(false);
+
+  // Get access token from cache
   const {
     data: { accessToken },
   } = useQuery(GET_ACCESS_TOKEN);
+
   // Mutation to add FCM token to user
   const [addFcmToken] = useMutation(ADD_FCM_TOKEN_TO_USER, {
     onError: ({ message }) => {
       console.log(message);
     },
   });
+
+  // Set request for notification permission to open if user is logged in
+  // && if the permission setting is yet to be answered
+  useEffect(() => {
+    if (accessToken && Notification.permission === 'default') {
+      setIsRequestOpen(true);
+    }
+  }, [accessToken]);
 
   // Get token and run mutation on mount
   useEffect(() => {
@@ -83,26 +97,24 @@ function App() {
       const messaging = firebase.messaging();
 
       (async () => {
-        // Check if firebase messaging is supported by browser
-        if (firebase.messaging.isSupported()) {
-          // Ask permission if user is logged in
-          if (accessToken) {
-            try {
-              // Request permission for notification
-              await messaging.requestPermission();
+        // Get currentToken if user is logged in and the the notification permission
+        // is granted
+        if (accessToken && Notification.permission === 'granted') {
+          try {
+            // Request permission for notification
+            await messaging.requestPermission();
 
-              // Get token
-              const token = await messaging.getToken();
+            // Get token
+            const token = await messaging.getToken();
 
-              // Add token to user
-              if (token) {
-                addFcmToken({
-                  variables: { fcmToken: token },
-                });
-              }
-            } catch (err) {
-              console.log(err);
+            // Add token to user
+            if (token) {
+              addFcmToken({
+                variables: { fcmToken: token },
+              });
             }
+          } catch (err) {
+            console.log(err);
           }
         }
       })();
@@ -138,10 +150,31 @@ function App() {
     }
 
     // eslint-disable-next-line
-  }, [accessToken]);
+  }, [accessToken, Notification.permission]);
 
   return (
     <BrowserRouter>
+      {isRequestOpen && (
+        <div className="request-notification">
+          <p>
+            Sharinghood needs your premission to{' '}
+            <span
+              role="presentation"
+              onClick={async () => {
+                await Notification.requestPermission();
+                setIsRequestOpen(false);
+              }}
+            >
+              enable desktop notifications
+            </span>
+          </p>
+          <FontAwesomeIcon
+            className="times-icon"
+            icon={faTimes}
+            onClick={() => setIsRequestOpen(false)}
+          />
+        </div>
+      )}
       <Navbar />
       <div className="base-control">
         <Route exact path="/" component={Home} />
@@ -421,6 +454,46 @@ function App() {
             height: 100vh;
             display: flex;
             flex-direction: column;
+          }
+
+          .request-notification {
+            position: absolute;
+            top: 0;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            background: $orange;
+            font-size: 14px;
+            z-index: 7000;
+            box-shadow: 0px 2px 4px $grey-200;
+
+            p {
+              margin: 6px;
+
+              @include sm {
+                margin-right: 20px;
+              }
+            }
+
+            span {
+              text-decoration: underline;
+              font-weight: bold;
+
+              &:hover {
+                cursor: pointer;
+              }
+            }
+
+            .times-icon {
+              position: absolute;
+              right: 15px;
+
+              &:hover {
+                cursor: pointer;
+              }
+            }
           }
 
           .base-control {

@@ -191,7 +191,7 @@ const requestsResolvers = {
 
         // Throw error if user is not post creator
         if (!request.creator.equals(user.userId)) {
-          throw new Error('Anauthorised user');
+          throw new Error('Unauthorized user');
         }
 
         // Destruct threads from request

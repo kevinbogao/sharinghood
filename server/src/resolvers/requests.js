@@ -153,16 +153,19 @@ const requestsResolvers = {
             ),
         ]);
 
-        // Get a list FCM tokens from community members
-        const fcmTokens = community.members
-          .map((member) => member.fcmTokens)
-          .flat(1);
+        // Get a list of users that has FCM tokens
+        const receivers = community.members
+          .filter((member) => member.fcmTokens.length)
+          .map((member) => ({
+            _id: member._id,
+            fcmTokens: member.fcmTokens,
+          }));
 
         // Sent push notification
         pushNotification(
           {},
           `${userName} requested ${title} in the ${community.name} community`,
-          fcmTokens
+          receivers
         );
 
         return {

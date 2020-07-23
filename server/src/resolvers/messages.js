@@ -72,7 +72,12 @@ const messagesResolvers = {
             recipientId,
           },
           `${user.userName}: ${text}`,
-          recipient.fcmTokens
+          [
+            {
+              _id: recipient._id,
+              fcmTokens: recipient.fcmTokens,
+            },
+          ]
         );
 
         return message;

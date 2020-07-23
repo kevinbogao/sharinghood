@@ -38,7 +38,12 @@ const threadsResolvers = {
             `${user.userName} commented your ${
               isPost ? 'post' : 'request'
             } of ${parent.title}`,
-            recipient.fcmTokens
+            [
+              {
+                _id: recipient._id,
+                fcmTokens: recipient.fcmTokens,
+              },
+            ]
           );
         }
 

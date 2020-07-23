@@ -352,7 +352,12 @@ const notificationsResolvers = {
               recipientId,
             },
             `${user.userName} has requested to book your ${post.title}`,
-            recipient.fcmTokens
+            [
+              {
+                _id: recipient._id,
+                fcmTokens: recipient.fcmTokens,
+              },
+            ]
           );
         }
 

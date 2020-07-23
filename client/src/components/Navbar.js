@@ -10,7 +10,7 @@ import {
   faSignOutAlt,
 } from '@fortawesome/free-solid-svg-icons';
 
-const GET_TOKEN_PAYLOAD = gql`
+const GET_SESSION_DATA = gql`
   query {
     accessToken @client
     tokenPayload @client
@@ -46,26 +46,17 @@ function Navbar() {
   const history = useHistory();
   const client = useApolloClient();
   const [isMenuActive, setIsMenuActive] = useState(false);
-  const [hasNotifications, setHasNotifications] = useState(false);
+
+  // Get local session data
   const {
     data: { accessToken, tokenPayload, selCommunityId },
     refetch,
-  } = useQuery(GET_TOKEN_PAYLOAD);
+  } = useQuery(GET_SESSION_DATA);
+
+  // Get current community & user's communities
   const { data } = useQuery(GET_COMMUNITY, {
-    // skip: !localStorage.getItem('@sharinghood:accessToken') || !selCommunityId,
     skip: !accessToken || !selCommunityId,
     variables: { communityId: selCommunityId },
-    onCompleted: (data) => {
-      // Loop through all communities for hasNotifications if communities exists
-      if (data?.communities) {
-        for (let i = 0; i < data.communities.length; i++) {
-          if (data.communities[i].hasNotifications) {
-            setHasNotifications(true);
-            break;
-          }
-        }
-      }
-    },
     onError: () => {},
   });
 
@@ -88,13 +79,6 @@ function Navbar() {
     };
   }, [isMenuActive]);
 
-  // Set hasNotifications state to false if selCommunityId is null
-  useEffect(() => {
-    if (!selCommunityId) {
-      setHasNotifications(false);
-    }
-  }, [selCommunityId]);
-
   function toggleMenu() {
     setIsMenuActive(!isMenuActive);
   }
@@ -111,7 +95,10 @@ function Navbar() {
         )}
       </div>
       <div className="nav-logo">
-        {hasNotifications && <span className="communities-unread" />}
+        {data?.communities.find(
+          (community) =>
+            community._id !== selCommunityId && community.hasNotifications,
+        ) && <span className="communities-unread" />}
         <h1 className={selCommunityId && 'select'}>
           <Link
             to={

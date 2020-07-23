@@ -2,8 +2,26 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useMutation, useApolloClient } from '@apollo/client';
 import jwtDecode from 'jwt-decode';
+import Modal from 'react-modal';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import Loading from '../../components/Loading';
 import InlineError from '../../components/InlineError';
+import TermsAndConditions from '../../components/TermsAndConditions';
+
+const MODAL_STYLE = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+    borderWidth: 0,
+    boxShadow: '0px 0px 6px #f2f2f2',
+    padding: '30px 50px',
+  },
+};
 
 const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
   mutation RegisterAndOrCreateCommunity(
@@ -45,6 +63,7 @@ function Register({
   const client = useApolloClient();
   let email, password, confirmPassword, isNotified, agreed;
   const [error, setError] = useState({});
+  const [isModalOpen, setIsModalOpen] = useState(true);
   const [
     registerAndOrCreateCommunity,
     { loading: mutationLoading, error: mutationError },
@@ -187,7 +206,11 @@ function Register({
           <input type="checkbox" ref={(node) => (agreed = node)} />
           <p>
             I agree to the{' '}
-            <button type="button" className="terms-btn">
+            <button
+              type="button"
+              className="terms-btn"
+              onClick={() => setIsModalOpen(true)}
+            >
               terms and conditions
             </button>
           </p>
@@ -210,6 +233,20 @@ function Register({
       >
         Login
       </button>
+      <Modal
+        id="terms-modal"
+        style={MODAL_STYLE}
+        isOpen={isModalOpen}
+        onRequestClose={() => setIsModalOpen(false)}
+      >
+        <FontAwesomeIcon
+          className="terms-times-icon"
+          icon={faTimes}
+          onClick={() => setIsModalOpen(false)}
+          size="lg"
+        />
+        <TermsAndConditions />
+      </Modal>
       {mutationLoading && <Loading isCover />}
       {mutationError && <p>Error :( Please try again</p>}
       <style jsx>
@@ -278,6 +315,37 @@ function Register({
               &:hover {
                 cursor: pointer;
               }
+            }
+          }
+        `}
+      </style>
+      <style jsx global>
+        {`
+          @import './src/assets/scss/index.scss';
+
+          #terms-modal {
+            max-width: $xl-max-width;
+            max-height: 70vh;
+            padding: 30px 50px;
+
+            @include xl {
+              width: 80vw;
+            }
+
+            @include sm {
+              max-height: 85vh;
+              padding: 20px;
+            }
+          }
+
+          .terms-times-icon {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0px;
+            float: right;
+
+            &:hover {
+              poster: cursor;
             }
           }
         `}

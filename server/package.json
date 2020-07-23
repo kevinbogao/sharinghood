@@ -5,7 +5,8 @@
     "start": "node src/index.js",
     "client": "cd ../client && yarn start",
     "server": "nodemon src/index.js",
-    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\"",
+    "test": "env-cmd -e test -r ./.env-cmdrc.json jest"
   },
   "main": "index.js",
   "license": "MIT",
@@ -13,13 +14,22 @@
     "node": "14.x",
     "yarn": "1.x"
   },
+  "jest": {
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/__utils",
+      "/__fixtures__/"
+    ]
+  },
   "eslintConfig": {
     "extends": [
       "airbnb-base"
     ],
     "env": {
       "node": true,
-      "es6": true
+      "es6": true,
+      "jest": true
     },
     "rules": {
       "no-console": "off",
@@ -28,7 +38,10 @@
       "one-var-declaration-per-line": "off",
       "comma-dangle": "off",
       "indent": "off",
+      "no-plusplus": "off",
       "operator-linebreak": "off",
+      "function-paren-newline": "off",
+      "implicit-arrow-linebreak": "off",
       "no-underscore-dangle": [
         "error",
         {
@@ -45,7 +58,12 @@
             "secure_url",
             "cloud_name",
             "api_key",
-            "api_secret"
+            "api_secret",
+            "public_id",
+            "resource_type",
+            "created_at",
+            "asset_id",
+            "version_id"
           ]
         }
       ]
@@ -57,7 +75,8 @@
     "arrowParens": "always"
   },
   "dependencies": {
-    "apollo-server": "^2.15.1",
+    "apollo-server": "^2.16.0",
+    "apollo-server-testing": "^2.16.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.22.0",
     "dotenv": "^8.2.0",
@@ -67,14 +86,20 @@
     "ioredis": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.19",
-    "mongoose": "^5.9.24",
+    "mongoose": "^5.9.25",
+    "node-gcm": "^1.0.3",
     "nodemailer": "^6.4.10"
   },
   "devDependencies": {
     "concurrently": "^5.2.0",
-    "eslint": "^7.4.0",
+    "env-cmd": "^10.1.0",
+    "eslint": "^7.5.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
-    "nodemon": "^2.0.4"
+    "eslint-plugin-jest": "^23.18.0",
+    "jest": "^26.1.0",
+    "mongodb-memory-server": "^6.6.1",
+    "nodemon": "^2.0.4",
+    "sinon": "^9.0.2"
   }
 }

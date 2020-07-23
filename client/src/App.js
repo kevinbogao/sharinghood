@@ -1,5 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
+import firebase from 'firebase/app';
+import 'firebase/messaging';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './views/Home';
 import { Posts } from './views/Post/Posts';
@@ -25,9 +30,151 @@ import EditPost from './views/Post/EditPost';
 import { Notifications } from './views/Notification/Notifications';
 import NotificationDetails from './views/Notification/NotificationDetails';
 
+// Initialize firebase
+firebase.initializeApp({
+  apiKey: 'AIzaSyAHYmlwfITzo7-F-ubw3Y9oQjtZQ-vah8w',
+  authDomain: 'sharinghood-testing.firebaseapp.com',
+  databaseURL: 'https://sharinghood-testing.firebaseio.com',
+  projectId: 'sharinghood-testing',
+  storageBucket: 'sharinghood-testing.appspot.com',
+  messagingSenderId: '103410129857',
+  appId: '1:103410129857:web:52e44f3b1c9e1213e6ed40',
+});
+
+// Add FCM token mutation
+const ADD_FCM_TOKEN_TO_USER = gql`
+  mutation AddFcmToken($fcmToken: String!) {
+    addFcmToken(fcmToken: $fcmToken)
+  }
+`;
+
+// Get local accessToken
+const GET_ACCESS_TOKEN = gql`
+  query {
+    accessToken @client
+  }
+`;
+
+const GET_USER_COMMUNITIES = gql`
+  query Communities {
+    communities {
+      _id
+      name
+      hasNotifications
+    }
+  }
+`;
+
 function App() {
+  const client = useApolloClient();
+  const [isRequestOpen, setIsRequestOpen] = useState(false);
+
+  // Get access token from cache
+  const {
+    data: { accessToken },
+  } = useQuery(GET_ACCESS_TOKEN);
+
+  // Mutation to add FCM token to user
+  const [addFcmToken] = useMutation(ADD_FCM_TOKEN_TO_USER, {
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
+
+  // Set request for notification permission to open if user is logged in
+  // && if the permission setting is yet to be answered
+  useEffect(() => {
+    if (accessToken && Notification.permission === 'default') {
+      setIsRequestOpen(true);
+    }
+  }, [accessToken]);
+
+  // Get token and run mutation on mount
+  useEffect(() => {
+    // Check if firebase messaging is supported by browser
+    if (firebase.messaging.isSupported()) {
+      // Retrieve messaging object
+      const messaging = firebase.messaging();
+
+      (async () => {
+        // Get currentToken if user is logged in and the the notification permission
+        // is granted
+        if (accessToken && Notification.permission === 'granted') {
+          try {
+            // Request permission for notification
+            await messaging.requestPermission();
+
+            // Get token
+            const token = await messaging.getToken();
+
+            // Add token to user
+            if (token) {
+              addFcmToken({
+                variables: { fcmToken: token },
+              });
+            }
+          } catch (err) {
+            console.log(err);
+          }
+        }
+      })();
+
+      // Subscribe to new FCM
+      messaging.onMessage((payload) => {
+        try {
+          // Get all user's communities from cache
+          const { communities } = client.readQuery({
+            query: GET_USER_COMMUNITIES,
+          });
+
+          // New communities array with target community's has notifications to true
+          const newCommunitiesArr = communities.map((community) => {
+            if (community._id === payload.data.communityId) {
+              return {
+                ...community,
+                hasNotifications: true,
+              };
+            }
+            return community;
+          });
+
+          // Write the new communities array to cache
+          client.writeQuery({
+            query: GET_USER_COMMUNITIES,
+            data: { communities: newCommunitiesArr },
+          });
+
+          // eslint-disable-next-line
+        } catch {}
+      });
+    }
+
+    // eslint-disable-next-line
+  }, [accessToken, Notification.permission]);
+
   return (
     <BrowserRouter>
+      {isRequestOpen && (
+        <div className="request-notification">
+          <p>
+            Sharinghood needs your premission to{' '}
+            <span
+              role="presentation"
+              onClick={async () => {
+                await Notification.requestPermission();
+                setIsRequestOpen(false);
+              }}
+            >
+              enable desktop notifications
+            </span>
+          </p>
+          <FontAwesomeIcon
+            className="times-icon"
+            icon={faTimes}
+            onClick={() => setIsRequestOpen(false)}
+          />
+        </div>
+      )}
       <Navbar />
       <div className="base-control">
         <Route exact path="/" component={Home} />
@@ -307,6 +454,46 @@ function App() {
             height: 100vh;
             display: flex;
             flex-direction: column;
+          }
+
+          .request-notification {
+            position: absolute;
+            top: 0;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            background: $orange;
+            font-size: 14px;
+            z-index: 7000;
+            box-shadow: 0px 2px 4px $grey-200;
+
+            p {
+              margin: 6px;
+
+              @include sm {
+                margin-right: 20px;
+              }
+            }
+
+            span {
+              text-decoration: underline;
+              font-weight: bold;
+
+              &:hover {
+                cursor: pointer;
+              }
+            }
+
+            .times-icon {
+              position: absolute;
+              right: 15px;
+
+              &:hover {
+                cursor: pointer;
+              }
+            }
           }
 
           .base-control {

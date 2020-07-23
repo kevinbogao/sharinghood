@@ -121,6 +121,7 @@ const typeDefs = gql`
     isPost: Boolean!
     parentId: ID!
     communityId: ID!
+    recipientId: ID
   }
 
   # Messages
@@ -134,6 +135,7 @@ const typeDefs = gql`
   input MessageInput {
     text: String!
     recipientId: ID!
+    communityId: ID!
     notificationId: ID!
   }
 
@@ -150,11 +152,13 @@ const typeDefs = gql`
 
   input BookingInput {
     postId: ID
+    bookingId: ID
+    communityId: ID
+    notificationId: ID
     status: Int
     dateType: Int
     dateNeed: String
     dateReturn: String
-    communityId: ID
     notifyContent: String
     notifyRecipientId: ID
   }
@@ -240,6 +244,7 @@ const typeDefs = gql`
     tokenRefresh(token: String!): Auth
     forgotPassword(email: String!): Boolean!
     resetPassword(resetKey: String!, password: String!): Boolean
+    addFcmToken(fcmToken: String): Boolean
 
     # User & Community
     registerAndOrCreateCommunity(
@@ -269,7 +274,7 @@ const typeDefs = gql`
     createMessage(messageInput: MessageInput!): Message
 
     # Booking
-    updateBooking(bookingId: ID!, bookingInput: BookingInput!): Booking
+    updateBooking(bookingInput: BookingInput!): Booking
 
     # Notification
     createNotification(notificationInput: NotificationInput): Notification

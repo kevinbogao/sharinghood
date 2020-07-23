@@ -79,6 +79,9 @@ const CREATE_THREAD = gql`
       poster {
         _id
       }
+      community {
+        _id
+      }
     }
   }
 `;
@@ -334,6 +337,7 @@ function PostDetails({ communityId, match, history }) {
                             isPost: true,
                             parentId: data.post._id,
                             communityId,
+                            recipientId: data.post.creator._id,
                           },
                         },
                       });

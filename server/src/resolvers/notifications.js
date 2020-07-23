@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const User = require('../models/user');
 const Post = require('../models/post');
 const Booking = require('../models/booking');
-// const Community = require('../models/community');
 const Notification = require('../models/notification');
 const updateBookingMail = require('../utils/sendMail/updateBookingMail');
+const pushNotification = require('../utils/pushNotification');
 
 const notificationsResolvers = {
   Query: {
@@ -91,7 +91,6 @@ const notificationsResolvers = {
         throw new Error(err);
       }
     },
-    // TODO: filter notifications by communityId
     notifications: async (_, { communityId }, { user, redis }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
@@ -273,7 +272,7 @@ const notificationsResolvers = {
 
           // If type is 1 (i.e booking), create booking
         } else if (ofType === 1) {
-          // Destructure variables from bookingInput
+          // Destruct variables from bookingInput
           const {
             postId,
             dateType,
@@ -302,7 +301,8 @@ const notificationsResolvers = {
           // Save post & sent booking email to recipient if recipient is subscribed to email
           await Promise.all([
             post.save(),
-            recipient.isNotified &&
+            process.env.NODE_ENV === 'production' &&
+              recipient.isNotified &&
               updateBookingMail(
                 `${process.env.ORIGIN}/notifications`,
                 recipient.email,
@@ -342,6 +342,24 @@ const notificationsResolvers = {
         const participants = await User.find({
           _id: { $in: [recipientId, user.userId] },
         });
+
+        // Send push notification if created notification is not chat
+        if (ofType !== 0) {
+          // Send push notification to item owner
+          pushNotification(
+            {
+              communityId,
+              recipientId,
+            },
+            `${user.userName} has requested to book your ${post.title}`,
+            [
+              {
+                _id: recipient._id,
+                fcmTokens: recipient.fcmTokens,
+              },
+            ]
+          );
+        }
 
         // Return notification object with participants & booking if it is type 1
         return {

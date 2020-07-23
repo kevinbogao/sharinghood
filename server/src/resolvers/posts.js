@@ -138,16 +138,19 @@ const postsResolvers = {
         if (communityId) {
           community.posts.push(post);
 
-          // Get a list FCM tokens from community members
-          const fcmTokens = community.members
-            .map((member) => member.fcmTokens)
-            .flat(1);
+          // Get a list of users that has FCM tokens
+          const receivers = community.members
+            .filter((member) => member.fcmTokens.length)
+            .map((member) => ({
+              _id: member._id,
+              fcmTokens: member.fcmTokens,
+            }));
 
           // Sent push notification
           pushNotification(
             {},
             `${userName} shared ${title} in the ${community.name} community`,
-            fcmTokens
+            receivers
           );
         }
 
@@ -167,7 +170,12 @@ const postsResolvers = {
           pushNotification(
             {},
             `${userName} shared ${title} in the ${community.name} community for your request`,
-            requester.fcmTokens
+            [
+              {
+                _id: requester._id,
+                fcmTokens: requester.fcmTokens,
+              },
+            ]
           );
 
           // Add notification to requester

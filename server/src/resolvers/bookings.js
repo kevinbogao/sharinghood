@@ -71,7 +71,12 @@ const bookingsResolvers = {
           `${user.userName} ${
             status === 1 ? 'accepted' : 'denied'
           } your booking on ${post.title}`,
-          recipient.fcmTokens
+          [
+            {
+              _id: recipient._id,
+              fcmTokens: recipient.fcmTokens,
+            },
+          ]
         );
 
         return booking;

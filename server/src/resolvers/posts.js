@@ -216,7 +216,7 @@ const postsResolvers = {
 
         // Throw error if user is not creator
         if (!post._doc.creator.equals(user.userId)) {
-          throw new Error('Anauthorised user');
+          throw new Error('Unauthorized user');
         }
 
         // Upload image if it exists
@@ -249,7 +249,7 @@ const postsResolvers = {
 
         // Throw error if user is not post creator
         if (!post.creator.equals(currentUser._id)) {
-          throw new Error('Anauthorised user');
+          throw new Error('Unauthorized user');
         }
 
         // Find user's communities and remove post from
@@ -281,7 +281,7 @@ const postsResolvers = {
 
         // Throw error if user is not post creator
         if (!post.creator.equals(user.userId)) {
-          throw new Error('Anauthorised user');
+          throw new Error('Unauthorized user');
         }
 
         // Save thread ids array
@@ -322,7 +322,7 @@ const postsResolvers = {
 
         // Throw error if user is not post creator
         if (!post.creator.equals(user.userId)) {
-          throw new Error('Anauthorised user');
+          throw new Error('Unauthorized user');
         }
 
         // Add post to community & save community

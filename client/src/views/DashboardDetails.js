@@ -79,7 +79,7 @@ const ID_SET = new Set(ID_KEYS);
 const DATE_SET = new Set(DATE_KEYS);
 const USER_SET = new Set(USER_KEYS);
 const BOOKING_STATUS = ['Pending', 'Accepted', 'Denied'];
-const FORMATED_KEYS = {
+const FORMATTED_KEYS = {
   _id: 'ID',
   post: 'Post ID',
   name: 'Name',
@@ -187,7 +187,7 @@ function DashboardDetails({ location, match }) {
               .filter((key) => key !== '__typename')
               .map((key) => (
                 <th key={key} onClick={() => sortColumns(key)}>
-                  {FORMATED_KEYS[key]}{' '}
+                  {FORMATTED_KEYS[key]}{' '}
                   {selectedCol === key && (
                     <FontAwesomeIcon
                       className="dashboard-sort-icons"

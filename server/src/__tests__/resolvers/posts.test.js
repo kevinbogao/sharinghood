@@ -5,13 +5,10 @@ const inMemoryDb = require('../__fixtures__/inMemoryDb');
 const {
   createInitData,
   mockUser01,
-  mockUser01Id,
   mockPost01,
-  mockPost01Id,
   mockPost02,
-  mockPost02Id,
-  mockCommunity01Id,
-  mockCommunity02Id,
+  mockCommunity01,
+  mockCommunity02,
   mockUploadResponse,
 } = require('../__fixtures__/createInitData');
 const Post = require('../../models/post');
@@ -82,24 +79,24 @@ describe('[Query.posts]', () => {
     `;
 
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser01._id } }),
     });
 
     const { query } = createTestClient(server);
     const res = await query({
       query: GET_POST,
-      variables: { postId: mockPost01Id.toString() },
+      variables: { postId: mockPost01._id.toString() },
     });
 
     expect(res.data.post).toMatchObject({
-      _id: mockPost01Id.toString(),
+      _id: mockPost01._id.toString(),
       title: mockPost01.title,
       desc: mockPost01.desc,
       condition: mockPost01.condition,
       isGiveaway: mockPost01.isGiveaway,
       image: JSON.stringify(mockUploadResponse),
       creator: {
-        _id: mockUser01Id.toString(),
+        _id: mockUser01._id.toString(),
         name: mockUser01.name,
         image: mockUser01.image,
         apartment: mockUser01.apartment,
@@ -124,32 +121,32 @@ describe('[Query.posts]', () => {
     `;
 
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser01._id } }),
     });
 
     const { query } = createTestClient(server);
     const res = await query({
       query: GET_POSTS,
-      variables: { communityId: mockCommunity01Id.toString() },
+      variables: { communityId: mockCommunity01._id.toString() },
     });
 
     expect(res.data.posts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          _id: mockPost01Id.toString(),
+          _id: mockPost01._id.toString(),
           title: mockPost01.title,
           image: JSON.stringify(mockUploadResponse),
           creator: {
-            _id: mockUser01Id.toString(),
+            _id: mockUser01._id.toString(),
             name: mockUser01.name,
           },
         }),
         expect.objectContaining({
-          _id: mockPost02Id.toString(),
+          _id: mockPost02._id.toString(),
           title: mockPost02.title,
           image: JSON.stringify(mockUploadResponse),
           creator: {
-            _id: mockUser01Id.toString(),
+            _id: mockUser01._id.toString(),
             name: mockUser01.name,
           },
         }),
@@ -181,7 +178,7 @@ describe('[Mutation.posts]', () => {
 
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id.toString() } }),
+      context: () => ({ user: { userId: mockUser01._id.toString() } }),
     });
 
     // Mock uploadImg function
@@ -203,7 +200,7 @@ describe('[Mutation.posts]', () => {
     const { mutate } = createTestClient(server);
     const res = await mutate({
       mutation: CREATE_POST,
-      variables: { postInput, communityId: mockCommunity01Id.toString() },
+      variables: { postInput, communityId: mockCommunity01._id.toString() },
     });
 
     expect(res.data.createPost).toMatchObject({
@@ -213,7 +210,7 @@ describe('[Mutation.posts]', () => {
       isGiveaway: postInput.isGiveaway,
       image: JSON.stringify(mockUploadResponse),
       creator: {
-        _id: mockUser01Id.toString(),
+        _id: mockUser01._id.toString(),
       },
     });
   });
@@ -227,13 +224,13 @@ describe('[Mutation.posts]', () => {
     `;
 
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser01._id } }),
     });
 
     const { query } = createTestClient(server);
     const res = await query({
       query: INACTIVATE_POST,
-      variables: { postId: mockPost01Id.toString() },
+      variables: { postId: mockPost01._id.toString() },
     });
 
     expect(res.data.inactivatePost).toBeTruthy();
@@ -242,13 +239,13 @@ describe('[Mutation.posts]', () => {
     if (res.data.inactivatePost) {
       const communities = await Community.find({
         _id: {
-          $in: [mockCommunity01Id.toString(), mockCommunity02Id.toString()],
+          $in: [mockCommunity01._id.toString(), mockCommunity02._id.toString()],
         },
       });
 
       communities.map((community) =>
         expect(community.posts).not.toEqual(
-          expect.arrayContaining([mockPost01Id])
+          expect.arrayContaining([mockPost01._id])
         )
       );
     }
@@ -265,18 +262,18 @@ describe('[Mutation.posts]', () => {
     `;
 
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser01._id } }),
     });
 
     const { query } = createTestClient(server);
     const res = await query({
       query: DELETE_POST,
-      variables: { postId: mockPost01Id.toString() },
+      variables: { postId: mockPost01._id.toString() },
     });
 
     // Expect mockPost01's id to be returned
     expect(res.data.deletePost).toMatchObject({
-      _id: mockPost01Id.toString(),
+      _id: mockPost01._id.toString(),
     });
 
     const [
@@ -287,11 +284,11 @@ describe('[Mutation.posts]', () => {
       bookings,
       notifications,
     ] = await Promise.all([
-      Post.findById(mockPost01Id),
+      Post.findById(mockPost01._id),
       User.findById(mockPost01.creator),
       Community.find({
         _id: {
-          $in: [mockCommunity01Id.toString(), mockCommunity02Id.toString()],
+          $in: [mockCommunity01._id.toString(), mockCommunity02._id.toString()],
         },
       }),
       Thread.find({ _id: { $in: mockPost01.threads } }),
@@ -299,7 +296,7 @@ describe('[Mutation.posts]', () => {
       Notification.find({
         $or: [
           { booking: { $in: mockPost01.bookings } },
-          { post: mockPost01Id },
+          { post: mockPost01._id },
         ],
       }),
     ]);
@@ -308,12 +305,12 @@ describe('[Mutation.posts]', () => {
     expect(post).toBeNull();
 
     // Expect post id not to be contained in communities' posts
-    expect(user.posts).not.toEqual(expect.arrayContaining([mockPost01Id]));
+    expect(user.posts).not.toEqual(expect.arrayContaining([mockPost01._id]));
 
     // Expect post id not to be contained in communities' posts
     communities.map((community) =>
       expect(community.posts).not.toEqual(
-        expect.arrayContaining([mockPost01Id])
+        expect.arrayContaining([mockPost01._id])
       )
     );
 
@@ -334,26 +331,26 @@ describe('[Mutation.posts]', () => {
     `;
 
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser01._id } }),
     });
 
     const { query } = createTestClient(server);
     const res = await query({
       query: ADD_POST_TO_COMMUNITY,
       variables: {
-        postId: mockPost02Id.toString(),
-        communityId: mockCommunity02Id.toString(),
+        postId: mockPost02._id.toString(),
+        communityId: mockCommunity02._id.toString(),
       },
     });
 
     // Expect mockCommunity02's id to be returned
     expect(res.data.addPostToCommunity).toMatchObject({
-      _id: mockCommunity02Id.toString(),
+      _id: mockCommunity02._id.toString(),
     });
 
-    const community02 = await Community.findById(mockCommunity02Id);
+    const community02 = await Community.findById(mockCommunity02._id);
 
     // Expect mockCommunity02's posts array to include mockPost02Id
-    expect(community02.posts).toEqual(expect.arrayContaining([mockPost02Id]));
+    expect(community02.posts).toEqual(expect.arrayContaining([mockPost02._id]));
   });
 });

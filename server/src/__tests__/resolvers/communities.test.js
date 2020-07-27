@@ -4,10 +4,9 @@ const { constructTestServer } = require('../__utils');
 const inMemoryDb = require('../__fixtures__/inMemoryDb');
 const {
   createInitData,
-  mockUser01Id,
-  mockUser02Id,
+  mockUser01,
+  mockUser02,
   mockCommunity01,
-  mockCommunity01Id,
 } = require('../__fixtures__/createInitData');
 
 // Connect to a new in-memory database before running any tests.
@@ -142,7 +141,7 @@ describe('[Mutation.communities]', () => {
 
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser01._id } }),
     });
 
     // Create community mutation input
@@ -165,7 +164,7 @@ describe('[Mutation.communities]', () => {
       code: communityInput.code,
       zipCode: communityInput.zipCode,
       creator: {
-        _id: mockUser01Id.toString(),
+        _id: mockUser01._id.toString(),
       },
     });
   });
@@ -182,13 +181,13 @@ describe('[Mutation.communities]', () => {
     `;
 
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser02Id } }),
+      context: () => ({ user: { userId: mockUser02._id } }),
     });
 
     const { mutate } = createTestClient(server);
     const res = await mutate({
       mutation: JOIN_COMMUNITY,
-      variables: { communityId: mockCommunity01Id.toString() },
+      variables: { communityId: mockCommunity01._id.toString() },
     });
 
     expect(res.data.joinCommunity).toMatchObject({

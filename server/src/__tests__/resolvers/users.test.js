@@ -5,9 +5,8 @@ const inMemoryDb = require('../__fixtures__/inMemoryDb');
 const {
   createInitData,
   mockUser01,
-  mockUser01Id,
-  mockCommunity01Id,
-  mockCommunity02Id,
+  mockCommunity01,
+  mockCommunity02,
   mockUploadResponse,
   updatedMockUploadResponse,
 } = require('../__fixtures__/createInitData');
@@ -89,7 +88,7 @@ describe('[Query.users]', () => {
 
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser01._id } }),
     });
 
     // Create test interface
@@ -100,16 +99,16 @@ describe('[Query.users]', () => {
 
     // Check if user response is the same of mockUser01 data
     expect(res.data.user).toMatchObject({
-      _id: mockUser01Id.toString(),
+      _id: mockUser01._id.toString(),
       name: mockUser01.name,
       email: mockUser01.email,
       apartment: mockUser01.apartment,
       communities: [
         {
-          _id: mockCommunity01Id.toString(),
+          _id: mockCommunity01._id.toString(),
         },
         {
-          _id: mockCommunity02Id.toString(),
+          _id: mockCommunity02._id.toString(),
         },
       ],
     });
@@ -274,7 +273,7 @@ describe('[Mutation.users]', () => {
       password: '1234567',
       apartment: '102',
       isNotified: true,
-      communityId: mockCommunity01Id.toString(),
+      communityId: mockCommunity01._id.toString(),
       image: uploadImg(),
     };
 
@@ -311,7 +310,7 @@ describe('[Mutation.users]', () => {
 
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser01._id } }),
     });
 
     // Mock uploadImg function

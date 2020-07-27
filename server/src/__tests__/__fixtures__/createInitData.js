@@ -2,8 +2,9 @@ const mongoose = require('mongoose');
 const bcryptjs = require('bcryptjs');
 const User = require('../../models/user');
 const Post = require('../../models/post');
-const Booking = require('../../models/booking');
 const Thread = require('../../models/thread');
+const Request = require('../../models/request');
+const Booking = require('../../models/booking');
 const Community = require('../../models/community');
 const Notification = require('../../models/notification');
 
@@ -57,7 +58,10 @@ const mockUser03Id = new mongoose.Types.ObjectId();
 const mockPost01Id = new mongoose.Types.ObjectId();
 const mockPost02Id = new mongoose.Types.ObjectId();
 const mockThread01Id = new mongoose.Types.ObjectId();
+const mockThread02Id = new mongoose.Types.ObjectId();
 const mockBooking01Id = new mongoose.Types.ObjectId();
+const mockRequest01Id = new mongoose.Types.ObjectId();
+const mockRequest02Id = new mongoose.Types.ObjectId();
 const mockCommunity01Id = new mongoose.Types.ObjectId();
 const mockCommunity02Id = new mongoose.Types.ObjectId();
 const mockNotification01Id = new mongoose.Types.ObjectId();
@@ -126,6 +130,7 @@ const mockCommunity01 = {
   creator: mockUser01Id,
   members: [mockUser01Id, mockUser03Id],
   posts: [mockPost01Id, mockPost02Id],
+  requests: [mockRequest01Id, mockRequest02Id],
 };
 
 // Mock community02
@@ -157,6 +162,14 @@ const mockThread01 = {
   community: mockCommunity01Id,
 };
 
+// mock thread02
+const mockThread02 = {
+  _id: mockThread02Id,
+  content: 'Comment on request01',
+  poster: mockUser03Id,
+  community: mockCommunity01Id,
+};
+
 // Mock post01
 const mockPost01 = {
   _id: mockPost01Id,
@@ -178,7 +191,30 @@ const mockPost02 = {
   image: JSON.stringify(mockUploadResponse),
   condition: 1,
   isGiveaway: false,
-  creator: mockUser01,
+  creator: mockUser01Id,
+};
+
+// Mock request01
+const mockRequest01 = {
+  _id: mockRequest01Id,
+  title: 'Mock Request 01',
+  desc: 'mockRequest01',
+  dateNeed: new Date(),
+  dateReturn: new Date(),
+  image: JSON.stringify(mockUploadResponse),
+  creator: mockUser01Id,
+  threads: [mockThread02Id],
+};
+
+// Mock request02
+const mockRequest02 = {
+  _id: mockRequest02Id,
+  title: 'Mock Request 02',
+  desc: 'mockRequest02',
+  dateNeed: new Date(),
+  dateReturn: new Date(),
+  image: JSON.stringify(mockUploadResponse),
+  creator: mockUser01Id,
 };
 
 async function createInitData() {
@@ -211,7 +247,8 @@ async function createInitData() {
         },
       ]),
       Post.create([mockPost01, mockPost02]),
-      Thread.create([mockThread01]),
+      Thread.create([mockThread01, mockThread02]),
+      Request.create([mockRequest01, mockRequest02]),
       Booking.create([mockBooking01]),
       Community.create([mockCommunity01, mockCommunity02]),
       Notification.create([mockNotification01]),
@@ -224,25 +261,18 @@ async function createInitData() {
 module.exports = {
   createInitData,
   mockUser01,
-  mockUser01Id,
   mockUser02,
-  mockUser02Id,
   mockUser03,
-  mockUser03Id,
   mockPost01,
-  mockPost01Id,
   mockPost02,
-  mockPost02Id,
+  mockThread01,
+  mockThread02,
+  mockRequest01,
+  mockRequest02,
+  mockBooking01,
   mockCommunity01,
-  mockCommunity01Id,
   mockCommunity02,
-  mockCommunity02Id,
+  mockNotification01,
   mockUploadResponse,
   updatedMockUploadResponse,
-  mockBooking01,
-  mockBooking01Id,
-  mockThread01,
-  mockThread01Id,
-  mockNotification01,
-  mockNotification01Id,
 };

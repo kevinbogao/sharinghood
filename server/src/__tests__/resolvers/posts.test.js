@@ -47,7 +47,7 @@ afterAll(async () => {
 /* POSTS QUERY */
 describe('[Query.posts]', () => {
   // POST QUERY { postId }
-  it('Get post { postId }', async () => {
+  it('Get post by id', async () => {
     const GET_POST = gql`
       query Post($postId: ID!) {
         post(postId: $postId) {
@@ -105,7 +105,7 @@ describe('[Query.posts]', () => {
   });
 
   // POSTS QUERY { communityId }
-  it('Get posts { communityId }', async () => {
+  it('Get posts from community', async () => {
     const GET_POSTS = gql`
       query Posts($communityId: ID!) {
         posts(communityId: $communityId) {

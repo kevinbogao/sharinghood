@@ -8,6 +8,7 @@ const {
   mockUser03,
   mockThread02,
   mockRequest01,
+  mockRequest02,
   mockCommunity01,
   mockUploadResponse,
 } = require('../__fixtures__/createInitData');
@@ -130,14 +131,90 @@ describe('[Query.requests]', () => {
       context: () => ({ user: { userId: mockUser01._id } }),
     });
 
-    console.log(mockCommunity01._id);
-
     const { query } = createTestClient(server);
     const res = await query({
       query: GET_REQUESTS,
       variables: { communityId: mockCommunity01._id.toString() },
     });
 
-    console.log(res.data.requests);
+    expect(res.data.requests).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          _id: mockRequest01._id.toString(),
+          title: mockRequest01.title,
+          desc: mockRequest01.desc,
+          image: JSON.stringify(mockUploadResponse),
+          creator: {
+            _id: mockUser01._id.toString(),
+            name: mockUser01.name,
+          },
+        }),
+        expect.objectContaining({
+          _id: mockRequest02._id.toString(),
+          title: mockRequest02.title,
+          desc: mockRequest02.desc,
+          image: JSON.stringify(mockUploadResponse),
+          creator: {
+            _id: mockUser01._id.toString(),
+            name: mockUser01.name,
+          },
+        }),
+      ])
+    );
   });
 });
+
+// /* REQUESTS MUTATIONS */
+// describe('[Mutation.requests]', () => {
+//   it('Create request to community', async () => {
+//     const CREATE_REQUEST = gql`
+//       mutation CreateRequest($requestInput: RequestInput!, $communityId: ID!) {
+//         createRequest(requestInput: $requestInput, communityId: $communityId) {
+//           _id
+//           desc
+//           image
+//           dateNeed
+//           dateReturn
+//           creator {
+//             _id
+//             name
+//           }
+//         }
+//       }
+//     `;
+
+//     // Create an instance of ApolloServer
+//     const { server } = constructTestServer({
+//       context: () => ({
+//         user: {
+//           userId: mockUser01._id.toString(),
+//           userName: mockUser01.name,
+//         },
+//       }),
+//     });
+
+//     uploadImg.mockImplementation(() => JSON.stringify(mockUploadResponse));
+//     pushNotification.mockImplementation(() => {});
+
+//     const dateNeed = new Date();
+//     const dateReturn = new Date();
+
+//     const requestInput = {
+//       title: 'Test Request 01sa',
+//       desc: 'testRequest01dsa',
+//       image: uploadImg(),
+//       dateNeed,
+//       dateReturn,
+//       // dateNeed: `${new Date()}`,
+//       // dateReturn: `${new Date()}`,
+//     };
+
+//     const { mutate } = createTestClient(server);
+//     const res = await mutate({
+//       mutation: CREATE_REQUEST,
+//       variables: { requestInput, communityId: mockCommunity01._id.toString() },
+//     });
+
+//     console.log(res);
+//   });
+// });

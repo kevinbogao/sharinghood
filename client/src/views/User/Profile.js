@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation } from '@apollo/client';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import UserPosts from '../../components/UserPosts';
 
 const GET_USER = gql`
@@ -62,7 +62,7 @@ function Profile({ history }) {
   });
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (
@@ -132,7 +132,7 @@ function Profile({ history }) {
           Save
         </button>
       </form>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

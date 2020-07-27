@@ -5,7 +5,7 @@ import { gql, useQuery } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import moment from 'moment';
 import { faArrowDown } from '@fortawesome/free-solid-svg-icons';
-import Loading from '../components/Loading';
+import Spinner from '../components/Spinner';
 
 const GET_TOKEN_PAYLOAD = gql`
   query {
@@ -143,7 +143,7 @@ function DashboardDetails({ location, match }) {
   return !tokenPayload.isAdmin ? (
     <Redirect to={from} />
   ) : loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (

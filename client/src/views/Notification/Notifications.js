@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import moment from 'moment';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 
 const GET_USER_COMMUNITIES = gql`
   query Communities {
@@ -131,7 +131,7 @@ function Notifications({ history, communityId }) {
   });
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (
@@ -386,7 +386,7 @@ function Notifications({ history, communityId }) {
       ) : (
         <p className="main-p full">You do not have any notifications yet</p>
       )}
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

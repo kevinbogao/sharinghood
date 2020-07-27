@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { gql, useLazyQuery, useMutation } from '@apollo/client';
 import Modal from 'react-modal';
 import moment from 'moment';
-import Loading from './Loading';
-// import { GET_NOTIFICATIONS } from '../views/Notification/Notifications';
+import Spinner from './Spinner';
 
 const MODAL_STYLE = {
   content: {
@@ -185,7 +184,7 @@ function ItemDetails({ history, item, userId, communityId, children }) {
           Close
         </button>
       </Modal>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

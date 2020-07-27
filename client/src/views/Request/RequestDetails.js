@@ -6,7 +6,7 @@ import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock, faUserClock } from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-modal';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import Threads from '../../components/Threads';
 import NotFound from '../../components/NotFound';
 import ItemDetails from '../../components/ItemDetails';
@@ -148,7 +148,7 @@ function RequestDetails({ communityId, match, history }) {
   );
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error! ${error.message}`
   ) : data.request ? (
@@ -227,7 +227,7 @@ function RequestDetails({ communityId, match, history }) {
           No
         </button>
       </Modal>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <Threads
         threads={data.request.threads}
         members={data.community.members}

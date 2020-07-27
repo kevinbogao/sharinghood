@@ -12,7 +12,7 @@ import moment from 'moment';
 import Modal from 'react-modal';
 import DatePicker from '../../components/DatePicker';
 import Threads from '../../components/Threads';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import NotFound from '../../components/NotFound';
 import ItemDetails from '../../components/ItemDetails';
 // import { GET_NOTIFICATIONS } from '../Notification/Notifications';
@@ -205,7 +205,7 @@ function PostDetails({ communityId, match, history }) {
   }, []);
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error! ${error.message}`
   ) : data.post ? (
@@ -307,7 +307,7 @@ function PostDetails({ communityId, match, history }) {
           Close
         </button>
       </Modal>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <Threads
         threads={data.post.threads}
         members={data.community.members}

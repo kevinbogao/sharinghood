@@ -5,7 +5,7 @@ import jwtDecode from 'jwt-decode';
 import Modal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import InlineError from '../../components/InlineError';
 import TermsAndConditions from '../../components/TermsAndConditions';
 
@@ -247,7 +247,7 @@ function Register({
         />
         <TermsAndConditions />
       </Modal>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       {mutationError && <p>Error :( Please try again</p>}
       <style jsx>
         {`

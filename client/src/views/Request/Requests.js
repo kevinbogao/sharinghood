@@ -5,7 +5,7 @@ import { gql, useQuery } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
 import moment from 'moment';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import ItemsGrid from '../../components/ItemsGrid';
 
 const GET_REQUESTS = gql`
@@ -34,7 +34,7 @@ function Requests({ communityId }) {
   });
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error! ${error.message}`
   ) : (

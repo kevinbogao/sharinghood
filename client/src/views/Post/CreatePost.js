@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { gql, useMutation } from '@apollo/client';
 import InlineError from '../../components/InlineError';
 import uploadImg from '../../assets/images/upload.png';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import { GET_POSTS } from './Posts';
 
 const CREATE_POST = gql`
@@ -150,7 +150,7 @@ function CreatePost({ communityId, history, location }) {
           Share
         </button>
       </form>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

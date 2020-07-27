@@ -4,7 +4,7 @@ import { gql, useMutation } from '@apollo/client';
 import moment from 'moment';
 import DatePicker from '../../components/DatePicker';
 import InlineError from '../../components/InlineError';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import uploadImg from '../../assets/images/upload.png';
 import { GET_REQUESTS } from './Requests';
 
@@ -153,7 +153,7 @@ function CreateRequest({ communityId, history }) {
           Request
         </button>
       </form>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

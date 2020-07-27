@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import Modal from 'react-modal';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import { GET_POSTS } from './Posts';
 
 const MODAL_STYLE = {
@@ -98,6 +98,8 @@ function EditPost({ history, match }) {
       console.log(message);
     },
   });
+
+  // Add post to selected community
   const [addPostToCommunity] = useMutation(ADD_POST_TO_COMMUNITY, {
     update(cache, { data: { addPostToCommunity } }) {
       try {
@@ -121,7 +123,7 @@ function EditPost({ history, match }) {
         cache.writeQuery({
           query: GET_POSTS,
           variables: { communityId: addPostToCommunity._id },
-          data: { posts: [...posts, postSel] },
+          data: { posts: [postSel, ...posts] },
         });
         // eslint-disable-next-line
       } catch (err) {}
@@ -134,17 +136,18 @@ function EditPost({ history, match }) {
 
       // Construct new communities array of community objects with
       // new post pushed to the posts array in the selected community
-      const newCommunities = communities.map((community) =>
-        community._id === addPostToCommunity._id
-          ? {
-              ...community,
-              posts: [
-                ...community.posts,
-                { __typename: 'Post', _id: data.post._id },
-              ],
-            }
-          : community,
-      );
+      const newCommunities = communities.map((community) => {
+        if (community._id === addPostToCommunity._id) {
+          return {
+            ...community,
+            posts: [
+              ...community.posts,
+              { __typename: 'Post', _id: data.post._id },
+            ],
+          };
+        }
+        return community;
+      });
 
       // Write newCommunities array to cache
       cache.writeQuery({
@@ -209,7 +212,7 @@ function EditPost({ history, match }) {
   });
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (
@@ -368,7 +371,7 @@ function EditPost({ history, match }) {
           No
         </button>
       </Modal>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

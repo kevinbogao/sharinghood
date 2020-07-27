@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-function Loading({ isCover }) {
+function Spinner({ isCover }) {
   return (
     <div className={`loading-control ${isCover && 'foreground'}`}>
       <div className="lds-ring">
@@ -75,12 +75,12 @@ function Loading({ isCover }) {
   );
 }
 
-Loading.propTypes = {
+Spinner.propTypes = {
   isCover: PropTypes.bool,
 };
 
-Loading.defaultProps = {
+Spinner.defaultProps = {
   isCover: false,
 };
 
-export default Loading;
+export default Spinner;

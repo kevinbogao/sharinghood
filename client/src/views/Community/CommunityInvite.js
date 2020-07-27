@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import Modal from 'react-modal';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import ProductScreenshot from '../../assets/images/product-screenshot.png';
 import { GET_COMMUNITY } from '../../components/Navbar';
 
@@ -162,7 +162,7 @@ function CommunityInvite({ match, history }) {
   }
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : (
     <div className="community-invite-control">
       {error ? (
@@ -258,7 +258,7 @@ function CommunityInvite({ match, history }) {
           </Modal>
         </>
       )}
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

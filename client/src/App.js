@@ -454,6 +454,17 @@ function App() {
             }
           }
 
+          // .Modal {
+          //   top: 50%;
+          //   left: 50%;
+          //   right: auto;
+          //   bottom: auto;
+          //   transform: translate(-50%, -50%);
+          //   // border-width: 0;
+          //   // boxshadow: 0px 0px 6px #f2f2f2;
+          //   // padding: 30px;
+          // }
+
           #root {
             height: 100vh;
             display: flex;

@@ -2,7 +2,10 @@ const mongoose = require('mongoose');
 const bcryptjs = require('bcryptjs');
 const User = require('../../models/user');
 const Post = require('../../models/post');
+const Booking = require('../../models/booking');
+const Thread = require('../../models/thread');
 const Community = require('../../models/community');
+const Notification = require('../../models/notification');
 
 // Mock response for uploadImg (to cloudinary) function
 const mockUploadResponse = {
@@ -50,9 +53,27 @@ const updatedMockUploadResponse = {
 // Create mock user & community mongoose ids
 const mockUser01Id = new mongoose.Types.ObjectId();
 const mockUser02Id = new mongoose.Types.ObjectId();
+const mockUser03Id = new mongoose.Types.ObjectId();
 const mockPost01Id = new mongoose.Types.ObjectId();
+const mockPost02Id = new mongoose.Types.ObjectId();
+const mockThread01Id = new mongoose.Types.ObjectId();
+const mockBooking01Id = new mongoose.Types.ObjectId();
 const mockCommunity01Id = new mongoose.Types.ObjectId();
 const mockCommunity02Id = new mongoose.Types.ObjectId();
+const mockNotification01Id = new mongoose.Types.ObjectId();
+
+// Mock notification01
+const mockNotification01 = {
+  _id: mockNotification01Id,
+  participants: [mockUser01Id, mockUser03Id],
+  booking: mockBooking01Id,
+  ofType: 1,
+  isRead: {
+    [mockUser01Id]: false,
+    [mockUser03Id]: false,
+  },
+  community: mockCommunity01Id,
+};
 
 // Mock user01
 const mockUser01 = {
@@ -64,8 +85,9 @@ const mockUser01 = {
   isNotified: true,
   isCreator: true,
   image: JSON.stringify(mockUploadResponse),
-  communities: [mockCommunity01Id],
-  posts: [mockPost01Id],
+  communities: [mockCommunity01Id, mockCommunity02Id],
+  posts: [mockPost01Id, mockPost02Id],
+  notifications: [mockNotification01Id],
 };
 
 // Mock user02
@@ -81,6 +103,20 @@ const mockUser02 = {
   communities: [mockCommunity02Id],
 };
 
+// Mock user03
+const mockUser03 = {
+  _id: mockUser03Id,
+  name: 'MockUser03',
+  email: 'mock.user03@email.com',
+  password: '1234567',
+  apartment: '003',
+  isNotified: true,
+  isCreator: true,
+  image: JSON.stringify(mockUploadResponse),
+  communities: [mockCommunity01Id],
+  notifications: [mockNotification01Id],
+};
+
 // Mock community01
 const mockCommunity01 = {
   _id: mockCommunity01Id,
@@ -88,7 +124,8 @@ const mockCommunity01 = {
   code: 'mockCommunity01',
   zipCode: '00001',
   creator: mockUser01Id,
-  members: [mockUser01Id],
+  members: [mockUser01Id, mockUser03Id],
+  posts: [mockPost01Id, mockPost02Id],
 };
 
 // Mock community02
@@ -99,6 +136,25 @@ const mockCommunity02 = {
   zipCode: '00002',
   creator: mockUser02Id,
   members: [mockUser02Id],
+  posts: [mockPost01Id],
+};
+
+// Mock booking01
+const mockBooking01 = {
+  _id: mockBooking01Id,
+  post: mockPost01Id,
+  status: 0,
+  dateType: 0,
+  booker: mockUser03Id,
+  community: mockCommunity01,
+};
+
+// mock thread01
+const mockThread01 = {
+  _id: mockThread01Id,
+  content: 'Comment on post01',
+  poster: mockUser03Id,
+  community: mockCommunity01Id,
 };
 
 // Mock post01
@@ -109,15 +165,33 @@ const mockPost01 = {
   image: JSON.stringify(mockUploadResponse),
   condition: 0,
   isGiveaway: true,
+  creator: mockUser01Id,
+  bookings: [mockBooking01Id],
+  threads: [mockThread01Id],
+};
+
+// Mock post02
+const mockPost02 = {
+  _id: mockPost02Id,
+  title: 'Mock Post 02',
+  desc: 'mockPost02',
+  image: JSON.stringify(mockUploadResponse),
+  condition: 1,
+  isGiveaway: false,
   creator: mockUser01,
 };
 
 async function createInitData() {
   try {
     // Hash password for mock user 01 & mock user 02
-    const [mockUser01PasswordHash, mockUser02PasswordHash] = await Promise.all([
+    const [
+      mockUser01PasswordHash,
+      mockUser02PasswordHash,
+      mockUser03PasswordHash,
+    ] = await Promise.all([
       bcryptjs.hash(mockUser01.password, 12),
       bcryptjs.hash(mockUser02.password, 12),
+      bcryptjs.hash(mockUser03.password, 12),
     ]);
 
     // Write initial data to datebase
@@ -131,9 +205,16 @@ async function createInitData() {
           ...mockUser02,
           password: mockUser02PasswordHash,
         },
+        {
+          ...mockUser03,
+          password: mockUser03PasswordHash,
+        },
       ]),
+      Post.create([mockPost01, mockPost02]),
+      Thread.create([mockThread01]),
+      Booking.create([mockBooking01]),
       Community.create([mockCommunity01, mockCommunity02]),
-      Post.create(mockPost01),
+      Notification.create([mockNotification01]),
     ]);
   } catch (err) {
     throw new Error(err);
@@ -144,12 +225,24 @@ module.exports = {
   createInitData,
   mockUser01,
   mockUser01Id,
-  mockCommunity01,
-  mockCommunity01Id,
   mockUser02,
   mockUser02Id,
+  mockUser03,
+  mockUser03Id,
+  mockPost01,
+  mockPost01Id,
+  mockPost02,
+  mockPost02Id,
+  mockCommunity01,
+  mockCommunity01Id,
   mockCommunity02,
   mockCommunity02Id,
   mockUploadResponse,
   updatedMockUploadResponse,
+  mockBooking01,
+  mockBooking01Id,
+  mockThread01,
+  mockThread01Id,
+  mockNotification01,
+  mockNotification01Id,
 };

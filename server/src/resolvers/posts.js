@@ -289,6 +289,8 @@ const postsResolvers = {
 
         // Delete post, postId from community && delete post threads,
         // delete bookings & post notifications
+
+        // TODO: delete notifications' messages
         await Promise.all([
           post.remove(),
           Community.updateMany(

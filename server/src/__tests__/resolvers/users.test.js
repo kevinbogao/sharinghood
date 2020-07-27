@@ -7,6 +7,7 @@ const {
   mockUser01,
   mockUser01Id,
   mockCommunity01Id,
+  mockCommunity02Id,
   mockUploadResponse,
   updatedMockUploadResponse,
 } = require('../__fixtures__/createInitData');
@@ -63,7 +64,7 @@ const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
 
 /* USERS QUERY */
 describe('[Query.users]', () => {
-  // user query
+  // USER QUERY
   it('Get user data and user posts', async () => {
     const GET_USER = gql`
       query User {
@@ -107,6 +108,9 @@ describe('[Query.users]', () => {
         {
           _id: mockCommunity01Id.toString(),
         },
+        {
+          _id: mockCommunity02Id.toString(),
+        },
       ],
     });
   });
@@ -145,7 +149,69 @@ describe('[Mutation.users]', () => {
     expect(typeof res.data.login.accessToken).toBe('string');
   });
 
-  // registerAndOrCreateCommunity mutation for user & community
+  // LOGIN MUTATION WITH WRONG EMAIL
+  it('Login user with wrong email', async () => {
+    const LOGIN = gql`
+      mutation Login($email: String!, $password: String!) {
+        login(email: $email, password: $password) {
+          accessToken
+          refreshToken
+        }
+      }
+    `;
+
+    // Create an instance of ApolloServer
+    const { server } = constructTestServer({
+      context: () => {},
+    });
+
+    // Create test interface
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: LOGIN,
+      variables: {
+        email: 'not.exist@email.com',
+        password: '1234567',
+      },
+    });
+
+    // Expected error comparison
+    expect(res.errors[0].message).toEqual('Error: email: User not found');
+  });
+
+  // LOGIN MUTATION WITH WRONG PASSWORD
+  it('Login user with wrong password', async () => {
+    const LOGIN = gql`
+      mutation Login($email: String!, $password: String!) {
+        login(email: $email, password: $password) {
+          accessToken
+          refreshToken
+        }
+      }
+    `;
+
+    // Create an instance of ApolloServer
+    const { server } = constructTestServer({
+      context: () => {},
+    });
+
+    // Create test interface
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: LOGIN,
+      variables: {
+        email: 'mock.user01@email.com',
+        password: 'wrongPassword',
+      },
+    });
+
+    // Expected error comparison
+    expect(res.errors[0].message).toEqual(
+      'AuthenticationError: password: Invalid credentials'
+    );
+  });
+
+  // REGISTER_AND_OR_CREATE_COMMUNITY MUTATION FOR USER & COMMUNITY
   it('Register user and create community', async () => {
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
@@ -192,7 +258,7 @@ describe('[Mutation.users]', () => {
     );
   });
 
-  // registerAndOrCreateCommunity mutation
+  // REGISTER_AND_OR_CREATE_COMMUNITY MUTATION
   it('Register user to existing community', async () => {
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
@@ -228,7 +294,7 @@ describe('[Mutation.users]', () => {
     );
   });
 
-  // updateUser mutation
+  // UPDATE_USER MUTATION
   it('Update user data', async () => {
     // User update mutation
     const UPDATE_USER = gql`
@@ -249,9 +315,9 @@ describe('[Mutation.users]', () => {
     });
 
     // Mock uploadImg function
-    uploadImg.mockImplementation(() => {
-      return JSON.stringify(updatedMockUploadResponse);
-    });
+    uploadImg.mockImplementation(() =>
+      JSON.stringify(updatedMockUploadResponse)
+    );
 
     // User input for mutation
     const mutationInput = {

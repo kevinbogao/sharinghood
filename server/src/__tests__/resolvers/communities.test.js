@@ -5,9 +5,9 @@ const inMemoryDb = require('../__fixtures__/inMemoryDb');
 const {
   createInitData,
   mockUser01Id,
+  mockUser02Id,
   mockCommunity01,
-  mockCommunity02,
-  mockCommunity02Id,
+  mockCommunity01Id,
 } = require('../__fixtures__/createInitData');
 
 // Connect to a new in-memory database before running any tests.
@@ -170,7 +170,7 @@ describe('[Mutation.communities]', () => {
     });
   });
 
-  // joinCommunity resolver
+  // JOIN_COMMUNITY RESOLVER
   it('Join community for registered user', async () => {
     const JOIN_COMMUNITY = gql`
       mutation JoinCommunity($communityId: ID!) {
@@ -180,17 +180,20 @@ describe('[Mutation.communities]', () => {
         }
       }
     `;
+
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser02Id } }),
     });
+
     const { mutate } = createTestClient(server);
     const res = await mutate({
       mutation: JOIN_COMMUNITY,
-      variables: { communityId: mockCommunity02Id.toString() },
+      variables: { communityId: mockCommunity01Id.toString() },
     });
+
     expect(res.data.joinCommunity).toMatchObject({
-      _id: mockCommunity02._id.toString(),
-      name: mockCommunity02.name,
+      _id: mockCommunity01._id.toString(),
+      name: mockCommunity01.name,
     });
   });
 });

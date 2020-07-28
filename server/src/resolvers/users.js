@@ -93,7 +93,7 @@ const usersResolvers = {
 
         return { accessToken, refreshToken };
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw new Error(err);
       }
     },

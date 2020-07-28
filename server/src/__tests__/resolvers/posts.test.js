@@ -4,14 +4,26 @@ const { constructTestServer } = require('../__utils');
 const inMemoryDb = require('../__fixtures__/inMemoryDb');
 const {
   createInitData,
-  mockUser01Id,
-  mockCommunity01Id,
+  mockUser01,
+  mockPost01,
+  mockPost02,
+  mockCommunity01,
+  mockCommunity02,
   mockUploadResponse,
 } = require('../__fixtures__/createInitData');
+const Post = require('../../models/post');
+const User = require('../../models/user');
+const Thread = require('../../models/thread');
+const Booking = require('../../models/booking');
+const Community = require('../../models/community');
+const Notification = require('../../models/notification');
 
 // Mocking dependencies
 jest.mock('../../utils/uploadImg');
 const uploadImg = require('../../utils/uploadImg');
+
+jest.mock('../../utils/pushNotification');
+const pushNotification = require('../../utils/pushNotification');
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {
@@ -32,10 +44,121 @@ afterAll(async () => {
   await inMemoryDb.close();
 });
 
+/* POSTS QUERY */
+describe('[Query.posts]', () => {
+  // POST QUERY { postId }
+  it('Get post by id', async () => {
+    const GET_POST = gql`
+      query Post($postId: ID!) {
+        post(postId: $postId) {
+          _id
+          title
+          desc
+          image
+          condition
+          isGiveaway
+          creator {
+            _id
+            name
+            image
+            apartment
+            createdAt
+          }
+          threads {
+            _id
+            content
+            poster {
+              _id
+            }
+            community {
+              _id
+            }
+          }
+        }
+      }
+    `;
+
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id } }),
+    });
+
+    const { query } = createTestClient(server);
+    const res = await query({
+      query: GET_POST,
+      variables: { postId: mockPost01._id.toString() },
+    });
+
+    expect(res.data.post).toMatchObject({
+      _id: mockPost01._id.toString(),
+      title: mockPost01.title,
+      desc: mockPost01.desc,
+      condition: mockPost01.condition,
+      isGiveaway: mockPost01.isGiveaway,
+      image: JSON.stringify(mockUploadResponse),
+      creator: {
+        _id: mockUser01._id.toString(),
+        name: mockUser01.name,
+        image: mockUser01.image,
+        apartment: mockUser01.apartment,
+      },
+    });
+  });
+
+  // POSTS QUERY { communityId }
+  it('Get posts from community', async () => {
+    const GET_POSTS = gql`
+      query Posts($communityId: ID!) {
+        posts(communityId: $communityId) {
+          _id
+          title
+          image
+          creator {
+            _id
+            name
+          }
+        }
+      }
+    `;
+
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id } }),
+    });
+
+    const { query } = createTestClient(server);
+    const res = await query({
+      query: GET_POSTS,
+      variables: { communityId: mockCommunity01._id.toString() },
+    });
+
+    expect(res.data.posts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          _id: mockPost01._id.toString(),
+          title: mockPost01.title,
+          image: JSON.stringify(mockUploadResponse),
+          creator: {
+            _id: mockUser01._id.toString(),
+            name: mockUser01.name,
+          },
+        }),
+        expect.objectContaining({
+          _id: mockPost02._id.toString(),
+          title: mockPost02.title,
+          image: JSON.stringify(mockUploadResponse),
+          creator: {
+            _id: mockUser01._id.toString(),
+            name: mockUser01.name,
+          },
+        }),
+      ])
+    );
+  });
+});
+
 /* POSTS MUTATIONS */
 describe('[Mutation.posts]', () => {
-  // createPost resolvers
-  it('Create post by user', async () => {
+  // CREATE_POST MUTATION { communityId }
+  it('Create post by user { communityId }', async () => {
     const CREATE_POST = gql`
       mutation CreatePost($postInput: PostInput!, $communityId: ID) {
         createPost(postInput: $postInput, communityId: $communityId) {
@@ -55,11 +178,14 @@ describe('[Mutation.posts]', () => {
 
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id.toString() } }),
+      context: () => ({ user: { userId: mockUser01._id.toString() } }),
     });
 
     // Mock uploadImg function
     uploadImg.mockImplementation(() => JSON.stringify(mockUploadResponse));
+
+    // Mock pushNotification function
+    pushNotification.mockImplementation(() => {});
 
     // Create community mutation input
     const postInput = {
@@ -74,7 +200,7 @@ describe('[Mutation.posts]', () => {
     const { mutate } = createTestClient(server);
     const res = await mutate({
       mutation: CREATE_POST,
-      variables: { postInput, communityId: mockCommunity01Id.toString() },
+      variables: { postInput, communityId: mockCommunity01._id.toString() },
     });
 
     expect(res.data.createPost).toMatchObject({
@@ -84,8 +210,147 @@ describe('[Mutation.posts]', () => {
       isGiveaway: postInput.isGiveaway,
       image: JSON.stringify(mockUploadResponse),
       creator: {
-        _id: mockUser01Id.toString(),
+        _id: mockUser01._id.toString(),
       },
     });
+  });
+
+  // INACTIVATE_POST MUTATION { postId }
+  it("Inactivate user's post in all communities", async () => {
+    const INACTIVATE_POST = gql`
+      mutation InactivatePost($postId: ID!) {
+        inactivatePost(postId: $postId)
+      }
+    `;
+
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id } }),
+    });
+
+    const { query } = createTestClient(server);
+    const res = await query({
+      query: INACTIVATE_POST,
+      variables: { postId: mockPost01._id.toString() },
+    });
+
+    expect(res.data.inactivatePost).toBeTruthy();
+
+    // Check if post is removed from community01, community02 on sucess
+    if (res.data.inactivatePost) {
+      const communities = await Community.find({
+        _id: {
+          $in: [mockCommunity01._id.toString(), mockCommunity02._id.toString()],
+        },
+      });
+
+      communities.map((community) =>
+        expect(community.posts).not.toEqual(
+          expect.arrayContaining([mockPost01._id])
+        )
+      );
+    }
+  });
+
+  // DELETE_POST MUTATION { postId }
+  it("Delete user's posy", async () => {
+    const DELETE_POST = gql`
+      mutation DeletePost($postId: ID!) {
+        deletePost(postId: $postId) {
+          _id
+        }
+      }
+    `;
+
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id } }),
+    });
+
+    const { query } = createTestClient(server);
+    const res = await query({
+      query: DELETE_POST,
+      variables: { postId: mockPost01._id.toString() },
+    });
+
+    // Expect mockPost01's id to be returned
+    expect(res.data.deletePost).toMatchObject({
+      _id: mockPost01._id.toString(),
+    });
+
+    const [
+      post,
+      user,
+      communities,
+      threads,
+      bookings,
+      notifications,
+    ] = await Promise.all([
+      Post.findById(mockPost01._id),
+      User.findById(mockPost01.creator),
+      Community.find({
+        _id: {
+          $in: [mockCommunity01._id.toString(), mockCommunity02._id.toString()],
+        },
+      }),
+      Thread.find({ _id: { $in: mockPost01.threads } }),
+      Booking.find({ _id: { $in: mockPost01.bookings } }),
+      Notification.find({
+        $or: [
+          { booking: { $in: mockPost01.bookings } },
+          { post: mockPost01._id },
+        ],
+      }),
+    ]);
+
+    // Expect post to be null
+    expect(post).toBeNull();
+
+    // Expect post id not to be contained in communities' posts
+    expect(user.posts).not.toEqual(expect.arrayContaining([mockPost01._id]));
+
+    // Expect post id not to be contained in communities' posts
+    communities.map((community) =>
+      expect(community.posts).not.toEqual(
+        expect.arrayContaining([mockPost01._id])
+      )
+    );
+
+    // Expect threads, bookings & notifications to be empty arrays
+    expect(threads).toHaveLength(0);
+    expect(bookings).toHaveLength(0);
+    expect(notifications).toHaveLength(0);
+  });
+
+  // ADD_POST_TO_COMMUNITY Mutation
+  it("Add user's post to community", async () => {
+    const ADD_POST_TO_COMMUNITY = gql`
+      mutation AddPostToCommunity($postId: ID!, $communityId: ID!) {
+        addPostToCommunity(postId: $postId, communityId: $communityId) {
+          _id
+        }
+      }
+    `;
+
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id } }),
+    });
+
+    const { query } = createTestClient(server);
+    const res = await query({
+      query: ADD_POST_TO_COMMUNITY,
+      variables: {
+        postId: mockPost02._id.toString(),
+        communityId: mockCommunity02._id.toString(),
+      },
+    });
+
+    // Expect mockCommunity02's id to be returned
+    expect(res.data.addPostToCommunity).toMatchObject({
+      _id: mockCommunity02._id.toString(),
+    });
+
+    const community02 = await Community.findById(mockCommunity02._id);
+
+    // Expect mockCommunity02's posts array to include mockPost02Id
+    expect(community02.posts).toEqual(expect.arrayContaining([mockPost02._id]));
   });
 });

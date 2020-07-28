@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
 import ItemsGrid from '../../components/ItemsGrid';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 
 const GET_COMMUNITY_ID = gql`
   query {
@@ -37,7 +37,7 @@ function Posts() {
   });
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (

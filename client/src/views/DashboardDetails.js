@@ -5,7 +5,7 @@ import { gql, useQuery } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import moment from 'moment';
 import { faArrowDown } from '@fortawesome/free-solid-svg-icons';
-import Loading from '../components/Loading';
+import Spinner from '../components/Spinner';
 
 const GET_TOKEN_PAYLOAD = gql`
   query {
@@ -30,6 +30,7 @@ const GET_COMMUNITY_ACTIVITIES = gql`
         image
         isNotified
         createdAt
+        lastLogin
       }
       posts {
         _id
@@ -73,7 +74,7 @@ const GET_COMMUNITY_ACTIVITIES = gql`
 
 const STATS_IDS = ['members', 'posts', 'requests', 'bookings'];
 const ID_KEYS = ['post', 'creator', 'booker'];
-const DATE_KEYS = ['createdAt', 'dateNeed', 'dateReturn'];
+const DATE_KEYS = ['createdAt', 'dateNeed', 'dateReturn', 'lastLogin'];
 const USER_KEYS = ['creator', 'booker'];
 const ID_SET = new Set(ID_KEYS);
 const DATE_SET = new Set(DATE_KEYS);
@@ -96,6 +97,7 @@ const FORMATTED_KEYS = {
   dateNeed: 'Date Needed',
   dateReturn: 'Return Date',
   createdAt: 'Date Created',
+  lastLogin: 'Last Login',
 };
 
 function DashboardDetails({ location, match }) {
@@ -143,7 +145,7 @@ function DashboardDetails({ location, match }) {
   return !tokenPayload.isAdmin ? (
     <Redirect to={from} />
   ) : loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useLazyQuery, useMutation } from '@apollo/client';
 import InlineError from '../../components/InlineError';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import { GET_COMMUNITY } from '../../components/Navbar';
 
 const FIND_COMMUNITY = gql`
@@ -166,8 +166,8 @@ function CreateCommunity({ history, location }) {
           Next
         </button>
       </form>
-      {loading && <Loading isCover />}
-      {mutationLoading && <Loading isCover />}
+      {loading && <Spinner isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

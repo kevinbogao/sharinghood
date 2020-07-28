@@ -96,9 +96,9 @@
     "eslint": "^7.5.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-jest": "^23.18.0",
+    "eslint-plugin-jest": "^23.18.2",
     "jest": "^26.1.0",
-    "mongodb-memory-server": "^6.6.1",
+    "mongodb-memory-server": "^6.6.2",
     "nodemon": "^2.0.4",
     "sinon": "^9.0.2"
   }

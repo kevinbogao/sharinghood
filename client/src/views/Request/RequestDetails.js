@@ -6,25 +6,11 @@ import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock, faUserClock } from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-modal';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import Threads from '../../components/Threads';
 import NotFound from '../../components/NotFound';
 import ItemDetails from '../../components/ItemDetails';
 import { GET_REQUESTS } from './Requests';
-
-const MODAL_STYLE = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-    borderWidth: 0,
-    boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '20px 50px 50px 50px',
-  },
-};
 
 const GET_REQUEST = gql`
   query Request($requestId: ID!) {
@@ -90,12 +76,16 @@ const DELETE_REQUEST = gql`
 function RequestDetails({ communityId, match, history }) {
   const [comment, setComment] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Get request details
   const { loading, error, data } = useQuery(GET_REQUEST, {
     variables: { requestId: match.params.id, communityId },
     onError: ({ message }) => {
       console.log(message);
     },
   });
+
+  // Create a thread to request for current user in current community
   const [createThread] = useMutation(CREATE_THREAD, {
     onCompleted: () => {
       setComment('');
@@ -122,6 +112,8 @@ function RequestDetails({ communityId, match, history }) {
       } catch (err) {}
     },
   });
+
+  // Delete request if user is request creator
   const [deleteRequest, { loading: mutationLoading }] = useMutation(
     DELETE_REQUEST,
     {
@@ -148,7 +140,7 @@ function RequestDetails({ communityId, match, history }) {
   );
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error! ${error.message}`
   ) : data.request ? (
@@ -200,8 +192,8 @@ function RequestDetails({ communityId, match, history }) {
         </div>
       </ItemDetails>
       <Modal
+        className="react-modal"
         isOpen={isModalOpen}
-        style={MODAL_STYLE}
         onRequestClose={() => setIsModalOpen(false)}
       >
         <p className="main-p">Are you sure you want to delete this request?</p>
@@ -227,7 +219,7 @@ function RequestDetails({ communityId, match, history }) {
           No
         </button>
       </Modal>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <Threads
         threads={data.request.threads}
         members={data.community.members}

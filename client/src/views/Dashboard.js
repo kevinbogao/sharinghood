@@ -4,7 +4,7 @@ import { Redirect } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
-import Loading from '../components/Loading';
+import Spinner from '../components/Spinner';
 
 const GET_TOKEN_PAYLOAD = gql`
   {
@@ -73,7 +73,7 @@ function Dashboard({ location, history }) {
   return !tokenPayload.isAdmin ? (
     <Redirect to={from} />
   ) : loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (

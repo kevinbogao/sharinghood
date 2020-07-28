@@ -2,21 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useMutation } from '@apollo/client';
 import Modal from 'react-modal';
-import Loading from './Loading';
-
-const MODAL_STYLE = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    transform: 'translate(-50%, -50%)',
-    borderWidth: 0,
-    boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '30px',
-    minWidth: '300px',
-  },
-};
+import Spinner from './Spinner';
 
 const INACTIVATE_POST = gql`
   mutation InactivatePost($postId: ID!) {
@@ -24,7 +10,7 @@ const INACTIVATE_POST = gql`
   }
 `;
 
-function UserPosts({ posts, history }) {
+function ProfilePosts({ posts, history }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selPost, setSelPost] = useState(null);
@@ -89,8 +75,8 @@ function UserPosts({ posts, history }) {
         ))}
       </div>
       <Modal
+        className="react-modal"
         isOpen={isModalOpen}
-        style={MODAL_STYLE}
         onRequestClose={() => {
           setIsModalOpen(false);
           setSelPost(null);
@@ -122,7 +108,7 @@ function UserPosts({ posts, history }) {
           No
         </button>
       </Modal>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -205,7 +191,7 @@ function UserPosts({ posts, history }) {
   );
 }
 
-UserPosts.propTypes = {
+ProfilePosts.propTypes = {
   posts: PropTypes.arrayOf(
     PropTypes.shape({
       _id: PropTypes.string.isRequired,
@@ -218,4 +204,4 @@ UserPosts.propTypes = {
   }).isRequired,
 };
 
-export default UserPosts;
+export default ProfilePosts;

@@ -5,23 +5,9 @@ import jwtDecode from 'jwt-decode';
 import Modal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import InlineError from '../../components/InlineError';
 import TermsAndConditions from '../../components/TermsAndConditions';
-
-const MODAL_STYLE = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-    borderWidth: 0,
-    boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '30px 50px',
-  },
-};
 
 const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
   mutation RegisterAndOrCreateCommunity(
@@ -234,8 +220,7 @@ function Register({
         Login
       </button>
       <Modal
-        id="terms-modal"
-        style={MODAL_STYLE}
+        className="react-modal terms"
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}
       >
@@ -247,7 +232,7 @@ function Register({
         />
         <TermsAndConditions />
       </Modal>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       {mutationError && <p>Error :( Please try again</p>}
       <style jsx>
         {`
@@ -322,21 +307,6 @@ function Register({
       <style jsx global>
         {`
           @import './src/assets/scss/index.scss';
-
-          #terms-modal {
-            max-width: $xl-max-width;
-            max-height: 70vh;
-            padding: 30px 50px;
-
-            @include xl {
-              width: 80vw;
-            }
-
-            @include sm {
-              max-height: 85vh;
-              padding: 20px;
-            }
-          }
 
           .terms-times-icon {
             position: -webkit-sticky;

@@ -5,8 +5,8 @@ const inMemoryDb = require('../__fixtures__/inMemoryDb');
 const {
   createInitData,
   mockUser01,
-  mockUser01Id,
-  mockCommunity01Id,
+  mockCommunity01,
+  mockCommunity02,
   mockUploadResponse,
   updatedMockUploadResponse,
 } = require('../__fixtures__/createInitData');
@@ -63,7 +63,7 @@ const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
 
 /* USERS QUERY */
 describe('[Query.users]', () => {
-  // user query
+  // USER QUERY
   it('Get user data and user posts', async () => {
     const GET_USER = gql`
       query User {
@@ -88,7 +88,7 @@ describe('[Query.users]', () => {
 
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser01._id } }),
     });
 
     // Create test interface
@@ -99,13 +99,16 @@ describe('[Query.users]', () => {
 
     // Check if user response is the same of mockUser01 data
     expect(res.data.user).toMatchObject({
-      _id: mockUser01Id.toString(),
+      _id: mockUser01._id.toString(),
       name: mockUser01.name,
       email: mockUser01.email,
       apartment: mockUser01.apartment,
       communities: [
         {
-          _id: mockCommunity01Id.toString(),
+          _id: mockCommunity01._id.toString(),
+        },
+        {
+          _id: mockCommunity02._id.toString(),
         },
       ],
     });
@@ -145,7 +148,69 @@ describe('[Mutation.users]', () => {
     expect(typeof res.data.login.accessToken).toBe('string');
   });
 
-  // registerAndOrCreateCommunity mutation for user & community
+  // LOGIN MUTATION WITH WRONG EMAIL
+  it('Login user with wrong email', async () => {
+    const LOGIN = gql`
+      mutation Login($email: String!, $password: String!) {
+        login(email: $email, password: $password) {
+          accessToken
+          refreshToken
+        }
+      }
+    `;
+
+    // Create an instance of ApolloServer
+    const { server } = constructTestServer({
+      context: () => {},
+    });
+
+    // Create test interface
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: LOGIN,
+      variables: {
+        email: 'not.exist@email.com',
+        password: '1234567',
+      },
+    });
+
+    // Expected error comparison
+    expect(res.errors[0].message).toEqual('Error: email: User not found');
+  });
+
+  // LOGIN MUTATION WITH WRONG PASSWORD
+  it('Login user with wrong password', async () => {
+    const LOGIN = gql`
+      mutation Login($email: String!, $password: String!) {
+        login(email: $email, password: $password) {
+          accessToken
+          refreshToken
+        }
+      }
+    `;
+
+    // Create an instance of ApolloServer
+    const { server } = constructTestServer({
+      context: () => {},
+    });
+
+    // Create test interface
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: LOGIN,
+      variables: {
+        email: 'mock.user01@email.com',
+        password: 'wrongPassword',
+      },
+    });
+
+    // Expected error comparison
+    expect(res.errors[0].message).toEqual(
+      'AuthenticationError: password: Invalid credentials'
+    );
+  });
+
+  // REGISTER_AND_OR_CREATE_COMMUNITY MUTATION FOR USER & COMMUNITY
   it('Register user and create community', async () => {
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
@@ -192,7 +257,7 @@ describe('[Mutation.users]', () => {
     );
   });
 
-  // registerAndOrCreateCommunity mutation
+  // REGISTER_AND_OR_CREATE_COMMUNITY MUTATION
   it('Register user to existing community', async () => {
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
@@ -208,7 +273,7 @@ describe('[Mutation.users]', () => {
       password: '1234567',
       apartment: '102',
       isNotified: true,
-      communityId: mockCommunity01Id.toString(),
+      communityId: mockCommunity01._id.toString(),
       image: uploadImg(),
     };
 
@@ -228,7 +293,7 @@ describe('[Mutation.users]', () => {
     );
   });
 
-  // updateUser mutation
+  // UPDATE_USER MUTATION
   it('Update user data', async () => {
     // User update mutation
     const UPDATE_USER = gql`
@@ -245,13 +310,13 @@ describe('[Mutation.users]', () => {
 
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser01._id } }),
     });
 
     // Mock uploadImg function
-    uploadImg.mockImplementation(() => {
-      return JSON.stringify(updatedMockUploadResponse);
-    });
+    uploadImg.mockImplementation(() =>
+      JSON.stringify(updatedMockUploadResponse)
+    );
 
     // User input for mutation
     const mutationInput = {

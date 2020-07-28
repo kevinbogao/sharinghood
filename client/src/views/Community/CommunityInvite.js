@@ -2,23 +2,9 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import Modal from 'react-modal';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import ProductScreenshot from '../../assets/images/product-screenshot.png';
 import { GET_COMMUNITY } from '../../components/Navbar';
-
-const MODAL_STYLE = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    transform: 'translate(-50%, -50%)',
-    borderWidth: 0,
-    boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '30px',
-    minWidth: '300px',
-  },
-};
 
 const GET_USER_COMMUNITIES = gql`
   query Communities {
@@ -162,7 +148,7 @@ function CommunityInvite({ match, history }) {
   }
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : (
     <div className="community-invite-control">
       {error ? (
@@ -206,8 +192,8 @@ function CommunityInvite({ match, history }) {
             </button>
           </div>
           <Modal
+            className="react-modal"
             isOpen={isJoinModalOpen}
-            style={MODAL_STYLE}
             onRequestClose={() => {
               setIsJoinModalOpen(false);
             }}
@@ -239,8 +225,8 @@ function CommunityInvite({ match, history }) {
             </button>
           </Modal>
           <Modal
+            className="react-modal"
             isOpen={isErrModalOpen}
-            style={MODAL_STYLE}
             onRequestClose={() => {
               setIsErrModalOpen(false);
             }}
@@ -258,7 +244,7 @@ function CommunityInvite({ match, history }) {
           </Modal>
         </>
       )}
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -293,7 +279,7 @@ function CommunityInvite({ match, history }) {
 
             .invite-text {
               padding: 50px;
-              background: $beige;
+              background: $grey-200;
 
               @include sm {
                 padding: 40px;

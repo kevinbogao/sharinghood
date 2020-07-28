@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Redirect } from 'react-router-dom';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import InlineError from '../../components/InlineError';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 
 const GET_ACCESS_TOKEN = gql`
   {
@@ -113,7 +113,7 @@ function ForgotPassword({ location }) {
           </form>
         </>
       )}
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useLazyQuery, useMutation } from '@apollo/client';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import { GET_COMMUNITY } from '../../components/Navbar';
 import InlineError from '../../components/InlineError';
 
@@ -193,7 +193,7 @@ function SelectCommunity({ history, location }) {
   }
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (
@@ -329,7 +329,7 @@ function SelectCommunity({ history, location }) {
           {pageError.code && <InlineError text={pageError.code} />}
         </>
       )}
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

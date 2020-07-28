@@ -3,21 +3,7 @@ import PropTypes from 'prop-types';
 import { gql, useLazyQuery, useMutation } from '@apollo/client';
 import Modal from 'react-modal';
 import moment from 'moment';
-import Loading from './Loading';
-// import { GET_NOTIFICATIONS } from '../views/Notification/Notifications';
-
-const MODAL_STYLE = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    transform: 'translate(-50%, -50%)',
-    borderWidth: 0,
-    boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '30px',
-  },
-};
+import Spinner from './Spinner';
 
 const FIND_NOTIFICATION = gql`
   query FindNotification($recipientId: ID!, $communityId: ID!) {
@@ -72,6 +58,8 @@ function ItemDetails({ history, item, userId, communityId, children }) {
       else setIsModalOpen(true);
     },
   });
+
+  // Create chat related notification
   const [createNotification, { loading: mutationLoading }] = useMutation(
     CREATE_NOTIFICATION,
     {
@@ -82,24 +70,6 @@ function ItemDetails({ history, item, userId, communityId, children }) {
       onError: ({ message }) => {
         console.log(message);
       },
-      // // Push to notification && update local state
-      // update(cache, { data: { createNotification } }) {
-      //   console.log(createNotification);
-
-      //   try {
-      //     const { notifications } = cache.readQuery({
-      //       query: GET_NOTIFICATIONS,
-      //     });
-      //     cache.writeQuery({
-      //       query: GET_NOTIFICATIONS,
-      //       data: { notifications: [createNotification, ...notifications] },
-      //     });
-      //     // eslint-disable-next-line
-      //   } catch (err) {}
-
-      //   // Redirect user to notifications
-      //   history.push('/notifications');
-      // },
     },
   );
 
@@ -152,8 +122,8 @@ function ItemDetails({ history, item, userId, communityId, children }) {
       </div>
       <div className="item-separator" />
       <Modal
+        className="react-modal"
         isOpen={isModalOpen}
-        style={MODAL_STYLE}
         onRequestClose={() => setIsModalOpen(false)}
       >
         <p className="main-p">
@@ -185,7 +155,7 @@ function ItemDetails({ history, item, userId, communityId, children }) {
           Close
         </button>
       </Modal>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -332,8 +302,6 @@ function ItemDetails({ history, item, userId, communityId, children }) {
     </>
   );
 }
-
-Modal.setAppElement('#root');
 
 ItemDetails.propTypes = {
   history: PropTypes.shape({

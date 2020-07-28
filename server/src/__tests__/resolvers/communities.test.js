@@ -4,10 +4,9 @@ const { constructTestServer } = require('../__utils');
 const inMemoryDb = require('../__fixtures__/inMemoryDb');
 const {
   createInitData,
-  mockUser01Id,
+  mockUser01,
+  mockUser02,
   mockCommunity01,
-  mockCommunity02,
-  mockCommunity02Id,
 } = require('../__fixtures__/createInitData');
 
 // Connect to a new in-memory database before running any tests.
@@ -142,7 +141,7 @@ describe('[Mutation.communities]', () => {
 
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser01._id } }),
     });
 
     // Create community mutation input
@@ -165,12 +164,12 @@ describe('[Mutation.communities]', () => {
       code: communityInput.code,
       zipCode: communityInput.zipCode,
       creator: {
-        _id: mockUser01Id.toString(),
+        _id: mockUser01._id.toString(),
       },
     });
   });
 
-  // joinCommunity resolver
+  // JOIN_COMMUNITY RESOLVER
   it('Join community for registered user', async () => {
     const JOIN_COMMUNITY = gql`
       mutation JoinCommunity($communityId: ID!) {
@@ -180,17 +179,20 @@ describe('[Mutation.communities]', () => {
         }
       }
     `;
+
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01Id } }),
+      context: () => ({ user: { userId: mockUser02._id } }),
     });
+
     const { mutate } = createTestClient(server);
     const res = await mutate({
       mutation: JOIN_COMMUNITY,
-      variables: { communityId: mockCommunity02Id.toString() },
+      variables: { communityId: mockCommunity01._id.toString() },
     });
+
     expect(res.data.joinCommunity).toMatchObject({
-      _id: mockCommunity02._id.toString(),
-      name: mockCommunity02.name,
+      _id: mockCommunity01._id.toString(),
+      name: mockCommunity01.name,
     });
   });
 });

@@ -4,7 +4,7 @@ import { gql, useQuery, useMutation } from '@apollo/client';
 import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 // import { GET_NOTIFICATIONS } from './Notifications';
 
 const GET_NOTIFICATION = gql`
@@ -186,7 +186,7 @@ function NotificationDetails({ communityId, match, history }) {
   }, [match.params.id]);
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (
@@ -389,7 +389,7 @@ function NotificationDetails({ communityId, match, history }) {
         </div>
       </div>
       {mutationError && <p>Error :( Please try again</p>}
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

@@ -5,20 +5,6 @@ import Modal from 'react-modal';
 import Spinner from '../../components/Spinner';
 import { GET_POSTS } from './Posts';
 
-const MODAL_STYLE = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    transform: 'translate(-50%, -50%)',
-    borderWidth: 0,
-    boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '30px',
-    minWidth: '300px',
-  },
-};
-
 const GET_POST = gql`
   query Post($postId: ID!) {
     post(postId: $postId) {
@@ -302,8 +288,8 @@ function EditPost({ history, match }) {
         </button>
       </form>
       <Modal
+        className="react-modal"
         isOpen={isAddModalOpen}
-        style={MODAL_STYLE}
         onRequestClose={() => {
           setIsAddModalOpen(false);
         }}
@@ -344,8 +330,8 @@ function EditPost({ history, match }) {
         </button>
       </Modal>
       <Modal
+        className="react-modal"
         isOpen={isDeleteModalOpen}
-        style={MODAL_STYLE}
         onRequestClose={() => setIsDeleteModalOpen(false)}
       >
         <p className="modal-p">Are you sure you want to delete this post?</p>
@@ -438,8 +424,6 @@ function EditPost({ history, match }) {
     </div>
   );
 }
-
-Modal.setAppElement('#root');
 
 EditPost.propTypes = {
   match: PropTypes.shape({

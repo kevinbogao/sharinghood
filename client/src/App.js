@@ -454,16 +454,36 @@ function App() {
             }
           }
 
-          // .Modal {
-          //   top: 50%;
-          //   left: 50%;
-          //   right: auto;
-          //   bottom: auto;
-          //   transform: translate(-50%, -50%);
-          //   // border-width: 0;
-          //   // boxshadow: 0px 0px 6px #f2f2f2;
-          //   // padding: 30px;
-          // }
+          .react-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            right: auto;
+            bottom: auto;
+            border: 0px solid #cccccc;
+            background: #ffffff;
+            overflow: auto;
+            border-radius: 4px;
+            outline: none;
+            padding: 30px;
+            transform: translate(-50%, -50%);
+            box-shadow: $white 0px 0px 6px;
+
+            &.terms {
+              max-width: $xl-max-width;
+              max-height: 70vh;
+              padding: 30px 50px;
+
+              @include xl {
+                width: 80vw;
+              }
+
+              @include sm {
+                max-height: 85vh;
+                padding: 20px;
+              }
+            }
+          }
 
           #root {
             height: 100vh;

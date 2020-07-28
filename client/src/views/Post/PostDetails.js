@@ -19,19 +19,6 @@ import ItemDetails from '../../components/ItemDetails';
 
 const CONDITIONS = ['New', 'Used but good', 'Used but little damaged'];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
-const MODAL_STYLE = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    transform: 'translate(-50%, -50%)',
-    borderWidth: 0,
-    boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '30px',
-    minWidth: '300px',
-  },
-};
 
 const GET_POST = gql`
   query Post($postId: ID!) {
@@ -252,8 +239,8 @@ function PostDetails({ communityId, match, history }) {
         </div>
       </ItemDetails>
       <Modal
+        className="react-modal"
         isOpen={isBookingOpen}
-        style={MODAL_STYLE}
         onRequestClose={() => setIsBookingOpen(false)}
       >
         <p className="main-p">When do you need the item?</p>

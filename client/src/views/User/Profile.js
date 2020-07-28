@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import Spinner from '../../components/Spinner';
-import UserPosts from '../../components/UserPosts';
+import ProfilePosts from '../../components/ProfilePosts';
 
 const GET_USER = gql`
   query User {
@@ -112,7 +112,7 @@ function Profile({ history }) {
           trustworthy by uploading a picture.
         </p>
         {data.user.posts.length > 0 && (
-          <UserPosts posts={data.user.posts} history={history} />
+          <ProfilePosts posts={data.user.posts} history={history} />
         )}
         <p className="main-p">Your name</p>
         <input

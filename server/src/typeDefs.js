@@ -15,6 +15,7 @@ const typeDefs = gql`
     isNotified: Boolean
     isAdmin: Boolean
     createdAt: String
+    lastLogin: String
     communities: [Community]
     posts: [Post]
   }

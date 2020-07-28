@@ -118,6 +118,7 @@ const activitiesResolvers = {
                 image: 1,
                 isNotified: 1,
                 createdAt: 1,
+                lastLogin: 1,
               },
               posts: {
                 _id: 1,

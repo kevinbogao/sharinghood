@@ -252,6 +252,7 @@ describe('[Mutation.posts]', () => {
   });
 
   // DELETE_POST MUTATION { postId }
+  // TODO: check for messages
   it("Delete user's post", async () => {
     const DELETE_POST = gql`
       mutation DeletePost($postId: ID!) {
@@ -304,10 +305,10 @@ describe('[Mutation.posts]', () => {
     // Expect post to be null
     expect(post).toBeNull();
 
-    // Expect post id not to be contained in communities' posts
+    // Expect post id not to be contained in user's posts
     expect(user.posts).not.toEqual(expect.arrayContaining([mockPost01._id]));
 
-    // Expect post id not to be contained in communities' posts
+    // Expect post id not to be contained in user's communities' posts
     communities.map((community) =>
       expect(community.posts).not.toEqual(
         expect.arrayContaining([mockPost01._id])

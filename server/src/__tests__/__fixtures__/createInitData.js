@@ -91,6 +91,7 @@ const mockUser01 = {
   image: JSON.stringify(mockUploadResponse),
   communities: [mockCommunity01Id, mockCommunity02Id],
   posts: [mockPost01Id, mockPost02Id],
+  requests: [mockRequest01Id, mockRequest02Id],
   notifications: [mockNotification01Id],
 };
 

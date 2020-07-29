@@ -200,17 +200,13 @@ const requestsResolvers = {
         // Delete request, requestId from community & delete request threads
         await Promise.all([
           request.remove(),
-          User.updateOne(
-            { _id: user.userId },
-            { $pull: { requests: requestId } }
-          ),
           Community.updateMany(
             { _id: { $in: currentUser.communities } },
             {
               $pull: { requests: requestId },
             }
           ),
-          Thread.deleteMany({ _id: { $in: threads } }),
+          Thread.deleteMany({ _id: threads }),
         ]);
 
         return request;

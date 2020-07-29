@@ -13,6 +13,12 @@ const {
   mockUploadResponse,
 } = require('../__fixtures__/createInitData');
 
+const User = require('../../models/user');
+const Thread = require('../../models/thread');
+const Request = require('../../models/request');
+const Community = require('../../models/community');
+const Notification = require('../../models/notification');
+
 // Mocking dependencies
 jest.mock('../../utils/uploadImg');
 const uploadImg = require('../../utils/uploadImg');
@@ -248,6 +254,22 @@ describe('[Mutation.requests]', () => {
       _id: mockRequest01._id.toString(),
     });
 
-    console.log(res.data.deleteRequest);
+    const [user, request, threads, communities] = await Promise.all([
+      User.findById(mockUser01._id),
+      Request.findById(mockRequest01._id),
+      Thread.find({ _id: { $in: mockRequest01.threads } }),
+      Community.find({ _id: { $in: mockUser01.communities } }),
+    ]);
+
+    expect(request).toBeNull();
+    expect(user.requests).not.toEqual(
+      expect.arrayContaining([mockRequest01._id])
+    );
+    expect(threads).toHaveLength(0);
+    communities.map((community) =>
+      expect(community.requests).not.toEqual(
+        expect.arrayContaining([mockRequest01._id])
+      )
+    );
   });
 });

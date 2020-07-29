@@ -5,11 +5,13 @@ const inMemoryDb = require('../__fixtures__/inMemoryDb');
 const {
   createInitData,
   mockUser01,
+  mockUser02,
   mockPost01,
   mockPost02,
   mockCommunity01,
   mockCommunity02,
   mockUploadResponse,
+  updatedMockUploadResponse,
 } = require('../__fixtures__/createInitData');
 const Post = require('../../models/post');
 const User = require('../../models/user');
@@ -43,6 +45,40 @@ afterEach(async () => {
 afterAll(async () => {
   await inMemoryDb.close();
 });
+
+const UPDATE_POST = gql`
+  mutation UpdatePost($postInput: PostInput!) {
+    updatePost(postInput: $postInput) {
+      _id
+      title
+      desc
+      image
+      condition
+    }
+  }
+`;
+
+const INACTIVATE_POST = gql`
+  mutation InactivatePost($postId: ID!) {
+    inactivatePost(postId: $postId)
+  }
+`;
+
+const DELETE_POST = gql`
+  mutation DeletePost($postId: ID!) {
+    deletePost(postId: $postId) {
+      _id
+    }
+  }
+`;
+
+const ADD_POST_TO_COMMUNITY = gql`
+  mutation AddPostToCommunity($postId: ID!, $communityId: ID!) {
+    addPostToCommunity(postId: $postId, communityId: $communityId) {
+      _id
+    }
+  }
+`;
 
 /* POSTS QUERY */
 describe('[Query.posts]', () => {
@@ -215,14 +251,67 @@ describe('[Mutation.posts]', () => {
     });
   });
 
+  // UPDATE_POST MUTATION
+  it('Update post by creator', async () => {
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id } }),
+    });
+
+    uploadImg.mockImplementation(() =>
+      JSON.stringify(updatedMockUploadResponse)
+    );
+
+    const postInput = {
+      postId: mockPost01._id.toString(),
+      title: 'Mock Post 01+',
+      desc: 'mockPost01+',
+      image: uploadImg(),
+      condition: 1,
+    };
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: UPDATE_POST,
+      variables: { postInput },
+    });
+
+    expect(res.data.updatePost).toMatchObject({
+      title: postInput.title,
+      desc: postInput.desc,
+      image: JSON.stringify(updatedMockUploadResponse),
+      condition: postInput.condition,
+    });
+  });
+
+  // UPDATE_POST MUTATION
+  it('Update post by unauthorized user', async () => {
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser02._id } }),
+    });
+
+    uploadImg.mockImplementation(() =>
+      JSON.stringify(updatedMockUploadResponse)
+    );
+
+    const postInput = {
+      postId: mockPost01._id.toString(),
+      title: 'Mock Post 01+',
+      desc: 'mockPost01+',
+      image: uploadImg(),
+      condition: 1,
+    };
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: UPDATE_POST,
+      variables: { postInput },
+    });
+
+    expect(res.errors[0].message).toEqual('Error: Unauthorized user');
+  });
+
   // INACTIVATE_POST MUTATION { postId }
   it("Inactivate user's post in all communities", async () => {
-    const INACTIVATE_POST = gql`
-      mutation InactivatePost($postId: ID!) {
-        inactivatePost(postId: $postId)
-      }
-    `;
-
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser01._id } }),
     });
@@ -251,17 +340,24 @@ describe('[Mutation.posts]', () => {
     }
   });
 
+  // INACTIVATE_POST MUTATION { postId }
+  it("Inactivate user's by unauthorized user", async () => {
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser02._id } }),
+    });
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      query: INACTIVATE_POST,
+      variables: { postId: mockPost01._id.toString() },
+    });
+
+    expect(res.errors[0].message).toEqual('Error: Unauthorized user');
+  });
+
   // DELETE_POST MUTATION { postId }
   // TODO: check for messages
   it("Delete user's post", async () => {
-    const DELETE_POST = gql`
-      mutation DeletePost($postId: ID!) {
-        deletePost(postId: $postId) {
-          _id
-        }
-      }
-    `;
-
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser01._id } }),
     });
@@ -321,16 +417,23 @@ describe('[Mutation.posts]', () => {
     expect(notifications).toHaveLength(0);
   });
 
+  // DELETE_POST MUTATION { postId }
+  it("Delete user's post by unauthorized user", async () => {
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser02._id } }),
+    });
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      query: DELETE_POST,
+      variables: { postId: mockPost01._id.toString() },
+    });
+
+    expect(res.errors[0].message).toEqual('Error: Unauthorized user');
+  });
+
   // ADD_POST_TO_COMMUNITY Mutation
   it("Add user's post to community", async () => {
-    const ADD_POST_TO_COMMUNITY = gql`
-      mutation AddPostToCommunity($postId: ID!, $communityId: ID!) {
-        addPostToCommunity(postId: $postId, communityId: $communityId) {
-          _id
-        }
-      }
-    `;
-
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser01._id } }),
     });
@@ -353,5 +456,23 @@ describe('[Mutation.posts]', () => {
 
     // Expect mockCommunity02's posts array to include mockPost02Id
     expect(community02.posts).toEqual(expect.arrayContaining([mockPost02._id]));
+  });
+
+  // ADD_POST_TO_COMMUNITY Mutation
+  it("Add user's post to community by unauthorized user", async () => {
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser02._id } }),
+    });
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      query: ADD_POST_TO_COMMUNITY,
+      variables: {
+        postId: mockPost02._id.toString(),
+        communityId: mockCommunity02._id.toString(),
+      },
+    });
+
+    expect(res.errors[0].message).toEqual('Error: Unauthorized user');
   });
 });

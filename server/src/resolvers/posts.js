@@ -234,7 +234,7 @@ const postsResolvers = {
         const updatedPost = await post.save();
         return updatedPost;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw new Error(err);
       }
     },
@@ -266,7 +266,7 @@ const postsResolvers = {
 
         return true;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw new Error(err);
       }
     },
@@ -351,8 +351,8 @@ const postsResolvers = {
 
         return post;
       } catch (err) {
-        console.log(err);
-        throw err;
+        // console.log(err);
+        throw new Error(err);
       }
     },
     addPostToCommunity: async (_, { postId, communityId }, { user }) => {
@@ -377,7 +377,7 @@ const postsResolvers = {
 
         return community;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw new Error(err);
       }
     },

@@ -291,29 +291,6 @@ describe('[Mutation.requests]', () => {
       variables: { requestId: mockRequest01._id.toString() },
     });
 
-    console.log(res)
-
-    // // Expect mockRequest01's id to be returned
-    // expect(res.data.deleteRequest).toMatchObject({
-    //   _id: mockRequest01._id.toString(),
-    // });
-
-    // const [user, request, threads, communities] = await Promise.all([
-    //   User.findById(mockUser01._id),
-    //   Request.findById(mockRequest01._id),
-    //   Thread.find({ _id: { $in: mockRequest01.threads } }),
-    //   Community.find({ _id: { $in: mockUser01.communities } }),
-    // ]);
-
-    // expect(request).toBeNull();
-    // expect(user.requests).not.toEqual(
-    //   expect.arrayContaining([mockRequest01._id])
-    // );
-    // expect(threads).toHaveLength(0);
-    // communities.map((community) =>
-    //   expect(community.requests).not.toEqual(
-    //     expect.arrayContaining([mockRequest01._id])
-    //   )
-    // );
-  // });
+    expect(res.errors[0].message).toEqual('Error: Unauthorized user');
+  });
 });

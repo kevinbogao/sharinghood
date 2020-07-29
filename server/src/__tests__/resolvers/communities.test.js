@@ -65,7 +65,7 @@ describe('[Query.communities]', () => {
       code: mockCommunity01.code,
     });
 
-    // Check members's array in community response
+    // Check members' array in community response
     expect(res.data.community.members).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

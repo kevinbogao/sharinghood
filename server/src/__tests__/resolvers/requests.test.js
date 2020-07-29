@@ -12,12 +12,10 @@ const {
   mockCommunity01,
   mockUploadResponse,
 } = require('../__fixtures__/createInitData');
-
 const User = require('../../models/user');
 const Thread = require('../../models/thread');
 const Request = require('../../models/request');
 const Community = require('../../models/community');
-const Notification = require('../../models/notification');
 
 // Mocking dependencies
 jest.mock('../../utils/uploadImg');
@@ -272,4 +270,50 @@ describe('[Mutation.requests]', () => {
       )
     );
   });
+
+  // DELETE_REQUEST MUTATION { requestId }
+  it('Delete request by unauthorized user', async () => {
+    const DELETE_REQUEST = gql`
+      mutation DeleteRequest($requestId: ID!) {
+        deleteRequest(requestId: $requestId) {
+          _id
+        }
+      }
+    `;
+
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser03._id } }),
+    });
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      query: DELETE_REQUEST,
+      variables: { requestId: mockRequest01._id.toString() },
+    });
+
+    console.log(res)
+
+    // // Expect mockRequest01's id to be returned
+    // expect(res.data.deleteRequest).toMatchObject({
+    //   _id: mockRequest01._id.toString(),
+    // });
+
+    // const [user, request, threads, communities] = await Promise.all([
+    //   User.findById(mockUser01._id),
+    //   Request.findById(mockRequest01._id),
+    //   Thread.find({ _id: { $in: mockRequest01.threads } }),
+    //   Community.find({ _id: { $in: mockUser01.communities } }),
+    // ]);
+
+    // expect(request).toBeNull();
+    // expect(user.requests).not.toEqual(
+    //   expect.arrayContaining([mockRequest01._id])
+    // );
+    // expect(threads).toHaveLength(0);
+    // communities.map((community) =>
+    //   expect(community.requests).not.toEqual(
+    //     expect.arrayContaining([mockRequest01._id])
+    //   )
+    // );
+  // });
 });

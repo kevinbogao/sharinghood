@@ -81,7 +81,7 @@ function ItemsGrid({ isPost, children }) {
                 width: 160px;
                 height: 70%;
                 display: block;
-                background: #f17835;
+                background: $orange;
                 border-width: 0;
                 border-radius: 4px;
                 cursor: pointer;

@@ -1,14 +1,9 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
 import ItemsGrid from '../../components/ItemsGrid';
 import Spinner from '../../components/Spinner';
-
-const GET_COMMUNITY_ID = gql`
-  query {
-    selCommunityId @client
-  }
-`;
 
 const GET_POSTS = gql`
   query Posts($communityId: ID!) {
@@ -24,13 +19,10 @@ const GET_POSTS = gql`
   }
 `;
 
-function Posts() {
-  const {
-    data: { selCommunityId },
-  } = useQuery(GET_COMMUNITY_ID);
+function Posts({ communityId }) {
   const { loading, error, data } = useQuery(GET_POSTS, {
-    skip: !selCommunityId,
-    variables: { communityId: selCommunityId },
+    skip: !communityId,
+    variables: { communityId },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -111,5 +103,9 @@ function Posts() {
     </ItemsGrid>
   );
 }
+
+Posts.propTypes = {
+  communityId: PropTypes.string.isRequired,
+};
 
 export { GET_POSTS, Posts };

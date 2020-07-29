@@ -4,6 +4,7 @@ const User = require('../models/user');
 const Post = require('../models/post');
 const Thread = require('../models/thread');
 const Booking = require('../models/booking');
+const Message = require('../models/message');
 const Community = require('../models/community');
 const Notification = require('../models/notification');
 const uploadImg = require('../utils/uploadImg');
@@ -233,7 +234,7 @@ const postsResolvers = {
         const updatedPost = await post.save();
         return updatedPost;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw new Error(err);
       }
     },
@@ -265,7 +266,7 @@ const postsResolvers = {
 
         return true;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw new Error(err);
       }
     },
@@ -287,10 +288,42 @@ const postsResolvers = {
         // Save thread ids array
         const { threads, bookings } = post;
 
-        // Delete post, postId from community && delete post threads,
-        // delete bookings & post notifications
+        // Get all notifications that is related to post's bookings or
+        // the post itself
+        const notifications = await Notification.find({
+          $or: [{ booking: { $in: bookings } }, { post: postId }],
+        });
 
-        // TODO: delete notifications' messages
+        // Get a list to notifications' messages ids
+        const messages = notifications
+          .map((notification) => notification.messages)
+          .flat(1);
+
+        // Get a list of notifications ids
+        const notificationsIds = notifications.map(
+          (notification) => notification._id
+        );
+
+        // Create an object of invalid notifications with user id as key
+        let userInvalidNotifications = {};
+        for (let i = 0; i < notifications.length; i++) {
+          for (let j = 0; j < notifications[0].participants.length; j++) {
+            if (notifications[i].participants[j] in userInvalidNotifications) {
+              userInvalidNotifications[notifications[i].participants[j]].push(
+                notifications[i]._id
+              );
+            } else {
+              userInvalidNotifications = {
+                ...userInvalidNotifications,
+                [notifications[i].participants[j]]: [notifications[i]._id],
+              };
+            }
+          }
+        }
+
+        // Delete post, postId from community && delete post threads,
+        // delete bookings & post related notifications & subsequent messages
+        // && delete all notifications' ids from users
         await Promise.all([
           post.remove(),
           Community.updateMany(
@@ -298,17 +331,28 @@ const postsResolvers = {
             { $pull: { posts: postId } }
           ),
           User.updateOne({ _id: user.userId }, { $pull: { posts: postId } }),
-          Thread.deleteMany({ _id: threads }),
-          Booking.deleteMany({ _id: bookings }),
-          Notification.deleteMany({
-            $or: [{ booking: { $in: bookings } }, { post: postId }],
-          }),
+          Thread.deleteMany({ _id: { $in: threads } }),
+          Booking.deleteMany({ _id: { $in: bookings } }),
+          Message.deleteMany({ _id: { $in: messages } }),
+          Notification.deleteMany({ _id: { $in: notificationsIds } }),
+          Object.keys(userInvalidNotifications).map((userId) =>
+            Promise.resolve(
+              User.updateOne(
+                { _id: userId },
+                {
+                  $pull: {
+                    notifications: { $in: userInvalidNotifications[userId] },
+                  },
+                }
+              )
+            )
+          ),
         ]);
 
         return post;
       } catch (err) {
-        console.log(err);
-        throw err;
+        // console.log(err);
+        throw new Error(err);
       }
     },
     addPostToCommunity: async (_, { postId, communityId }, { user }) => {
@@ -333,7 +377,7 @@ const postsResolvers = {
 
         return community;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw new Error(err);
       }
     },

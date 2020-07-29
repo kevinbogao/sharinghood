@@ -3,15 +3,16 @@ const User = require('../models/user');
 
 async function removeInvalidTokens(invalidTokens) {
   try {
-    // eslint-disable-next-line
-    for (userId in invalidTokens) {
-      // eslint-disable-next-line
-      await User.updateOne(
-        // eslint-disable-next-line
-        { _id: userId },
-        { $pull: { fcmTokens: { $in: invalidTokens[userId] } } }
-      );
-    }
+    await Promise.all([
+      Object.keys(invalidTokens).map((userId) =>
+        Promise.resolve(
+          User.updateOne(
+            { _id: userId },
+            { $pull: { fcmTokens: { $in: invalidTokens[userId] } } }
+          )
+        )
+      ),
+    ]);
   } catch (err) {
     console.log(err);
   }

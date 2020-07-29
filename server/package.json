@@ -75,8 +75,8 @@
     "arrowParens": "always"
   },
   "dependencies": {
-    "apollo-server": "^2.16.0",
-    "apollo-server-testing": "^2.16.0",
+    "apollo-server": "^2.16.1",
+    "apollo-server-testing": "^2.16.1",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.22.0",
     "dotenv": "^8.2.0",
@@ -86,9 +86,9 @@
     "ioredis": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.19",
-    "mongoose": "^5.9.25",
+    "mongoose": "^5.9.26",
     "node-gcm": "^1.0.3",
-    "nodemailer": "^6.4.10"
+    "nodemailer": "^6.4.11"
   },
   "devDependencies": {
     "concurrently": "^5.2.0",
@@ -96,9 +96,9 @@
     "eslint": "^7.5.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-jest": "^23.18.2",
+    "eslint-plugin-jest": "^23.19.0",
     "jest": "^26.1.0",
-    "mongodb-memory-server": "^6.6.2",
+    "mongodb-memory-server": "^6.6.3",
     "nodemon": "^2.0.4",
     "sinon": "^9.0.2"
   }

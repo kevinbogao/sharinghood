@@ -70,10 +70,12 @@ const server = new ApolloServer({
       useFindAndModify: false,
       sslValidate: false,
     });
+
     // Server listener
     const { url, subscriptionsUrl } = await server.listen({
       port: process.env.PORT || 4000,
     });
+
     console.log(`Server ready at ${url}`);
     console.log(`Subscriptions ready at ${subscriptionsUrl}`);
   } catch (err) {

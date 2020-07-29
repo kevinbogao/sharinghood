@@ -227,8 +227,8 @@ describe('[Mutation.posts]', () => {
       context: () => ({ user: { userId: mockUser01._id } }),
     });
 
-    const { query } = createTestClient(server);
-    const res = await query({
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
       query: INACTIVATE_POST,
       variables: { postId: mockPost01._id.toString() },
     });
@@ -252,7 +252,7 @@ describe('[Mutation.posts]', () => {
   });
 
   // DELETE_POST MUTATION { postId }
-  it("Delete user's posy", async () => {
+  it("Delete user's post", async () => {
     const DELETE_POST = gql`
       mutation DeletePost($postId: ID!) {
         deletePost(postId: $postId) {
@@ -265,8 +265,8 @@ describe('[Mutation.posts]', () => {
       context: () => ({ user: { userId: mockUser01._id } }),
     });
 
-    const { query } = createTestClient(server);
-    const res = await query({
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
       query: DELETE_POST,
       variables: { postId: mockPost01._id.toString() },
     });
@@ -334,8 +334,8 @@ describe('[Mutation.posts]', () => {
       context: () => ({ user: { userId: mockUser01._id } }),
     });
 
-    const { query } = createTestClient(server);
-    const res = await query({
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
       query: ADD_POST_TO_COMMUNITY,
       variables: {
         postId: mockPost02._id.toString(),

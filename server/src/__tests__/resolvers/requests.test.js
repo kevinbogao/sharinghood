@@ -164,57 +164,90 @@ describe('[Query.requests]', () => {
   });
 });
 
-// /* REQUESTS MUTATIONS */
-// describe('[Mutation.requests]', () => {
-//   it('Create request to community', async () => {
-//     const CREATE_REQUEST = gql`
-//       mutation CreateRequest($requestInput: RequestInput!, $communityId: ID!) {
-//         createRequest(requestInput: $requestInput, communityId: $communityId) {
-//           _id
-//           desc
-//           image
-//           dateNeed
-//           dateReturn
-//           creator {
-//             _id
-//             name
-//           }
-//         }
-//       }
-//     `;
+/* REQUESTS MUTATIONS */
+describe('[Mutation.requests]', () => {
+  it('Create request to community', async () => {
+    const CREATE_REQUEST = gql`
+      mutation CreateRequest($requestInput: RequestInput!, $communityId: ID!) {
+        createRequest(requestInput: $requestInput, communityId: $communityId) {
+          _id
+          title
+          desc
+          image
+          dateNeed
+          dateReturn
+          creator {
+            _id
+            name
+          }
+        }
+      }
+    `;
 
-//     // Create an instance of ApolloServer
-//     const { server } = constructTestServer({
-//       context: () => ({
-//         user: {
-//           userId: mockUser01._id.toString(),
-//           userName: mockUser01.name,
-//         },
-//       }),
-//     });
+    const { server } = constructTestServer({
+      context: () => ({
+        user: {
+          userId: mockUser01._id.toString(),
+          userName: mockUser01.name,
+        },
+      }),
+    });
 
-//     uploadImg.mockImplementation(() => JSON.stringify(mockUploadResponse));
-//     pushNotification.mockImplementation(() => {});
+    uploadImg.mockImplementation(() => JSON.stringify(mockUploadResponse));
+    pushNotification.mockImplementation(() => {});
 
-//     const dateNeed = new Date();
-//     const dateReturn = new Date();
+    const requestInput = {
+      title: 'Test Request 01',
+      desc: 'testRequest01',
+      image: uploadImg(),
+      dateNeed: `${new Date()}`,
+      dateReturn: `${new Date()}`,
+    };
 
-//     const requestInput = {
-//       title: 'Test Request 01sa',
-//       desc: 'testRequest01dsa',
-//       image: uploadImg(),
-//       dateNeed,
-//       dateReturn,
-//       // dateNeed: `${new Date()}`,
-//       // dateReturn: `${new Date()}`,
-//     };
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: CREATE_REQUEST,
+      variables: { requestInput, communityId: mockCommunity01._id.toString() },
+    });
 
-//     const { mutate } = createTestClient(server);
-//     const res = await mutate({
-//       mutation: CREATE_REQUEST,
-//       variables: { requestInput, communityId: mockCommunity01._id.toString() },
-//     });
+    expect(res.data.createRequest).toMatchObject({
+      title: requestInput.title,
+      desc: requestInput.desc,
+      image: JSON.stringify(mockUploadResponse),
+      dateNeed: `${new Date(requestInput.dateNeed).getTime()}`,
+      dateReturn: `${new Date(requestInput.dateReturn).getTime()}`,
+      creator: {
+        _id: mockUser01._id.toString(),
+        name: mockUser01.name,
+      },
+    });
+  });
 
-//     console.log(res);
-//   });
-// });
+  // DELETE_REQUEST MUTATION { requestId }
+  it("Delete user's request", async () => {
+    const DELETE_REQUEST = gql`
+      mutation DeleteRequest($requestId: ID!) {
+        deleteRequest(requestId: $requestId) {
+          _id
+        }
+      }
+    `;
+
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id } }),
+    });
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      query: DELETE_REQUEST,
+      variables: { requestId: mockRequest01._id.toString() },
+    });
+
+    // Expect mockRequest01's id to be returned
+    expect(res.data.deleteRequest).toMatchObject({
+      _id: mockRequest01._id.toString(),
+    });
+
+    console.log(res.data.deleteRequest);
+  });
+});

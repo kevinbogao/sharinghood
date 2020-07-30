@@ -42,23 +42,64 @@ afterAll(async () => {
   await inMemoryDb.close();
 });
 
-const CREATE_THREAD = gql`
-  mutation CreateThread($threadInput: ThreadInput!) {
-    createThread(threadInput: $threadInput) {
-      _id
-      content
-      poster {
-        _id
-      }
-      community {
-        _id
-      }
-    }
-  }
-`;
-
 /* NOTIFICATIONS QUERIES */
 describe('[Query.notifications]', () => {
+  // NOTIFICATIONS QUERY { notificationId }
+  it('Get notification by id', async () => {
+    const GET_NOTIFICATION = gql`
+      query GetNotification($notificationId: ID!) {
+        notification(notificationId: $notificationId) {
+          _id
+          ofType
+          booking {
+            _id
+            status
+            dateType
+            dateNeed
+            dateReturn
+            post {
+              _id
+              title
+              image
+            }
+            booker {
+              _id
+            }
+          }
+          post {
+            _id
+          }
+          participants {
+            _id
+            name
+            image
+          }
+          messages {
+            _id
+            text
+            sender {
+              _id
+            }
+            createdAt
+          }
+          isRead
+        }
+      }
+    `;
+
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id.toString() } }),
+    });
+
+    const { query } = createTestClient(server);
+    const res = await query({
+      query: GET_NOTIFICATION,
+      variables: { notificationId: mockNotification02._id.toString() },
+    });
+
+    console.log(res.data.notification);
+  });
+
   // NOTIFICATIONS QUERY { communityId }
   it("Get user's notifications from a community", async () => {
     const GET_NOTIFICATIONS = gql`

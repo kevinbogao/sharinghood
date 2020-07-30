@@ -1,13 +1,16 @@
 const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
+const Redis = require('ioredis-mock');
 const { constructTestServer } = require('../__utils');
 const inMemoryDb = require('../__mocks__/inMemoryDb');
 const {
   createInitData,
   mockUser01,
   mockUser02,
+  mockUser03,
   mockPost01,
   mockPost02,
+  mockRequest02,
   mockCommunity01,
   mockCommunity02,
   mockUploadResponse,
@@ -45,6 +48,23 @@ afterEach(async () => {
 afterAll(async () => {
   await inMemoryDb.close();
 });
+
+const CREATE_POST = gql`
+  mutation CreatePost($postInput: PostInput!, $communityId: ID) {
+    createPost(postInput: $postInput, communityId: $communityId) {
+      _id
+      title
+      desc
+      image
+      condition
+      isGiveaway
+      creator {
+        _id
+        name
+      }
+    }
+  }
+`;
 
 const UPDATE_POST = gql`
   mutation UpdatePost($postInput: PostInput!) {
@@ -195,23 +215,6 @@ describe('[Query.posts]', () => {
 describe('[Mutation.posts]', () => {
   // CREATE_POST MUTATION { communityId }
   it('Create post by user { communityId }', async () => {
-    const CREATE_POST = gql`
-      mutation CreatePost($postInput: PostInput!, $communityId: ID) {
-        createPost(postInput: $postInput, communityId: $communityId) {
-          _id
-          title
-          desc
-          image
-          condition
-          isGiveaway
-          creator {
-            _id
-            name
-          }
-        }
-      }
-    `;
-
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser01._id.toString() } }),
@@ -248,6 +251,58 @@ describe('[Mutation.posts]', () => {
       creator: {
         _id: mockUser01._id.toString(),
       },
+    });
+  });
+
+  // CREATE_POST MUTATION
+  it('Create post by user for request { communityId }', async () => {
+    const redis = new Redis();
+
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id.toString() }, redis }),
+    });
+
+    uploadImg.mockImplementation(() => JSON.stringify(mockUploadResponse));
+    pushNotification.mockImplementation(() => {});
+
+    const postInput = {
+      title: 'Test Post 02',
+      desc: 'testPost02',
+      image: uploadImg(),
+      condition: 1,
+      isGiveaway: false,
+      requesterId: mockUser03._id.toString(),
+    };
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: CREATE_POST,
+      variables: { postInput, communityId: mockCommunity01._id.toString() },
+    });
+    const notification = await Notification.findOne({
+      ofType: 2,
+      participants: [mockUser03._id.toString(), mockUser01._id.toString()],
+      community: mockCommunity01._id.toString(),
+    });
+
+    expect(res.data.createPost).toMatchObject({
+      title: postInput.title,
+      desc: postInput.desc,
+      condition: postInput.condition,
+      isGiveaway: postInput.isGiveaway,
+      image: JSON.stringify(mockUploadResponse),
+      creator: {
+        _id: mockUser01._id.toString(),
+      },
+    });
+
+    expect(notification).toMatchObject({
+      ofType: 2,
+      isRead: expect.objectContaining({
+        [mockUser01._id.toString()]: false,
+        [mockUser03._id.toString()]: false,
+      }),
+      community: mockCommunity01._id,
     });
   });
 

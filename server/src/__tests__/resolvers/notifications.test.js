@@ -6,6 +6,7 @@ const inMemoryDb = require('../__fixtures__/inMemoryDb');
 const {
   createInitData,
   mockUser01,
+  mockUser02,
   mockUser03,
   mockPost01,
   mockPost03,
@@ -14,6 +15,7 @@ const {
   mockMessage03,
   mockBooking01,
   mockCommunity01,
+  mockCommunity02,
   mockNotification01,
   mockNotification02,
   mockNotification03,
@@ -41,6 +43,40 @@ afterEach(async () => {
 afterAll(async () => {
   await inMemoryDb.close();
 });
+
+const CREATE_NOTIFICATION = gql`
+  mutation CreateNotification($notificationInput: NotificationInput) {
+    createNotification(notificationInput: $notificationInput) {
+      _id
+      ofType
+      booking {
+        _id
+        status
+        dateType
+        dateNeed
+        dateReturn
+        post {
+          _id
+          title
+          image
+        }
+        booker {
+          _id
+        }
+      }
+      participants {
+        _id
+        name
+        image
+      }
+      isRead
+      messages {
+        _id
+        text
+      }
+    }
+  }
+`;
 
 /* NOTIFICATIONS QUERIES */
 describe('[Query.notifications]', () => {
@@ -127,16 +163,16 @@ describe('[Query.notifications]', () => {
         expect.objectContaining({
           _id: mockMessage02._id.toString(),
           text: mockMessage02.text,
+          sender: {
+            _id: mockUser01._id.toString(),
+          },
         }),
       ]),
       isRead: expect.objectContaining({
-        [mockUser01._id.toString()]: false,
-        [mockUser03._id.toString()]: false,
+        [mockUser01._id.toString()]: true,
+        [mockUser03._id.toString()]: true,
       }),
     });
-
-    console.log(res.data.notification);
-    console.log(JSON.stringify(res.data.notification, null, 4));
   });
 
   // NOTIFICATIONS QUERY { communityId }
@@ -258,8 +294,8 @@ describe('[Query.notifications]', () => {
             }),
           ]),
           isRead: expect.objectContaining({
-            [mockUser01._id.toString()]: false,
-            [mockUser03._id.toString()]: false,
+            [mockUser01._id.toString()]: true,
+            [mockUser03._id.toString()]: true,
           }),
           community: expect.objectContaining({
             _id: mockCommunity01._id.toString(),
@@ -305,5 +341,125 @@ describe('[Query.notifications]', () => {
         }),
       ])
     );
+  });
+});
+
+/* NOTIFICATIONS MUTATIONS */
+describe('[Mutation.notifications]', () => {
+  // CREATE_NOTIFICATION MUTATION { ofType === 0 }
+  it('Create chat notification', async () => {
+    const redis = new Redis();
+
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser02._id.toString() }, redis }),
+    });
+
+    pushNotification.mockImplementation(() => {});
+
+    const notificationInput = {
+      ofType: 0,
+      recipientId: mockUser03._id.toString(),
+      communityId: mockCommunity02._id.toString(),
+    };
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: CREATE_NOTIFICATION,
+      variables: { notificationInput },
+    });
+    const hasNotifications = await redis.hget(
+      `notifications:${mockUser03._id.toString()}`,
+      `${mockCommunity02._id.toString()}`
+    );
+
+    expect(res.data.createNotification).toMatchObject({
+      ofType: 0,
+      participants: expect.arrayContaining([
+        expect.objectContaining({
+          _id: mockUser02._id.toString(),
+          name: mockUser02.name,
+          image: JSON.stringify(mockUploadResponse),
+        }),
+        expect.objectContaining({
+          _id: mockUser03._id.toString(),
+          name: mockUser03.name,
+          image: JSON.stringify(mockUploadResponse),
+        }),
+      ]),
+      isRead: expect.objectContaining({
+        [mockUser03._id.toString()]: false,
+        [mockUser02._id.toString()]: false,
+      }),
+    });
+    expect(res.data.createNotification.messages).toHaveLength(0);
+    expect(hasNotifications).toEqual('true');
+  });
+
+  // CREATE_NOTIFICATION MUTATION { ofType === 1 }
+  it('Create booking notification', async () => {
+    const redis = new Redis();
+
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser03._id.toString() }, redis }),
+    });
+
+    pushNotification.mockImplementation(() => {});
+
+    const notificationInput = {
+      bookingInput: {
+        postId: mockPost03._id.toString(),
+        dateType: 0,
+        status: 0,
+      },
+      ofType: 1,
+      recipientId: mockUser01._id.toString(),
+      communityId: mockCommunity01._id.toString(),
+    };
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: CREATE_NOTIFICATION,
+      variables: { notificationInput },
+    });
+    const hasNotifications = await redis.hget(
+      `notifications:${mockUser01._id.toString()}`,
+      `${mockCommunity01._id.toString()}`
+    );
+
+    expect(res.data.createNotification).toMatchObject({
+      ofType: 1,
+      booking: expect.objectContaining({
+        status: notificationInput.bookingInput.status,
+        dateType: notificationInput.bookingInput.dateType,
+        dateNeed: null,
+        dateReturn: null,
+        post: expect.objectContaining({
+          _id: mockPost03._id.toString(),
+          title: mockPost03.title,
+          image: JSON.stringify(mockUploadResponse),
+        }),
+        booker: expect.objectContaining({
+          _id: mockUser03._id.toString(),
+        }),
+      }),
+      participants: expect.arrayContaining([
+        expect.objectContaining({
+          _id: mockUser01._id.toString(),
+          name: mockUser01.name,
+          image: JSON.stringify(mockUploadResponse),
+        }),
+        expect.objectContaining({
+          _id: mockUser03._id.toString(),
+          name: mockUser03.name,
+          image: JSON.stringify(mockUploadResponse),
+        }),
+      ]),
+      isRead: expect.objectContaining({
+        [mockUser01._id.toString()]: false,
+        [mockUser03._id.toString()]: false,
+      }),
+    });
+    expect(res.data.createNotification.messages).toHaveLength(0);
+    expect(hasNotifications).toEqual('true');
   });
 });

@@ -117,8 +117,8 @@ const mockNotification02 = {
   messages: [mockMessage02Id],
   participants: [mockUser01Id, mockUser03Id],
   isRead: {
-    [mockUser01Id]: false,
-    [mockUser03Id]: false,
+    [mockUser01Id]: true,
+    [mockUser03Id]: true,
   },
   community: mockCommunity01Id,
 };
@@ -180,7 +180,7 @@ const mockUser03 = {
   isNotified: true,
   isCreator: true,
   image: JSON.stringify(mockUploadResponse),
-  communities: [mockCommunity01Id],
+  communities: [mockCommunity01Id, mockCommunity02Id],
   notifications: [
     mockNotification01Id,
     mockNotification02Id,
@@ -207,7 +207,7 @@ const mockCommunity02 = {
   code: 'mockCommunity02',
   zipCode: '00002',
   creator: mockUser02Id,
-  members: [mockUser02Id],
+  members: [mockUser02Id, mockUser03Id],
   posts: [mockPost01Id],
 };
 

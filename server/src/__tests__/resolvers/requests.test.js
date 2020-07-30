@@ -1,7 +1,7 @@
 const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
 const { constructTestServer } = require('../__utils');
-const inMemoryDb = require('../__fixtures__/inMemoryDb');
+const inMemoryDb = require('../__mocks__/inMemoryDb');
 const {
   createInitData,
   mockUser01,
@@ -11,7 +11,7 @@ const {
   mockRequest02,
   mockCommunity01,
   mockUploadResponse,
-} = require('../__fixtures__/createInitData');
+} = require('../__mocks__/createInitData');
 const User = require('../../models/user');
 const Thread = require('../../models/thread');
 const Request = require('../../models/request');
@@ -159,8 +159,8 @@ describe('[Query.requests]', () => {
           desc: mockRequest02.desc,
           image: JSON.stringify(mockUploadResponse),
           creator: {
-            _id: mockUser01._id.toString(),
-            name: mockUser01.name,
+            _id: mockUser03._id.toString(),
+            name: mockUser03.name,
           },
         }),
       ])

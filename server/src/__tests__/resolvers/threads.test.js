@@ -1,7 +1,7 @@
 const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
 const { constructTestServer } = require('../__utils');
-const inMemoryDb = require('../__fixtures__/inMemoryDb');
+const inMemoryDb = require('../__mocks__/inMemoryDb');
 const {
   createInitData,
   mockUser01,
@@ -9,7 +9,7 @@ const {
   mockPost01,
   mockRequest01,
   mockCommunity01,
-} = require('../__fixtures__/createInitData');
+} = require('../__mocks__/createInitData');
 
 jest.mock('../../utils/pushNotification');
 const pushNotification = require('../../utils/pushNotification');

@@ -53,6 +53,7 @@ const communitiesResolvers = {
           },
         ]);
 
+        // TODO: remove Promise.all()
         // Get hasNotifications value from redis hash for each community of user
         const communities = await Promise.all(
           userCommunities[0].communities.map(async (community) => {

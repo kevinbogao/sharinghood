@@ -19,7 +19,7 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/__utils",
-      "/__fixtures__/"
+      "/__mocks__/"
     ]
   },
   "eslintConfig": {
@@ -97,6 +97,7 @@
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jest": "^23.19.0",
+    "ioredis-mock": "^4.21.2",
     "jest": "^26.1.0",
     "mongodb-memory-server": "^6.6.3",
     "nodemon": "^2.0.4",

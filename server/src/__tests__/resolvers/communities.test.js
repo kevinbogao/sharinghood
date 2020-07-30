@@ -1,13 +1,15 @@
 const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
+const Redis = require('ioredis-mock');
 const { constructTestServer } = require('../__utils');
-const inMemoryDb = require('../__fixtures__/inMemoryDb');
+const inMemoryDb = require('../__mocks__/inMemoryDb');
 const {
   createInitData,
   mockUser01,
   mockUser02,
   mockCommunity01,
-} = require('../__fixtures__/createInitData');
+  mockCommunity02,
+} = require('../__mocks__/createInitData');
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {
@@ -46,6 +48,7 @@ const FIND_COMMUNITY = gql`
 
 /* COMMUNITIES QUERY */
 describe('[Query.communities]', () => {
+  // COMMUNITY MUTATION
   it('Get community by community code', async () => {
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
@@ -77,47 +80,54 @@ describe('[Query.communities]', () => {
     );
   });
 
-  // it("Get user's communities", async () => {
-  //   const GET_USER_COMMUNITIES = gql`
-  //     query Communities {
-  //       communities {
-  //         _id
-  //         name
-  //         hasNotifications
-  //       }
-  //     }
-  //   `;
+  // COMMUNITIES MUTATION
+  it("Get user's communities", async () => {
+    const GET_USER_COMMUNITIES = gql`
+      query Communities {
+        communities {
+          _id
+          name
+          hasNotifications
+        }
+      }
+    `;
 
-  //   // Create an instance of ApolloServer
-  //   const { server } = constructTestServer({
-  //     context: () => ({ user: { userId: mockUser01Id } }),
-  //   });
+    // Mock redis instance with mock community 01's has notifications status to true
+    const redis = new Redis({
+      data: {
+        [`notifications:${mockUser01._id.toString()}`]: {
+          [mockCommunity01._id.toString()]: 'true',
+        },
+      },
+    });
 
-  //   // Create test interface
-  //   const { query } = createTestClient(server);
-  //   const res = await query({
-  //     query: GET_USER_COMMUNITIES,
-  //   });
+    // Create an instance of ApolloServer
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id.toString() }, redis }),
+    });
 
-  //   console.log(res.data);
+    // Create test interface
+    const { query } = createTestClient(server);
+    const res = await query({
+      query: GET_USER_COMMUNITIES,
+    });
 
-  //   // // Check community response
-  //   // expect(res.data.community).toMatchObject({
-  //   //   name: mockCommunity01.name,
-  //   //   code: mockCommunity01.code,
-  //   // });
-
-  //   // // Check members's array in community response
-  //   // expect(res.data.community.members).toEqual(
-  //   //   expect.arrayContaining([
-  //   //     expect.objectContaining({
-  //   //       _id: expect.any(String),
-  //   //       name: expect.any(String),
-  //   //       image: expect.any(String),
-  //   //     }),
-  //   //   ])
-  //   // );
-  // });
+    // Check community response
+    expect(res.data.communities).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          _id: mockCommunity01._id.toString(),
+          name: mockCommunity01.name,
+          hasNotifications: true,
+        }),
+        expect.objectContaining({
+          _id: mockCommunity02._id.toString(),
+          name: mockCommunity02.name,
+          hasNotifications: false,
+        }),
+      ])
+    );
+  });
 });
 
 /* COMMUNITIES MUTATIONS */

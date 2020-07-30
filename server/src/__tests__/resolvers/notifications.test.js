@@ -97,7 +97,46 @@ describe('[Query.notifications]', () => {
       variables: { notificationId: mockNotification02._id.toString() },
     });
 
+    expect(res.data.notification).toMatchObject({
+      _id: mockNotification02._id.toString(),
+      ofType: 1,
+      booking: expect.objectContaining({
+        _id: mockBooking01._id.toString(),
+        status: 0,
+        dateType: 0,
+        dateNeed: null,
+        dateReturn: null,
+        post: expect.objectContaining({
+          _id: mockPost01._id.toString(),
+          title: mockPost01.title,
+          image: JSON.stringify(mockUploadResponse),
+        }),
+        booker: expect.objectContaining({
+          _id: mockUser03._id.toString(),
+        }),
+      }),
+      post: null,
+      participants: expect.arrayContaining([
+        expect.objectContaining({
+          _id: mockUser03._id.toString(),
+          name: mockUser03.name,
+          image: JSON.stringify(mockUploadResponse),
+        }),
+      ]),
+      messages: expect.arrayContaining([
+        expect.objectContaining({
+          _id: mockMessage02._id.toString(),
+          text: mockMessage02.text,
+        }),
+      ]),
+      isRead: expect.objectContaining({
+        [mockUser01._id.toString()]: false,
+        [mockUser03._id.toString()]: false,
+      }),
+    });
+
     console.log(res.data.notification);
+    console.log(JSON.stringify(res.data.notification, null, 4));
   });
 
   // NOTIFICATIONS QUERY { communityId }

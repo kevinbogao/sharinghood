@@ -19,7 +19,7 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/__utils",
-      "/__fixtures__/"
+      "/__mocks__/"
     ]
   },
   "eslintConfig": {

@@ -2,7 +2,7 @@ const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
 const Redis = require('ioredis-mock');
 const { constructTestServer } = require('../__utils');
-const inMemoryDb = require('../__fixtures__/inMemoryDb');
+const inMemoryDb = require('../__mocks__/inMemoryDb');
 const {
   createInitData,
   mockUser01,
@@ -20,7 +20,7 @@ const {
   mockNotification02,
   mockNotification03,
   mockUploadResponse,
-} = require('../__fixtures__/createInitData');
+} = require('../__mocks__/createInitData');
 
 jest.mock('../../utils/pushNotification');
 const pushNotification = require('../../utils/pushNotification');

@@ -4,6 +4,7 @@ const User = require('../../models/user');
 const Post = require('../../models/post');
 const Thread = require('../../models/thread');
 const Request = require('../../models/request');
+const Message = require('../../models/message');
 const Booking = require('../../models/booking');
 const Community = require('../../models/community');
 const Notification = require('../../models/notification');
@@ -57,6 +58,7 @@ const mockUser02Id = new mongoose.Types.ObjectId();
 const mockUser03Id = new mongoose.Types.ObjectId();
 const mockPost01Id = new mongoose.Types.ObjectId();
 const mockPost02Id = new mongoose.Types.ObjectId();
+const mockPost03Id = new mongoose.Types.ObjectId();
 const mockThread01Id = new mongoose.Types.ObjectId();
 const mockThread02Id = new mongoose.Types.ObjectId();
 const mockBooking01Id = new mongoose.Types.ObjectId();
@@ -65,13 +67,68 @@ const mockRequest02Id = new mongoose.Types.ObjectId();
 const mockCommunity01Id = new mongoose.Types.ObjectId();
 const mockCommunity02Id = new mongoose.Types.ObjectId();
 const mockNotification01Id = new mongoose.Types.ObjectId();
+const mockNotification02Id = new mongoose.Types.ObjectId();
+const mockNotification03Id = new mongoose.Types.ObjectId();
+
+const mockMessage01Id = new mongoose.Types.ObjectId();
+const mockMessage02Id = new mongoose.Types.ObjectId();
+const mockMessage03Id = new mongoose.Types.ObjectId();
+
+// Mock message01
+const mockMessage01 = {
+  _id: mockMessage01Id,
+  text: 'Mock message 01 text for chat',
+  sender: mockUser01Id,
+  notification: mockNotification01Id,
+};
+
+const mockMessage02 = {
+  _id: mockMessage02Id,
+  text: 'Mock message 02 text for booking',
+  sender: mockUser01Id,
+  notification: mockNotification02Id,
+};
+
+const mockMessage03 = {
+  _id: mockMessage03Id,
+  text: 'Mock message 03 text for request',
+  sender: mockUser01Id,
+  notification: mockNotification03Id,
+};
 
 // Mock notification01
 const mockNotification01 = {
   _id: mockNotification01Id,
+  ofType: 0,
+  messages: [mockMessage01Id],
   participants: [mockUser01Id, mockUser03Id],
-  booking: mockBooking01Id,
+  isRead: {
+    [mockUser01Id]: false,
+    [mockUser03Id]: false,
+  },
+  community: mockCommunity01Id,
+};
+
+// Mock notification02
+const mockNotification02 = {
+  _id: mockNotification02Id,
   ofType: 1,
+  booking: mockBooking01Id,
+  messages: [mockMessage02Id],
+  participants: [mockUser01Id, mockUser03Id],
+  isRead: {
+    [mockUser01Id]: false,
+    [mockUser03Id]: false,
+  },
+  community: mockCommunity01Id,
+};
+
+const mockNotification03 = {
+  _id: mockNotification03Id,
+  ofType: 2,
+  post: mockPost03Id,
+  messages: [mockMessage03Id],
+  participants: [mockUser01Id, mockUser03Id],
   isRead: {
     [mockUser01Id]: false,
     [mockUser03Id]: false,
@@ -90,9 +147,13 @@ const mockUser01 = {
   isCreator: true,
   image: JSON.stringify(mockUploadResponse),
   communities: [mockCommunity01Id, mockCommunity02Id],
-  posts: [mockPost01Id, mockPost02Id],
+  posts: [mockPost01Id, mockPost02Id, mockPost03Id],
   requests: [mockRequest01Id, mockRequest02Id],
-  notifications: [mockNotification01Id],
+  notifications: [
+    mockNotification01Id,
+    mockNotification02Id,
+    mockNotification03Id,
+  ],
 };
 
 // Mock user02
@@ -106,6 +167,7 @@ const mockUser02 = {
   isCreator: true,
   image: JSON.stringify(mockUploadResponse),
   communities: [mockCommunity02Id],
+  notifications: [],
 };
 
 // Mock user03
@@ -119,7 +181,11 @@ const mockUser03 = {
   isCreator: true,
   image: JSON.stringify(mockUploadResponse),
   communities: [mockCommunity01Id],
-  notifications: [mockNotification01Id],
+  notifications: [
+    mockNotification01Id,
+    mockNotification02Id,
+    mockNotification03Id,
+  ],
 };
 
 // Mock community01
@@ -130,7 +196,7 @@ const mockCommunity01 = {
   zipCode: '00001',
   creator: mockUser01Id,
   members: [mockUser01Id, mockUser03Id],
-  posts: [mockPost01Id, mockPost02Id],
+  posts: [mockPost01Id, mockPost02Id, mockPost03Id],
   requests: [mockRequest01Id, mockRequest02Id],
 };
 
@@ -193,6 +259,21 @@ const mockPost02 = {
   condition: 1,
   isGiveaway: false,
   creator: mockUser01Id,
+  bookings: [],
+  threads: [],
+};
+
+// Mock post03
+const mockPost03 = {
+  _id: mockPost03Id,
+  title: 'Mock Post 03',
+  desc: 'mockPost02 for mockRequest02',
+  image: JSON.stringify(mockUploadResponse),
+  condition: 2,
+  isGiveaway: false,
+  creator: mockUser01Id,
+  bookings: [],
+  threads: [],
 };
 
 // Mock request01
@@ -215,7 +296,7 @@ const mockRequest02 = {
   dateNeed: new Date(),
   dateReturn: new Date(),
   image: JSON.stringify(mockUploadResponse),
-  creator: mockUser01Id,
+  creator: mockUser03Id,
 };
 
 async function createInitData() {
@@ -247,12 +328,17 @@ async function createInitData() {
           password: mockUser03PasswordHash,
         },
       ]),
-      Post.create([mockPost01, mockPost02]),
+      Post.create([mockPost01, mockPost02, mockPost03]),
       Thread.create([mockThread01, mockThread02]),
-      Request.create([mockRequest01, mockRequest02]),
       Booking.create([mockBooking01]),
+      Request.create([mockRequest01, mockRequest02]),
+      Message.create([mockMessage01, mockMessage02, mockMessage03]),
       Community.create([mockCommunity01, mockCommunity02]),
-      Notification.create([mockNotification01]),
+      Notification.create([
+        mockNotification01,
+        mockNotification02,
+        mockNotification03,
+      ]),
     ]);
   } catch (err) {
     throw new Error(err);
@@ -266,14 +352,20 @@ module.exports = {
   mockUser03,
   mockPost01,
   mockPost02,
+  mockPost03,
   mockThread01,
   mockThread02,
   mockRequest01,
   mockRequest02,
   mockBooking01,
+  mockMessage01,
+  mockMessage02,
+  mockMessage03,
   mockCommunity01,
   mockCommunity02,
   mockNotification01,
+  mockNotification02,
+  mockNotification03,
   mockUploadResponse,
   updatedMockUploadResponse,
 };

@@ -159,8 +159,8 @@ describe('[Query.requests]', () => {
           desc: mockRequest02.desc,
           image: JSON.stringify(mockUploadResponse),
           creator: {
-            _id: mockUser01._id.toString(),
-            name: mockUser01.name,
+            _id: mockUser03._id.toString(),
+            name: mockUser03.name,
           },
         }),
       ])

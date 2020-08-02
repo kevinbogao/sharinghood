@@ -1,8 +1,8 @@
 const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
 const Redis = require('ioredis-mock');
-const { constructTestServer } = require('../__utils');
-const inMemoryDb = require('../__mocks__/inMemoryDb');
+const { constructTestServer } = require('./__utils');
+const inMemoryDb = require('./__mocks__/inMemoryDb');
 const {
   createInitData,
   mockUser01,
@@ -11,11 +11,11 @@ const {
   mockBooking01,
   mockCommunity01,
   mockNotification02,
-} = require('../__mocks__/createInitData');
-const Notification = require('../../models/notification');
+} = require('./__mocks__/createInitData');
+const Notification = require('../models/notification');
 
-jest.mock('../../utils/pushNotification');
-const pushNotification = require('../../utils/pushNotification');
+jest.mock('../utils/pushNotification');
+const pushNotification = require('../utils/pushNotification');
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {

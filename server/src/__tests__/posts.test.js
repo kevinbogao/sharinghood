@@ -1,8 +1,8 @@
 const { createTestClient } = require('apollo-server-testing');
 const { gql } = require('apollo-server');
 const Redis = require('ioredis-mock');
-const { constructTestServer } = require('../__utils');
-const inMemoryDb = require('../__mocks__/inMemoryDb');
+const { constructTestServer } = require('./__utils');
+const inMemoryDb = require('./__mocks__/inMemoryDb');
 const {
   createInitData,
   mockUser01,
@@ -10,25 +10,24 @@ const {
   mockUser03,
   mockPost01,
   mockPost02,
-  mockRequest02,
   mockCommunity01,
   mockCommunity02,
   mockUploadResponse,
   updatedMockUploadResponse,
-} = require('../__mocks__/createInitData');
-const Post = require('../../models/post');
-const User = require('../../models/user');
-const Thread = require('../../models/thread');
-const Booking = require('../../models/booking');
-const Community = require('../../models/community');
-const Notification = require('../../models/notification');
+} = require('./__mocks__/createInitData');
+const Post = require('../models/post');
+const User = require('../models/user');
+const Thread = require('../models/thread');
+const Booking = require('../models/booking');
+const Community = require('../models/community');
+const Notification = require('../models/notification');
 
 // Mocking dependencies
-jest.mock('../../utils/uploadImg');
-const uploadImg = require('../../utils/uploadImg');
+jest.mock('../utils/uploadImg');
+const uploadImg = require('../utils/uploadImg');
 
-jest.mock('../../utils/pushNotification');
-const pushNotification = require('../../utils/pushNotification');
+jest.mock('../utils/pushNotification');
+const pushNotification = require('../utils/pushNotification');
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {

@@ -3,8 +3,8 @@ const { gql } = require('apollo-server');
 const { sign, verify } = require('jsonwebtoken');
 const Redis = require('ioredis-mock');
 const crypto = require('crypto');
-const { constructTestServer } = require('../__utils');
-const inMemoryDb = require('../__mocks__/inMemoryDb');
+const { constructTestServer } = require('./__utils');
+const inMemoryDb = require('./__mocks__/inMemoryDb');
 const {
   createInitData,
   fcmToken,
@@ -14,16 +14,16 @@ const {
   mockCommunity02,
   mockUploadResponse,
   updatedMockUploadResponse,
-} = require('../__mocks__/createInitData');
-const User = require('../../models/user');
-const Community = require('../../models/community');
+} = require('./__mocks__/createInitData');
+const User = require('../models/user');
+const Community = require('../models/community');
 
 // Mocking dependencies
-jest.mock('../../utils/uploadImg');
-const uploadImg = require('../../utils/uploadImg');
+jest.mock('../utils/uploadImg');
+const uploadImg = require('../utils/uploadImg');
 
-jest.mock('../../utils/sendMail/index');
-const sendMail = require('../../utils/sendMail/index');
+jest.mock('../utils/sendMail/index');
+const sendMail = require('../utils/sendMail/index');
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {

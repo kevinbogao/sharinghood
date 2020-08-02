@@ -52,6 +52,9 @@ const updatedMockUploadResponse = {
     'https://res.cloudinary.com/dc87yxcas/image/upload/v1594160379/hp0ffukc6xoeipwm929c.png',
 };
 
+const fcmToken =
+  'f5ChaueMdf5yFb9kb0md3q:APA91bGMPQp5qdcn9xB6-u-__ovque0KkiouWKsaeZRxuaKK-ctV_BGdSBZmzcMqug9mrzFxWfJRvAkixSyTn0tUEmT7dCGck8fh8q7rGgC35pYY72h-ixKtxAa5PhS5y8N1ZworXW26';
+
 // Create mock user & community mongoose ids
 const mockUser01Id = new mongoose.Types.ObjectId();
 const mockUser02Id = new mongoose.Types.ObjectId();
@@ -145,6 +148,8 @@ const mockUser01 = {
   apartment: '001',
   isNotified: true,
   isCreator: true,
+  isMigrated: true,
+  isAdmin: true,
   image: JSON.stringify(mockUploadResponse),
   communities: [mockCommunity01Id, mockCommunity02Id],
   posts: [mockPost01Id, mockPost02Id, mockPost03Id],
@@ -154,6 +159,7 @@ const mockUser01 = {
     mockNotification02Id,
     mockNotification03Id,
   ],
+  fcmTokens: [fcmToken],
 };
 
 // Mock user02
@@ -165,8 +171,12 @@ const mockUser02 = {
   apartment: '002',
   isNotified: true,
   isCreator: true,
+  isMigrated: true,
+  isAdmin: false,
   image: JSON.stringify(mockUploadResponse),
   communities: [mockCommunity02Id],
+  posts: [],
+  requests: [],
   notifications: [],
 };
 
@@ -175,12 +185,17 @@ const mockUser03 = {
   _id: mockUser03Id,
   name: 'MockUser03',
   email: 'mock.user03@email.com',
-  password: '1234567',
+  password:
+    'pbkdf2_sha256$150000$snZYsk8O7sIu$cjmeydDZt1BGJK2T82tWWhK/cMHCxhex/yazi2TmNL8=',
   apartment: '003',
   isNotified: true,
   isCreator: true,
+  isMigrated: false,
+  isAdmin: false,
   image: JSON.stringify(mockUploadResponse),
   communities: [mockCommunity01Id, mockCommunity02Id],
+  posts: [],
+  requests: [],
   notifications: [
     mockNotification01Id,
     mockNotification02Id,
@@ -302,14 +317,9 @@ const mockRequest02 = {
 async function createInitData() {
   try {
     // Hash password for mock user 01 & mock user 02
-    const [
-      mockUser01PasswordHash,
-      mockUser02PasswordHash,
-      mockUser03PasswordHash,
-    ] = await Promise.all([
+    const [mockUser01PasswordHash, mockUser02PasswordHash] = await Promise.all([
       bcryptjs.hash(mockUser01.password, 12),
       bcryptjs.hash(mockUser02.password, 12),
-      bcryptjs.hash(mockUser03.password, 12),
     ]);
 
     // Write initial data to datebase
@@ -323,10 +333,7 @@ async function createInitData() {
           ...mockUser02,
           password: mockUser02PasswordHash,
         },
-        {
-          ...mockUser03,
-          password: mockUser03PasswordHash,
-        },
+        mockUser03,
       ]),
       Post.create([mockPost01, mockPost02, mockPost03]),
       Thread.create([mockThread01, mockThread02]),
@@ -347,6 +354,7 @@ async function createInitData() {
 
 module.exports = {
   createInitData,
+  fcmToken,
   mockUser01,
   mockUser02,
   mockUser03,

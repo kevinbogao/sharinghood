@@ -5,7 +5,6 @@ import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '../../components/Spinner';
-// import { GET_NOTIFICATIONS } from './Notifications';
 
 const GET_NOTIFICATION = gql`
   query GetNotification($notificationId: ID!) {
@@ -92,46 +91,15 @@ const CREATE_MESSAGE = gql`
 `;
 
 function NotificationDetails({ communityId, match, history }) {
-  // const client = useApolloClient();
   const [text, setText] = useState('');
   const { subscribeToMore, loading, error, data } = useQuery(GET_NOTIFICATION, {
+    fetchPolicy: 'network-only',
     variables: { notificationId: match.params.id, communityId },
     onCompleted: ({ notification }) => {
-      // Redirect to post details page by id if notification type is 2
+      // Redirect to post details page by id if notification type is 2 (request)
       if (notification.ofType === 2) {
         history.push(`/shared/${notification.post._id}`);
       }
-
-      // // TODO: MAY BE USE THE NOTIFICATION THAT IS RECEIVED FROM THE SERVER TO
-      // // UPDATE LOCAL NOTIFICATIONS ARRAY
-      // try {
-      //   // Get notifications from cache, and the notification's index in the notifications array
-      //   const { notifications } = client.readQuery({
-      //     query: GET_NOTIFICATIONS,
-      //   });
-      //   const notificationIndex = notifications.findIndex(
-      //     (item) => item._id === notification._id,
-      //   );
-
-      //   // Create a new instance of notifications array
-      //   const newNotifications = [...notifications];
-
-      //   // Change current user's isRead status in the new notifications array
-      //   newNotifications[notificationIndex] = {
-      //     ...newNotifications[notificationIndex],
-      //     isRead: {
-      //       ...newNotifications[notificationIndex].isRead,
-      //       [tokenPayload.userId]: true,
-      //     },
-      //   };
-
-      //   // Write the new notifications array cache
-      //   client.writeQuery({
-      //     query: GET_NOTIFICATIONS,
-      //     data: { notifications: newNotifications },
-      //   });
-      //   // eslint-disable-next-line
-      // } catch (err) {}
     },
     onError: ({ message }) => {
       console.log(message);
@@ -171,11 +139,14 @@ function NotificationDetails({ communityId, match, history }) {
       variables: { notificationId: match.params.id },
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
-        const newFeedItem = subscriptionData.data.newNotificationMessage;
+
         return {
           ...prev,
           notification: {
-            messages: [...prev.notification.messages, newFeedItem],
+            messages: [
+              ...prev.notification.messages,
+              subscriptionData.data.newNotificationMessage,
+            ],
           },
         };
       },

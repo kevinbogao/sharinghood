@@ -100,7 +100,7 @@
     "ioredis-mock": "^4.21.2",
     "jest": "^26.2.2",
     "mongodb-memory-server": "^6.6.3",
-    "nodemailer-stub": "^1.2.1",
+    "nodemailer-stub": "^1.2.2",
     "nodemon": "^2.0.4",
     "sinon": "^9.0.2"
   }

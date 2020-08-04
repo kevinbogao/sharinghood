@@ -120,12 +120,12 @@ function RequestDetails({ communityId, match, history }) {
       onError: ({ message }) => {
         console.log(message);
       },
-      update(store, { data: { deleteRequest } }) {
-        const { requests } = store.readQuery({
+      update(cache, { data: { deleteRequest } }) {
+        const { requests } = cache.readQuery({
           query: GET_REQUESTS,
           variables: { communityId },
         });
-        store.writeQuery({
+        cache.writeQuery({
           query: GET_REQUESTS,
           variables: { communityId },
           data: {

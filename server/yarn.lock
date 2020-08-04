@@ -4727,10 +4727,10 @@ node-notifier@^7.0.0:
     uuid "^7.0.3"
     which "^2.0.2"
 
-nodemailer-stub@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/nodemailer-stub/-/nodemailer-stub-1.2.1.tgz#24b7d31d5eea811518d0e20a220efa997666cadf"
-  integrity sha512-8LNgD4sD2KbzbiNPKgy5v3z7rrWkglabv8sFqJ/PrM4NzNLoQz91qWVjHE3RiazigJa0E3k/OvXmt7p9t2q1KQ==
+nodemailer-stub@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/nodemailer-stub/-/nodemailer-stub-1.2.2.tgz#034fba2fc8233017853ca9614deaf4ccecb7050f"
+  integrity sha512-K4BKUExW3gR+94PVH2fWanH3YyPGPL7NTgqQMfcNi+WC13B44AIuk0HTBu7oS/WV2Rn1RSEAgxB9ZhYB8b+0dw==
 
 nodemailer@^6.4.11:
   version "6.4.11"

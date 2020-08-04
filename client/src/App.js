@@ -132,7 +132,7 @@ function App() {
           });
 
           // New communities array with target community's has notifications to true
-          const newCommunitiesArr = communities.map((community) => {
+          const newCommunities = communities.map((community) => {
             if (community._id === payload.data.communityId) {
               return {
                 ...community,
@@ -145,7 +145,7 @@ function App() {
           // Write the new communities array to cache
           client.writeQuery({
             query: GET_USER_COMMUNITIES,
-            data: { communities: newCommunitiesArr },
+            data: { communities: newCommunities },
           });
 
           // eslint-disable-next-line

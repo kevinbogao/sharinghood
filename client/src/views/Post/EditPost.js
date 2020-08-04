@@ -169,25 +169,24 @@ function EditPost({ history, match }) {
     update(cache, { data: { deletePost } }) {
       try {
         // Delete post from all communities in cache
-        for (let i = 0; i < data.communities.length; i++) {
+        data.communities.forEach((community) => {
           // Get post by community id from cache
           const { posts } = cache.readQuery({
             query: GET_POSTS,
-            variables: { communityId: data.communities[i]._id },
+            variables: { communityId: community._id },
           });
 
           // Remove the post from posts array
           cache.writeQuery({
             query: GET_POSTS,
-            variables: { communityId: data.communities[i]._id },
+            variables: { communityId: community._id },
             data: {
               posts: posts.filter((post) => post._id !== deletePost._id),
             },
           });
-        }
-      } catch (err) {
-        console.log(err);
-      }
+        });
+        // eslint-disable-next-line
+      } catch (err) {}
 
       // Redirect to posts page on complete
       history.push('/find');

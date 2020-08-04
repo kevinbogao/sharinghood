@@ -15,7 +15,6 @@ import Threads from '../../components/Threads';
 import Spinner from '../../components/Spinner';
 import NotFound from '../../components/NotFound';
 import ItemDetails from '../../components/ItemDetails';
-// import { GET_NOTIFICATIONS } from '../Notification/Notifications';
 
 const CONDITIONS = ['New', 'Used but good', 'Used but little damaged'];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
@@ -155,22 +154,6 @@ function PostDetails({ communityId, match, history }) {
       onError: ({ message }) => {
         console.log(message);
       },
-      // // Add created notification to the beginning of the notifications array
-      // update(cache, { data: { createNotification } }) {
-      //   try {
-      //     const { notifications } = cache.readQuery({
-      //       query: GET_NOTIFICATIONS,
-      //     });
-      //     cache.writeQuery({
-      //       query: GET_NOTIFICATIONS,
-      //       data: { notifications: [createNotification, ...notifications] },
-      //     });
-      //     // eslint-disable-next-line
-      //   } catch (err) {}
-
-      //   // Redirect user to notifications
-      //   history.push('/notifications');
-      // },
     },
   );
 

@@ -101,7 +101,6 @@
     "jest": "^26.2.2",
     "mongodb-memory-server": "^6.6.3",
     "nodemailer-stub": "^1.2.2",
-    "nodemon": "^2.0.4",
-    "sinon": "^9.0.2"
+    "nodemon": "^2.0.4"
   }
 }

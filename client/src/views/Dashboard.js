@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Redirect } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
-import Loading from '../components/Loading';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
+import Spinner from '../components/Spinner';
 
 const GET_TOKEN_PAYLOAD = gql`
   {
@@ -31,22 +33,47 @@ const GET_ACTIVITIES = gql`
   }
 `;
 
+const FORMATTED_KEYS = {
+  _id: 'Community ID',
+  name: 'Community Name',
+  code: 'Community Code',
+  numUsers: 'Users',
+  numPosts: 'Posts',
+  numRequests: 'Requests',
+  numBookings: 'Bookings',
+};
+
 function Dashboard({ location, history }) {
   const { from } = location.state || { from: { pathname: '/' } };
+  const [sortOrder, setSortOrder] = useState(-1);
+  const [selectedCol, setSelectedCol] = useState('_id');
+  const [communitiesActivities, setCommunitiesActivities] = useState([]);
   const {
     data: { tokenPayload },
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { loading, error, data } = useQuery(GET_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
+
+    onCompleted: ({ totalActivities }) => {
+      setCommunitiesActivities(totalActivities.communitiesActivities);
+    },
     onError: ({ message }) => {
       console.log(message);
     },
   });
 
+  function sortColumns(key) {
+    const stats = communitiesActivities.slice();
+    stats.sort((a, b) => sortOrder * (a[key] - b[key]));
+    setCommunitiesActivities(stats);
+    setSelectedCol(key);
+    setSortOrder(sortOrder * -1);
+  }
+
   return !tokenPayload.isAdmin ? (
     <Redirect to={from} />
   ) : loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (
@@ -80,35 +107,44 @@ function Dashboard({ location, history }) {
       <table>
         <thead>
           <tr className="dashboard-table-header">
-            <th>Community ID</th>
-            <th>Community Name</th>
-            <th>Community Code</th>
-            <th>Users</th>
-            <th>Posts</th>
-            <th>Requests</th>
-            <th>Bookings</th>
+            {communitiesActivities.length
+              ? Object.keys(communitiesActivities[0])
+                  .filter((key) => key !== '__typename')
+                  .map((key) => (
+                    <th key={key} onClick={() => sortColumns(key)}>
+                      {FORMATTED_KEYS[key]}{' '}
+                      {selectedCol === key && (
+                        <FontAwesomeIcon
+                          className="dashboard-sort-icons"
+                          icon={sortOrder === -1 ? faArrowUp : faArrowDown}
+                          size="1x"
+                        />
+                      )}
+                    </th>
+                  ))
+              : null}
           </tr>
         </thead>
         <tbody>
-          {data.totalActivities.communitiesActivities.map(
-            (communityActivities) => (
-              <tr
-                key={communityActivities._id}
-                className="dashboard-table-row"
-                onClick={() => {
-                  history.push(`/dashboard/${communityActivities._id}`);
-                }}
-              >
-                <td>{communityActivities._id}</td>
-                <td>{communityActivities.name}</td>
-                <td>{communityActivities.code}</td>
-                <td>{communityActivities.numUsers}</td>
-                <td>{communityActivities.numPosts}</td>
-                <td>{communityActivities.numRequests}</td>
-                <td>{communityActivities.numBookings}</td>
-              </tr>
-            ),
-          )}
+          {communitiesActivities.length
+            ? communitiesActivities.map((communityActivities) => (
+                <tr
+                  key={communityActivities._id}
+                  className="dashboard-table-row"
+                  onClick={() => {
+                    history.push(`/dashboard/${communityActivities._id}`);
+                  }}
+                >
+                  <td>{communityActivities._id}</td>
+                  <td>{communityActivities.name}</td>
+                  <td>{communityActivities.code}</td>
+                  <td>{communityActivities.numUsers}</td>
+                  <td>{communityActivities.numPosts}</td>
+                  <td>{communityActivities.numRequests}</td>
+                  <td>{communityActivities.numBookings}</td>
+                </tr>
+              ))
+            : null}
         </tbody>
       </table>
       <style jsx>

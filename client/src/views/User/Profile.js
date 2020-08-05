@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation } from '@apollo/client';
-import Loading from '../../components/Loading';
-import UserPosts from '../../components/UserPosts';
+import Spinner from '../../components/Spinner';
+import ProfilePosts from '../../components/ProfilePosts';
 
 const GET_USER = gql`
   query User {
@@ -62,7 +62,7 @@ function Profile({ history }) {
   });
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (
@@ -112,7 +112,7 @@ function Profile({ history }) {
           trustworthy by uploading a picture.
         </p>
         {data.user.posts.length > 0 && (
-          <UserPosts posts={data.user.posts} history={history} />
+          <ProfilePosts posts={data.user.posts} history={history} />
         )}
         <p className="main-p">Your name</p>
         <input
@@ -132,7 +132,7 @@ function Profile({ history }) {
           Save
         </button>
       </form>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

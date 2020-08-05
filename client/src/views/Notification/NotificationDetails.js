@@ -4,8 +4,7 @@ import { gql, useQuery, useMutation } from '@apollo/client';
 import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import Loading from '../../components/Loading';
-// import { GET_NOTIFICATIONS } from './Notifications';
+import Spinner from '../../components/Spinner';
 
 const GET_NOTIFICATION = gql`
   query GetNotification($notificationId: ID!) {
@@ -57,8 +56,8 @@ const GET_NOTIFICATION = gql`
 `;
 
 const UPDATE_BOOKING = gql`
-  mutation UpdateBooking($bookingId: ID!, $bookingInput: BookingInput!) {
-    updateBooking(bookingId: $bookingId, bookingInput: $bookingInput) {
+  mutation UpdateBooking($bookingInput: BookingInput!) {
+    updateBooking(bookingInput: $bookingInput) {
       _id
       status
     }
@@ -92,46 +91,15 @@ const CREATE_MESSAGE = gql`
 `;
 
 function NotificationDetails({ communityId, match, history }) {
-  // const client = useApolloClient();
   const [text, setText] = useState('');
   const { subscribeToMore, loading, error, data } = useQuery(GET_NOTIFICATION, {
+    fetchPolicy: 'network-only',
     variables: { notificationId: match.params.id, communityId },
     onCompleted: ({ notification }) => {
-      // Redirect to post details page by id if notification type is 2
+      // Redirect to post details page by id if notification type is 2 (request)
       if (notification.ofType === 2) {
         history.push(`/shared/${notification.post._id}`);
       }
-
-      // // TODO: MAY BE USE THE NOTIFICATION THAT IS RECEIVED FROM THE SERVER TO
-      // // UPDATE LOCAL NOTIFICATIONS ARRAY
-      // try {
-      //   // Get notifications from cache, and the notification's index in the notifications array
-      //   const { notifications } = client.readQuery({
-      //     query: GET_NOTIFICATIONS,
-      //   });
-      //   const notificationIndex = notifications.findIndex(
-      //     (item) => item._id === notification._id,
-      //   );
-
-      //   // Create a new instance of notifications array
-      //   const newNotifications = [...notifications];
-
-      //   // Change current user's isRead status in the new notifications array
-      //   newNotifications[notificationIndex] = {
-      //     ...newNotifications[notificationIndex],
-      //     isRead: {
-      //       ...newNotifications[notificationIndex].isRead,
-      //       [tokenPayload.userId]: true,
-      //     },
-      //   };
-
-      //   // Write the new notifications array cache
-      //   client.writeQuery({
-      //     query: GET_NOTIFICATIONS,
-      //     data: { notifications: newNotifications },
-      //   });
-      //   // eslint-disable-next-line
-      // } catch (err) {}
     },
     onError: ({ message }) => {
       console.log(message);
@@ -159,9 +127,6 @@ function NotificationDetails({ communityId, match, history }) {
       loading: { mutationLoading },
     },
   ] = useMutation(UPDATE_BOOKING, {
-    onCompleted: (data) => {
-      console.log(data);
-    },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -174,11 +139,14 @@ function NotificationDetails({ communityId, match, history }) {
       variables: { notificationId: match.params.id },
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
-        const newFeedItem = subscriptionData.data.newNotificationMessage;
+
         return {
           ...prev,
           notification: {
-            messages: [...prev.notification.messages, newFeedItem],
+            messages: [
+              ...prev.notification.messages,
+              subscriptionData.data.newNotificationMessage,
+            ],
           },
         };
       },
@@ -189,7 +157,7 @@ function NotificationDetails({ communityId, match, history }) {
   }, [match.params.id]);
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (
@@ -280,9 +248,11 @@ function NotificationDetails({ communityId, match, history }) {
                           e.preventDefault();
                           updateBooking({
                             variables: {
-                              bookingId: data.notification.booking._id,
                               bookingInput: {
                                 status: 1,
+                                bookingId: data.notification.booking._id,
+                                communityId,
+                                notificationId: data.notification._id,
                                 notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${data.notification.booking.post.title}`,
                                 notifyRecipientId:
                                   data.notification.booking.booker._id,
@@ -300,9 +270,11 @@ function NotificationDetails({ communityId, match, history }) {
                           e.preventDefault();
                           updateBooking({
                             variables: {
-                              bookingId: data.notification.booking._id,
                               bookingInput: {
                                 status: 2,
+                                bookingId: data.notification.booking._id,
+                                communityId,
+                                notificationId: data.notification._id,
                                 notifyContent: `${data.tokenPayload.userName} has denied your booking on ${data.notification.booking.post.title}`,
                                 notifyRecipientId:
                                   data.notification.booking.booker._id,
@@ -357,6 +329,7 @@ function NotificationDetails({ communityId, match, history }) {
                   variables: {
                     messageInput: {
                       text,
+                      communityId,
                       recipientId: data.notification.participants[0]._id,
                       notificationId: match.params.id,
                     },
@@ -375,6 +348,7 @@ function NotificationDetails({ communityId, match, history }) {
                   variables: {
                     messageInput: {
                       text,
+                      communityId,
                       recipientId: data.notification.participants[0]._id,
                       notificationId: match.params.id,
                     },
@@ -386,7 +360,7 @@ function NotificationDetails({ communityId, match, history }) {
         </div>
       </div>
       {mutationError && <p>Error :( Please try again</p>}
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

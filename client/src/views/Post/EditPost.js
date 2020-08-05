@@ -2,22 +2,8 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import Modal from 'react-modal';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import { GET_POSTS } from './Posts';
-
-const MODAL_STYLE = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    transform: 'translate(-50%, -50%)',
-    borderWidth: 0,
-    boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '30px',
-    minWidth: '300px',
-  },
-};
 
 const GET_POST = gql`
   query Post($postId: ID!) {
@@ -87,21 +73,19 @@ function EditPost({ history, match }) {
         history.replace(`/shared/${post._id}`);
       }
 
-      // Look through all user's communities and check if
-      // the post exists in posts arrays
-      const communityArr = [];
-      for (let i = 0; i < communities.length; i++) {
-        const itemExists = communities[i].posts.some(
-          (post) => post._id === match.params.id,
-        );
-        if (!itemExists) communityArr.push(communities[i]);
-      }
-      setCommunityArr(communityArr);
+      // Create a list of communities where the post is not present in
+      const remainCommunities = communities.filter(
+        (community) =>
+          !community.posts.some((post) => post._id === match.params.id),
+      );
+      setCommunityArr(remainCommunities);
     },
     onError: ({ message }) => {
       console.log(message);
     },
   });
+
+  // Add post to selected community
   const [addPostToCommunity] = useMutation(ADD_POST_TO_COMMUNITY, {
     update(cache, { data: { addPostToCommunity } }) {
       try {
@@ -125,7 +109,7 @@ function EditPost({ history, match }) {
         cache.writeQuery({
           query: GET_POSTS,
           variables: { communityId: addPostToCommunity._id },
-          data: { posts: [...posts, postSel] },
+          data: { posts: [postSel, ...posts] },
         });
         // eslint-disable-next-line
       } catch (err) {}
@@ -138,17 +122,18 @@ function EditPost({ history, match }) {
 
       // Construct new communities array of community objects with
       // new post pushed to the posts array in the selected community
-      const newCommunities = communities.map((community) =>
-        community._id === addPostToCommunity._id
-          ? {
-              ...community,
-              posts: [
-                ...community.posts,
-                { __typename: 'Post', _id: data.post._id },
-              ],
-            }
-          : community,
-      );
+      const newCommunities = communities.map((community) => {
+        if (community._id === addPostToCommunity._id) {
+          return {
+            ...community,
+            posts: [
+              ...community.posts,
+              { __typename: 'Post', _id: data.post._id },
+            ],
+          };
+        }
+        return community;
+      });
 
       // Write newCommunities array to cache
       cache.writeQuery({
@@ -183,24 +168,25 @@ function EditPost({ history, match }) {
   const [deletePost] = useMutation(DELETE_POST, {
     update(cache, { data: { deletePost } }) {
       try {
-        // Loop over user's communities and query posts with community ids
-        // delete post from posts array
-        for (let i = 0; i < data.communities.length; i++) {
+        // Delete post from all communities in cache
+        data.communities.forEach((community) => {
+          // Get post by community id from cache
           const { posts } = cache.readQuery({
             query: GET_POSTS,
-            variables: { communityId: data.communities[i]._id },
+            variables: { communityId: community._id },
           });
+
+          // Remove the post from posts array
           cache.writeQuery({
             query: GET_POSTS,
-            variables: { communityId: data.communities[i]._id },
+            variables: { communityId: community._id },
             data: {
               posts: posts.filter((post) => post._id !== deletePost._id),
             },
           });
-        }
-      } catch (err) {
-        console.log(err);
-      }
+        });
+        // eslint-disable-next-line
+      } catch (err) {}
 
       // Redirect to posts page on complete
       history.push('/find');
@@ -211,7 +197,7 @@ function EditPost({ history, match }) {
   });
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (
@@ -301,8 +287,8 @@ function EditPost({ history, match }) {
         </button>
       </form>
       <Modal
+        className="react-modal"
         isOpen={isAddModalOpen}
-        style={MODAL_STYLE}
         onRequestClose={() => {
           setIsAddModalOpen(false);
         }}
@@ -343,8 +329,8 @@ function EditPost({ history, match }) {
         </button>
       </Modal>
       <Modal
+        className="react-modal"
         isOpen={isDeleteModalOpen}
-        style={MODAL_STYLE}
         onRequestClose={() => setIsDeleteModalOpen(false)}
       >
         <p className="modal-p">Are you sure you want to delete this post?</p>
@@ -370,7 +356,7 @@ function EditPost({ history, match }) {
           No
         </button>
       </Modal>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -437,8 +423,6 @@ function EditPost({ history, match }) {
     </div>
   );
 }
-
-Modal.setAppElement('#root');
 
 EditPost.propTypes = {
   match: PropTypes.shape({

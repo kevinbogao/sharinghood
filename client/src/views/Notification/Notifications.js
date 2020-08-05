@@ -1,8 +1,8 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import moment from 'moment';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 
 const GET_USER_COMMUNITIES = gql`
   query Communities {
@@ -60,8 +60,8 @@ const GET_NOTIFICATIONS = gql`
 `;
 
 const UPDATE_BOOKING = gql`
-  mutation UpdateBooking($bookingId: ID!, $bookingInput: BookingInput!) {
-    updateBooking(bookingId: $bookingId, bookingInput: $bookingInput) {
+  mutation UpdateBooking($bookingInput: BookingInput!) {
+    updateBooking(bookingInput: $bookingInput) {
       _id
       status
     }
@@ -71,39 +71,32 @@ const UPDATE_BOOKING = gql`
 function Notifications({ history, communityId }) {
   const client = useApolloClient();
   const { loading, error, data } = useQuery(GET_NOTIFICATIONS, {
-    // TODO: wait for package fix
-    // Use useCallback to prevent fetchPolicy's infinite requests
-    // fetchPolicy: 'network-only',
     variables: { communityId },
-    fetchPolicy: 'cache-and-network',
-    onCompleted: useCallback(() => {
+    fetchPolicy: 'network-only',
+    onCompleted: () => {
       try {
-        // Get communities from cache, and the current community's index in the communities array
+        // Get communities from cache
         const { communities } = client.readQuery({
           query: GET_USER_COMMUNITIES,
         });
-        const communityIndex = communities.findIndex(
-          (community) => community._id === communityId,
-        );
 
-        // Create a new instance of communities array
-        const newCommunities = [...communities];
+        // Create new communities array with the current
+        // community's hasNotifications is set to false
+        const newCommunities = communities.map((community) => {
+          if (community._id === communityId) {
+            return { ...community, hasNotifications: false };
+          }
+          return community;
+        });
 
-        // Change current community's hasNotifications status in the new new communities array
-        newCommunities[communityIndex] = {
-          ...newCommunities[communityIndex],
-          hasNotifications: false,
-        };
-
-        // Write the new notifications array cache
+        // Write new communities array to cache
         client.writeQuery({
           query: GET_USER_COMMUNITIES,
           data: { communities: newCommunities },
         });
         // eslint-disable-next-line
       } catch (err) {}
-      // eslint-disable-next-line
-    }, []),
+    },
   });
 
   // Update booking status by changing booking status int
@@ -122,7 +115,7 @@ function Notifications({ history, communityId }) {
   });
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error ${error.message}`
   ) : (
@@ -275,9 +268,11 @@ function Notifications({ history, communityId }) {
                                   e.preventDefault();
                                   updateBooking({
                                     variables: {
-                                      bookingId: notification.booking._id,
                                       bookingInput: {
                                         status: 1,
+                                        bookingId: notification.booking._id,
+                                        communityId,
+                                        notificationId: notification._id,
                                         notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${notification.booking.post.title}`,
                                         notifyRecipientId:
                                           notification.booking.booker._id,
@@ -296,9 +291,11 @@ function Notifications({ history, communityId }) {
                                   e.preventDefault();
                                   updateBooking({
                                     variables: {
-                                      bookingId: notification.booking._id,
                                       bookingInput: {
                                         status: 2,
+                                        bookingId: notification.booking._id,
+                                        communityId,
+                                        notificationId: notification._id,
                                         notifyContent: `${data.tokenPayload.userName} has denied your booking on ${notification.booking.post.title}`,
                                         notifyRecipientId:
                                           notification.booking.booker._id,
@@ -373,7 +370,7 @@ function Notifications({ history, communityId }) {
       ) : (
         <p className="main-p full">You do not have any notifications yet</p>
       )}
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

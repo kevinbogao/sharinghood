@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { gql, useMutation } from '@apollo/client';
 import InlineError from '../../components/InlineError';
 import uploadImg from '../../assets/images/upload.png';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import { GET_POSTS } from './Posts';
 
 const CREATE_POST = gql`
@@ -141,7 +141,7 @@ function CreatePost({ communityId, history, location }) {
             type="checkbox"
             ref={(node) => (isGiveaway = node)}
           />
-          <p className="main-p">
+          <p className="main-p checkbox">
             This is a giveaway! (People can borrow it for an indefinite time)
           </p>
         </div>
@@ -150,7 +150,7 @@ function CreatePost({ communityId, history, location }) {
           Share
         </button>
       </form>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';
@@ -188,12 +188,21 @@ function CreatePost({ communityId, history, location }) {
 
               input {
                 margin: 5px 10px auto auto;
+
+                &.checkbox {
+                  margin: 20px 10px 0 0;
+                }
               }
 
               .main-p {
                 max-width: 280px;
                 font-size: 19px;
                 margin: 0;
+
+                &.checkbox {
+                  margin: 14px 0;
+                  font-size: 16px;
+                }
 
                 @include sm {
                   max-width: calc(100% - 20px);

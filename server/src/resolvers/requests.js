@@ -6,6 +6,7 @@ const Request = require('../models/request');
 const Community = require('../models/community');
 const uploadImg = require('../utils/uploadImg');
 const newRequestMail = require('../utils/sendMail/newRequestMail');
+const pushNotification = require('../utils/pushNotification');
 
 const requestsResolvers = {
   Query: {
@@ -121,8 +122,8 @@ const requestsResolvers = {
           // & only return email
           Community.findById(communityId).populate({
             path: 'members',
-            match: { _id: { $ne: userId }, isNotified: true },
-            select: 'email',
+            match: { _id: { $ne: userId } },
+            select: 'email isNotified fcmTokens',
           }),
         ]);
 
@@ -130,14 +131,17 @@ const requestsResolvers = {
         community.requests.push(request);
         creator.requests.push(request);
 
-        // parse array of members object into array of emails
-        const emails = community.members.map((member) => member.email);
+        // Parse array of members object into array of emails if member is notified
+        const emails = community.members
+          .filter((member) => member.isNotified === true)
+          .map((member) => member.email);
 
         // Save community & sent email to subscribed users
         await Promise.all([
           community.save(),
           creator.save(),
-          emails.length &&
+          process.env.NODE_ENV === 'production' &&
+            emails.length &&
             newRequestMail(
               userName,
               title,
@@ -148,6 +152,21 @@ const requestsResolvers = {
               `${userName} requested ${title} in your community.`
             ),
         ]);
+
+        // Get a list of users that has FCM tokens
+        const receivers = community.members
+          .filter((member) => member.fcmTokens.length)
+          .map((member) => ({
+            _id: member._id,
+            fcmTokens: member.fcmTokens,
+          }));
+
+        // Sent push notification
+        pushNotification(
+          {},
+          `${userName} requested ${title} in the ${community.name} community`,
+          receivers
+        );
 
         return {
           ...request._doc,
@@ -172,7 +191,7 @@ const requestsResolvers = {
 
         // Throw error if user is not post creator
         if (!request.creator.equals(user.userId)) {
-          throw new Error('Anauthorised user');
+          throw new Error('Unauthorized user');
         }
 
         // Destruct threads from request
@@ -181,13 +200,17 @@ const requestsResolvers = {
         // Delete request, requestId from community & delete request threads
         await Promise.all([
           request.remove(),
+          User.updateOne(
+            { _id: user.userId },
+            { $pull: { requests: requestId } }
+          ),
           Community.updateMany(
             { _id: { $in: currentUser.communities } },
             {
               $pull: { requests: requestId },
             }
           ),
-          Thread.deleteMany({ _id: threads }),
+          Thread.deleteMany({ _id: { $in: threads } }),
         ]);
 
         return request;

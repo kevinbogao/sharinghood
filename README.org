@@ -1,28 +1,96 @@
 * Sharinghood
   When in doubt, consult [[https://github.com/kelseyhightower/nocode][nocode]]
+  * [[https://sharinghood-staging.herokuapp.com][Staging link]]
+  * [[https://sharinghood.herokuapp.com][Production link]]
 
-  Staging Link: https://sharinghood-staging.herokuapp.com
+
+** Table of Contents                                               :noexport:
+   :PROPERTIES:
+   :TOC:      :include all
+   :END:
+   :CONTENTS:
+   - [[#sharinghood][Introduction]]
+     - [[#quick-overview][Quick Overview]]
+       - [[#architecture-and-tech-stack][Architecture and Tech Stack]]
+       - [[#getting-started][Getting Started]]
+   - [[#client][Client]]
+     - [[#notification-type][Notification Type]]
+     - [[#booking-status][Booking Status]]
+   - [[#server][Server]]
+     - [[#query][Query]]
+     - [[#mutation][Mutation]]
+     - [[#subscription][Subscription]]
+     - [[#authentication][Authentication]]
+     - [[#mongodb][MongoDB]]
+     - [[#redis][Redis]]
+     - [[#dependencies][Dependencies]]
+     - [[#testing][Testing]]
+   - [[#contributors][Contributors]]
+   :END: 
+
 ** Quick Overview
-   #+begin_src bash
-   cd server && yarn dev
+*** Architecture and Tech Stack
+    #+begin_src
+       CLIENT                               SERVER
+
+                                                         /-----------\
+                                                         |           |
+    +----------+         +--------------------+          |  MongoDB  |
+    |   Web    +---------+                    |          |  Replica  |
+    |  Client  |<---+    |                    +----------+    Set    |
+    +----------+    |    |     Monolithic     |          |           |
+                    |    |      GraphQl       |          \-----------/
+    +----------+    |    |       Server       |
+    |  Mobile  +----|----+                    |          +-----------+
+    |  Client  |    |    |                    +----------+   Redis   |
+    +----------+    |    +--+---------+-------+          |   Server  |
+         ^          |       |         |                  +-----------+
+         |          |       V         |
+         |       +--+----------+      |      +------------+
+         |       |  Firebase   |      |      | Cloudinary |
+         +-------+    Cloud    |      +----->|   Image    |
+                 |  Messaging  |             |   Server   |
+                 +-------------+             +------------+
    #+end_src
-   client ~.env~
-   #+begin_src bash
-   REACT_APP_GRAPHQL_ENDPOINT_HTTP=http://localhost:4000
-   REACT_APP_GRAPHQL_ENDPOINT_WS=ws://localhost:4000/graphql
-   #+end_src
-   server ~.env~
-   #+begin_src bash
-   ORIGIN=http://localhost:3000
-   JWT_SECRET=
-   MONGO_PATH=
-   REDIS_URL=
-   CLOUDINARY_CLOUD_NAME=
-   CLOUDINARY_API_KEY=
-   CLOUDINARY_SECRET_KEY=
-   GMAIL_USERNAME=
-   GMAIL_PASSWORD=
-   #+end_src
+
+**** Client
+     * [[https://reactjs.org/][React]]
+     * [[https://www.apollographql.com/docs/react/][Apollo Client]]
+     * [[https://firebase.google.com/docs/cloud-messaging][Firebase Cloud Messaging]]
+
+**** Server
+     * [[https://www.apollographql.com/docs/apollo-server/][Apollo Server]]
+     * [[https://www.mongodb.com/][MongoDB]]
+     * [[https://redis.io/][Redis]]
+     * [[http://cloudinary.com/][Cloudinary]]
+     * [[https://firebase.google.com/docs/cloud-messaging][Firebase Cloud Messaging]]
+
+*** Getting Started
+    Start server and client
+    #+begin_src bash
+    cd server && yarn dev
+    #+end_src
+
+    client ~.env~
+    #+begin_src bash
+    REACT_APP_GRAPHQL_ENDPOINT_HTTP=http://localhost:4000
+    REACT_APP_GRAPHQL_ENDPOINT_WS=ws://localhost:4000/graphql
+    REACT_APP_GTM_ID=
+    #+end_src
+
+    server ~.env~
+    #+begin_src bash
+    ORIGIN=http://localhost:3000
+    ORIGIN_INSECURE=http://localhost:3000
+    JWT_SECRET=
+    MONGO_PATH=
+    REDIS_URL=
+    CLOUDINARY_CLOUD_NAME=
+    CLOUDINARY_API_KEY=
+    CLOUDINARY_SECRET_KEY=
+    GMAIL_USERNAME=
+    GMAIL_PASSWORD=
+    #+end_src
 
 * Client
 ** Notification Type
@@ -42,13 +110,209 @@
   
 * Server
   Explore Sharinghood's GraphQL API on [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQl Playground]] at ~http://localhost:4000/graphql~
+
 ** Query
+*** Users
+    ~user~ - Get current user or a specific & user posts
+    | Arguments | Required | Type | Description            |
+    |-----------+----------+------+------------------------|
+    | ~userId~  | false    | ~ID~ | Select a specific user |
+
+    ~validateResetLink~ - Check user password reset link validity
+    | Arguments  | Required | Type     | Description                |
+    |------------+----------+----------+----------------------------|
+    | ~resetKey~ | true     | ~String~ | Specify reset password key |
+
+*** Communities
+    ~community~ - Get a specific community by id or community code
+    | Arguments       | Required | Type     | Description            |
+    |-----------------+----------+----------+------------------------|
+    | ~communityId~   | false    | ~String~ | Specify community id   |
+    | ~communityCode~ | false    | ~String~ | Specify community code |
+
+    ~communities~ - Get all communities that the current user is a member of
+    | Arguments | Required | Type | Description            |
+    |-----------+----------+------+------------------------|
+    | ~userId~  | false    | ~ID~ | Select a specific user |
+
+*** Posts
     ~post~ - Get a specific post
     | Arguments | Required | Type | Description            |
     |-----------+----------+------+------------------------|
     | ~postId~  | true     | ~ID~ | Select a specific post |
 
     ~posts~ - Get all the posts from a given community
+    | Arguments     | Required | Type | Description         |
+    |---------------+----------+------+---------------------|
+    | ~communityId~ | true     | ~ID~ | Select from a specific community |
+
+*** Requests
+    ~request~ - Get a specific request
+    | Arguments   | Required | Type | Description            |
+    |-------------+----------+------+------------------------|
+    | ~requestId~ | true     | ~ID~ | Select a specific post |
+
+    ~posts~ - Get all the requests from a given community
     | Arguments     | Required | Type | Description                      |
     |---------------+----------+------+----------------------------------|
-    | ~communityId~ | false    | ~ID~ | Select from a specific community |
+    | ~communityId~ | true     | ~ID~ | Select from a specific community |
+
+*** Notifications
+    ~notification~ - Get a specific notification
+    | Arguments        | Required | Type | Description                    |
+    |------------------+----------+------+--------------------------------|
+    | ~notificationId~ | true     | ~ID~ | Select a specific notification |
+
+    ~notifications~ - Get all the notifications of the current user from a given community
+    | Arguments     | Required | Type | Description                      |
+    |---------------+----------+------+----------------------------------|
+    | ~communityId~ | true     | ~ID~ | Select from a specific community |
+
+** Mutation
+*** Users
+    ~login~ - User authentication
+    | Arguments  | Required | Type     | Description   |
+    |------------+----------+----------+---------------|
+    | ~email~    | true     | ~String~ | User email    |
+    | ~password~ | true     | ~String~ | User password |
+
+    ~updateUser~ - Update current user's data
+    | Arguments   | Required | Type        | Description                    |
+    |-------------+----------+-------------+--------------------------------|
+    | ~userInput~ | true     | ~UserInput~ | Various ~User~ type input data |
+
+    ~tokenRefresh~ - Refresh current user's ~accessToken~
+    | Arguments | Required | Type     | Description                  |
+    |-----------+----------+----------+------------------------------|
+    | ~token~   | true     | ~String~ | Specify user's ~accesstoken~ |
+
+    ~forgotPassword~ - Send reset password word email containing generated reset password link to user
+    | Arguments | Required | Type     | Description |
+    |-----------+----------+----------+-------------|
+    | ~email~   | true     | ~String~ | User email  |
+
+    ~resetPassword~ - Reset user's password
+    | Arguments  | Required | Type     | Description                |
+    |------------+----------+----------+----------------------------|
+    | ~resetKey~ | true     | ~String~ | Specify reset password key |
+    | ~password~ | true     | ~String~ | Specify new password       |
+    
+*** Users & Communities
+    ~registerAndOrCreateCommunity~ - Register user and/or create community for user (saves user as community creator)
+    | Arguments        | Required | Type             | Description                                                    |
+    |------------------+----------+------------------+----------------------------------------------------------------|
+    | ~userInput~      | true     | ~UserInput~      | Various ~User~ type input data                                 |
+    | ~communityInput~ | false    | ~CommunityInput~ | Various ~Community~ type input data; Create community if given |
+
+*** Communities
+    ~createCommunity~ - Create community and save user as community creator
+    | Arguments        | Required | Type             | Description                         |
+    |------------------+----------+------------------+-------------------------------------|
+    | ~communityInput~ | true     | ~CommunityInput~ | Various ~Community~ type input data |
+
+    ~joinCommunity~ - Add current user to a specific community
+    | Arguments     | Required | Type | Description         |
+    |---------------+----------+------+---------------------|
+    | ~communityId~ | true     | ~ID~ | Specify a community |
+
+*** Posts
+    ~createPost~ - Create a post
+    | Arguments     | Required | Type        | Description                    |
+    |---------------+----------+-------------+--------------------------------|
+    | ~postInput~   | true     | ~PostInput~ | Various ~Post~ type input data |
+    | ~communityId~ | true     | ~ID~        | Specify a community            |
+
+    ~updatePost~ - Update a specific post
+    | Arguments   | Required | Type        | Description                    |
+    |-------------+----------+-------------+--------------------------------|
+    | ~postInput~ | true     | ~PostInput~ | Various ~Post~ type input data |
+
+    ~inactivatePost~ - Remove a specific post from all of the current user's communities
+    | Arguments | Required | Type | Description    |
+    |-----------+----------+------+----------------|
+    | ~postId~  | true     | ~ID~ | Specify a post |
+
+    ~deletePost~ - Delete a specific post, its related threads, bookings, and notifications; and remove the post from all of the current user's communities
+    | Arguments     | Required | Type | Description         |
+    |---------------+----------+------+---------------------|
+    | ~postId~      | true     | ~ID~ | Specify a post      |
+    | ~communityId~ | false    | ~ID~ | Specify a community |
+
+    ~addPostToCommunity~ - Add a specific post to a specific community
+    | Arguments     | Required | Type | Description         |
+    |---------------+----------+------+---------------------|
+    | ~postId~      | false    | ~ID~ | Specify a post      |
+    | ~communityId~ | false    | ~ID~ | Specify a community |
+
+*** Requests
+    ~createRequest~ - Create a post
+    | Arguments      | Required | Type           | Description                       |
+    |----------------+----------+----------------+-----------------------------------|
+    | ~requestInput~ | true     | ~RequestInput~ | Various ~Request~ type input data |
+    | ~communityId~  | true     | ~ID~           | Specify a community               |
+
+    ~deleteRequest~ - Delete a specific request, its related threads
+    | Arguments     | Required | Type | Description         |
+    |---------------+----------+------+---------------------|
+    | ~requestId~   | true     | ~ID~ | Specify a post      |
+
+*** Threads
+    ~createThread~ - Add thread to a specific post or request
+    | Arguments     | Required | Type          | Description                      |
+    |---------------+----------+---------------+----------------------------------|
+    | ~threadInput~ | true     | ~ThreadInput~ | Various ~Thread~ type input data |
+
+*** Messages
+    ~createMessage~ - Add a message to a specific notification
+    | Arguments      | Required | Type           | Description                       |
+    |----------------+----------+----------------+-----------------------------------|
+    | ~messageInput~ | true     | ~MessageInput~ | Various ~Message~ type input data |
+
+*** Bookings
+    ~updateBooking~ - Update a specific booking's status
+    | Arguments      | Required | Type           | Description                       |
+    |----------------+----------+----------------+-----------------------------------|
+    | ~bookingId~    | true     | ~ID~           | Specify a booking                 |
+    | ~bookingInput~ | true     | ~BookingInput~ | Various ~Booking~ type input data |
+
+** Subscription 
+*** Messages
+    ~newNotificationMessage~ - Subscribe to messages from a give notification
+    | Arguments        | Required | Type | Description            |
+    |------------------+----------+------+------------------------|
+    | ~notificationId~ | true     | ~ID~ | Specify a notification |
+
+** Authentication
+   The ~accesstoken~ and ~refreshToken~ [[https://jwt.io/][JSON Web Token]]s are generated and send to client on authentication success. The ~accesstoken~ contains user's *id*, *name*, *email*, and other user related information, and it has a life span of 1 hour. The ~refreshtoken~ contains user's *id* only, and is used to re-generated a new ~accesstoken~ when the ~accesstoken~ is expired. The ~refreshtoken~ expires in 7 days, and it is re-generated when the ~accesstoken~ is being re-generated.
+
+   All the resolvers, apart from the ~community~ /query/ and the ~createcommunity~ /mutation/, are protected from unauthrised access. The ~accesstoken~ is send to the server from the client and is validated; its contents is passed as context to subsequent resolvers. An ~AuthenticationError~ is thrown should the validation fails.
+
+** MongoDB
+   All essential data are stored on the [[https://www.mongodb.com/][MongoDB]] database server that is hosted by [[https://scalegrid.io/][ScaleGrid]] on [[https://www.digitalocean.com/][Digital Ocean]]. The database comprises of a primary node and 3 replicas to provide redundancy and increased availability. The database server performs backups daily.
+
+** Redis
+   [[https://redis.io/][Redis]] is used as in-memory data store, and ~PubSubEngine~ for messages. Data such as password reset key and notifications read status are stored as key-value pairs for quick access. The chat functionality is a GraphQl subscription operation that utilizes Redis' ~Pub/Sub~ implementation.
+
+** Firebase
+   [[https://firebase.google.com/docs/cloud-messaging][Firebase Cloud Messaging]] is used as messaging server for push notifications to the web and mobile clients. Each user's FCM token are stored on MongoDB database server.
+
+** Dependencies
+  * [[https://www.npmjs.com/package/apollo-server][apollo-server]] - GraphQl server
+  * [[https://www.npmjs.com/package/bcrypt][bcryptjs]] - Password hashing library
+  * [[https://www.npmjs.com/package/bcrypt][cloudinary]] - Cloudinary's Node.js SDK 
+  * [[https://www.npmjs.com/package/graphql-redis-subscriptions][graphql-redis-subscriptions]] - PubSubEngine interface for Redis Pub Sub mechanism connection
+  * [[https://www.npmjs.com/package/ioredis][ioredis]] - Redis client for Node.js
+  * [[https://www.npmjs.com/package/jsonwebtoken][jsonwebtoken]] - JSON Web Token implementation
+  * [[https://www.npmjs.com/package/mongoose][mongoose]] - ODM for MongoDB
+  * [[https://www.npmjs.com/package/nodemailer][nodemailer]] - Email sender for Node.js
+  * [[https://www.npmjs.com/package/node-gcm][node-gcm]] - Firebase Cloud Messaging interface
+
+** Testing
+   Run tests on local server
+   #+begin_src bash
+   cd server && yarn test
+   #+end_src
+
+* Contributors 
+  * [[https://github.com/kevinbogao][@kevinbogao]] - Kevin Gao
+  * [[https://github.com/techyon7][@techyon7]] -Sparsh Tyagi

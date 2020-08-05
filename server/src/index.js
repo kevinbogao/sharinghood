@@ -2,7 +2,7 @@ require('dotenv').config();
 const { ApolloServer, AuthenticationError } = require('apollo-server');
 const Redis = require('ioredis');
 const mongoose = require('mongoose');
-const typeDefs = require('./schema');
+const typeDefs = require('./typeDefs');
 const resolvers = require('./resolvers');
 const { verifyToken } = require('./utils/authToken');
 
@@ -40,11 +40,20 @@ const server = new ApolloServer({
   cors: {
     credentials: true,
     origin: (origin, callback) => {
-      const whitelist = [process.env.ORIGIN, process.env.ORIGIN_INSECURE];
-      if (whitelist.includes(origin)) {
-        callback(null, true);
+      if (origin) {
+        const whitelist = [
+          process.env.ORIGIN,
+          process.env.ORIGIN_INSECURE,
+          'http://localhost:4000',
+        ];
+        if (whitelist.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+        // Mobile client
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(null, false);
       }
     },
   },
@@ -61,13 +70,23 @@ const server = new ApolloServer({
       useFindAndModify: false,
       sslValidate: false,
     });
+
     // Server listener
     const { url, subscriptionsUrl } = await server.listen({
       port: process.env.PORT || 4000,
     });
+
     console.log(`Server ready at ${url}`);
     console.log(`Subscriptions ready at ${subscriptionsUrl}`);
   } catch (err) {
     console.log(err);
   }
 })();
+
+// export all the important pieces for tests
+module.exports = {
+  typeDefs,
+  resolvers,
+  ApolloServer,
+  server,
+};

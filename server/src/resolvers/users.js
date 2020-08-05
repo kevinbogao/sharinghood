@@ -93,7 +93,7 @@ const usersResolvers = {
 
         return { accessToken, refreshToken };
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw new Error(err);
       }
     },
@@ -157,7 +157,8 @@ const usersResolvers = {
           community.save(),
 
           // Sent new account mail if user is notified
-          isNotified &&
+          process.env.NODE_ENV === 'production' &&
+            isNotified &&
             newAccountMail(
               `${process.env.ORIGIN}/share`,
               community.name,
@@ -166,7 +167,8 @@ const usersResolvers = {
             ),
 
           // Sent new community mail if user is notified & isCreator
-          isNotified &&
+          process.env.NODE_ENV === 'production' &&
+            isNotified &&
             isCreator &&
             newCommunityMail(
               `${process.env.ORIGIN}/community/${community.code}`,
@@ -289,7 +291,7 @@ const usersResolvers = {
 
         return true;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw new Error(err);
       }
     },
@@ -312,6 +314,25 @@ const usersResolvers = {
           redis.del(`reset_password:${resetKey}`),
           redis.del(`reset_key:${user.email}`),
         ]);
+
+        return true;
+      } catch (err) {
+        // console.log(err);
+        throw new Error(err);
+      }
+    },
+    addFcmToken: async (_, { fcmToken }, { user }) => {
+      if (!user) throw new AuthenticationError('Not Authenticated');
+
+      try {
+        // Add FCM token to user's fcmTokens array
+        await User.updateOne(
+          {
+            _id: user.userId,
+          },
+          // $addToSet ensures no duplications
+          { $addToSet: { fcmTokens: fcmToken } }
+        );
 
         return true;
       } catch (err) {

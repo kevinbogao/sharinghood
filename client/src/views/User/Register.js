@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { gql, useMutation, useApolloClient } from '@apollo/client';
 import jwtDecode from 'jwt-decode';
-import Loading from '../../components/Loading';
+import Modal from 'react-modal';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import Spinner from '../../components/Spinner';
 import InlineError from '../../components/InlineError';
+import TermsAndConditions from '../../components/TermsAndConditions';
 
 const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
   mutation RegisterAndOrCreateCommunity(
@@ -45,6 +49,7 @@ function Register({
   const client = useApolloClient();
   let email, password, confirmPassword, isNotified, agreed;
   const [error, setError] = useState({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [
     registerAndOrCreateCommunity,
     { loading: mutationLoading, error: mutationError },
@@ -187,7 +192,11 @@ function Register({
           <input type="checkbox" ref={(node) => (agreed = node)} />
           <p>
             I agree to the{' '}
-            <button type="button" className="terms-btn">
+            <button
+              type="button"
+              className="terms-btn"
+              onClick={() => setIsModalOpen(true)}
+            >
               terms and conditions
             </button>
           </p>
@@ -210,7 +219,20 @@ function Register({
       >
         Login
       </button>
-      {mutationLoading && <Loading isCover />}
+      <Modal
+        className="react-modal terms"
+        isOpen={isModalOpen}
+        onRequestClose={() => setIsModalOpen(false)}
+      >
+        <FontAwesomeIcon
+          className="terms-times-icon"
+          icon={faTimes}
+          onClick={() => setIsModalOpen(false)}
+          size="lg"
+        />
+        <TermsAndConditions />
+      </Modal>
+      {mutationLoading && <Spinner isCover />}
       {mutationError && <p>Error :( Please try again</p>}
       <style jsx>
         {`
@@ -278,6 +300,22 @@ function Register({
               &:hover {
                 cursor: pointer;
               }
+            }
+          }
+        `}
+      </style>
+      <style jsx global>
+        {`
+          @import './src/assets/scss/index.scss';
+
+          .terms-times-icon {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0px;
+            float: right;
+
+            &:hover {
+              poster: cursor;
             }
           }
         `}

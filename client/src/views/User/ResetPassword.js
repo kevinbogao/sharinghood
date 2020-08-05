@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import InlineError from '../../components/InlineError';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 
 const VALIDATE_RESET_LINK = gql`
   query ValidateResetLink($resetKey: String!) {
@@ -51,7 +51,7 @@ function ResetPassword({ match }) {
   }
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error! ${error.message}`
   ) : (
@@ -113,7 +113,7 @@ function ResetPassword({ match }) {
                     Confirm
                   </button>
                 </form>
-                {mutationLoading && <Loading isCover />}
+                {mutationLoading && <Spinner isCover />}
               </>
             )}
           </>

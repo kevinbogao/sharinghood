@@ -4,9 +4,11 @@ const User = require('../models/user');
 const Post = require('../models/post');
 const Thread = require('../models/thread');
 const Booking = require('../models/booking');
+const Message = require('../models/message');
 const Community = require('../models/community');
 const Notification = require('../models/notification');
 const uploadImg = require('../utils/uploadImg');
+const pushNotification = require('../utils/pushNotification');
 
 const postsResolvers = {
   Query: {
@@ -123,7 +125,12 @@ const postsResolvers = {
             creator: userId,
           }),
           User.findById(userId),
-          communityId && Community.findById(communityId),
+          communityId &&
+            Community.findById(communityId).populate({
+              path: 'members',
+              match: { _id: { $ne: userId } },
+              select: 'fcmTokens',
+            }),
           requesterId && User.findById(requesterId),
         ]);
 
@@ -131,6 +138,21 @@ const postsResolvers = {
         // uploading the post to a specific community
         if (communityId) {
           community.posts.push(post);
+
+          // Get a list of users that has FCM tokens
+          const receivers = community.members
+            .filter((member) => member.fcmTokens.length)
+            .map((member) => ({
+              _id: member._id,
+              fcmTokens: member.fcmTokens,
+            }));
+
+          // Sent push notification
+          pushNotification(
+            {},
+            `${userName} shared ${title} in the ${community.name} community`,
+            receivers
+          );
         }
 
         // Create notification if requesterId is given
@@ -145,6 +167,17 @@ const postsResolvers = {
             },
             community: communityId,
           });
+
+          pushNotification(
+            {},
+            `${userName} shared ${title} in the ${community.name} community for your request`,
+            [
+              {
+                _id: requester._id,
+                fcmTokens: requester.fcmTokens,
+              },
+            ]
+          );
 
           // Add notification to requester
           requester.notifications.push(notification);
@@ -184,7 +217,7 @@ const postsResolvers = {
 
         // Throw error if user is not creator
         if (!post._doc.creator.equals(user.userId)) {
-          throw new Error('Anauthorised user');
+          throw new Error('Unauthorized user');
         }
 
         // Upload image if it exists
@@ -201,7 +234,7 @@ const postsResolvers = {
         const updatedPost = await post.save();
         return updatedPost;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw new Error(err);
       }
     },
@@ -217,7 +250,7 @@ const postsResolvers = {
 
         // Throw error if user is not post creator
         if (!post.creator.equals(currentUser._id)) {
-          throw new Error('Anauthorised user');
+          throw new Error('Unauthorized user');
         }
 
         // Find user's communities and remove post from
@@ -233,7 +266,7 @@ const postsResolvers = {
 
         return true;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw new Error(err);
       }
     },
@@ -249,14 +282,48 @@ const postsResolvers = {
 
         // Throw error if user is not post creator
         if (!post.creator.equals(user.userId)) {
-          throw new Error('Anauthorised user');
+          throw new Error('Unauthorized user');
         }
 
         // Save thread ids array
         const { threads, bookings } = post;
 
+        // Get all notifications that is related to post's bookings or
+        // the post itself
+        const notifications = await Notification.find({
+          $or: [{ booking: { $in: bookings } }, { post: postId }],
+        });
+
+        // Get a list to notifications' messages ids
+        const messages = notifications
+          .map((notification) => notification.messages)
+          .flat(1);
+
+        // Get a list of notifications ids
+        const notificationsIds = notifications.map(
+          (notification) => notification._id
+        );
+
+        // Create an object of invalid notifications with user id as key
+        let userInvalidNotifications = {};
+        for (let i = 0; i < notifications.length; i++) {
+          for (let j = 0; j < notifications[0].participants.length; j++) {
+            if (notifications[i].participants[j] in userInvalidNotifications) {
+              userInvalidNotifications[notifications[i].participants[j]].push(
+                notifications[i]._id
+              );
+            } else {
+              userInvalidNotifications = {
+                ...userInvalidNotifications,
+                [notifications[i].participants[j]]: [notifications[i]._id],
+              };
+            }
+          }
+        }
+
         // Delete post, postId from community && delete post threads,
-        // delete bookings & post notifications
+        // delete bookings & post related notifications & subsequent messages
+        // && delete all notifications' ids from users
         await Promise.all([
           post.remove(),
           Community.updateMany(
@@ -264,17 +331,28 @@ const postsResolvers = {
             { $pull: { posts: postId } }
           ),
           User.updateOne({ _id: user.userId }, { $pull: { posts: postId } }),
-          Thread.deleteMany({ _id: threads }),
-          Booking.deleteMany({ _id: bookings }),
-          Notification.deleteMany({
-            $or: [{ booking: { $in: bookings } }, { post: postId }],
-          }),
+          Thread.deleteMany({ _id: { $in: threads } }),
+          Booking.deleteMany({ _id: { $in: bookings } }),
+          Message.deleteMany({ _id: { $in: messages } }),
+          Notification.deleteMany({ _id: { $in: notificationsIds } }),
+          Object.keys(userInvalidNotifications).map((userId) =>
+            Promise.resolve(
+              User.updateOne(
+                { _id: userId },
+                {
+                  $pull: {
+                    notifications: { $in: userInvalidNotifications[userId] },
+                  },
+                }
+              )
+            )
+          ),
         ]);
 
         return post;
       } catch (err) {
-        console.log(err);
-        throw err;
+        // console.log(err);
+        throw new Error(err);
       }
     },
     addPostToCommunity: async (_, { postId, communityId }, { user }) => {
@@ -290,7 +368,7 @@ const postsResolvers = {
 
         // Throw error if user is not post creator
         if (!post.creator.equals(user.userId)) {
-          throw new Error('Anauthorised user');
+          throw new Error('Unauthorized user');
         }
 
         // Add post to community & save community
@@ -299,7 +377,7 @@ const postsResolvers = {
 
         return community;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw new Error(err);
       }
     },

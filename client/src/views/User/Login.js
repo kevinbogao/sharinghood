@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { gql, useMutation, useApolloClient } from '@apollo/client';
 import jwtDecode from 'jwt-decode';
 import InlineError from '../../components/InlineError';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 
 const LOGIN = gql`
   mutation Login($email: String!, $password: String!) {
@@ -114,7 +114,7 @@ function Login({ history, location }) {
           Login
         </button>
       </form>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

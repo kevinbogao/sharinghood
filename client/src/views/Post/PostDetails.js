@@ -12,26 +12,12 @@ import moment from 'moment';
 import Modal from 'react-modal';
 import DatePicker from '../../components/DatePicker';
 import Threads from '../../components/Threads';
-import Loading from '../../components/Loading';
+import Spinner from '../../components/Spinner';
 import NotFound from '../../components/NotFound';
 import ItemDetails from '../../components/ItemDetails';
-// import { GET_NOTIFICATIONS } from '../Notification/Notifications';
 
 const CONDITIONS = ['New', 'Used but good', 'Used but little damaged'];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
-const MODAL_STYLE = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    transform: 'translate(-50%, -50%)',
-    borderWidth: 0,
-    boxShadow: '0px 0px 6px #f2f2f2',
-    padding: '30px',
-    minWidth: '300px',
-  },
-};
 
 const GET_POST = gql`
   query Post($postId: ID!) {
@@ -77,6 +63,9 @@ const CREATE_THREAD = gql`
       _id
       content
       poster {
+        _id
+      }
+      community {
         _id
       }
     }
@@ -165,22 +154,6 @@ function PostDetails({ communityId, match, history }) {
       onError: ({ message }) => {
         console.log(message);
       },
-      // // Add created notification to the beginning of the notifications array
-      // update(cache, { data: { createNotification } }) {
-      //   try {
-      //     const { notifications } = cache.readQuery({
-      //       query: GET_NOTIFICATIONS,
-      //     });
-      //     cache.writeQuery({
-      //       query: GET_NOTIFICATIONS,
-      //       data: { notifications: [createNotification, ...notifications] },
-      //     });
-      //     // eslint-disable-next-line
-      //   } catch (err) {}
-
-      //   // Redirect user to notifications
-      //   history.push('/notifications');
-      // },
     },
   );
 
@@ -202,7 +175,7 @@ function PostDetails({ communityId, match, history }) {
   }, []);
 
   return loading ? (
-    <Loading />
+    <Spinner />
   ) : error ? (
     `Error! ${error.message}`
   ) : data.post ? (
@@ -249,8 +222,8 @@ function PostDetails({ communityId, match, history }) {
         </div>
       </ItemDetails>
       <Modal
+        className="react-modal"
         isOpen={isBookingOpen}
-        style={MODAL_STYLE}
         onRequestClose={() => setIsBookingOpen(false)}
       >
         <p className="main-p">When do you need the item?</p>
@@ -304,7 +277,7 @@ function PostDetails({ communityId, match, history }) {
           Close
         </button>
       </Modal>
-      {mutationLoading && <Loading isCover />}
+      {mutationLoading && <Spinner isCover />}
       <Threads
         threads={data.post.threads}
         members={data.community.members}
@@ -334,6 +307,7 @@ function PostDetails({ communityId, match, history }) {
                             isPost: true,
                             parentId: data.post._id,
                             communityId,
+                            recipientId: data.post.creator._id,
                           },
                         },
                       });

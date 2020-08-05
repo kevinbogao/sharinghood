@@ -49,7 +49,7 @@ function Register({
   const client = useApolloClient();
   let email, password, confirmPassword, isNotified, agreed;
   const [error, setError] = useState({});
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [
     registerAndOrCreateCommunity,
     { loading: mutationLoading, error: mutationError },

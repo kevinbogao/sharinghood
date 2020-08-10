@@ -13,6 +13,10 @@ const redis = new Redis(process.env.REDIS_URL);
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  engine: {
+    reportSchema: true,
+    debugPrintReports: true,
+  },
   context: async ({ req, connection }) => {
     // Subscription context
     if (connection) {

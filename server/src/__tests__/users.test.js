@@ -245,7 +245,7 @@ describe('[Mutation.users]', () => {
   });
 
   // login mutation { isMigrated: false }
-  it('Login migrated user ', async () => {
+  it('Login unmigrated user ', async () => {
     const LOGIN = gql`
       mutation Login($email: String!, $password: String!) {
         login(email: $email, password: $password) {

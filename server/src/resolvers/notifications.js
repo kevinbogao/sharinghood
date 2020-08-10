@@ -87,7 +87,6 @@ const notificationsResolvers = {
 
         return notification[0];
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },
@@ -222,7 +221,6 @@ const notificationsResolvers = {
         // Return user's notifications to client
         return userNotifications[0].notifications;
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },
@@ -234,14 +232,13 @@ const notificationsResolvers = {
         // type 0 and in the given community
         const notification = await Notification.findOne({
           ofType: 0,
-          participants: [recipientId, user.userId],
+          participants: { $all: [recipientId, user.userId] },
           community: communityId,
         });
 
         // Return chat/notification object if it is found
         return notification;
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },
@@ -373,7 +370,6 @@ const notificationsResolvers = {
           }),
         };
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },

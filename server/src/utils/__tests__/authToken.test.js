@@ -66,6 +66,12 @@ describe('[Utils.authToken]', () => {
   });
 
   // VERIFY_TOKEN
+  it('Should return null for if token is not given', () => {
+    const undefinedTokenPayload = verifyToken();
+    expect(undefinedTokenPayload).toBeNull();
+  });
+
+  // VERIFY_TOKEN
   it('Should return null for invalid token', () => {
     const invalidToken = sign(
       {

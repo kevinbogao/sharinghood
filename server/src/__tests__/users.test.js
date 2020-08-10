@@ -3,6 +3,7 @@ const { gql } = require('apollo-server');
 const { sign, verify } = require('jsonwebtoken');
 const Redis = require('ioredis-mock');
 const crypto = require('crypto');
+const bcryptjs = require('bcryptjs');
 const { constructTestServer } = require('./__utils');
 const inMemoryDb = require('./__mocks__/inMemoryDb');
 const {
@@ -82,6 +83,21 @@ const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
 const FORGOT_PASSWORD = gql`
   mutation ForgotPassword($email: String!) {
     forgotPassword(email: $email)
+  }
+`;
+
+const RESET_PASSWORD = gql`
+  mutation ResetPassword($resetKey: String!, $password: String!) {
+    resetPassword(resetKey: $resetKey, password: $password)
+  }
+`;
+
+const TOKEN_REFRESH = gql`
+  mutation TokenRefresh($token: String!) {
+    tokenRefresh(token: $token) {
+      accessToken
+      refreshToken
+    }
   }
 `;
 
@@ -575,15 +591,6 @@ describe('[Mutation.users]', () => {
       }
     );
 
-    const TOKEN_REFRESH = gql`
-      mutation TokenRefresh($token: String!) {
-        tokenRefresh(token: $token) {
-          accessToken
-          refreshToken
-        }
-      }
-    `;
-
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser01._id } }),
@@ -614,6 +621,33 @@ describe('[Mutation.users]', () => {
     expect(refreshTokenPayload).toMatchObject({
       userId: mockUser01._id.toString(),
     });
+  });
+
+  // TOKEN_REFRESH MUTATION { token }
+  it("Refresh user's accessToken with expired refreshToken", async () => {
+    const refreshToken = sign(
+      { userId: mockUser01._id.toString() },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '0s',
+      }
+    );
+
+    // Create an instance of ApolloServer
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id } }),
+    });
+
+    // Create test interface
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: TOKEN_REFRESH,
+      variables: { token: refreshToken },
+    });
+
+    expect(res.errors[0].message).toEqual(
+      'AuthenticationError: Please login again'
+    );
   });
 
   // FORGOT_PASSWORD MUTATION
@@ -685,6 +719,95 @@ describe('[Mutation.users]', () => {
     });
 
     expect(res.errors[0].message).toEqual('Error: email: User not found');
+  });
+
+  // RESET_PASSWORD MUTATION { resetKey, password }
+  it('Reset user password', async () => {
+    const resetKey = crypto.randomBytes(16).toString('hex');
+
+    const redis = new Redis({
+      data: {
+        [`reset_password:${resetKey}`]: mockUser01._id.toString(),
+        [`reset_key:${mockUser01.email}`]: resetKey,
+      },
+    });
+
+    const resetPasswordInput = {
+      resetKey,
+      password: 'new_password',
+    };
+
+    const { server } = constructTestServer({
+      context: () => ({ redis }),
+    });
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: RESET_PASSWORD,
+      variables: resetPasswordInput,
+    });
+
+    expect(res.data.resetPassword).toBeTruthy();
+
+    const [userIdKey, existingResetKey, user] = await Promise.all([
+      redis.get(`reset_password:${resetKey}`),
+      redis.get(`reset_key:${mockUser01.email}`),
+      User.findById(mockUser01._id.toString()),
+    ]);
+
+    const isPasswordValid = await bcryptjs.compare(
+      resetPasswordInput.password,
+      user.password
+    );
+
+    expect(userIdKey).toBeNull();
+    expect(existingResetKey).toBeNull();
+    expect(isPasswordValid).toBeTruthy();
+  });
+
+  // RESET_PASSWORD MUTATION { resetKey, password }
+  it('Reset user password for unmigrated user', async () => {
+    const resetKey = crypto.randomBytes(16).toString('hex');
+
+    const redis = new Redis({
+      data: {
+        [`reset_password:${resetKey}`]: mockUser03._id.toString(),
+        [`reset_key:${mockUser03.email}`]: resetKey,
+      },
+    });
+
+    const resetPasswordInput = {
+      resetKey,
+      password: 'new_password',
+    };
+
+    const { server } = constructTestServer({
+      context: () => ({ redis }),
+    });
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: RESET_PASSWORD,
+      variables: resetPasswordInput,
+    });
+
+    expect(res.data.resetPassword).toBeTruthy();
+
+    const [userIdKey, existingResetKey, user] = await Promise.all([
+      redis.get(`reset_password:${resetKey}`),
+      redis.get(`reset_key:${mockUser03.email}`),
+      User.findById(mockUser03._id.toString()),
+    ]);
+
+    const isPasswordValid = await bcryptjs.compare(
+      resetPasswordInput.password,
+      user.password
+    );
+
+    expect(userIdKey).toBeNull();
+    expect(existingResetKey).toBeNull();
+    expect(isPasswordValid).toBeTruthy();
+    expect(user.isMigrated).toBeTruthy();
   });
 
   // ADD_FCM_TOKEN_TO_USER FOR NEW TOKEN

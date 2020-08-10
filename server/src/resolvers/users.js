@@ -32,7 +32,6 @@ const usersResolvers = {
 
         return userData[0];
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },
@@ -45,7 +44,6 @@ const usersResolvers = {
         if (userId) return true;
         return false;
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },
@@ -93,7 +91,6 @@ const usersResolvers = {
 
         return { accessToken, refreshToken };
       } catch (err) {
-        // console.log(err);
         throw new Error(err);
       }
     },
@@ -188,7 +185,6 @@ const usersResolvers = {
           ...(isCreator && { community }),
         };
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },
@@ -217,33 +213,31 @@ const usersResolvers = {
         const updatedUser = await userData.save();
         return updatedUser;
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },
     tokenRefresh: async (_, { token }) => {
       try {
-        // Validate token & get userId if token is valid
-        const { userId } = verifyToken(token);
+        // Validate token
+        const tokenPayload = verifyToken(token);
 
-        // If token is valid
-        if (userId) {
-          // Find user by id
-          const user = await User.findOne({ _id: userId });
-
-          // Refresh accessToken & refreshToken
-          const { accessToken, refreshToken } = generateTokens(user);
-
-          // Update user's last login date
-          user.lastLogin = new Date();
-          await user.save();
-
-          return { accessToken, refreshToken };
+        // Throw auth error if token is invalid or userId is not included
+        if (!tokenPayload || !tokenPayload.userId) {
+          throw new AuthenticationError('Please login again');
         }
 
-        throw new AuthenticationError('Please login again');
+        // Find user by id
+        const user = await User.findOne({ _id: tokenPayload.userId });
+
+        // Refresh accessToken & refreshToken
+        const { accessToken, refreshToken } = generateTokens(user);
+
+        // Update user's last login date
+        user.lastLogin = new Date();
+        await user.save();
+
+        return { accessToken, refreshToken };
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },
@@ -291,7 +285,6 @@ const usersResolvers = {
 
         return true;
       } catch (err) {
-        // console.log(err);
         throw new Error(err);
       }
     },
@@ -317,7 +310,6 @@ const usersResolvers = {
 
         return true;
       } catch (err) {
-        // console.log(err);
         throw new Error(err);
       }
     },
@@ -336,7 +328,6 @@ const usersResolvers = {
 
         return true;
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },

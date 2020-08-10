@@ -33,8 +33,7 @@ const communitiesResolvers = {
 
         return community[0];
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
     communities: async (_, __, { user, redis }) => {
@@ -70,7 +69,6 @@ const communitiesResolvers = {
 
         return communities;
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },
@@ -109,8 +107,7 @@ const communitiesResolvers = {
 
         return community;
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
     joinCommunity: async (_, { communityId }, { user }) => {
@@ -131,7 +128,6 @@ const communitiesResolvers = {
 
         return community;
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },

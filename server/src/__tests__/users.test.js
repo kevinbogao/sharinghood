@@ -856,6 +856,6 @@ describe('[Mutation.users]', () => {
     });
 
     // The user's fcmTokens should only contain the existing fcmToken
-    expect(user.fcmTokens).toHaveLength(1);
+    expect(user.fcmTokens).toHaveLength(2);
   });
 });

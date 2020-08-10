@@ -25,9 +25,11 @@ const uploadImg = require('../utils/uploadImg');
 jest.mock('../utils/sendMail/index');
 const sendMail = require('../utils/sendMail/index');
 
-// Connect to a new in-memory database before running any tests.
+// Connect to a new in-memory database before running any tests
+// & set enviorment variables
 beforeAll(async () => {
   await inMemoryDb.connect();
+  process.env = Object.assign(process.env, { JWT_SECRET: 'secret' });
 });
 
 // Write initial data to to database

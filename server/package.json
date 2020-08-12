@@ -6,7 +6,7 @@
     "client": "cd ../client && yarn start",
     "server": "nodemon src/index.js",
     "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\"",
-    "test": "env-cmd -e test -r ./.env-cmdrc.json jest"
+    "test": "jest"
   },
   "main": "index.js",
   "license": "MIT",
@@ -86,19 +86,20 @@
     "ioredis": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.19",
-    "mongoose": "^5.9.27",
+    "mongoose": "^5.9.28",
     "node-gcm": "^1.0.3",
-    "nodemailer": "^6.4.11"
+    "nodemailer": "^6.4.11",
+    "winston": "^3.3.3",
+    "winston-mongodb": "https://github.com/kevinbogao/winston-mongodb/tarball/830646b40e753fdd288526eab850964b3cc82f4a"
   },
   "devDependencies": {
-    "concurrently": "^5.2.0",
-    "env-cmd": "^10.1.0",
+    "concurrently": "^5.3.0",
     "eslint": "^7.6.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jest": "^23.20.0",
     "ioredis-mock": "^4.21.2",
-    "jest": "^26.2.2",
+    "jest": "^26.3.0",
     "mongodb-memory-server": "^6.6.3",
     "nodemailer-stub": "^1.2.2",
     "nodemon": "^2.0.4"

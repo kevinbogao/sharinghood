@@ -131,21 +131,17 @@ function App() {
             query: GET_USER_COMMUNITIES,
           });
 
-          // New communities array with target community's has notifications to true
-          const newCommunities = communities.map((community) => {
-            if (community._id === payload.data.communityId) {
-              return {
-                ...community,
-                hasNotifications: true,
-              };
-            }
-            return community;
-          });
-
-          // Write the new communities array to cache
+          // Write to cache with a new array of communities with target
+          // community's hasNotifications status to true to cache
           client.writeQuery({
             query: GET_USER_COMMUNITIES,
-            data: { communities: newCommunities },
+            data: {
+              communities: communities.map((community) =>
+                community._id === payload.data.communityId
+                  ? { ...community, hasNotifications: true }
+                  : community,
+              ),
+            },
           });
 
           // eslint-disable-next-line

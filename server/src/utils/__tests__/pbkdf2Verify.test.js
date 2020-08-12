@@ -11,6 +11,13 @@ describe('[Utils.pbkdf2Verify]', () => {
     expect(res).toBeTruthy();
   });
 
+  it('Should throw error if hash is invalid', async () => {
+    const password = '1234567';
+    const hash = 'invalid_password_hash';
+    expect.assertions(1);
+    await expect(pbkdf2Verify(password, hash)).rejects.toThrow();
+  });
+
   it('Should return false if password is invalid', async () => {
     const password = 'invalid_password';
     const hash =

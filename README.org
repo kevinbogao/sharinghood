@@ -23,10 +23,11 @@
      - [[#authentication][Authentication]]
      - [[#mongodb][MongoDB]]
      - [[#redis][Redis]]
+     - [[#logging][Logging]]
      - [[#dependencies][Dependencies]]
      - [[#testing][Testing]]
    - [[#contributors][Contributors]]
-   :END: 
+   :END:
 
 ** Quick Overview
 *** Architecture and Tech Stack
@@ -101,13 +102,13 @@
    |    2 | Request |
 
 ** Booking Status
-   Booking status code reference 
+   Booking status code reference
    | Code | Status   |
    |------+----------|
    |    0 | Pending  |
    |    1 | Accepted |
    |    2 | Declined |
-  
+
 * Server
   Explore Sharinghood's GraphQL API on [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQl Playground]] at ~http://localhost:4000/graphql~
 
@@ -196,7 +197,7 @@
     |------------+----------+----------+----------------------------|
     | ~resetKey~ | true     | ~String~ | Specify reset password key |
     | ~password~ | true     | ~String~ | Specify new password       |
-    
+
 *** Users & Communities
     ~registerAndOrCreateCommunity~ - Register user and/or create community for user (saves user as community creator)
     | Arguments        | Required | Type             | Description                                                    |
@@ -275,7 +276,7 @@
     | ~bookingId~    | true     | ~ID~           | Specify a booking                 |
     | ~bookingInput~ | true     | ~BookingInput~ | Various ~Booking~ type input data |
 
-** Subscription 
+** Subscription
 *** Messages
     ~newNotificationMessage~ - Subscribe to messages from a give notification
     | Arguments        | Required | Type | Description            |
@@ -283,7 +284,7 @@
     | ~notificationId~ | true     | ~ID~ | Specify a notification |
 
 ** Authentication
-   The ~accesstoken~ and ~refreshToken~ [[https://jwt.io/][JSON Web Token]]s are generated and send to client on authentication success. The ~accesstoken~ contains user's *id*, *name*, *email*, and other user related information, and it has a life span of 1 hour. The ~refreshtoken~ contains user's *id* only, and is used to re-generated a new ~accesstoken~ when the ~accesstoken~ is expired. The ~refreshtoken~ expires in 7 days, and it is re-generated when the ~accesstoken~ is being re-generated.
+   The ~accesstoken~ and ~refreshToken~ [[https://jwt.io/][JSON Web Token]]s are generated and send to client on authentication success. The ~accesstoken~ contains user's *id*, *name*, *email*, and other user related information, and it has a life span of 1 hour. The ~refreshtoken~ contains user's *id* and its version number, and is used to re-generated a new ~accesstoken~ when the ~accesstoken~ is expired, during which the refreshtoken's version number will be checked against what is stored in the database for the user. Should there be discrepancy between the refreshtoken's version number and user's ~tokenVersion~, the refresh process will be rejected. The ~refreshtoken~ expires in 7 days, and it is re-generated when the ~accesstoken~ is being re-generated. The user's ~tokenversion~ will be incremented on logout.
 
    All the resolvers, apart from the ~community~ /query/ and the ~createcommunity~ /mutation/, are protected from unauthrised access. The ~accesstoken~ is send to the server from the client and is validated; its contents is passed as context to subsequent resolvers. An ~AuthenticationError~ is thrown should the validation fails.
 
@@ -296,16 +297,20 @@
 ** Firebase
    [[https://firebase.google.com/docs/cloud-messaging][Firebase Cloud Messaging]] is used as messaging server for push notifications to the web and mobile clients. Each user's FCM token are stored on MongoDB database server.
 
+** Logging
+   Logging is handled by [[https://github.com/winstonjs/winston][winston]] and the logs are stored in the [[https://www.mongodb.com/][MongoDB]] database.
+
 ** Dependencies
   * [[https://www.npmjs.com/package/apollo-server][apollo-server]] - GraphQl server
   * [[https://www.npmjs.com/package/bcrypt][bcryptjs]] - Password hashing library
-  * [[https://www.npmjs.com/package/bcrypt][cloudinary]] - Cloudinary's Node.js SDK 
+  * [[https://www.npmjs.com/package/cloudinary][cloudinary]] - Cloudinary's Node.js SDK
   * [[https://www.npmjs.com/package/graphql-redis-subscriptions][graphql-redis-subscriptions]] - PubSubEngine interface for Redis Pub Sub mechanism connection
   * [[https://www.npmjs.com/package/ioredis][ioredis]] - Redis client for Node.js
   * [[https://www.npmjs.com/package/jsonwebtoken][jsonwebtoken]] - JSON Web Token implementation
   * [[https://www.npmjs.com/package/mongoose][mongoose]] - ODM for MongoDB
   * [[https://www.npmjs.com/package/nodemailer][nodemailer]] - Email sender for Node.js
   * [[https://www.npmjs.com/package/node-gcm][node-gcm]] - Firebase Cloud Messaging interface
+  * [[https://github.com/winstonjs/winston][winston]] - Logging library for Node.js
 
 ** Testing
    Run tests on local server
@@ -313,6 +318,6 @@
    cd server && yarn test
    #+end_src
 
-* Contributors 
+* Contributors
   * [[https://github.com/kevinbogao][@kevinbogao]] - Kevin Gao
   * [[https://github.com/techyon7][@techyon7]] -Sparsh Tyagi

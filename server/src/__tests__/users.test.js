@@ -3,6 +3,7 @@ const { gql } = require('apollo-server');
 const { sign, verify } = require('jsonwebtoken');
 const Redis = require('ioredis-mock');
 const crypto = require('crypto');
+const bcryptjs = require('bcryptjs');
 const { constructTestServer } = require('./__utils');
 const inMemoryDb = require('./__mocks__/inMemoryDb');
 const {
@@ -25,9 +26,11 @@ const uploadImg = require('../utils/uploadImg');
 jest.mock('../utils/sendMail/index');
 const sendMail = require('../utils/sendMail/index');
 
-// Connect to a new in-memory database before running any tests.
+// Connect to a new in-memory database before running any tests
+// & set enviorment variables
 beforeAll(async () => {
   await inMemoryDb.connect();
+  process.env = Object.assign(process.env, { JWT_SECRET: 'secret' });
 });
 
 // Write initial data to to database
@@ -80,6 +83,21 @@ const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
 const FORGOT_PASSWORD = gql`
   mutation ForgotPassword($email: String!) {
     forgotPassword(email: $email)
+  }
+`;
+
+const RESET_PASSWORD = gql`
+  mutation ResetPassword($resetKey: String!, $password: String!) {
+    resetPassword(resetKey: $resetKey, password: $password)
+  }
+`;
+
+const TOKEN_REFRESH = gql`
+  mutation TokenRefresh($token: String!) {
+    tokenRefresh(token: $token) {
+      accessToken
+      refreshToken
+    }
   }
 `;
 
@@ -195,7 +213,7 @@ describe('[Query.users]', () => {
 
 /* USERS MUTATION */
 describe('[Mutation.users]', () => {
-  // login mutation { isMigrated: true }
+  // LOGIN MUTATION { isMigrated: true }
   it('Login migrated user ', async () => {
     const LOGIN = gql`
       mutation Login($email: String!, $password: String!) {
@@ -242,8 +260,8 @@ describe('[Mutation.users]', () => {
     });
   });
 
-  // login mutation { isMigrated: false }
-  it('Login migrated user ', async () => {
+  // LOGIN MUTATION { isMigrated: false }
+  it('Login unmigrated user ', async () => {
     const LOGIN = gql`
       mutation Login($email: String!, $password: String!) {
         login(email: $email, password: $password) {
@@ -359,6 +377,34 @@ describe('[Mutation.users]', () => {
     expect(res.errors[0].message).toEqual(
       'AuthenticationError: password: Invalid credentials'
     );
+  });
+
+  // LOGOUT MUTATION
+  it('logout user ', async () => {
+    const LOGOUT = gql`
+      mutation {
+        logout
+      }
+    `;
+
+    const { server } = constructTestServer({
+      context: () => ({
+        user: {
+          userId: mockUser01._id.toString(),
+          tokenVersion: mockUser01.tokenVersion,
+        },
+      }),
+    });
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({ mutation: LOGOUT });
+
+    expect(res.data.logout).toBeTruthy();
+
+    const user = await User.findById(mockUser01._id.toString());
+
+    // User's token version should be incremented
+    expect(user.tokenVersion).toEqual(mockUser01.tokenVersion + 1);
   });
 
   // REGISTER_AND_OR_CREATE_COMMUNITY MUTATION FOR USER & COMMUNITY
@@ -566,21 +612,15 @@ describe('[Mutation.users]', () => {
   // TOKEN_REFRESH MUTATION { token }
   it("Refresh user's accessToken", async () => {
     const refreshToken = sign(
-      { userId: mockUser01._id.toString() },
+      {
+        userId: mockUser01._id.toString(),
+        tokenVersion: mockUser01.tokenVersion,
+      },
       process.env.JWT_SECRET,
       {
         expiresIn: '7d',
       }
     );
-
-    const TOKEN_REFRESH = gql`
-      mutation TokenRefresh($token: String!) {
-        tokenRefresh(token: $token) {
-          accessToken
-          refreshToken
-        }
-      }
-    `;
 
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
@@ -612,6 +652,63 @@ describe('[Mutation.users]', () => {
     expect(refreshTokenPayload).toMatchObject({
       userId: mockUser01._id.toString(),
     });
+  });
+
+  // TOKEN_REFRESH MUTATION { token }
+  it("Refresh user's accessToken with revoked refreshToken", async () => {
+    const refreshToken = sign(
+      {
+        userId: mockUser01._id.toString(),
+        tokenVersion: mockUser01.tokenVersion - 1,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '7d',
+      }
+    );
+
+    // Create an instance of ApolloServer
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id } }),
+    });
+
+    // Create test interface
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: TOKEN_REFRESH,
+      variables: { token: refreshToken },
+    });
+
+    expect(res.errors[0].message).toEqual(
+      'AuthenticationError: Please login again'
+    );
+  });
+
+  // TOKEN_REFRESH MUTATION { token }
+  it("Refresh user's accessToken with expired refreshToken", async () => {
+    const refreshToken = sign(
+      { userId: mockUser01._id.toString() },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '0s',
+      }
+    );
+
+    // Create an instance of ApolloServer
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id } }),
+    });
+
+    // Create test interface
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: TOKEN_REFRESH,
+      variables: { token: refreshToken },
+    });
+
+    expect(res.errors[0].message).toEqual(
+      'AuthenticationError: Please login again'
+    );
   });
 
   // FORGOT_PASSWORD MUTATION
@@ -685,6 +782,95 @@ describe('[Mutation.users]', () => {
     expect(res.errors[0].message).toEqual('Error: email: User not found');
   });
 
+  // RESET_PASSWORD MUTATION { resetKey, password }
+  it('Reset user password', async () => {
+    const resetKey = crypto.randomBytes(16).toString('hex');
+
+    const redis = new Redis({
+      data: {
+        [`reset_password:${resetKey}`]: mockUser01._id.toString(),
+        [`reset_key:${mockUser01.email}`]: resetKey,
+      },
+    });
+
+    const resetPasswordInput = {
+      resetKey,
+      password: 'new_password',
+    };
+
+    const { server } = constructTestServer({
+      context: () => ({ redis }),
+    });
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: RESET_PASSWORD,
+      variables: resetPasswordInput,
+    });
+
+    expect(res.data.resetPassword).toBeTruthy();
+
+    const [userIdKey, existingResetKey, user] = await Promise.all([
+      redis.get(`reset_password:${resetKey}`),
+      redis.get(`reset_key:${mockUser01.email}`),
+      User.findById(mockUser01._id.toString()),
+    ]);
+
+    const isPasswordValid = await bcryptjs.compare(
+      resetPasswordInput.password,
+      user.password
+    );
+
+    expect(userIdKey).toBeNull();
+    expect(existingResetKey).toBeNull();
+    expect(isPasswordValid).toBeTruthy();
+  });
+
+  // RESET_PASSWORD MUTATION { resetKey, password }
+  it('Reset user password for unmigrated user', async () => {
+    const resetKey = crypto.randomBytes(16).toString('hex');
+
+    const redis = new Redis({
+      data: {
+        [`reset_password:${resetKey}`]: mockUser03._id.toString(),
+        [`reset_key:${mockUser03.email}`]: resetKey,
+      },
+    });
+
+    const resetPasswordInput = {
+      resetKey,
+      password: 'new_password',
+    };
+
+    const { server } = constructTestServer({
+      context: () => ({ redis }),
+    });
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: RESET_PASSWORD,
+      variables: resetPasswordInput,
+    });
+
+    expect(res.data.resetPassword).toBeTruthy();
+
+    const [userIdKey, existingResetKey, user] = await Promise.all([
+      redis.get(`reset_password:${resetKey}`),
+      redis.get(`reset_key:${mockUser03.email}`),
+      User.findById(mockUser03._id.toString()),
+    ]);
+
+    const isPasswordValid = await bcryptjs.compare(
+      resetPasswordInput.password,
+      user.password
+    );
+
+    expect(userIdKey).toBeNull();
+    expect(existingResetKey).toBeNull();
+    expect(isPasswordValid).toBeTruthy();
+    expect(user.isMigrated).toBeTruthy();
+  });
+
   // ADD_FCM_TOKEN_TO_USER FOR NEW TOKEN
   it('Add new FCM token to user', async () => {
     const { server } = constructTestServer({
@@ -731,6 +917,6 @@ describe('[Mutation.users]', () => {
     });
 
     // The user's fcmTokens should only contain the existing fcmToken
-    expect(user.fcmTokens).toHaveLength(1);
+    expect(user.fcmTokens).toHaveLength(2);
   });
 });

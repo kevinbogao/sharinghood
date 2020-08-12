@@ -40,8 +40,7 @@ const requestsResolvers = {
 
         return request[0];
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
     requests: async (_, { communityId }, { user }) => {
@@ -86,8 +85,7 @@ const requestsResolvers = {
 
         return communityRequests[0].requests;
       } catch (err) {
-        console.log(err);
-        return err;
+        throw new Error(err);
       }
     },
   },

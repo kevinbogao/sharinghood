@@ -95,7 +95,7 @@ const usersResolvers = {
       }
     },
     logout: async (_, __, { user }) => {
-      if (!user) throw new ForbiddenError('Not authorized!');
+      if (!user) return false;
 
       // Increment user's tokenVersion
       await User.updateOne(

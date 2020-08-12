@@ -23,6 +23,7 @@
      - [[#authentication][Authentication]]
      - [[#mongodb][MongoDB]]
      - [[#redis][Redis]]
+     - [[#logging][Logging]]
      - [[#dependencies][Dependencies]]
      - [[#testing][Testing]]
    - [[#contributors][Contributors]]

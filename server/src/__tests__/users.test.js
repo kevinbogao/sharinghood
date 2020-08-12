@@ -213,7 +213,7 @@ describe('[Query.users]', () => {
 
 /* USERS MUTATION */
 describe('[Mutation.users]', () => {
-  // login mutation { isMigrated: true }
+  // LOGIN MUTATION { isMigrated: true }
   it('Login migrated user ', async () => {
     const LOGIN = gql`
       mutation Login($email: String!, $password: String!) {
@@ -260,7 +260,7 @@ describe('[Mutation.users]', () => {
     });
   });
 
-  // login mutation { isMigrated: false }
+  // LOGIN MUTATION { isMigrated: false }
   it('Login unmigrated user ', async () => {
     const LOGIN = gql`
       mutation Login($email: String!, $password: String!) {
@@ -377,6 +377,34 @@ describe('[Mutation.users]', () => {
     expect(res.errors[0].message).toEqual(
       'AuthenticationError: password: Invalid credentials'
     );
+  });
+
+  // LOGOUT MUTATION
+  it('logout user ', async () => {
+    const LOGOUT = gql`
+      mutation {
+        logout
+      }
+    `;
+
+    const { server } = constructTestServer({
+      context: () => ({
+        user: {
+          userId: mockUser01._id.toString(),
+          tokenVersion: mockUser01.tokenVersion,
+        },
+      }),
+    });
+
+    const { mutate } = createTestClient(server);
+    const res = await mutate({ mutation: LOGOUT });
+
+    expect(res.data.logout).toBeTruthy();
+
+    const user = await User.findById(mockUser01._id.toString());
+
+    // User's token version should be incremented
+    expect(user.tokenVersion).toEqual(mockUser01.tokenVersion + 1);
   });
 
   // REGISTER_AND_OR_CREATE_COMMUNITY MUTATION FOR USER & COMMUNITY
@@ -584,7 +612,10 @@ describe('[Mutation.users]', () => {
   // TOKEN_REFRESH MUTATION { token }
   it("Refresh user's accessToken", async () => {
     const refreshToken = sign(
-      { userId: mockUser01._id.toString() },
+      {
+        userId: mockUser01._id.toString(),
+        tokenVersion: mockUser01.tokenVersion,
+      },
       process.env.JWT_SECRET,
       {
         expiresIn: '7d',
@@ -621,6 +652,36 @@ describe('[Mutation.users]', () => {
     expect(refreshTokenPayload).toMatchObject({
       userId: mockUser01._id.toString(),
     });
+  });
+
+  // TOKEN_REFRESH MUTATION { token }
+  it("Refresh user's accessToken with revoked refreshToken", async () => {
+    const refreshToken = sign(
+      {
+        userId: mockUser01._id.toString(),
+        tokenVersion: mockUser01.tokenVersion - 1,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '7d',
+      }
+    );
+
+    // Create an instance of ApolloServer
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id } }),
+    });
+
+    // Create test interface
+    const { mutate } = createTestClient(server);
+    const res = await mutate({
+      mutation: TOKEN_REFRESH,
+      variables: { token: refreshToken },
+    });
+
+    expect(res.errors[0].message).toEqual(
+      'AuthenticationError: Please login again'
+    );
   });
 
   // TOKEN_REFRESH MUTATION { token }

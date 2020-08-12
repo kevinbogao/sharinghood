@@ -284,7 +284,7 @@
     | ~notificationId~ | true     | ~ID~ | Specify a notification |
 
 ** Authentication
-   The ~accesstoken~ and ~refreshToken~ [[https://jwt.io/][JSON Web Token]]s are generated and send to client on authentication success. The ~accesstoken~ contains user's *id*, *name*, *email*, and other user related information, and it has a life span of 1 hour. The ~refreshtoken~ contains user's *id* only, and is used to re-generated a new ~accesstoken~ when the ~accesstoken~ is expired. The ~refreshtoken~ expires in 7 days, and it is re-generated when the ~accesstoken~ is being re-generated.
+   The ~accesstoken~ and ~refreshToken~ [[https://jwt.io/][JSON Web Token]]s are generated and send to client on authentication success. The ~accesstoken~ contains user's *id*, *name*, *email*, and other user related information, and it has a life span of 1 hour. The ~refreshtoken~ contains user's *id* and its version number, and is used to re-generated a new ~accesstoken~ when the ~accesstoken~ is expired, during which the refreshtoken's version number will be checked against what is stored in the database for the user. Should there be discrepancy between the refreshtoken's version number and user's ~tokenVersion~, the refresh process will be rejected. The ~refreshtoken~ expires in 7 days, and it is re-generated when the ~accesstoken~ is being re-generated. The user's ~tokenversion~ will be incremented on logout.
 
    All the resolvers, apart from the ~community~ /query/ and the ~createcommunity~ /mutation/, are protected from unauthrised access. The ~accesstoken~ is send to the server from the client and is validated; its contents is passed as context to subsequent resolvers. An ~AuthenticationError~ is thrown should the validation fails.
 

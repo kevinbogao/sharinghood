@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useHistory, Link, NavLink } from 'react-router-dom';
-import { gql, useQuery, useApolloClient } from '@apollo/client';
+import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBars,
@@ -41,6 +41,12 @@ const GET_COMMUNITY = gql`
   }
 `;
 
+const LOGOUT = gql`
+  mutation {
+    logout
+  }
+`;
+
 function Navbar() {
   const node = useRef();
   const history = useHistory();
@@ -59,6 +65,9 @@ function Navbar() {
     variables: { communityId: selCommunityId },
     onError: () => {},
   });
+
+  // Revoke user's refreshToken
+  const [logout] = useMutation(LOGOUT);
 
   function handleClickOutside(e) {
     if (node.current.contains(e.target)) {
@@ -160,6 +169,9 @@ function Navbar() {
                 className="nav-icon"
                 icon={faSignOutAlt}
                 onClick={async () => {
+                  // revoke refreshToken
+                  await logout();
+
                   // Clear localStorage
                   localStorage.removeItem('@sharinghood:accessToken');
                   localStorage.removeItem('@sharinghood:refreshToken');

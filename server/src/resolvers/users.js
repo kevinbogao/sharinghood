@@ -1,4 +1,4 @@
-const { AuthenticationError } = require('apollo-server');
+const { AuthenticationError, ForbiddenError } = require('apollo-server');
 const crypto = require('crypto');
 const bcryptjs = require('bcryptjs');
 const mongoose = require('mongoose');
@@ -93,6 +93,19 @@ const usersResolvers = {
       } catch (err) {
         throw new Error(err);
       }
+    },
+    logout: async (_, __, { user }) => {
+      if (!user) throw new ForbiddenError('Not authorized!');
+
+      // Increment user's tokenVersion
+      await User.updateOne(
+        { _id: user.userId },
+        {
+          $inc: { tokenVersion: 1 },
+        }
+      );
+
+      return true;
     },
     registerAndOrCreateCommunity: async (
       _,
@@ -228,6 +241,11 @@ const usersResolvers = {
 
         // Find user by id
         const user = await User.findOne({ _id: tokenPayload.userId });
+
+        // Throw auth error if token's verison is not the same as user's tokenVersion
+        if (tokenPayload.tokenVersion !== user.tokenVersion) {
+          throw new AuthenticationError('Please login again');
+        }
 
         // Refresh accessToken & refreshToken
         const { accessToken, refreshToken } = generateTokens(user);

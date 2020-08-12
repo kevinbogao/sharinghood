@@ -8,9 +8,13 @@ function generateTokens(user) {
   //   { httpOnly: true }
   // );
 
-  const refreshToken = sign({ userId: user._id }, process.env.JWT_SECRET, {
-    expiresIn: '7d',
-  });
+  const refreshToken = sign(
+    { userId: user._id, tokenVersion: user.tokenVersion },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: '7d',
+    }
+  );
 
   const accessToken = sign(
     {

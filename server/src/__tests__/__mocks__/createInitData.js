@@ -159,6 +159,7 @@ const mockUser01 = {
     mockNotification02Id,
     mockNotification03Id,
   ],
+  tokenVersion: 1,
   fcmTokens: [
     fcmToken,
     'dMsiI1VO70YG76TGDW-4Af:APA91bGqGoCM9Fb5dQO3DTbBuxs00L_k4affEvRLljQXvKm10-I9hC52vbhoKURQJr_jZRkGG3BwZaVyqdiHfwbWWqTvaOxbjiEi2A0NQXiprgGrS9NgCOzaRIpmT_-7akNVbUC-4Zq1',
@@ -181,6 +182,7 @@ const mockUser02 = {
   posts: [],
   requests: [],
   notifications: [],
+  tokenVersion: 2,
   fcmTokens: [
     'eaVVtXxlCZnrVcTmw6s1uV:APA91bEr4EHQEnOlRKcqeXL1HbGbg9HH7l1NdQGCxlC3-0JIbVg5z3EoWEMRfn5xSempGurM1U_a3Kf799nUwElNZM_9JEOmWsTkLiZ5MQYjKLbSvMUS9yKjLXJ0byBRV2HuJvR_x42J',
     'emri_JNEXkt4D3ESOv0eBG:APA91bG6FqfeM47Jgsxuyl8wBskbSt_eGykjdAc2SEv4Zo0OdZAbSzAA1LQtIw9AdP3gyiRg8zpV37pFtC_jFk47XMubUI0uRcOahks21H74R0ZpMidgKrNXL-6s7kFboTBk0Yg8xH_-',
@@ -208,6 +210,7 @@ const mockUser03 = {
     mockNotification02Id,
     mockNotification03Id,
   ],
+  tokenVersion: 3,
   fcmTokens: [
     'e2KbLgvzp6qr-lNYAZDfFI:APA91bHgYnyDiyrgDaHvioLLiENO__HsuSqnNx4Iu5rM7UpSTvzG6dwOK9iic8P7tcHKJeZaPEjn4rij1SX40UEnbktZPFRmgVHUPEhulsVPpYNwi8iM5VCcylbM44okZYaN8Xa-KTjk',
     'dfG41HAyWWi-4XEJ_1xm49:APA91bFq_Wix0Fg9ARoqiCJvtq8lsjmJrHCnEC8V4EdZ5mR35YG8quF3NYnGBi82x2Z_eNO-qSMyVqBP8XAoM-Ib21TJ3BizP5B6_gnqMUml2My4HJMdIeLTxUOB_0cXnWYqnj4LSHL6',

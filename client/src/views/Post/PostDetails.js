@@ -178,7 +178,7 @@ function PostDetails({ communityId, match, history }) {
     <Spinner />
   ) : error ? (
     `Error! ${error.message}`
-  ) : data.post ? (
+  ) : data?.post ? (
     <div className="item-control">
       <ItemDetails
         item={data.post}

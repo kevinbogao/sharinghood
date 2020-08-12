@@ -44,6 +44,14 @@ afterAll(async () => {
   await inMemoryDb.close();
 });
 
+const FIND_NOTIFICATION = gql`
+  query FindNotification($recipientId: ID!, $communityId: ID!) {
+    findNotification(recipientId: $recipientId, communityId: $communityId) {
+      _id
+    }
+  }
+`;
+
 const CREATE_NOTIFICATION = gql`
   mutation CreateNotification($notificationInput: NotificationInput) {
     createNotification(notificationInput: $notificationInput) {
@@ -341,6 +349,62 @@ describe('[Query.notifications]', () => {
         }),
       ])
     );
+  });
+
+  // FIND_NOTIFICATION { recipientId, communityId },
+  it('Find existing chat notification', async () => {
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id.toString() } }),
+    });
+
+    const { query } = createTestClient(server);
+    const res = await query({
+      query: FIND_NOTIFICATION,
+      variables: {
+        recipientId: mockUser03._id.toString(),
+        communityId: mockCommunity01._id.toString(),
+      },
+    });
+
+    expect(res.data.findNotification).toMatchObject({
+      _id: mockNotification01._id.toString(),
+    });
+  });
+
+  // FIND_NOTIFICATION { recipientId, communityId },
+  it('Find existing chat notification with wrong communityId', async () => {
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id.toString() } }),
+    });
+
+    const { query } = createTestClient(server);
+    const res = await query({
+      query: FIND_NOTIFICATION,
+      variables: {
+        recipientId: mockUser03._id.toString(),
+        communityId: mockCommunity02._id.toString(),
+      },
+    });
+
+    expect(res.data.findNotification).toBeNull();
+  });
+
+  // FIND_NOTIFICATION { recipientId, communityId },
+  it('Find existing chat notification with wrong recipientId', async () => {
+    const { server } = constructTestServer({
+      context: () => ({ user: { userId: mockUser01._id.toString() } }),
+    });
+
+    const { query } = createTestClient(server);
+    const res = await query({
+      query: FIND_NOTIFICATION,
+      variables: {
+        recipientId: mockUser02._id.toString(),
+        communityId: mockCommunity01._id.toString(),
+      },
+    });
+
+    expect(res.data.findNotification).toBeNull();
   });
 });
 

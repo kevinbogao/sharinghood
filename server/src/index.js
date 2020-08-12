@@ -4,6 +4,7 @@ const Redis = require('ioredis');
 const mongoose = require('mongoose');
 const typeDefs = require('./typeDefs');
 const resolvers = require('./resolvers');
+const logger = require('./utils/loggger');
 const { verifyToken } = require('./utils/authToken');
 
 // Create redis instance
@@ -13,6 +14,43 @@ const redis = new Redis(process.env.REDIS_URL);
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  engine: {
+    reportSchema: true,
+    debugPrintReports: true,
+  },
+  plugins: [
+    {
+      // Log server request
+      requestDidStart() {
+        return {
+          willSendResponse(requestContext) {
+            // Log error if errors are encountered
+            if (requestContext.response.errors) {
+              logger.log(
+                'error',
+                `Request for ${requestContext.request.operationName}`,
+                {
+                  query: requestContext.request.query,
+                  variables: requestContext.request.variables,
+                  error: requestContext.response.errors[0].message,
+                }
+              );
+              // Log request
+            } else {
+              logger.log(
+                'info',
+                `Request for ${requestContext.request.operationName}`,
+                {
+                  query: requestContext.request.query,
+                  variables: requestContext.request.variables,
+                }
+              );
+            }
+          },
+        };
+      },
+    },
+  ],
   context: async ({ req, connection }) => {
     // Subscription context
     if (connection) {

@@ -12,9 +12,7 @@ function pbkdf2Verify(password, hash) {
 
     // Compare hash key with derivedKey
     crypto.pbkdf2(password, salt, iterations, 32, digest, (err, derivedKey) => {
-      if (err) {
-        reject(err);
-      }
+      if (err) reject(err);
       resolve(derivedKey.toString('base64') === key);
     });
   });

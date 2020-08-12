@@ -23,7 +23,6 @@ chrome-user-data
 *.swp
 *.swo
 *.env
-*.env-cmdrc.json
 *.http
 nodemon.json
 

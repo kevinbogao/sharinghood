@@ -152,8 +152,7 @@ const activitiesResolvers = {
           bookings,
         };
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
   },

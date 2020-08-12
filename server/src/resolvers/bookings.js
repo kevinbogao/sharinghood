@@ -81,7 +81,6 @@ const bookingsResolvers = {
 
         return booking;
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     },

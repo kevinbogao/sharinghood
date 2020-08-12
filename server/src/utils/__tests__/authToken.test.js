@@ -2,6 +2,11 @@ const { sign, verify } = require('jsonwebtoken');
 const { generateTokens, verifyToken } = require('../authToken');
 const { mockUser01 } = require('../../__tests__/__mocks__/createInitData');
 
+// Set enviorment variables
+beforeAll(() => {
+  process.env = Object.assign(process.env, { JWT_SECRET: 'secret' });
+});
+
 /* AUTH_TOKEN UTILS */
 describe('[Utils.authToken]', () => {
   // GENERATE_TOKENS
@@ -58,6 +63,12 @@ describe('[Utils.authToken]', () => {
     expect(refreshTokenPayload).toMatchObject({
       userId: mockUser01._id.toString(),
     });
+  });
+
+  // VERIFY_TOKEN
+  it('Should return null for if token is not given', () => {
+    const undefinedTokenPayload = verifyToken();
+    expect(undefinedTokenPayload).toBeNull();
   });
 
   // VERIFY_TOKEN

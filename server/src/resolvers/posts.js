@@ -46,8 +46,7 @@ const postsResolvers = {
 
         return post[0];
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
     posts: async (_, { communityId }, { user }) => {
@@ -92,8 +91,7 @@ const postsResolvers = {
 
         return communityPosts[0].posts;
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
   },
@@ -200,8 +198,7 @@ const postsResolvers = {
           },
         };
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new Error(err);
       }
     },
     updatePost: async (
@@ -234,7 +231,6 @@ const postsResolvers = {
         const updatedPost = await post.save();
         return updatedPost;
       } catch (err) {
-        // console.log(err);
         throw new Error(err);
       }
     },
@@ -266,7 +262,6 @@ const postsResolvers = {
 
         return true;
       } catch (err) {
-        // console.log(err);
         throw new Error(err);
       }
     },
@@ -351,7 +346,6 @@ const postsResolvers = {
 
         return post;
       } catch (err) {
-        // console.log(err);
         throw new Error(err);
       }
     },
@@ -377,7 +371,6 @@ const postsResolvers = {
 
         return community;
       } catch (err) {
-        // console.log(err);
         throw new Error(err);
       }
     },

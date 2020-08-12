@@ -69,6 +69,10 @@ const userSchema = new Schema(
       required: true,
       default: true,
     },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
     fcmTokens: [String],
   },
   { timestamps: true }

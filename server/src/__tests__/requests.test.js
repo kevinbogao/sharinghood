@@ -291,6 +291,6 @@ describe('[Mutation.requests]', () => {
       variables: { requestId: mockRequest01._id.toString() },
     });
 
-    expect(res.errors[0].message).toEqual('Error: Unauthorized user');
+    expect(res.errors[0].message).toEqual('ForbiddenError: Unauthorized user');
   });
 });

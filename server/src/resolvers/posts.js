@@ -1,4 +1,4 @@
-const { AuthenticationError } = require('apollo-server');
+const { AuthenticationError, ForbiddenError } = require('apollo-server');
 const mongoose = require('mongoose');
 const User = require('../models/user');
 const Post = require('../models/post');
@@ -214,7 +214,7 @@ const postsResolvers = {
 
         // Throw error if user is not creator
         if (!post._doc.creator.equals(user.userId)) {
-          throw new Error('Unauthorized user');
+          throw new ForbiddenError('Unauthorized user');
         }
 
         // Upload image if it exists
@@ -246,7 +246,7 @@ const postsResolvers = {
 
         // Throw error if user is not post creator
         if (!post.creator.equals(currentUser._id)) {
-          throw new Error('Unauthorized user');
+          throw new ForbiddenError('Unauthorized user');
         }
 
         // Find user's communities and remove post from
@@ -277,7 +277,7 @@ const postsResolvers = {
 
         // Throw error if user is not post creator
         if (!post.creator.equals(user.userId)) {
-          throw new Error('Unauthorized user');
+          throw new ForbiddenError('Unauthorized user');
         }
 
         // Save thread ids array
@@ -362,7 +362,7 @@ const postsResolvers = {
 
         // Throw error if user is not post creator
         if (!post.creator.equals(user.userId)) {
-          throw new Error('Unauthorized user');
+          throw new ForbiddenError('Unauthorized user');
         }
 
         // Add post to community & save community

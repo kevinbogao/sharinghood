@@ -255,7 +255,7 @@ const typeDefs = gql`
     ): AuthAndOrCommunity!
 
     # Community
-    createCommunity(communityInput: CommunityInput!): Community!
+    createCommunity(communityInput: CommunityInput!): Community
     joinCommunity(communityId: ID!): Community
 
     # Post

@@ -24,7 +24,8 @@ function generateTokens(user) {
       ...(user.isAdmin && { isAdmin: true }),
     },
     process.env.JWT_SECRET,
-    { expiresIn: '1h' }
+    { expiresIn: '10s' }
+    // { expiresIn: '1h' }
   );
 
   // Return accessToken & refreshToken

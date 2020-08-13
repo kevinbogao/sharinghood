@@ -104,7 +104,6 @@ const client = new ApolloClient({
 
         return true;
       },
-
       fetchAccessToken: async () => {
         const res = await fetch(process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP, {
           method: 'POST',
@@ -112,10 +111,10 @@ const client = new ApolloClient({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             query: `
-          mutation TokenRefresh($token: String!) {
+              mutation TokenRefresh($token: String!) {
                 tokenRefresh(token: $token) {
                   accessToken
-                  refreshToken
+                  refreshToke
                 }
               }
             `,

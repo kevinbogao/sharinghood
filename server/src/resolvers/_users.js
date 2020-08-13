@@ -1,4 +1,4 @@
-const { AuthenticationError } = require('apollo-server');
+const { AuthenticationError, ForbiddenError } = require('apollo-server');
 const crypto = require('crypto');
 const bcryptjs = require('bcryptjs');
 const mongoose = require('mongoose');
@@ -9,7 +9,6 @@ const sendMail = require('../utils/sendMail/index');
 const pbkdf2Verify = require('../utils/pbkdf2Verify');
 const newAccountMail = require('../utils/sendMail/newAccountMail');
 const newCommunityMail = require('../utils/sendMail/newCommunityMail');
-const handleErrors = require('../utils/handleErrors');
 const { generateTokens, verifyToken } = require('../utils/authToken');
 
 const usersResolvers = {
@@ -51,44 +50,49 @@ const usersResolvers = {
   },
   Mutation: {
     login: async (_, { email, password }) => {
-      // Get user by email
-      const user = await User.findOne({ email });
-      if (!user) throw new AuthenticationError('email: User not found');
+      try {
+        // Get user
+        const user = await User.findOne({ email });
+        // if (!user) throw new AuthenticationError('User does not exist');
+        if (!user) throw new Error('email: User not found');
 
-      // Re-hash user password if user is not migrated
-      if (!user.isMigrated) {
-        const isPasswordValid = await pbkdf2Verify(password, user.password);
+        // Re-hash user password if user is not migrated
+        if (!user.isMigrated) {
+          const isPasswordValid = await pbkdf2Verify(password, user.password);
 
-        // Re-hash password with bcryptjs if password if valid
-        if (isPasswordValid) {
-          const hashedPassword = await bcryptjs.hash(password, 12);
+          // Re-hash password with bcryptjs if password if valid
+          if (isPasswordValid) {
+            const hashedPassword = await bcryptjs.hash(password, 12);
 
-          // Update user password & migration status
-          user.password = hashedPassword;
-          user.isMigrated = true;
+            // Update user password & migration status
+            user.password = hashedPassword;
+            user.isMigrated = true;
 
-          // Throw auth error if password is invalid
+            // Throw auth error if password is invalid
+          } else {
+            throw new AuthenticationError('password: Invalid credentials');
+          }
+
+          // If user is migrated
         } else {
-          throw new AuthenticationError('password: Invalid credentials');
+          // Check user password
+          const isEqual = await bcryptjs.compare(password, user.password);
+          if (!isEqual) {
+            throw new AuthenticationError('password: Invalid credentials');
+          }
         }
 
-        // If user is migrated
-      } else {
-        // Check user password
-        const isEqual = await bcryptjs.compare(password, user.password);
-        if (!isEqual) {
-          throw new AuthenticationError('password: Invalid credentials');
-        }
+        // Sign accessToken & refreshToken
+        const { accessToken, refreshToken } = generateTokens(user);
+
+        // Update user's last login date
+        user.lastLogin = new Date();
+        await user.save();
+
+        return { accessToken, refreshToken };
+      } catch (err) {
+        throw new Error(err);
       }
-
-      // Sign accessToken & refreshToken
-      const { accessToken, refreshToken } = generateTokens(user);
-
-      // Update user's last login date
-      user.lastLogin = new Date();
-      await user.save();
-
-      return { accessToken, refreshToken };
     },
     logout: async (_, __, { user }) => {
       if (!user) return false;
@@ -122,9 +126,7 @@ const usersResolvers = {
       try {
         // Get user and check if email exists
         const existingUser = await User.findOne({ email }).lean();
-        if (existingUser) {
-          throw new AuthenticationError('email: User exist already');
-        }
+        if (existingUser) throw new Error('User exist already');
 
         // Hash password & upload image to Cloudinary
         const [hashedPassword, imgData] = await Promise.all([
@@ -196,8 +198,7 @@ const usersResolvers = {
           ...(isCreator && { community }),
         };
       } catch (err) {
-        handleErrors(err);
-        throw err;
+        throw new Error(err);
       }
     },
     updateUser: async (
@@ -205,8 +206,8 @@ const usersResolvers = {
       { userInput: { name, image, apartment } },
       { user }
     ) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
       const { userId } = user;
+      if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
         // Get user from database
@@ -255,8 +256,7 @@ const usersResolvers = {
 
         return { accessToken, refreshToken };
       } catch (err) {
-        handleErrors(err);
-        throw err;
+        throw new Error(err);
       }
     },
     forgotPassword: async (_, { email }, { redis }) => {
@@ -268,7 +268,7 @@ const usersResolvers = {
         ]);
 
         // Throw error if user is not found
-        if (!user) throw new AuthenticationError('email: User not found');
+        if (!user) throw new Error('email: User not found');
 
         // Create and send reset password link to email if existing resetkey is not found
         if (!existingResetKey) {
@@ -303,8 +303,7 @@ const usersResolvers = {
 
         return true;
       } catch (err) {
-        handleErrors(err);
-        throw err;
+        throw new Error(err);
       }
     },
     resetPassword: async (_, { resetKey, password }, { redis }) => {

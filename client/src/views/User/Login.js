@@ -51,10 +51,7 @@ function Login({ history, location }) {
     },
     onError: ({ message }) => {
       const errMsgArr = message.split(': ');
-      const errMsgArrLen = errMsgArr.length;
-      setError({
-        [errMsgArr[errMsgArrLen - 2]]: errMsgArr[errMsgArrLen - 1],
-      });
+      setError({ [errMsgArr[0]]: errMsgArr[1] });
     },
   });
 

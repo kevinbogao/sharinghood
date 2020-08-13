@@ -1,4 +1,4 @@
-const { AuthenticationError, ForbiddenError } = require('apollo-server');
+const { AuthenticationError } = require('apollo-server');
 const mongoose = require('mongoose');
 const User = require('../models/user');
 const Community = require('../models/community');

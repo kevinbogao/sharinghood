@@ -143,7 +143,7 @@ function RequestDetails({ communityId, match, history }) {
     <Spinner />
   ) : error ? (
     `Error! ${error.message}`
-  ) : data.request ? (
+  ) : data?.request ? (
     <div className="item-control">
       <ItemDetails
         item={data.request}

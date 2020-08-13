@@ -361,7 +361,7 @@ describe('[Mutation.posts]', () => {
       variables: { postInput },
     });
 
-    expect(res.errors[0].message).toEqual('Error: Unauthorized user');
+    expect(res.errors[0].message).toEqual('ForbiddenError: Unauthorized user');
   });
 
   // INACTIVATE_POST MUTATION { postId }
@@ -406,7 +406,7 @@ describe('[Mutation.posts]', () => {
       variables: { postId: mockPost01._id.toString() },
     });
 
-    expect(res.errors[0].message).toEqual('Error: Unauthorized user');
+    expect(res.errors[0].message).toEqual('ForbiddenError: Unauthorized user');
   });
 
   // DELETE_POST MUTATION { postId }
@@ -483,7 +483,7 @@ describe('[Mutation.posts]', () => {
       variables: { postId: mockPost01._id.toString() },
     });
 
-    expect(res.errors[0].message).toEqual('Error: Unauthorized user');
+    expect(res.errors[0].message).toEqual('ForbiddenError: Unauthorized user');
   });
 
   // ADD_POST_TO_COMMUNITY Mutation
@@ -527,6 +527,6 @@ describe('[Mutation.posts]', () => {
       },
     });
 
-    expect(res.errors[0].message).toEqual('Error: Unauthorized user');
+    expect(res.errors[0].message).toEqual('ForbiddenError: Unauthorized user');
   });
 });

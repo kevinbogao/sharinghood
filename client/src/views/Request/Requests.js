@@ -24,8 +24,38 @@ const GET_REQUESTS = gql`
   }
 `;
 
+const GET_REQUEST = gql`
+  query Request($requestId: ID!) {
+    request(requestId: $requestId) {
+      _id
+      title
+      desc
+      image
+      dateNeed
+      dateReturn
+      creator {
+        _id
+        name
+        image
+        apartment
+        createdAt
+      }
+      threads {
+        _id
+        content
+        poster {
+          _id
+        }
+        community {
+          _id
+        }
+      }
+    }
+  }
+`;
+
 function Requests({ communityId }) {
-  const { loading, error, data } = useQuery(GET_REQUESTS, {
+  const { loading, error, data, client } = useQuery(GET_REQUESTS, {
     skip: !communityId,
     variables: { communityId },
     onError: ({ message }) => {
@@ -38,13 +68,19 @@ function Requests({ communityId }) {
   ) : error ? (
     `Error! ${error.message}`
   ) : (
-    <ItemsGrid isPost={false}>
+    <ItemsGrid isPost={false} client={client} communityId={communityId}>
       {data?.requests.map((request) => (
         <div key={request._id} className="item-card">
           <Link
             to={{
               pathname: `/requests/${request._id}`,
               state: { image: request.image },
+            }}
+            onMouseOver={() => {
+              client.query({
+                query: GET_REQUEST,
+                variables: { requestId: request._id },
+              });
             }}
           >
             <div
@@ -53,7 +89,6 @@ function Requests({ communityId }) {
                 backgroundImage: `url(${JSON.parse(request.image).secure_url})`,
               }}
             />
-            {/* <img alt="item" src={JSON.parse(request.image).secure_url} /> */}
             <div className="item-info">
               <p className="item-title">{request.title}</p>
               <p>by {request.creator.name}</p>

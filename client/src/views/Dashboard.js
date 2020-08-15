@@ -53,7 +53,6 @@ function Dashboard({ location, history }) {
   } = useQuery(GET_TOKEN_PAYLOAD);
   const { loading, error, data } = useQuery(GET_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
-
     onCompleted: ({ totalActivities }) => {
       setCommunitiesActivities(totalActivities.communitiesActivities);
     },

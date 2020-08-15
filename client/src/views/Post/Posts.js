@@ -19,8 +19,38 @@ const GET_POSTS = gql`
   }
 `;
 
+const GET_POST = gql`
+  query Post($postId: ID!) {
+    post(postId: $postId) {
+      _id
+      title
+      desc
+      image
+      condition
+      isGiveaway
+      creator {
+        _id
+        name
+        image
+        apartment
+        createdAt
+      }
+      threads {
+        _id
+        content
+        poster {
+          _id
+        }
+        community {
+          _id
+        }
+      }
+    }
+  }
+`;
+
 function Posts({ communityId }) {
-  const { loading, error, data } = useQuery(GET_POSTS, {
+  const { loading, error, data, client } = useQuery(GET_POSTS, {
     skip: !communityId,
     variables: { communityId },
     onError: ({ message }) => {
@@ -33,13 +63,19 @@ function Posts({ communityId }) {
   ) : error ? (
     `Error ${error.message}`
   ) : (
-    <ItemsGrid isPost>
+    <ItemsGrid isPost client={client} communityId={communityId}>
       {data?.posts?.map((post) => (
         <div key={post._id} className="item-card">
           <Link
             to={{
               pathname: `/shared/${post._id}`,
               state: { image: post.image },
+            }}
+            onMouseOver={() => {
+              client.query({
+                query: GET_POST,
+                variables: { postId: post._id },
+              });
             }}
           >
             <div

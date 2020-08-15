@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { gql, useLazyQuery, useMutation } from '@apollo/client';
+import {
+  gql,
+  useLazyQuery,
+  useMutation,
+  useApolloClient,
+} from '@apollo/client';
 import Modal from 'react-modal';
 import moment from 'moment';
 import Spinner from './Spinner';
@@ -48,6 +53,7 @@ const CREATE_NOTIFICATION = gql`
 `;
 
 function ItemDetails({ history, item, userId, communityId, children }) {
+  const client = useApolloClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [findNotification] = useLazyQuery(FIND_NOTIFICATION, {
     onCompleted: ({ findNotification }) => {
@@ -107,6 +113,15 @@ function ItemDetails({ history, item, userId, communityId, children }) {
                 onClick={(e) => {
                   e.preventDefault();
                   findNotification({
+                    variables: {
+                      recipientId: item.creator._id,
+                      communityId,
+                    },
+                  });
+                }}
+                onMouseOver={() => {
+                  client.query({
+                    query: FIND_NOTIFICATION,
                     variables: {
                       recipientId: item.creator._id,
                       communityId,

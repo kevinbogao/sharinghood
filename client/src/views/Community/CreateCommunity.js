@@ -86,7 +86,8 @@ function CreateCommunity({ history, location }) {
         });
       },
       onError: ({ message }) => {
-        setError({ code: message });
+        const errMsgArr = message.split(': ');
+        setError({ [errMsgArr[0]]: errMsgArr[1] });
       },
     },
   );
@@ -113,7 +114,6 @@ function CreateCommunity({ history, location }) {
           const errors = validate();
           if (Object.keys(errors).length === 0) {
             if (isLoggedIn) {
-              console.log('djsakldj');
               createCommunity({
                 variables: {
                   communityInput: {

@@ -1,7 +1,8 @@
-const { AuthenticationError, ForbiddenError } = require('apollo-server');
+const { AuthenticationError } = require('apollo-server');
 const mongoose = require('mongoose');
-const Community = require('../models/community');
 const User = require('../models/user');
+const Community = require('../models/community');
+const handleErrors = require('../utils/handleErrors');
 
 const communitiesResolvers = {
   Query: {
@@ -82,13 +83,6 @@ const communitiesResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Check if community code exists
-        const existingCode = await Community.findOne({ code });
-
-        if (existingCode) {
-          throw new ForbiddenError('Community code exists already');
-        }
-
         // Create & save community && get user
         const [community, currentUser] = await Promise.all([
           Community.create({
@@ -107,7 +101,8 @@ const communitiesResolvers = {
 
         return community;
       } catch (err) {
-        throw new Error(err);
+        // Throw duplicate error
+        return handleErrors(err);
       }
     },
     joinCommunity: async (_, { communityId }, { user }) => {

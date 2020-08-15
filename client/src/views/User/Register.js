@@ -52,7 +52,7 @@ function Register({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [
     registerAndOrCreateCommunity,
-    { loading: mutationLoading, error: mutationError },
+    { loading: mutationLoading },
   ] = useMutation(REGISTER_AND_OR_CREATE_COMMUNITY, {
     onCompleted: ({ registerAndOrCreateCommunity }) => {
       localStorage.setItem(
@@ -103,7 +103,9 @@ function Register({
       }
     },
     onError: ({ message }) => {
-      console.log(message);
+      const errMsgArr = message.split(': ');
+      setError({ [errMsgArr[0]]: errMsgArr[1] });
+      // console.log(message);
     },
   });
 
@@ -233,7 +235,6 @@ function Register({
         <TermsAndConditions />
       </Modal>
       {mutationLoading && <Spinner isCover />}
-      {mutationError && <p>Error :( Please try again</p>}
       <style jsx>
         {`
           @import './src/assets/scss/index.scss';

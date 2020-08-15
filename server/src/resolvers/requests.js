@@ -1,4 +1,4 @@
-const { AuthenticationError } = require('apollo-server');
+const { AuthenticationError, ForbiddenError } = require('apollo-server');
 const mongoose = require('mongoose');
 const User = require('../models/user');
 const Thread = require('../models/thread');
@@ -189,7 +189,7 @@ const requestsResolvers = {
 
         // Throw error if user is not post creator
         if (!request.creator.equals(user.userId)) {
-          throw new Error('Unauthorized user');
+          throw new ForbiddenError('Unauthorized user');
         }
 
         // Destruct threads from request

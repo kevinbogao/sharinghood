@@ -9,6 +9,7 @@ import {
   ApolloProvider,
   ApolloLink,
 } from '@apollo/client';
+import { onError } from '@apollo/client/link/error';
 import { setContext } from '@apollo/client/link/context';
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { TokenRefreshLink } from 'apollo-link-token-refresh';
@@ -16,7 +17,6 @@ import { getMainDefinition } from '@apollo/client/utilities';
 import jwtDecode from 'jwt-decode';
 import TagManager from 'react-gtm-module';
 import App from './App';
-import * as serviceWorker from './serviceWorker';
 
 // Dotenv config
 require('dotenv').config();
@@ -28,9 +28,6 @@ const TAG_MANAGER_ARGS = {
 
 // Init Google Tag Manager Module
 TagManager.initialize(TAG_MANAGER_ARGS);
-
-// Get accessToken from localStorage
-let accessToken = localStorage.getItem('@sharinghood:accessToken');
 
 // Create an http link
 const httpLink = new HttpLink({
@@ -97,23 +94,18 @@ const client = new ApolloClient({
     new TokenRefreshLink({
       accessTokenField: 'accessToken',
       isTokenValidOrUndefined: () => {
-        if (!accessToken) return true;
+        const accessToken = localStorage.getItem('@sharinghood:accessToken');
 
-        try {
-          // Get expiration data on accessToken
+        if (accessToken) {
           const { exp } = jwtDecode(accessToken);
-
-          // Check if accessToken if expired return false if not
-          // else return true
+          // Return false if accessToken is not expired
           if (Date.now() >= exp * 1000) return false;
-          return true;
-        } catch (err) {
-          return false;
         }
+
+        return true;
       },
-      fetchAccessToken: () => {
-        // Fetch refreshToken from graphql endpoint
-        const response = fetch(process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP, {
+      fetchAccessToken: async () => {
+        const res = await fetch(process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP, {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -122,7 +114,7 @@ const client = new ApolloClient({
               mutation TokenRefresh($token: String!) {
                 tokenRefresh(token: $token) {
                   accessToken
-                  refreshToken
+                  refreshToke
                 }
               }
             `,
@@ -132,35 +124,35 @@ const client = new ApolloClient({
           }),
         });
 
-        // Return response
-        return response;
+        return res.json();
       },
-      handleResponse: () => async (response) => {
-        const { data } = await response.json();
-
-        // Save accessToken to localStorage if it is returned from server
-        if (data) {
+      handleResponse: () => (res) => {
+        if (res.data.tokenRefresh) {
           localStorage.setItem(
             '@sharinghood:accessToken',
-            data.tokenRefresh.accessToken,
+            res.data.tokenRefresh.accessToken,
           );
           localStorage.setItem(
             '@sharinghood:refreshToken',
-            data.tokenRefresh.refreshToken,
+            res.data.tokenRefresh.refreshToken,
           );
-
-          // Update accessToken variable
-          accessToken = data.tokenRefresh.accessToken;
-        } else {
-          // Remove tokens from localStorage
-          localStorage.removeItem('@sharinghood:accessToken');
-          localStorage.removeItem('@sharinghood:refreshToken');
         }
       },
-      handleError: (err) => {
-        console.warn('Your refresh token is invalid. Try to re-login');
-        console.error(err);
+      handleError: () => {
+        console.log('Try to re-login');
       },
+    }),
+    onError(({ graphQLErrors, operation, forward }) => {
+      graphQLErrors.map((err) => {
+        if (err.extensions.code === 'UNAUTHENTICATED') {
+          localStorage.removeItem('@sharinghood:accessToken');
+          localStorage.removeItem('@sharinghood:refreshToken');
+          localStorage.removeItem('@sharinghood:selCommunityId');
+          writeInitialData();
+          return forward(operation);
+        }
+        return forward(operation);
+      });
     }),
     splitLink,
   ]),
@@ -189,6 +181,8 @@ const client = new ApolloClient({
 
 // Default cache values
 function writeInitialData() {
+  const accessToken = localStorage.getItem('@sharinghood:accessToken');
+
   cache.writeQuery({
     query: gql`
       query {
@@ -221,8 +215,3 @@ render(
   </React.StrictMode>,
   document.getElementById('root'),
 );
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();

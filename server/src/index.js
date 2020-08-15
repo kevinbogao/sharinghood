@@ -16,7 +16,7 @@ const server = new ApolloServer({
   resolvers,
   engine: {
     reportSchema: true,
-    debugPrintReports: true,
+    // debugPrintReports: true,
   },
   plugins: [
     {

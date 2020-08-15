@@ -203,4 +203,4 @@ Profile.propTypes = {
   }).isRequired,
 };
 
-export default Profile;
+export { GET_USER, Profile };

@@ -344,7 +344,7 @@ describe('[Mutation.users]', () => {
     });
 
     // Expected error comparison
-    expect(res.errors[0].message).toEqual('Error: email: User not found');
+    expect(res.errors[0].message).toEqual('email: User not found');
   });
 
   // LOGIN MUTATION WITH WRONG PASSWORD
@@ -374,9 +374,7 @@ describe('[Mutation.users]', () => {
     });
 
     // Expected error comparison
-    expect(res.errors[0].message).toEqual(
-      'AuthenticationError: password: Invalid credentials'
-    );
+    expect(res.errors[0].message).toEqual('password: Invalid credentials');
   });
 
   // LOGOUT MUTATION
@@ -679,9 +677,7 @@ describe('[Mutation.users]', () => {
       variables: { token: refreshToken },
     });
 
-    expect(res.errors[0].message).toEqual(
-      'AuthenticationError: Please login again'
-    );
+    expect(res.errors[0].message).toEqual('Please login again');
   });
 
   // TOKEN_REFRESH MUTATION { token }
@@ -706,9 +702,7 @@ describe('[Mutation.users]', () => {
       variables: { token: refreshToken },
     });
 
-    expect(res.errors[0].message).toEqual(
-      'AuthenticationError: Please login again'
-    );
+    expect(res.errors[0].message).toEqual('Please login again');
   });
 
   // FORGOT_PASSWORD MUTATION
@@ -779,7 +773,7 @@ describe('[Mutation.users]', () => {
       variables: { email: 'non.existent@email.com' },
     });
 
-    expect(res.errors[0].message).toEqual('Error: email: User not found');
+    expect(res.errors[0].message).toEqual('email: User not found');
   });
 
   // RESET_PASSWORD MUTATION { resetKey, password }

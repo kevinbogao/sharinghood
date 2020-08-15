@@ -260,7 +260,7 @@ const notificationsResolvers = {
           // Check if chat that contains both user exists and in the given community
           existingChat = await Notification.findOne({
             ofType: 0,
-            participants: [recipientId, user.userId],
+            participants: { $all: [recipientId, user.userId] },
             community: communityId,
           });
 

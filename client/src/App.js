@@ -9,7 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './views/Home';
 import { Posts } from './views/Post/Posts';
 import { Navbar } from './components/Navbar';
-import Profile from './views/User/Profile';
+import { Profile } from './views/User/Profile';
 import Login from './views/User/Login';
 import Register from './views/User/Register';
 import { Requests } from './views/Request/Requests';

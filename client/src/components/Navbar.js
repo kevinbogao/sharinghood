@@ -9,6 +9,7 @@ import {
   faCaretDown,
   faSignOutAlt,
 } from '@fortawesome/free-solid-svg-icons';
+import { GET_USER } from '../views/User/Profile';
 
 const GET_SESSION_DATA = gql`
   query {
@@ -152,6 +153,11 @@ function Navbar() {
                     className="nav-icon"
                     icon={faUser}
                     onClick={() => history.push('/profile')}
+                    onMouseOver={() => {
+                      client.query({
+                        query: GET_USER,
+                      });
+                    }}
                   />
                   <FontAwesomeIcon
                     className="nav-icon"

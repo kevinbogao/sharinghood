@@ -1,18 +1,71 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { gql, useApolloClient } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import Members from './Members';
 
-function ItemsGrid({ isPost, children }) {
+const GET_POSTS = gql`
+  query Posts($communityId: ID!) {
+    posts(communityId: $communityId) {
+      _id
+      title
+      image
+      creator {
+        _id
+        name
+      }
+    }
+  }
+`;
+
+const GET_REQUESTS = gql`
+  query Requests($communityId: ID!) {
+    requests(communityId: $communityId) {
+      _id
+      title
+      desc
+      image
+      dateNeed
+      creator {
+        _id
+        name
+      }
+    }
+  }
+`;
+
+function ItemsGrid({ isPost, children, communityId }) {
+  const client = useApolloClient();
+
   return (
     <div className="items-control">
       <div className="items-switch">
         <button type="button" className={`switch-btn ${isPost && 'active'}`}>
-          <Link to="/find">Items People Share</Link>
+          <Link
+            to="/find"
+            onMouseOver={() => {
+              client.query({
+                query: GET_POSTS,
+                variables: { communityId },
+              });
+            }}
+          >
+            Items People Share
+          </Link>
         </button>
         <div className="switch-btn-separator" />
         <button type="button" className={`switch-btn ${!isPost && 'active'}`}>
-          <Link to="requests">Items People Request</Link>
+          <Link
+            to="requests"
+            onMouseOver={() => {
+              client.query({
+                query: GET_REQUESTS,
+                variables: { communityId },
+              });
+            }}
+          >
+            Items People Request
+          </Link>
         </button>
       </div>
       <div className="items-content">{children}</div>
@@ -105,6 +158,7 @@ function ItemsGrid({ isPost, children }) {
 ItemsGrid.propTypes = {
   isPost: PropTypes.bool.isRequired,
   children: PropTypes.node.isRequired,
+  communityId: PropTypes.string.isRequired,
 };
 
 export default ItemsGrid;

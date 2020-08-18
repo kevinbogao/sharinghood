@@ -14,14 +14,20 @@ const requestSchema = new Schema(
       type: String,
       required: true,
     },
-    dateNeed: {
-      type: Date,
+
+    // 0: asap
+    // 1: any
+    // 2: need & return
+    dateType: {
+      type: Number,
       required: true,
     },
-    dateReturn: {
-      type: Date,
-      required: true,
-    },
+
+    // dateNeed & dateReturn are not needed for
+    // date type 0 & 1
+    dateNeed: Date,
+    dateReturn: Date,
+
     creator: {
       type: Schema.Types.ObjectId,
       ref: 'User',

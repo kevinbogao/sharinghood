@@ -108,7 +108,6 @@ const CREATE_NOTIFICATION = gql`
 
 function PostDetails({ communityId, match, history }) {
   const [comment, setComment] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [dateType, setDateType] = useState(0);
   const [dateNeed, setDateNeed] = useState(moment());
@@ -156,23 +155,6 @@ function PostDetails({ communityId, match, history }) {
       },
     },
   );
-
-  // Set isMobile boolean value based on window width
-  useEffect(() => {
-    // Set isMobile on init
-    setIsMobile(window.matchMedia('(max-width: 576px)').matches);
-
-    // Set isMobile on screen size
-    function handleWindowResize() {
-      setIsMobile(window.matchMedia('(max-width: 576px)').matches);
-    }
-
-    // Event listener for screen resizing
-    window.addEventListener('resize', handleWindowResize);
-
-    // Return a function from the effect that removes the event listener
-    return () => window.removeEventListener('resize', handleWindowResize);
-  }, []);
 
   return loading ? (
     <Spinner />
@@ -226,25 +208,14 @@ function PostDetails({ communityId, match, history }) {
         isOpen={isBookingOpen}
         onRequestClose={() => setIsBookingOpen(false)}
       >
-        <p className="main-p">When do you need the item?</p>
-        <select name="dateType" onChange={(e) => setDateType(+e.target.value)}>
-          <option value="0">As soon as possible</option>
-          <option value="1">No timeframe</option>
-          <option value="2">Select timeframe</option>
-        </select>
-        {dateType === 2 && (
-          <>
-            <p className="main-p">By when do you need it?</p>
-            <DatePicker
-              isVertical
-              isMobile={isMobile}
-              dateNeed={dateNeed}
-              dateReturn={dateReturn}
-              setDateNeed={setDateNeed}
-              setDateReturn={setDateReturn}
-            />
-          </>
-        )}
+        <DatePicker
+          dateType={dateType}
+          dateNeed={dateNeed}
+          dateReturn={dateReturn}
+          setDateType={setDateType}
+          setDateNeed={setDateNeed}
+          setDateReturn={setDateReturn}
+        />
         <button
           className="main-btn modal"
           type="submit"
@@ -401,23 +372,6 @@ function PostDetails({ communityId, match, history }) {
                 flex: 2;
               }
             }
-          }
-        `}
-      </style>
-      <style jsx global>
-        {`
-          @import './src/assets/scss/index.scss';
-
-          select {
-            font-size: 18px;
-            padding-left: 10px;
-            color: #a0998f;
-            width: 300px;
-            height: 40px;
-            border-width: 0px;
-            background: $grey-000;
-            border-radius: 4px;
-            margin-bottom: 12px;
           }
         `}
       </style>

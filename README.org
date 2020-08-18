@@ -114,10 +114,11 @@
 
 ** Query
 *** Users
-    ~user~ - Get current user or a specific & user posts
-    | Arguments | Required | Type | Description            |
-    |-----------+----------+------+------------------------|
-    | ~userId~  | false    | ~ID~ | Select a specific user |
+    ~user~ - Get current user or a specific user and the user's posts
+    | Arguments     | Required | Type | Description                                                             |
+    |---------------+----------+------+-------------------------------------------------------------------------|
+    | ~userId~      | false    | ~ID~ | Select a specific user; return only posts from given community if given |
+    | ~communityId~ | false    | ~ID~ | select a specific community for user's posts                            |
 
     ~validateResetLink~ - Check user password reset link validity
     | Arguments  | Required | Type     | Description                |
@@ -203,7 +204,7 @@
     | Arguments        | Required | Type             | Description                                                    |
     |------------------+----------+------------------+----------------------------------------------------------------|
     | ~userInput~      | true     | ~UserInput~      | Various ~User~ type input data                                 |
-    | ~communityInput~ | false    | ~CommunityInput~ | Various ~Community~ type input data; Create community if given |
+    | ~communityInput~ | false    | ~CommunityInput~ | Various ~Community~ type input data; create community if given |
 
 *** Communities
     ~createCommunity~ - Create community and save user as community creator

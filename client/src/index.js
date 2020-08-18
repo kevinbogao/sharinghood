@@ -114,7 +114,7 @@ const client = new ApolloClient({
               mutation TokenRefresh($token: String!) {
                 tokenRefresh(token: $token) {
                   accessToken
-                  refreshToke
+                  refreshToken
                 }
               }
             `,
@@ -139,7 +139,7 @@ const client = new ApolloClient({
         }
       },
       handleError: () => {
-        console.log('Try to re-login');
+        console.log('Try to login again');
       },
     }),
     onError(({ graphQLErrors, operation, forward }) => {

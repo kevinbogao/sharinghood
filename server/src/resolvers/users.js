@@ -14,18 +14,44 @@ const { generateTokens, verifyToken } = require('../utils/authToken');
 
 const usersResolvers = {
   Query: {
-    user: async (_, __, { user }) => {
+    user: async (_, { userId, communityId }, { user }) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
+        let posts;
+
+        // Get the community's posts if userId is given
+        if (userId) {
+          const community = await Community.findById(communityId);
+          posts = community.posts;
+        }
+
         // Get user data && get user posts & notifications
+        // If userId is given only match user's posts from given community
         const userData = await User.aggregate([
-          { $match: { _id: mongoose.Types.ObjectId(user.userId) } },
+          { $match: { _id: mongoose.Types.ObjectId(userId || user.userId) } },
           {
             $lookup: {
               from: 'posts',
-              localField: 'posts',
-              foreignField: '_id',
+              let: { posts: '$posts' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      ...(userId
+                        ? // Match post id in user's posts and community's posts is userId is given
+                          {
+                            $and: [
+                              { $in: ['$_id', '$$posts'] },
+                              { $in: ['$_id', posts] },
+                            ],
+                          }
+                        : // Else only match ids in user's posts
+                          { $in: ['$_id', '$$posts'] }),
+                    },
+                  },
+                },
+              ],
               as: 'posts',
             },
           },

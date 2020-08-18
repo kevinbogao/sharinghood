@@ -15,6 +15,7 @@ const GET_REQUESTS = gql`
       title
       desc
       image
+      dateType
       dateNeed
       creator {
         _id
@@ -95,7 +96,11 @@ function Requests({ communityId }) {
               <div className="item-needed-on">
                 <FontAwesomeIcon className="item-icons" icon={faClock} />
                 <span className="item-user">
-                  {moment(+request.dateNeed).format('MMM DD')}
+                  {request.dateType === 0
+                    ? 'ASAP'
+                    : request.dateType === 1
+                    ? 'Anytime'
+                    : moment(+request.dateNeed).format('MMM DD')}
                 </span>
               </div>
             </div>

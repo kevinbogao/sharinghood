@@ -94,6 +94,7 @@ const typeDefs = gql`
     title: String
     desc: String
     image: String
+    dateType: Int
     dateNeed: String
     dateReturn: String
     creator: User
@@ -106,8 +107,9 @@ const typeDefs = gql`
     title: String!
     desc: String!
     image: String!
-    dateNeed: String!
-    dateReturn: String!
+    dateType: Int!
+    dateNeed: String
+    dateReturn: String
   }
 
   # Threads

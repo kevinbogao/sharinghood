@@ -19,6 +19,7 @@ const GET_REQUEST = gql`
       title
       desc
       image
+      dateType
       dateNeed
       dateReturn
       creator {
@@ -154,18 +155,33 @@ function RequestDetails({ communityId, match, history }) {
         <div className="item-desc">
           <h3>{data.request.title}</h3>
           <p className="main-p">{data.request.desc}</p>
-          <div className="item-misc">
-            <FontAwesomeIcon className="item-icon" icon={faClock} />
-            <span>
-              Date Needed: {moment(+data.request.dateNeed).format('MMM DD')}
-            </span>
-          </div>
-          <div className="item-misc">
-            <FontAwesomeIcon className="item-icon" icon={faUserClock} />
-            <span>
-              Needed until: {moment(+data.request.dateReturn).format('MMM DD')}
-            </span>
-          </div>
+          {data.request.dateType === 0 ? (
+            <div className="item-misc">
+              <FontAwesomeIcon className="item-icon" icon={faClock} />
+              <span>As soon as possible</span>
+            </div>
+          ) : data.request.dateType === 1 ? (
+            <div className="item-misc">
+              <FontAwesomeIcon className="item-icon" icon={faClock} />
+              <span>No timeframe</span>
+            </div>
+          ) : (
+            <>
+              <div className="item-misc">
+                <FontAwesomeIcon className="item-icon" icon={faClock} />
+                <span>
+                  Date Needed: {moment(+data.request.dateNeed).format('MMM DD')}
+                </span>
+              </div>
+              <div className="item-misc">
+                <FontAwesomeIcon className="item-icon" icon={faUserClock} />
+                <span>
+                  Needed until:{' '}
+                  {moment(+data.request.dateReturn).format('MMM DD')}
+                </span>
+              </div>
+            </>
+          )}
           {data.request.creator._id === data.tokenPayload.userId ? (
             <button
               type="button"

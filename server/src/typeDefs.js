@@ -17,6 +17,7 @@ const typeDefs = gql`
     createdAt: String
     lastLogin: String
     communities: [Community]
+    notifications: [Notification]
     posts: [Post]
   }
 
@@ -212,7 +213,7 @@ const typeDefs = gql`
   ### Query
   type Query {
     # User
-    user(userId: ID): User!
+    user(userId: ID, communityId: ID): User!
     validateResetLink(resetKey: String!): Boolean!
 
     # Community

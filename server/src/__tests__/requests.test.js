@@ -178,6 +178,7 @@ describe('[Mutation.requests]', () => {
           title
           desc
           image
+          dateType
           dateNeed
           dateReturn
           creator {
@@ -204,6 +205,7 @@ describe('[Mutation.requests]', () => {
       title: 'Test Request 01',
       desc: 'testRequest01',
       image: uploadImg(),
+      dateType: 2,
       dateNeed: `${new Date()}`,
       dateReturn: `${new Date()}`,
     };
@@ -218,6 +220,7 @@ describe('[Mutation.requests]', () => {
       title: requestInput.title,
       desc: requestInput.desc,
       image: JSON.stringify(mockUploadResponse),
+      dateType: requestInput.dateType,
       dateNeed: `${new Date(requestInput.dateNeed).getTime()}`,
       dateReturn: `${new Date(requestInput.dateReturn).getTime()}`,
       creator: {

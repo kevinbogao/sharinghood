@@ -93,7 +93,7 @@ const requestsResolvers = {
     createRequest: async (
       _,
       {
-        requestInput: { title, desc, image, dateNeed, dateReturn },
+        requestInput: { title, desc, image, dateType, dateNeed, dateReturn },
         communityId,
       },
       { user }
@@ -110,8 +110,8 @@ const requestsResolvers = {
           Request.create({
             title,
             desc,
-            dateNeed,
-            dateReturn,
+            dateType,
+            ...(dateType === 2 && { dateNeed, dateReturn }),
             image: imgData,
             creator: userId,
           }),

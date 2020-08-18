@@ -17,6 +17,7 @@ const typeDefs = gql`
     createdAt: String
     lastLogin: String
     communities: [Community]
+    notifications: [Notification]
     posts: [Post]
   }
 

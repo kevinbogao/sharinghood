@@ -63,7 +63,7 @@ function Posts({ communityId }) {
   ) : error ? (
     `Error ${error.message}`
   ) : (
-    <ItemsGrid isPost client={client} communityId={communityId}>
+    <ItemsGrid isPost communityId={communityId}>
       {data?.posts?.map((post) => (
         <div key={post._id} className="item-card">
           <Link

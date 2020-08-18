@@ -18,7 +18,7 @@ const usersResolvers = {
       if (!user) throw new AuthenticationError('Not Authenticated');
 
       try {
-        // Get user data & get user posts
+        // Get user data && get user posts & notifications
         const userData = await User.aggregate([
           { $match: { _id: mongoose.Types.ObjectId(user.userId) } },
           {
@@ -27,6 +27,34 @@ const usersResolvers = {
               localField: 'posts',
               foreignField: '_id',
               as: 'posts',
+            },
+          },
+          {
+            $lookup: {
+              from: 'notifications',
+              let: { notifications: '$notifications' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $in: ['$_id', '$$notifications'] },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'bookings',
+                    localField: 'booking',
+                    foreignField: '_id',
+                    as: 'booking',
+                  },
+                },
+                {
+                  $unwind: {
+                    path: '$booking',
+                    preserveNullAndEmptyArrays: true,
+                  },
+                },
+              ],
+              as: 'notifications',
             },
           },
         ]);

@@ -165,6 +165,7 @@ const usersResolvers = {
           email,
           password,
           image,
+          desc,
           apartment,
           isNotified,
           isCreator,
@@ -192,7 +193,9 @@ const usersResolvers = {
           User.create({
             name,
             email,
-            apartment,
+            ...(desc && { desc }),
+            ...(apartment && { apartment }),
+            // apartment,
             isNotified,
             image: imgData,
             password: hashedPassword,
@@ -256,7 +259,7 @@ const usersResolvers = {
     },
     updateUser: async (
       _,
-      { userInput: { name, image, apartment } },
+      { userInput: { name, image, desc, apartment } },
       { user }
     ) => {
       if (!user) throw new AuthenticationError('Not Authenticated');
@@ -273,6 +276,7 @@ const usersResolvers = {
         // Conditionally update user
         if (name) userData.name = name;
         if (image && imgData) userData.image = imgData;
+        if (desc) userData.desc = desc;
         if (apartment) userData.apartment = apartment;
 
         // Save to user

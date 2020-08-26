@@ -11,6 +11,7 @@ const typeDefs = gql`
     name: String
     email: String
     image: String
+    desc: String
     apartment: String
     isNotified: Boolean
     isAdmin: Boolean
@@ -26,6 +27,7 @@ const typeDefs = gql`
     email: String
     password: String
     image: String
+    desc: String
     apartment: String
     communityId: ID
     isNotified: Boolean

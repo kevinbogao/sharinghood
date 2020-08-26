@@ -78,7 +78,7 @@
     "apollo-server": "^2.16.1",
     "apollo-server-testing": "^2.16.1",
     "bcryptjs": "^2.4.3",
-    "cloudinary": "^1.22.0",
+    "cloudinary": "^1.23.0",
     "dotenv": "^8.2.0",
     "graphql": "^15.3.0",
     "graphql-redis-subscriptions": "^2.2.2",
@@ -98,9 +98,9 @@
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jest": "^23.20.0",
-    "ioredis-mock": "^4.21.2",
-    "jest": "^26.4.0",
-    "mongodb-memory-server": "^6.6.3",
+    "ioredis-mock": "^4.21.3",
+    "jest": "^26.4.2",
+    "mongodb-memory-server": "^6.6.6",
     "nodemailer-stub": "^1.2.2",
     "nodemon": "^2.0.4"
   }

@@ -302,7 +302,7 @@
    [[https://redis.io/][Redis]] is used as in-memory data store, and ~PubSubEngine~ for messages. Data such as password reset key and notifications read status are stored as key-value pairs for quick access. The chat functionality is a GraphQl subscription operation that utilizes Redis' ~Pub/Sub~ implementation.
 
 ** Firebase
-   [[https://firebase.google.com/docs/cloud-messaging][Firebase Cloud Messaging]] is used as messaging server for push notifications to the web and mobile clients. Each user's FCM token are stored on MongoDB database server.
+   [[https://firebase.google.com/docs/cloud-messaging][Firebase Cloud Messaging]] is used as messaging service for push notifications to the web and mobile clients. Each user's FCM tokens are stored on MongoDB database server.
 
 ** Logging
    Logging is handled by [[https://github.com/winstonjs/winston][winston]] and the logs are stored in the [[https://www.mongodb.com/][MongoDB]] database.
@@ -327,4 +327,4 @@
 
 * Contributors
   * [[https://github.com/kevinbogao][@kevinbogao]] - Kevin Gao
-  * [[https://github.com/techyon7][@techyon7]] -Sparsh Tyagi
+  * [[https://github.com/techyon7][@techyon7]] - Sparsh Tyagi

@@ -101,6 +101,20 @@
    |    1 | Booking |
    |    2 | Request |
 
+** Database Code Reference
+   - Notification type code reference
+     | Code | Type    |
+     |    0 | Chat    |
+     |    1 | Booking |
+     |    2 | Request |
+
+   - Booking status code reference
+     | Code | Status   |
+     |------+----------|
+     |    0 | Pending  |
+     |    1 | Accepted |
+     |    2 | Declined |
+
 ** Booking Status
    Booking status code reference
    | Code | Status   |

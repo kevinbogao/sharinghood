@@ -1,9 +1,11 @@
 {
   "name": "sharinghood-server",
-  "author": "Bo Gao <bo.gao@code.berlin>",
+  "description": "Server backend for Sharinghood",
   "version": "1.0.0",
-  "main": "index.js",
+  "repository": "https://github.com/kevinbogao/sharinghood/tree/master/server",
+  "author": "Bo Gao <bo.gao@code.berlin>",
   "private": true,
+  "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
     "client": "cd ../client && yarn start",

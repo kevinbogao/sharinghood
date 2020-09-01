@@ -57,7 +57,7 @@
 **** Client
      * [[https://reactjs.org/][React]]
      * [[https://www.apollographql.com/docs/react/][Apollo Client]]
-     * [[https://firebase.google.com/docs/cloud-messaging][Firebase Cloud Messaging]]
+     * [[https://firebase.google.com/docs/web/setup][Firebase]]
 
 **** Server
      * [[https://www.apollographql.com/docs/apollo-server/][Apollo Server]]
@@ -94,34 +94,26 @@
     #+end_src
 
 * Client
-** Notification Type
-   Notification type code reference
+** Database References
+   Notification ~type~
    | Code | Type    |
    |    0 | Chat    |
    |    1 | Booking |
    |    2 | Request |
 
-** Database Code Reference
-   - Notification type code reference
-     | Code | Type    |
-     |    0 | Chat    |
-     |    1 | Booking |
-     |    2 | Request |
-
-   - Booking status code reference
-     | Code | Status   |
-     |------+----------|
-     |    0 | Pending  |
-     |    1 | Accepted |
-     |    2 | Declined |
-
-** Booking Status
-   Booking status code reference
+   Booking ~status~
    | Code | Status   |
    |------+----------|
    |    0 | Pending  |
    |    1 | Accepted |
    |    2 | Declined |
+
+   Booking & Request ~dateType~
+   | Code | Status               |
+   |------+----------------------|
+   |    0 | ASAP                 |
+   |    1 | No specific time     |
+   |    2 | Specified time frame |
 
 * Server
   Explore Sharinghood's GraphQL API on [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQl Playground]] at ~http://localhost:4000/graphql~

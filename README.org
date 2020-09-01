@@ -125,7 +125,7 @@
   * [[https://www.npmjs.com/package/react-modal][react-modal]] - Modal dialog component for React
   * [[https://www.npmjs.com/package/react-router-dom][react-router-dom]] - DOM bindings for React Router
   * [[https://www.npmjs.com/package/styled-jsx][styled-jsx]] - CSS support for JSX
-  * [[https://www.npmjs.com/package/subscriptions-transporat-ws][subscriptions-transporat-ws]] - Websocket transport for GraphQL subscriptions
+  * [[https://www.npmjs.com/package/subscriptions-transport-ws][subscriptions-transport-ws]] - Websocket transport for GraphQL subscriptions
 
 * Server
   Explore Sharinghood's GraphQL API on [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQL Playground]] at ~http://localhost:4000/graphql~

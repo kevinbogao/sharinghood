@@ -3,7 +3,6 @@
   * [[https://sharinghood-staging.herokuapp.com][Staging link]]
   * [[https://sharinghood.herokuapp.com][Production link]]
 
-
 ** Table of Contents                                               :noexport:
    :PROPERTIES:
    :TOC:      :include all
@@ -14,8 +13,8 @@
        - [[#architecture-and-tech-stack][Architecture and Tech Stack]]
        - [[#getting-started][Getting Started]]
    - [[#client][Client]]
-     - [[#notification-type][Notification Type]]
-     - [[#booking-status][Booking Status]]
+     - [[#database-references][Database References]]
+     - [[#dependencies][Dependencies]]
    - [[#server][Server]]
      - [[#query][Query]]
      - [[#mutation][Mutation]]
@@ -40,7 +39,7 @@
     |   Web    +---------+                    |          |  Replica  |
     |  Client  |<---+    |                    +----------+    Set    |
     +----------+    |    |     Monolithic     |          |           |
-                    |    |      GraphQl       |          \-----------/
+                    |    |      GraphQL       |          \-----------/
     +----------+    |    |       Server       |
     |  Mobile  +----|----+                    |          +-----------+
     |  Client  |    |    |                    +----------+   Redis   |
@@ -55,16 +54,16 @@
    #+end_src
 
 **** Client
-     * [[https://reactjs.org/][React]]
      * [[https://www.apollographql.com/docs/react/][Apollo Client]]
+     * [[https://create-react-app.dev/][Create React App]]
      * [[https://firebase.google.com/docs/web/setup][Firebase]]
 
 **** Server
      * [[https://www.apollographql.com/docs/apollo-server/][Apollo Server]]
-     * [[https://www.mongodb.com/][MongoDB]]
-     * [[https://redis.io/][Redis]]
      * [[http://cloudinary.com/][Cloudinary]]
      * [[https://firebase.google.com/docs/cloud-messaging][Firebase Cloud Messaging]]
+     * [[https://www.mongodb.com/][MongoDB]]
+     * [[https://redis.io/][Redis]]
 
 *** Getting Started
     Start server and client
@@ -115,8 +114,21 @@
    |    1 | No specific time     |
    |    2 | Specified time frame |
 
+** Dependencies
+  * [[https://www.npmjs.com/package/apollo-client][apollo-client]] - GraphQL client
+  * [[https://www.npmjs.com/package/firebase][firebase]] - Firebase library for web and Node.js
+  * [[https://www.npmjs.com/package/jspdf][jspdf]] - PDF generation library
+  * [[https://www.npmjs.com/package/jwt-decode][jwt-decode]] - Library for decoding JSON Web Tokens
+  * [[https://www.npmjs.com/package/moment][moment]] - JavaScript date library
+  * [[https://www.npmjs.com/package/node-sass][node-sass]] - Wrapper around libsass
+  * [[https://www.npmjs.com/package/react-dates][react-dates]] - Date range picker component for React
+  * [[https://www.npmjs.com/package/react-modal][react-modal]] - Modal dialog component for React
+  * [[https://www.npmjs.com/package/react-router-dom][react-router-dom]] - DOM bindings for React Router
+  * [[https://www.npmjs.com/package/styled-jsx][styled-jsx]] - CSS support for JSX
+  * [[https://www.npmjs.com/package/subscriptions-transporat-ws][subscriptions-transporat-ws]] - Websocket transport for GraphQL subscriptions
+
 * Server
-  Explore Sharinghood's GraphQL API on [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQl Playground]] at ~http://localhost:4000/graphql~
+  Explore Sharinghood's GraphQL API on [[https://www.apollographql.com/docs/apollo-server/getting-started/#step-8-execute-your-first-query][GraphQL Playground]] at ~http://localhost:4000/graphql~
 
 ** Query
 *** Users
@@ -299,7 +311,7 @@
    All essential data are stored on the [[https://www.mongodb.com/][MongoDB]] database server that is hosted by [[https://scalegrid.io/][ScaleGrid]] on [[https://www.digitalocean.com/][Digital Ocean]]. The database comprises of a primary node and 3 replicas to provide redundancy and increased availability. The database server performs backups daily.
 
 ** Redis
-   [[https://redis.io/][Redis]] is used as in-memory data store, and ~PubSubEngine~ for messages. Data such as password reset key and notifications read status are stored as key-value pairs for quick access. The chat functionality is a GraphQl subscription operation that utilizes Redis' ~Pub/Sub~ implementation.
+   [[https://redis.io/][Redis]] is used as in-memory data store, and ~PubSubEngine~ for messages. Data such as password reset key and notifications read status are stored as key-value pairs for quick access. The chat functionality is a GraphQL subscription operation that utilizes Redis' ~Pub/Sub~ implementation.
 
 ** Firebase
    [[https://firebase.google.com/docs/cloud-messaging][Firebase Cloud Messaging]] is used as messaging service for push notifications to the web and mobile clients. Each user's FCM tokens are stored on MongoDB database server.
@@ -308,7 +320,7 @@
    Logging is handled by [[https://github.com/winstonjs/winston][winston]] and the logs are stored in the [[https://www.mongodb.com/][MongoDB]] database.
 
 ** Dependencies
-  * [[https://www.npmjs.com/package/apollo-server][apollo-server]] - GraphQl server
+  * [[https://www.npmjs.com/package/apollo-server][apollo-server]] - GraphQL server
   * [[https://www.npmjs.com/package/bcrypt][bcryptjs]] - Password hashing library
   * [[https://www.npmjs.com/package/cloudinary][cloudinary]] - Cloudinary's Node.js SDK
   * [[https://www.npmjs.com/package/graphql-redis-subscriptions][graphql-redis-subscriptions]] - PubSubEngine interface for Redis Pub Sub mechanism connection

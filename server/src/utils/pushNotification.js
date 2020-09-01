@@ -44,21 +44,18 @@ function pushNotification(data, body, receivers) {
       // Create an object of invalid tokens lists with user id as key
       let index = 0;
       let invalidTokens = {};
-      for (let i = 0; i < receivers.length; i++) {
-        for (let j = 0; j < receivers[i].fcmTokens.length; j++) {
+      receivers.forEach((receiver) => {
+        receiver.fcmTokens.forEach((fcmToken) => {
           if (res.results[index].error) {
-            if (receivers[i]._id in invalidTokens) {
-              invalidTokens[receivers[i]._id].push(receivers[i].fcmTokens[j]);
+            if (receiver._id in invalidTokens) {
+              invalidTokens[receiver._id].push(fcmToken);
             } else {
-              invalidTokens = {
-                ...invalidTokens,
-                [receivers[i]._id]: [receivers[i].fcmTokens[j]],
-              };
+              invalidTokens = { ...invalidTokens, [receiver._id]: [fcmToken] };
             }
           }
           index++;
-        }
-      }
+        });
+      });
 
       // Remove invalid tokens from users
       removeInvalidTokens(invalidTokens);

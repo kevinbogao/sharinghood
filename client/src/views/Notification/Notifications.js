@@ -125,8 +125,13 @@ function Notifications({ history, communityId }) {
               key={notification._id}
               className="notification-item"
               role="presentation"
+              // Redirect to post if notification type is 2 else go to notification details
               onClick={() => {
-                history.push(`/notification/${notification._id}`);
+                if (notification.ofType === 2) {
+                  history.push(`/shared/${notification.post._id}`);
+                } else {
+                  history.push(`/notification/${notification._id}`);
+                }
               }}
             >
               {notification.ofType === 0 ? (

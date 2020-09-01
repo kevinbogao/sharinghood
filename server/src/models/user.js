@@ -23,10 +23,8 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    apartment: {
-      type: String,
-      required: true,
-    },
+    desc: String,
+    apartment: String,
     posts: [
       {
         type: Schema.Types.ObjectId,

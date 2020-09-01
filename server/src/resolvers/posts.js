@@ -300,21 +300,19 @@ const postsResolvers = {
         );
 
         // Create an object of invalid notifications with user id as key
-        let userInvalidNotifications = {};
-        for (let i = 0; i < notifications.length; i++) {
-          for (let j = 0; j < notifications[0].participants.length; j++) {
-            if (notifications[i].participants[j] in userInvalidNotifications) {
-              userInvalidNotifications[notifications[i].participants[j]].push(
-                notifications[i]._id
-              );
+        let invalidUserNotifications = {};
+        notifications.forEach((notification) => {
+          notification.participants.forEach((participant) => {
+            if (participant in invalidUserNotifications) {
+              invalidUserNotifications[participant].push(notification._id);
             } else {
-              userInvalidNotifications = {
-                ...userInvalidNotifications,
-                [notifications[i].participants[j]]: [notifications[i]._id],
+              invalidUserNotifications = {
+                ...invalidUserNotifications,
+                [participant]: [notification._id],
               };
             }
-          }
-        }
+          });
+        });
 
         // Delete post, postId from community && delete post threads,
         // delete bookings & post related notifications & subsequent messages
@@ -330,13 +328,13 @@ const postsResolvers = {
           Booking.deleteMany({ _id: { $in: bookings } }),
           Message.deleteMany({ _id: { $in: messages } }),
           Notification.deleteMany({ _id: { $in: notificationsIds } }),
-          Object.keys(userInvalidNotifications).map((userId) =>
+          Object.keys(invalidUserNotifications).map((userId) =>
             Promise.resolve(
               User.updateOne(
                 { _id: userId },
                 {
                   $pull: {
-                    notifications: { $in: userInvalidNotifications[userId] },
+                    notifications: { $in: invalidUserNotifications[userId] },
                   },
                 }
               )

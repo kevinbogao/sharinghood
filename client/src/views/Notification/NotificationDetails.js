@@ -95,12 +95,6 @@ function NotificationDetails({ communityId, match, history }) {
   const { subscribeToMore, loading, error, data } = useQuery(GET_NOTIFICATION, {
     fetchPolicy: 'network-only',
     variables: { notificationId: match.params.id, communityId },
-    onCompleted: ({ notification }) => {
-      // Redirect to post details page by id if notification type is 2 (request)
-      if (notification.ofType === 2) {
-        history.push(`/shared/${notification.post._id}`);
-      }
-    },
     onError: ({ message }) => {
       console.log(message);
     },
@@ -164,7 +158,7 @@ function NotificationDetails({ communityId, match, history }) {
     <div className="notification-details-control">
       <div className="notification-info">
         <div className="info-imgs">
-          {data.community.members
+          {data?.community?.members
             .filter((member) => member._id === data.tokenPayload.userId)
             .map((member) => (
               <div

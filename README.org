@@ -21,6 +21,7 @@
      - [[#subscription][Subscription]]
      - [[#authentication][Authentication]]
      - [[#mongodb][MongoDB]]
+       - [[#schema-diagram][Schema Diagram]]
      - [[#redis][Redis]]
      - [[#logging][Logging]]
      - [[#dependencies][Dependencies]]
@@ -309,6 +310,8 @@
 
 ** MongoDB
    All essential data are stored on the [[https://www.mongodb.com/][MongoDB]] database server that is hosted by [[https://scalegrid.io/][ScaleGrid]] on [[https://www.digitalocean.com/][Digital Ocean]]. The database comprises of a primary node and 3 replicas to provide redundancy and increased availability. The database server performs backups daily.
+*** Schema Diagram
+    [[schema.png]]
 
 ** Redis
    [[https://redis.io/][Redis]] is used as in-memory data store, and ~PubSubEngine~ for messages. Data such as password reset key and notifications read status are stored as key-value pairs for quick access. The chat functionality is a GraphQL subscription operation that utilizes Redis' ~Pub/Sub~ implementation.

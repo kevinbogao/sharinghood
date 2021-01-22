@@ -15,19 +15,10 @@ import { WebSocketLink } from '@apollo/client/link/ws';
 import { TokenRefreshLink } from 'apollo-link-token-refresh';
 import { getMainDefinition } from '@apollo/client/utilities';
 import jwtDecode from 'jwt-decode';
-import TagManager from 'react-gtm-module';
 import App from './App';
 
 // Dotenv config
 require('dotenv').config();
-
-// Google Tag Manager config
-const TAG_MANAGER_ARGS = {
-  gtmId: process.env.REACT_APP_GTM_ID,
-};
-
-// Init Google Tag Manager Module
-TagManager.initialize(TAG_MANAGER_ARGS);
 
 // Create an http link
 const httpLink = new HttpLink({

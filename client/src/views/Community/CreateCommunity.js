@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { gql, useLazyQuery, useMutation } from '@apollo/client';
-import InlineError from '../../components/InlineError';
-import Spinner from '../../components/Spinner';
-import { GET_COMMUNITY } from '../../components/Navbar';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { gql, useLazyQuery, useMutation } from "@apollo/client";
+import InlineError from "../../components/InlineError";
+import Spinner from "../../components/Spinner";
+import { GET_COMMUNITY } from "../../components/Navbar";
 
 const FIND_COMMUNITY = gql`
   query Community($communityCode: String!) {
@@ -38,10 +38,10 @@ function CreateCommunity({ history, location }) {
     onCompleted: ({ community }) => {
       // Set code error if community exists
       if (community) {
-        setError({ code: 'Community code exists' });
+        setError({ code: "Community code exists" });
       } else {
         history.push({
-          pathname: '/find-community',
+          pathname: "/find-community",
           state: {
             communityName: name.value,
             communityCode: code.value,
@@ -66,7 +66,7 @@ function CreateCommunity({ history, location }) {
       },
     ],
     onCompleted: () => {
-      history.push('/find');
+      history.push("/find");
     },
   });
 
@@ -86,19 +86,19 @@ function CreateCommunity({ history, location }) {
         });
       },
       onError: ({ message }) => {
-        const errMsgArr = message.split(': ');
+        const errMsgArr = message.split(": ");
         setError({ [errMsgArr[0]]: errMsgArr[1] });
       },
-    },
+    }
   );
 
   function validate() {
     const errors = {};
-    if (!code.value) errors.code = 'Please enter a community code';
+    if (!code.value) errors.code = "Please enter a community code";
     else if (/[ `!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(code.value))
-      errors.code = 'Please only use standard alphanumerics';
-    if (!name.value) errors.name = 'Please enter a community name';
-    if (!zipCode.value) errors.zipCode = 'Please enter your zip code';
+      errors.code = "Please only use standard alphanumerics";
+    if (!name.value) errors.name = "Please enter a community name";
+    if (!zipCode.value) errors.zipCode = "Please enter your zip code";
     setError(errors);
     return errors;
   }
@@ -170,7 +170,7 @@ function CreateCommunity({ history, location }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .create-community-control {
             margin: auto;

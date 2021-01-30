@@ -1,7 +1,7 @@
-const { createTestClient } = require('apollo-server-testing');
-const { gql } = require('apollo-server');
-const { constructTestServer } = require('./__utils');
-const inMemoryDb = require('./__mocks__/inMemoryDb');
+const { createTestClient } = require("apollo-server-testing");
+const { gql } = require("apollo-server");
+const { constructTestServer } = require("./__utils");
+const inMemoryDb = require("./__mocks__/inMemoryDb");
 const {
   createInitData,
   mockUser01,
@@ -11,18 +11,18 @@ const {
   mockRequest02,
   mockCommunity01,
   mockUploadResponse,
-} = require('./__mocks__/createInitData');
-const User = require('../models/user');
-const Thread = require('../models/thread');
-const Request = require('../models/request');
-const Community = require('../models/community');
+} = require("./__mocks__/createInitData");
+const User = require("../models/user");
+const Thread = require("../models/thread");
+const Request = require("../models/request");
+const Community = require("../models/community");
 
 // Mocking dependencies
-jest.mock('../utils/uploadImg');
-const uploadImg = require('../utils/uploadImg');
+jest.mock("../utils/uploadImg");
+const uploadImg = require("../utils/uploadImg");
 
-jest.mock('../utils/pushNotification');
-const pushNotification = require('../utils/pushNotification');
+jest.mock("../utils/pushNotification");
+const pushNotification = require("../utils/pushNotification");
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {
@@ -44,9 +44,9 @@ afterAll(async () => {
 });
 
 /* REQUETS QUERY */
-describe('[Query.requests]', () => {
+describe("[Query.requests]", () => {
   // REQUEST QUERY { requestId }
-  it('Get request by id', async () => {
+  it("Get request by id", async () => {
     const GET_REQUEST = gql`
       query Request($requestId: ID!) {
         request(requestId: $requestId) {
@@ -114,7 +114,7 @@ describe('[Query.requests]', () => {
   });
 
   // REQUESTS QUERY { communityId }
-  it('Get requests from community', async () => {
+  it("Get requests from community", async () => {
     const GET_REQUESTS = gql`
       query Requests($communityId: ID!) {
         requests(communityId: $communityId) {
@@ -169,8 +169,8 @@ describe('[Query.requests]', () => {
 });
 
 /* REQUESTS MUTATIONS */
-describe('[Mutation.requests]', () => {
-  it('Create request to community', async () => {
+describe("[Mutation.requests]", () => {
+  it("Create request to community", async () => {
     const CREATE_REQUEST = gql`
       mutation CreateRequest($requestInput: RequestInput!, $communityId: ID!) {
         createRequest(requestInput: $requestInput, communityId: $communityId) {
@@ -202,8 +202,8 @@ describe('[Mutation.requests]', () => {
     pushNotification.mockImplementation(() => {});
 
     const requestInput = {
-      title: 'Test Request 01',
-      desc: 'testRequest01',
+      title: "Test Request 01",
+      desc: "testRequest01",
       image: uploadImg(),
       dateType: 2,
       dateNeed: `${new Date()}`,
@@ -275,7 +275,7 @@ describe('[Mutation.requests]', () => {
   });
 
   // DELETE_REQUEST MUTATION { requestId }
-  it('Delete request by unauthorized user', async () => {
+  it("Delete request by unauthorized user", async () => {
     const DELETE_REQUEST = gql`
       mutation DeleteRequest($requestId: ID!) {
         deleteRequest(requestId: $requestId) {
@@ -294,6 +294,6 @@ describe('[Mutation.requests]', () => {
       variables: { requestId: mockRequest01._id.toString() },
     });
 
-    expect(res.errors[0].message).toEqual('ForbiddenError: Unauthorized user');
+    expect(res.errors[0].message).toEqual("ForbiddenError: Unauthorized user");
   });
 });

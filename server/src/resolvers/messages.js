@@ -1,11 +1,11 @@
-const { withFilter, AuthenticationError } = require('apollo-server');
-const pubsub = require('../utils/pubsub');
-const User = require('../models/user');
-const Message = require('../models/message');
-const Notification = require('../models/notification');
-const pushNotification = require('../utils/pushNotification');
+const { withFilter, AuthenticationError } = require("apollo-server");
+const pubsub = require("../utils/pubsub");
+const User = require("../models/user");
+const Message = require("../models/message");
+const Notification = require("../models/notification");
+const pushNotification = require("../utils/pushNotification");
 
-const NEW_NOTIFICATION_MESSAGE = 'NEW_NOTIFICATION_MESSAGE';
+const NEW_NOTIFICATION_MESSAGE = "NEW_NOTIFICATION_MESSAGE";
 
 const messagesResolvers = {
   Subscription: {
@@ -22,7 +22,7 @@ const messagesResolvers = {
       { messageInput: { text, communityId, recipientId, notificationId } },
       { user, redis }
     ) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId } = user;
 
       try {
@@ -40,7 +40,7 @@ const messagesResolvers = {
         // Add message id to notification & update recipient's isRead status to false
         notification.messages.push(message);
         notification.isRead[recipientId] = false;
-        notification.markModified('isRead');
+        notification.markModified("isRead");
 
         // Save notification & set communityId key to recipient's notifications:userId hash in redis
         await Promise.all([

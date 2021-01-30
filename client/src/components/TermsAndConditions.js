@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 function TermsAndConditions() {
   return (
@@ -32,7 +32,7 @@ function TermsAndConditions() {
         <li>
           <strong>Account</strong> means a unique account created for You to
           access our Service or parts of our Service.
-        </li>{' '}
+        </li>{" "}
         <li>
           <strong>Company</strong> (referred to as either &quot;the
           Company&quot;, &quot;We&quot;, &quotUs&quot; or &quot;Our&quot; in
@@ -42,7 +42,7 @@ function TermsAndConditions() {
           <strong>Content</strong> refers to content such as text, images, or
           other information that can be posted, uploaded, linked to or otherwise
           made available by You, regardless of the form of that content.
-        </li>{' '}
+        </li>{" "}
         <li>
           <strong>Country</strong> refers to: Berlin, Germany
         </li>
@@ -64,7 +64,7 @@ function TermsAndConditions() {
         <li>
           <strong>Website</strong> refers to Sharinghood, accessible from
           https://sharinghood.herokuapp.com
-        </li>{' '}
+        </li>{" "}
         <li>
           <strong>You</strong> means the individual accessing or using the
           Service, or the company, or other legal entity on behalf of which such
@@ -462,7 +462,7 @@ function TermsAndConditions() {
       </ul>
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .terms-and-conditions {
             h1 {

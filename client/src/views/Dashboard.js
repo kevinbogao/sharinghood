@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { Redirect } from 'react-router-dom';
-import { gql, useQuery } from '@apollo/client';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
-import Spinner from '../components/Spinner';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { Redirect } from "react-router-dom";
+import { gql, useQuery } from "@apollo/client";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
+import Spinner from "../components/Spinner";
 
 const GET_TOKEN_PAYLOAD = gql`
   {
@@ -34,19 +34,19 @@ const GET_ACTIVITIES = gql`
 `;
 
 const FORMATTED_KEYS = {
-  _id: 'Community ID',
-  name: 'Community Name',
-  code: 'Community Code',
-  numUsers: 'Users',
-  numPosts: 'Posts',
-  numRequests: 'Requests',
-  numBookings: 'Bookings',
+  _id: "Community ID",
+  name: "Community Name",
+  code: "Community Code",
+  numUsers: "Users",
+  numPosts: "Posts",
+  numRequests: "Requests",
+  numBookings: "Bookings",
 };
 
 function Dashboard({ location, history }) {
-  const { from } = location.state || { from: { pathname: '/' } };
+  const { from } = location.state || { from: { pathname: "/" } };
   const [sortOrder, setSortOrder] = useState(-1);
-  const [selectedCol, setSelectedCol] = useState('_id');
+  const [selectedCol, setSelectedCol] = useState("_id");
   const [communitiesActivities, setCommunitiesActivities] = useState([]);
   const {
     data: { tokenPayload },
@@ -108,10 +108,10 @@ function Dashboard({ location, history }) {
           <tr className="dashboard-table-header">
             {communitiesActivities.length
               ? Object.keys(communitiesActivities[0])
-                  .filter((key) => key !== '__typename')
+                  .filter((key) => key !== "__typename")
                   .map((key) => (
                     <th key={key} onClick={() => sortColumns(key)}>
-                      {FORMATTED_KEYS[key]}{' '}
+                      {FORMATTED_KEYS[key]}{" "}
                       {selectedCol === key && (
                         <FontAwesomeIcon
                           className="dashboard-sort-icons"
@@ -148,7 +148,7 @@ function Dashboard({ location, history }) {
       </table>
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .dashboard-control {
             margin: 0 auto auto auto;
@@ -285,7 +285,7 @@ Dashboard.defaultProps = {
   location: PropTypes.shape({
     state: PropTypes.shape({
       from: PropTypes.shape({
-        pathname: '/',
+        pathname: "/",
       }),
     }),
   }),

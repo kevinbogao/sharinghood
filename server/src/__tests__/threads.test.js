@@ -1,7 +1,7 @@
-const { createTestClient } = require('apollo-server-testing');
-const { gql } = require('apollo-server');
-const { constructTestServer } = require('./__utils');
-const inMemoryDb = require('./__mocks__/inMemoryDb');
+const { createTestClient } = require("apollo-server-testing");
+const { gql } = require("apollo-server");
+const { constructTestServer } = require("./__utils");
+const inMemoryDb = require("./__mocks__/inMemoryDb");
 const {
   createInitData,
   mockUser01,
@@ -9,10 +9,10 @@ const {
   mockPost01,
   mockRequest01,
   mockCommunity01,
-} = require('./__mocks__/createInitData');
+} = require("./__mocks__/createInitData");
 
-jest.mock('../utils/pushNotification');
-const pushNotification = require('../utils/pushNotification');
+jest.mock("../utils/pushNotification");
+const pushNotification = require("../utils/pushNotification");
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {
@@ -49,9 +49,9 @@ const CREATE_THREAD = gql`
 `;
 
 /* THREADS MUTATIONS */
-describe('[Mutation.threads]', () => {
+describe("[Mutation.threads]", () => {
   // CREATE_THREAD MUTATION { postId }
-  it('Create thread for post', async () => {
+  it("Create thread for post", async () => {
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser03._id.toString() } }),
     });
@@ -59,7 +59,7 @@ describe('[Mutation.threads]', () => {
     pushNotification.mockImplementation(() => {});
 
     const threadInput = {
-      content: 'Test comment on post01',
+      content: "Test comment on post01",
       isPost: true,
       parentId: mockPost01._id.toString(),
       communityId: mockCommunity01._id.toString(),
@@ -84,7 +84,7 @@ describe('[Mutation.threads]', () => {
   });
 
   // CREATE_THREAD MUTATION { requestId }
-  it('Create thread for request', async () => {
+  it("Create thread for request", async () => {
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser03._id.toString() } }),
     });
@@ -92,7 +92,7 @@ describe('[Mutation.threads]', () => {
     pushNotification.mockImplementation(() => {});
 
     const threadInput = {
-      content: 'Test comment on request01',
+      content: "Test comment on request01",
       isPost: false,
       parentId: mockRequest01._id.toString(),
       communityId: mockCommunity01._id.toString(),

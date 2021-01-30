@@ -1,22 +1,22 @@
-import React, { useState, Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation } from '@apollo/client';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useState, Fragment } from "react";
+import PropTypes from "prop-types";
+import { gql, useQuery, useMutation } from "@apollo/client";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheckDouble,
   faCheck,
   faExclamationTriangle,
   faGifts,
-} from '@fortawesome/free-solid-svg-icons';
-import moment from 'moment';
-import Modal from 'react-modal';
-import DatePicker from '../../components/DatePicker';
-import Threads from '../../components/Threads';
-import Spinner from '../../components/Spinner';
-import NotFound from '../../components/NotFound';
-import ItemDetails from '../../components/ItemDetails';
+} from "@fortawesome/free-solid-svg-icons";
+import moment from "moment";
+import Modal from "react-modal";
+import DatePicker from "../../components/DatePicker";
+import Threads from "../../components/Threads";
+import Spinner from "../../components/Spinner";
+import NotFound from "../../components/NotFound";
+import ItemDetails from "../../components/ItemDetails";
 
-const CONDITIONS = ['New', 'Used but good', 'Used but little damaged'];
+const CONDITIONS = ["New", "Used but good", "Used but little damaged"];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
 
 const GET_POST = gql`
@@ -107,7 +107,7 @@ const CREATE_NOTIFICATION = gql`
 `;
 
 function PostDetails({ communityId, match, history }) {
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [dateType, setDateType] = useState(0);
   const [dateNeed, setDateNeed] = useState(moment());
@@ -120,7 +120,7 @@ function PostDetails({ communityId, match, history }) {
   });
   const [createThread] = useMutation(CREATE_THREAD, {
     onCompleted: () => {
-      setComment('');
+      setComment("");
     },
     onError: ({ message }) => {
       console.log(message);
@@ -153,7 +153,7 @@ function PostDetails({ communityId, match, history }) {
       onError: ({ message }) => {
         console.log(message);
       },
-    },
+    }
   );
 
   return loading ? (
@@ -270,7 +270,7 @@ function PostDetails({ communityId, match, history }) {
                   onChange={(e) => setComment(e.target.value)}
                   onKeyUp={(e) => {
                     const keyCode = e.keyCode || e.which;
-                    if (keyCode === 13 && comment !== '') {
+                    if (keyCode === 13 && comment !== "") {
                       createThread({
                         variables: {
                           threadInput: {
@@ -291,7 +291,7 @@ function PostDetails({ communityId, match, history }) {
       </div>
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .item-control {
             margin: 30px auto;
@@ -381,7 +381,7 @@ function PostDetails({ communityId, match, history }) {
   );
 }
 
-Modal.setAppElement('#root');
+Modal.setAppElement("#root");
 
 PostDetails.propTypes = {
   communityId: PropTypes.string.isRequired,

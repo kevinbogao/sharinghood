@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 const postSchema = new Schema(
   {
@@ -24,18 +24,18 @@ const postSchema = new Schema(
     },
     creator: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
     bookings: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Booking',
+        ref: "Booking",
       },
     ],
     threads: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Thread',
+        ref: "Thread",
       },
     ],
     // notifications: [
@@ -48,4 +48,4 @@ const postSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = model('Post', postSchema);
+module.exports = model("Post", postSchema);

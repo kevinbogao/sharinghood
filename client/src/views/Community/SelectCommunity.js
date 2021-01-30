@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { gql, useQuery, useLazyQuery, useMutation } from '@apollo/client';
-import Spinner from '../../components/Spinner';
-import { GET_COMMUNITY } from '../../components/Navbar';
-import InlineError from '../../components/InlineError';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { gql, useQuery, useLazyQuery, useMutation } from "@apollo/client";
+import Spinner from "../../components/Spinner";
+import { GET_COMMUNITY } from "../../components/Navbar";
+import InlineError from "../../components/InlineError";
 
 const GET_USER_COMMUNITIES = gql`
   query Communities {
@@ -67,7 +67,7 @@ function SelectCommunity({ history, location }) {
       // Redirect user to CommunityInvite page if user is redirected from
       // Login page and has a communityCode; else redirect user to posts page
       if (communityCode) history.push(`/community/${communityCode}`);
-      else history.push('/find');
+      else history.push("/find");
     },
   });
 
@@ -77,7 +77,7 @@ function SelectCommunity({ history, location }) {
     onCompleted: ({ selCommunityId, communities }) => {
       // Check if selectedCommunityId exists in communities array
       const isIdInArray = communities.some(
-        (community) => community._id === selCommunityId,
+        (community) => community._id === selCommunityId
       );
 
       // If selected community id exists in localStorage & it the user is a member of that community
@@ -89,7 +89,7 @@ function SelectCommunity({ history, location }) {
         });
 
         // Redirect to posts page
-        history.push('/find');
+        history.push("/find");
 
         // If user is redirect from login and only has one community
       } else if (communities.length === 1 && fromLogin) {
@@ -100,7 +100,7 @@ function SelectCommunity({ history, location }) {
         });
 
         // Redirect to posts page
-        history.push('/find');
+        history.push("/find");
 
         // If user is redirect from login and communityCode is given
       } else if (fromLogin && communityCode) {
@@ -123,13 +123,13 @@ function SelectCommunity({ history, location }) {
       if (community) {
         // True if user is inside of community members array
         const userIsMember = community.members.some(
-          (member) => member._id === tokenPayload.userId,
+          (member) => member._id === tokenPayload.userId
         );
 
         // Throw erorr if user is in 5 communities already
         if (data.communities.length >= 5)
           setPageError({
-            code: 'You have reached the maximum number of communities',
+            code: "You have reached the maximum number of communities",
           });
         // Check if user is part of the community
         else if (userIsMember)
@@ -139,11 +139,11 @@ function SelectCommunity({ history, location }) {
         else setFoundCommunity(community);
       } else {
         // Set community error if community is not found
-        setPageError({ code: 'Community not found' });
+        setPageError({ code: "Community not found" });
       }
     },
     onError: ({ message }) => {
-      const errMsgArr = message.split(': ');
+      const errMsgArr = message.split(": ");
       const errMsgArrLen = errMsgArr.length;
       setPageError({
         [errMsgArr[errMsgArrLen - 2]]: errMsgArr[errMsgArrLen - 1],
@@ -173,20 +173,20 @@ function SelectCommunity({ history, location }) {
         });
 
         // Redirect to posts page
-        history.push('/find');
+        history.push("/find");
       },
       onError: ({ message }) => {
         console.log(message);
       },
-    },
+    }
   );
 
   // Validate if community code is valid or is entered
   function validate() {
     const errors = {};
-    if (!code.value) errors.code = 'Please enter a community code';
+    if (!code.value) errors.code = "Please enter a community code";
     else if (/[ `!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(code.value)) {
-      errors.code = 'Please only use standard alphanumerics';
+      errors.code = "Please only use standard alphanumerics";
     }
     setPageError(errors);
     return errors;
@@ -261,11 +261,11 @@ function SelectCommunity({ history, location }) {
                   if (data.communities.length >= 5) {
                     setPageError({
                       code:
-                        'You have reached the maximum number of communities',
+                        "You have reached the maximum number of communities",
                     });
                   } else {
                     history.push({
-                      pathname: '/create-community',
+                      pathname: "/create-community",
                       state: { isLoggedIn: true },
                     });
                   }
@@ -317,7 +317,7 @@ function SelectCommunity({ history, location }) {
             onClick={() => {
               if (data.communities.length >= 5) {
                 setPageError({
-                  code: 'You have reached the maximum number of communities',
+                  code: "You have reached the maximum number of communities",
                 });
               } else {
                 setIsNewCommunity(true);
@@ -332,7 +332,7 @@ function SelectCommunity({ history, location }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .communities-control {
             margin: auto;

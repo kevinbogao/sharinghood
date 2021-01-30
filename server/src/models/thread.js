@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 const threadSchema = new Schema(
   {
@@ -8,14 +8,14 @@ const threadSchema = new Schema(
     },
     poster: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
     community: {
       type: Schema.Types.ObjectId,
-      ref: 'Community',
+      ref: "Community",
     },
   },
   { timestamps: true }
 );
 
-module.exports = model('Thread', threadSchema);
+module.exports = model("Thread", threadSchema);

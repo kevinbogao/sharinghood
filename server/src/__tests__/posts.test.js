@@ -1,8 +1,8 @@
-const { createTestClient } = require('apollo-server-testing');
-const { gql } = require('apollo-server');
-const Redis = require('ioredis-mock');
-const { constructTestServer } = require('./__utils');
-const inMemoryDb = require('./__mocks__/inMemoryDb');
+const { createTestClient } = require("apollo-server-testing");
+const { gql } = require("apollo-server");
+const Redis = require("ioredis-mock");
+const { constructTestServer } = require("./__utils");
+const inMemoryDb = require("./__mocks__/inMemoryDb");
 const {
   createInitData,
   mockUser01,
@@ -14,20 +14,20 @@ const {
   mockCommunity02,
   mockUploadResponse,
   updatedMockUploadResponse,
-} = require('./__mocks__/createInitData');
-const Post = require('../models/post');
-const User = require('../models/user');
-const Thread = require('../models/thread');
-const Booking = require('../models/booking');
-const Community = require('../models/community');
-const Notification = require('../models/notification');
+} = require("./__mocks__/createInitData");
+const Post = require("../models/post");
+const User = require("../models/user");
+const Thread = require("../models/thread");
+const Booking = require("../models/booking");
+const Community = require("../models/community");
+const Notification = require("../models/notification");
 
 // Mocking dependencies
-jest.mock('../utils/uploadImg');
-const uploadImg = require('../utils/uploadImg');
+jest.mock("../utils/uploadImg");
+const uploadImg = require("../utils/uploadImg");
 
-jest.mock('../utils/pushNotification');
-const pushNotification = require('../utils/pushNotification');
+jest.mock("../utils/pushNotification");
+const pushNotification = require("../utils/pushNotification");
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {
@@ -100,9 +100,9 @@ const ADD_POST_TO_COMMUNITY = gql`
 `;
 
 /* POSTS QUERY */
-describe('[Query.posts]', () => {
+describe("[Query.posts]", () => {
   // POST QUERY { postId }
-  it('Get post by id', async () => {
+  it("Get post by id", async () => {
     const GET_POST = gql`
       query Post($postId: ID!) {
         post(postId: $postId) {
@@ -160,7 +160,7 @@ describe('[Query.posts]', () => {
   });
 
   // POSTS QUERY { communityId }
-  it('Get posts from community', async () => {
+  it("Get posts from community", async () => {
     const GET_POSTS = gql`
       query Posts($communityId: ID!) {
         posts(communityId: $communityId) {
@@ -211,9 +211,9 @@ describe('[Query.posts]', () => {
 });
 
 /* POSTS MUTATIONS */
-describe('[Mutation.posts]', () => {
+describe("[Mutation.posts]", () => {
   // CREATE_POST MUTATION { communityId }
-  it('Create post by user { communityId }', async () => {
+  it("Create post by user { communityId }", async () => {
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser01._id.toString() } }),
@@ -227,8 +227,8 @@ describe('[Mutation.posts]', () => {
 
     // Create community mutation input
     const postInput = {
-      title: 'Test Post 01',
-      desc: 'testPost01',
+      title: "Test Post 01",
+      desc: "testPost01",
       image: uploadImg(),
       condition: 0,
       isGiveaway: true,
@@ -254,7 +254,7 @@ describe('[Mutation.posts]', () => {
   });
 
   // CREATE_POST MUTATION
-  it('Create post by user for request { communityId }', async () => {
+  it("Create post by user for request { communityId }", async () => {
     const redis = new Redis();
 
     const { server } = constructTestServer({
@@ -265,8 +265,8 @@ describe('[Mutation.posts]', () => {
     pushNotification.mockImplementation(() => {});
 
     const postInput = {
-      title: 'Test Post 02',
-      desc: 'testPost02',
+      title: "Test Post 02",
+      desc: "testPost02",
       image: uploadImg(),
       condition: 1,
       isGiveaway: false,
@@ -306,7 +306,7 @@ describe('[Mutation.posts]', () => {
   });
 
   // UPDATE_POST MUTATION
-  it('Update post by creator', async () => {
+  it("Update post by creator", async () => {
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser01._id } }),
     });
@@ -317,8 +317,8 @@ describe('[Mutation.posts]', () => {
 
     const postInput = {
       postId: mockPost01._id.toString(),
-      title: 'Mock Post 01+',
-      desc: 'mockPost01+',
+      title: "Mock Post 01+",
+      desc: "mockPost01+",
       image: uploadImg(),
       condition: 1,
     };
@@ -338,7 +338,7 @@ describe('[Mutation.posts]', () => {
   });
 
   // UPDATE_POST MUTATION
-  it('Update post by unauthorized user', async () => {
+  it("Update post by unauthorized user", async () => {
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser02._id } }),
     });
@@ -349,8 +349,8 @@ describe('[Mutation.posts]', () => {
 
     const postInput = {
       postId: mockPost01._id.toString(),
-      title: 'Mock Post 01+',
-      desc: 'mockPost01+',
+      title: "Mock Post 01+",
+      desc: "mockPost01+",
       image: uploadImg(),
       condition: 1,
     };
@@ -361,7 +361,7 @@ describe('[Mutation.posts]', () => {
       variables: { postInput },
     });
 
-    expect(res.errors[0].message).toEqual('ForbiddenError: Unauthorized user');
+    expect(res.errors[0].message).toEqual("ForbiddenError: Unauthorized user");
   });
 
   // INACTIVATE_POST MUTATION { postId }
@@ -406,7 +406,7 @@ describe('[Mutation.posts]', () => {
       variables: { postId: mockPost01._id.toString() },
     });
 
-    expect(res.errors[0].message).toEqual('ForbiddenError: Unauthorized user');
+    expect(res.errors[0].message).toEqual("ForbiddenError: Unauthorized user");
   });
 
   // DELETE_POST MUTATION { postId }
@@ -483,7 +483,7 @@ describe('[Mutation.posts]', () => {
       variables: { postId: mockPost01._id.toString() },
     });
 
-    expect(res.errors[0].message).toEqual('ForbiddenError: Unauthorized user');
+    expect(res.errors[0].message).toEqual("ForbiddenError: Unauthorized user");
   });
 
   // ADD_POST_TO_COMMUNITY Mutation
@@ -527,6 +527,6 @@ describe('[Mutation.posts]', () => {
       },
     });
 
-    expect(res.errors[0].message).toEqual('ForbiddenError: Unauthorized user');
+    expect(res.errors[0].message).toEqual("ForbiddenError: Unauthorized user");
   });
 });

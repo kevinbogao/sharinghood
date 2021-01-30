@@ -1,8 +1,8 @@
-const { createTestClient } = require('apollo-server-testing');
-const { gql } = require('apollo-server');
-const Redis = require('ioredis-mock');
-const { constructTestServer } = require('./__utils');
-const inMemoryDb = require('./__mocks__/inMemoryDb');
+const { createTestClient } = require("apollo-server-testing");
+const { gql } = require("apollo-server");
+const Redis = require("ioredis-mock");
+const { constructTestServer } = require("./__utils");
+const inMemoryDb = require("./__mocks__/inMemoryDb");
 const {
   createInitData,
   mockUser01,
@@ -11,11 +11,11 @@ const {
   mockBooking01,
   mockCommunity01,
   mockNotification02,
-} = require('./__mocks__/createInitData');
-const Notification = require('../models/notification');
+} = require("./__mocks__/createInitData");
+const Notification = require("../models/notification");
 
-jest.mock('../utils/pushNotification');
-const pushNotification = require('../utils/pushNotification');
+jest.mock("../utils/pushNotification");
+const pushNotification = require("../utils/pushNotification");
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {
@@ -46,9 +46,9 @@ const UPDATE_BOOKING = gql`
 `;
 
 /* BOOKINGS MUTATIONS */
-describe('[Mutation.bookings]', () => {
+describe("[Mutation.bookings]", () => {
   // UPDATE_BOOKING MUTATION { status === 1 }
-  it('Accept booking', async () => {
+  it("Accept booking", async () => {
     const redis = new Redis();
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser01._id.toString() }, redis }),
@@ -79,7 +79,7 @@ describe('[Mutation.bookings]', () => {
     expect(res.data.updateBooking).toMatchObject({
       status: 1,
     });
-    expect(hasNotifications).toEqual('true');
+    expect(hasNotifications).toEqual("true");
 
     expect(notification).toMatchObject({
       isRead: expect.objectContaining({
@@ -90,7 +90,7 @@ describe('[Mutation.bookings]', () => {
   });
 
   // UPDATE_BOOKING MUTATION { status === 2 }
-  it('Deny booking', async () => {
+  it("Deny booking", async () => {
     const redis = new Redis();
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser01._id.toString() }, redis }),
@@ -121,7 +121,7 @@ describe('[Mutation.bookings]', () => {
     expect(res.data.updateBooking).toMatchObject({
       status: 2,
     });
-    expect(hasNotifications).toEqual('true');
+    expect(hasNotifications).toEqual("true");
 
     expect(notification).toMatchObject({
       isRead: expect.objectContaining({

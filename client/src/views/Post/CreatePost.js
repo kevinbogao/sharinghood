@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { gql, useMutation } from '@apollo/client';
-import InlineError from '../../components/InlineError';
-import uploadImg from '../../assets/images/upload.png';
-import Spinner from '../../components/Spinner';
-import { GET_POSTS } from './Posts';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { gql, useMutation } from "@apollo/client";
+import InlineError from "../../components/InlineError";
+import uploadImg from "../../assets/images/upload.png";
+import Spinner from "../../components/Spinner";
+import { GET_POSTS } from "./Posts";
 
 const CREATE_POST = gql`
   mutation CreatePost($postInput: PostInput!, $communityId: ID) {
@@ -42,21 +42,21 @@ function CreatePost({ communityId, history, location }) {
       } catch (err) {
         console.log(err);
       }
-      history.push('/find');
+      history.push("/find");
     },
     onError: () => {
       setError({
         res:
-          'We are experiencing difficulties right now :( Please try again later',
+          "We are experiencing difficulties right now :( Please try again later",
       });
     },
   });
 
   function validate() {
     const errors = {};
-    if (!title.value) errors.title = 'Please enter a title';
-    if (!desc.value) errors.desc = 'Please enter a description';
-    if (!image) errors.image = 'Please upload a picture of the item';
+    if (!title.value) errors.title = "Please enter a title";
+    if (!desc.value) errors.desc = "Please enter a description";
+    if (!image) errors.image = "Please upload a picture of the item";
     setError(errors);
     return errors;
   }
@@ -153,7 +153,7 @@ function CreatePost({ communityId, history, location }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .share-control {
             margin: auto;

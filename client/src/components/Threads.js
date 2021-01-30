@@ -1,5 +1,5 @@
-import React, { Fragment } from 'react';
-import PropTypes from 'prop-types';
+import React, { Fragment } from "react";
+import PropTypes from "prop-types";
 
 function Threads({ threads, members, communityId }) {
   return (
@@ -33,7 +33,7 @@ function Threads({ threads, members, communityId }) {
         ))}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .thread-control {
             width: 100%;
@@ -84,14 +84,14 @@ Threads.propTypes = {
       poster: PropTypes.shape({
         _id: PropTypes.string.isRequired,
       }).isRequired,
-    }),
+    })
   ).isRequired,
   members: PropTypes.arrayOf(
     PropTypes.shape({
       _id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
       image: PropTypes.string.isRequired,
-    }),
+    })
   ).isRequired,
 };
 

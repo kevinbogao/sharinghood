@@ -1,10 +1,10 @@
-const { AuthenticationError } = require('apollo-server');
-const mongoose = require('mongoose');
-const Community = require('../models/community');
-const User = require('../models/user');
-const Post = require('../models/post');
-const Request = require('../models/request');
-const Booking = require('../models/booking');
+const { AuthenticationError } = require("apollo-server");
+const mongoose = require("mongoose");
+const Community = require("../models/community");
+const User = require("../models/user");
+const Post = require("../models/post");
+const Request = require("../models/request");
+const Booking = require("../models/booking");
 
 const activitiesResolvers = {
   Query: {
@@ -12,7 +12,7 @@ const activitiesResolvers = {
       try {
         // Throw auth error is user is not admin
         if (!user || !user.isAdmin) {
-          throw new AuthenticationError('Not permitted');
+          throw new AuthenticationError("Not permitted");
         }
 
         // Get all communities, users, posts, requests & bookings
@@ -37,10 +37,10 @@ const activitiesResolvers = {
           },
           {
             $lookup: {
-              from: 'posts',
-              localField: 'posts',
-              foreignField: '_id',
-              as: 'posts',
+              from: "posts",
+              localField: "posts",
+              foreignField: "_id",
+              as: "posts",
             },
           },
           {
@@ -48,12 +48,12 @@ const activitiesResolvers = {
               _id: 1,
               name: 1,
               code: 1,
-              numUsers: { $size: '$members' },
-              numPosts: { $size: '$posts' },
-              numRequests: { $size: '$requests' },
+              numUsers: { $size: "$members" },
+              numPosts: { $size: "$posts" },
+              numRequests: { $size: "$requests" },
               numBookings: {
                 $sum: {
-                  $map: { input: '$posts', in: { $size: '$$this.bookings' } },
+                  $map: { input: "$posts", in: { $size: "$$this.bookings" } },
                 },
               },
             },
@@ -74,7 +74,7 @@ const activitiesResolvers = {
     },
     communityActivities: async (_, { communityId }, { user }) => {
       if (!user || !user.isAdmin) {
-        throw new AuthenticationError('Not permitted');
+        throw new AuthenticationError("Not permitted");
       }
 
       try {
@@ -82,26 +82,26 @@ const activitiesResolvers = {
           { $match: { _id: mongoose.Types.ObjectId(communityId) } },
           {
             $lookup: {
-              from: 'users',
-              localField: 'members',
-              foreignField: '_id',
-              as: 'members',
+              from: "users",
+              localField: "members",
+              foreignField: "_id",
+              as: "members",
             },
           },
           {
             $lookup: {
-              from: 'posts',
-              localField: 'posts',
-              foreignField: '_id',
-              as: 'posts',
+              from: "posts",
+              localField: "posts",
+              foreignField: "_id",
+              as: "posts",
             },
           },
           {
             $lookup: {
-              from: 'requests',
-              localField: 'requests',
-              foreignField: '_id',
-              as: 'requests',
+              from: "requests",
+              localField: "requests",
+              foreignField: "_id",
+              as: "requests",
             },
           },
           {

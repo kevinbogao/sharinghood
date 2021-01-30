@@ -1,16 +1,16 @@
-const { AuthenticationError } = require('apollo-server');
-const mongoose = require('mongoose');
-const User = require('../models/user');
-const Post = require('../models/post');
-const Booking = require('../models/booking');
-const Notification = require('../models/notification');
-const updateBookingMail = require('../utils/sendMail/updateBookingMail');
-const pushNotification = require('../utils/pushNotification');
+const { AuthenticationError } = require("apollo-server");
+const mongoose = require("mongoose");
+const User = require("../models/user");
+const Post = require("../models/post");
+const Booking = require("../models/booking");
+const Notification = require("../models/notification");
+const updateBookingMail = require("../utils/sendMail/updateBookingMail");
+const pushNotification = require("../utils/pushNotification");
 
 const notificationsResolvers = {
   Query: {
     notification: async (_, { notificationId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get notification & populate data && get notification mongoose instance
@@ -22,58 +22,58 @@ const notificationsResolvers = {
             },
             {
               $lookup: {
-                from: 'bookings',
-                let: { booking: '$booking' },
+                from: "bookings",
+                let: { booking: "$booking" },
                 pipeline: [
-                  { $match: { $expr: { $eq: ['$_id', '$$booking'] } } },
+                  { $match: { $expr: { $eq: ["$_id", "$$booking"] } } },
                   {
                     $lookup: {
-                      from: 'posts',
-                      localField: 'post',
-                      foreignField: '_id',
-                      as: 'post',
+                      from: "posts",
+                      localField: "post",
+                      foreignField: "_id",
+                      as: "post",
                     },
                   },
-                  { $unwind: '$post' },
+                  { $unwind: "$post" },
                 ],
-                as: 'booking',
+                as: "booking",
               },
             },
             {
               $unwind: {
-                path: '$booking',
+                path: "$booking",
                 preserveNullAndEmptyArrays: true,
               },
             },
             {
               $lookup: {
-                from: 'users',
-                let: { participants: '$participants' },
+                from: "users",
+                let: { participants: "$participants" },
                 pipeline: [
                   {
                     $match: {
                       $expr: {
                         $and: [
                           {
-                            $in: ['$_id', '$$participants'],
+                            $in: ["$_id", "$$participants"],
                           },
                           {
-                            $ne: ['$_id', mongoose.Types.ObjectId(user.userId)],
+                            $ne: ["$_id", mongoose.Types.ObjectId(user.userId)],
                           },
                         ],
                       },
                     },
                   },
                 ],
-                as: 'participants',
+                as: "participants",
               },
             },
             {
               $lookup: {
-                from: 'messages',
-                localField: 'messages',
-                foreignField: '_id',
-                as: 'messages',
+                from: "messages",
+                localField: "messages",
+                foreignField: "_id",
+                as: "messages",
               },
             },
           ]),
@@ -91,7 +91,7 @@ const notificationsResolvers = {
       }
     },
     notifications: async (_, { communityId }, { user, redis }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         const userNotifications = await User.aggregate([
@@ -100,86 +100,86 @@ const notificationsResolvers = {
           },
           {
             $lookup: {
-              from: 'notifications',
-              let: { notifications: '$notifications' },
+              from: "notifications",
+              let: { notifications: "$notifications" },
               pipeline: [
                 {
                   $match: {
                     // Filter notification by community id
                     community: mongoose.Types.ObjectId(communityId),
-                    $expr: { $in: ['$_id', '$$notifications'] },
+                    $expr: { $in: ["$_id", "$$notifications"] },
                   },
                 },
                 {
                   $lookup: {
-                    from: 'bookings',
-                    let: { booking: '$booking' },
+                    from: "bookings",
+                    let: { booking: "$booking" },
                     pipeline: [
-                      { $match: { $expr: { $eq: ['$_id', '$$booking'] } } },
+                      { $match: { $expr: { $eq: ["$_id", "$$booking"] } } },
                       {
                         $lookup: {
-                          from: 'posts',
-                          localField: 'post',
-                          foreignField: '_id',
-                          as: 'post',
+                          from: "posts",
+                          localField: "post",
+                          foreignField: "_id",
+                          as: "post",
                         },
                       },
                       {
                         $unwind: {
-                          path: '$post',
+                          path: "$post",
                           preserveNullAndEmptyArrays: true,
                         },
                       },
                     ],
-                    as: 'booking',
+                    as: "booking",
                   },
                 },
                 {
                   $unwind: {
-                    path: '$booking',
+                    path: "$booking",
                     preserveNullAndEmptyArrays: true,
                   },
                 },
                 {
                   $lookup: {
-                    from: 'posts',
-                    let: { post: '$post' },
+                    from: "posts",
+                    let: { post: "$post" },
                     pipeline: [
-                      { $match: { $expr: { $eq: ['$_id', '$$post'] } } },
+                      { $match: { $expr: { $eq: ["$_id", "$$post"] } } },
                       {
                         $lookup: {
-                          from: 'users',
-                          localField: 'creator',
-                          foreignField: '_id',
-                          as: 'creator',
+                          from: "users",
+                          localField: "creator",
+                          foreignField: "_id",
+                          as: "creator",
                         },
                       },
-                      { $unwind: '$creator' },
+                      { $unwind: "$creator" },
                     ],
-                    as: 'post',
+                    as: "post",
                   },
                 },
                 {
                   $unwind: {
-                    path: '$post',
+                    path: "$post",
                     preserveNullAndEmptyArrays: true,
                   },
                 },
                 {
                   $lookup: {
-                    from: 'users',
-                    let: { participants: '$participants' },
+                    from: "users",
+                    let: { participants: "$participants" },
                     pipeline: [
                       {
                         $match: {
                           $expr: {
                             $and: [
                               {
-                                $in: ['$_id', '$$participants'],
+                                $in: ["$_id", "$$participants"],
                               },
                               {
                                 $ne: [
-                                  '$_id',
+                                  "$_id",
                                   mongoose.Types.ObjectId(user.userId),
                                 ],
                               },
@@ -188,20 +188,20 @@ const notificationsResolvers = {
                         },
                       },
                     ],
-                    as: 'participants',
+                    as: "participants",
                   },
                 },
                 {
                   $lookup: {
-                    from: 'messages',
-                    localField: 'messages',
-                    foreignField: '_id',
-                    as: 'messages',
+                    from: "messages",
+                    localField: "messages",
+                    foreignField: "_id",
+                    as: "messages",
                   },
                 },
                 {
                   $addFields: {
-                    messages: { $slice: ['$messages', -1] },
+                    messages: { $slice: ["$messages", -1] },
                   },
                 },
                 {
@@ -210,7 +210,7 @@ const notificationsResolvers = {
                   },
                 },
               ],
-              as: 'notifications',
+              as: "notifications",
             },
           },
         ]);
@@ -225,7 +225,7 @@ const notificationsResolvers = {
       }
     },
     findNotification: async (_, { recipientId, communityId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Find a notification where both of users participates in and of
@@ -249,7 +249,7 @@ const notificationsResolvers = {
       { notificationInput: { ofType, recipientId, communityId, bookingInput } },
       { user, redis }
     ) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Declare top level variables
@@ -298,7 +298,7 @@ const notificationsResolvers = {
           // Save post & sent booking email to recipient if recipient is subscribed to email
           await Promise.all([
             post.save(),
-            process.env.NODE_ENV === 'production' &&
+            process.env.NODE_ENV === "production" &&
               recipient.isNotified &&
               updateBookingMail(
                 `${process.env.ORIGIN}/notifications`,

@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
-import moment from 'moment';
-import Spinner from '../../components/Spinner';
+import React from "react";
+import PropTypes from "prop-types";
+import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
+import moment from "moment";
+import Spinner from "../../components/Spinner";
 
 const GET_USER_COMMUNITIES = gql`
   query Communities {
@@ -72,7 +72,7 @@ function Notifications({ history, communityId }) {
   const client = useApolloClient();
   const { loading, error, data } = useQuery(GET_NOTIFICATIONS, {
     variables: { communityId },
-    fetchPolicy: 'network-only',
+    fetchPolicy: "network-only",
     onCompleted: () => {
       try {
         // Get communities from cache
@@ -88,7 +88,7 @@ function Notifications({ history, communityId }) {
             communities: communities.map((community) =>
               community._id === communityId
                 ? { ...community, hasNotifications: false }
-                : community,
+                : community
             ),
           },
         });
@@ -141,7 +141,7 @@ function Notifications({ history, communityId }) {
                       className={`noti-img-border ${
                         notification.isRead[data.tokenPayload.userId]
                           ? undefined
-                          : 'unread'
+                          : "unread"
                       }
                       `}
                     >
@@ -173,7 +173,7 @@ function Notifications({ history, communityId }) {
                         </p>
                       ) : (
                         <p className="text">
-                          Send a message to {notification.participants[0].name}{' '}
+                          Send a message to {notification.participants[0].name}{" "}
                           now
                         </p>
                       )}
@@ -187,7 +187,7 @@ function Notifications({ history, communityId }) {
                       className={`noti-img-border ${
                         notification.isRead[data.tokenPayload.userId]
                           ? undefined
-                          : 'unread'
+                          : "unread"
                       }
                   `}
                     >
@@ -212,7 +212,7 @@ function Notifications({ history, communityId }) {
                         </p>
                       ) : (
                         <p className="title">
-                          {notification.participants[0].name} requested your{' '}
+                          {notification.participants[0].name} requested your{" "}
                           {notification.booking.post.title}
                         </p>
                       )}
@@ -223,11 +223,11 @@ function Notifications({ history, communityId }) {
                       ) : (
                         <span>
                           {moment(+notification.booking.dateNeed).format(
-                            'DD.MM.Y',
-                          )}{' '}
-                          -{' '}
+                            "DD.MM.Y"
+                          )}{" "}
+                          -{" "}
                           {moment(+notification.booking.dateReturn).format(
-                            'DD.MM.Y',
+                            "DD.MM.Y"
                           )}
                         </span>
                       )}
@@ -337,7 +337,7 @@ function Notifications({ history, communityId }) {
                       className={`noti-img-border ${
                         notification.isRead[data.tokenPayload.userId]
                           ? undefined
-                          : 'unread'
+                          : "unread"
                       }
                   `}
                     >
@@ -376,7 +376,7 @@ function Notifications({ history, communityId }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .notifications-control {
             margin: 20px auto 30px auto;

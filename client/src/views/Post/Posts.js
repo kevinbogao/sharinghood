@@ -1,9 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { gql, useQuery } from '@apollo/client';
-import ItemsGrid from '../../components/ItemsGrid';
-import Spinner from '../../components/Spinner';
+import React from "react";
+import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
+import { gql, useQuery } from "@apollo/client";
+import ItemsGrid from "../../components/ItemsGrid";
+import Spinner from "../../components/Spinner";
 
 const GET_POSTS = gql`
   query Posts($communityId: ID!) {
@@ -93,7 +93,7 @@ function Posts({ communityId }) {
       ))}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .item-card {
             background: $grey-100;

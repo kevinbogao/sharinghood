@@ -1,8 +1,8 @@
-const { AuthenticationError } = require('apollo-server');
-const mongoose = require('mongoose');
-const User = require('../models/user');
-const Community = require('../models/community');
-const handleErrors = require('../utils/handleErrors');
+const { AuthenticationError } = require("apollo-server");
+const mongoose = require("mongoose");
+const User = require("../models/user");
+const Community = require("../models/community");
+const handleErrors = require("../utils/handleErrors");
 
 const communitiesResolvers = {
   Query: {
@@ -24,10 +24,10 @@ const communitiesResolvers = {
           },
           {
             $lookup: {
-              from: 'users',
-              localField: 'members',
-              foreignField: '_id',
-              as: 'members',
+              from: "users",
+              localField: "members",
+              foreignField: "_id",
+              as: "members",
             },
           },
         ]);
@@ -38,17 +38,17 @@ const communitiesResolvers = {
       }
     },
     communities: async (_, __, { user, redis }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         const userCommunities = await User.aggregate([
           { $match: { _id: mongoose.Types.ObjectId(user.userId) } },
           {
             $lookup: {
-              from: 'communities',
-              localField: 'communities',
-              foreignField: '_id',
-              as: 'communities',
+              from: "communities",
+              localField: "communities",
+              foreignField: "_id",
+              as: "communities",
             },
           },
         ]);
@@ -63,7 +63,7 @@ const communitiesResolvers = {
             );
             return {
               ...community,
-              hasNotifications: hasNotifications === 'true' || false,
+              hasNotifications: hasNotifications === "true" || false,
             };
           })
         );
@@ -80,7 +80,7 @@ const communitiesResolvers = {
       { communityInput: { name, code, zipCode } },
       { user }
     ) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Create & save community && get user
@@ -106,7 +106,7 @@ const communitiesResolvers = {
       }
     },
     joinCommunity: async (_, { communityId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get current user & community

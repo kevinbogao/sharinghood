@@ -25,6 +25,7 @@ chrome-user-data
 *.env
 *.http
 nodemon.json
+.eslintcache
 
 packages/react-devtools-core/dist
 packages/react-devtools-extensions/chrome/build

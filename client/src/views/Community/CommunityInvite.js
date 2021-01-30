@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
-import Modal from 'react-modal';
-import Spinner from '../../components/Spinner';
-import ProductScreenshot from '../../assets/images/product-screenshot.png';
-import { GET_COMMUNITY } from '../../components/Navbar';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
+import Modal from "react-modal";
+import Spinner from "../../components/Spinner";
+import ProductScreenshot from "../../assets/images/product-screenshot.png";
+import { GET_COMMUNITY } from "../../components/Navbar";
 
 const GET_USER_COMMUNITIES = gql`
   query Communities {
@@ -48,7 +48,7 @@ const JOIN_COMMUNITY = gql`
 
 function CommunityInvite({ match, history }) {
   const client = useApolloClient();
-  const [pageError, setPageError] = useState('');
+  const [pageError, setPageError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [isErrModalOpen, setIsErrModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
@@ -72,7 +72,7 @@ function CommunityInvite({ match, history }) {
     ],
     // Redirect user to posts page on complete
     onCompleted: () => {
-      history.push('/find');
+      history.push("/find");
     },
   });
 
@@ -105,7 +105,7 @@ function CommunityInvite({ match, history }) {
       onError: ({ message }) => {
         setPageError(message);
       },
-    },
+    }
   );
 
   // Try to join user to community if user is logged in,
@@ -114,7 +114,7 @@ function CommunityInvite({ match, history }) {
     if (data.tokenPayload) {
       // Check if user is part of the community
       const userIsMember = data.community.members.some(
-        (member) => member._id === data.tokenPayload.userId,
+        (member) => member._id === data.tokenPayload.userId
       );
 
       // Get user communities from cache
@@ -124,7 +124,7 @@ function CommunityInvite({ match, history }) {
 
       // Open error modal if user is part of 5 communities already
       if (communities.length >= 5) {
-        setPageError('You have reached the maximum number of communities');
+        setPageError("You have reached the maximum number of communities");
         setIsErrModalOpen(true);
         // Open error modal if user is part of the the community already
       } else if (userIsMember) {
@@ -135,7 +135,7 @@ function CommunityInvite({ match, history }) {
       }
     } else {
       history.push({
-        pathname: '/find-community',
+        pathname: "/find-community",
         state: {
           communityId: data.community._id,
           communityCode: data.community.code,
@@ -247,7 +247,7 @@ function CommunityInvite({ match, history }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
           .community-invite-control {
             margin: auto;
             display: flex;

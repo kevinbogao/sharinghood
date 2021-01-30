@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation } from '@apollo/client';
-import Spinner from '../../components/Spinner';
-import ProfilePosts from '../../components/ProfilePosts';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { gql, useQuery, useMutation } from "@apollo/client";
+import Spinner from "../../components/Spinner";
+import ProfilePosts from "../../components/ProfilePosts";
 
 const GET_USER = gql`
   query User {
@@ -38,9 +38,9 @@ const UPDATE_USER = gql`
 `;
 
 function Profile({ history }) {
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const [image, setImage] = useState(null);
-  const [apartment, setApartment] = useState('');
+  const [apartment, setApartment] = useState("");
   const { data, error, loading } = useQuery(GET_USER, {
     onError: ({ message }) => {
       console.log(message);
@@ -54,7 +54,7 @@ function Profile({ history }) {
           user: updateUser,
         },
       });
-      history.push('/find');
+      history.push("/find");
     },
     onError: ({ message }) => {
       console.log(message);
@@ -72,7 +72,7 @@ function Profile({ history }) {
           e.preventDefault();
           // Redirect to posts page if no changes were made
           if (!name && !apartment && !image) {
-            history.push('/find');
+            history.push("/find");
           } else {
             updateUser({
               variables: {
@@ -135,7 +135,7 @@ function Profile({ history }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .profile-control {
             margin: auto;
@@ -155,7 +155,7 @@ function Profile({ history }) {
               display: none;
             }
 
-            label[for='file-input'] > img {
+            label[for="file-input"] > img {
               cursor: pointer;
               height: 100px;
               width: 100px;

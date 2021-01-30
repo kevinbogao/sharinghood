@@ -1,11 +1,11 @@
-const { createTestClient } = require('apollo-server-testing');
-const { gql } = require('apollo-server');
-const { sign, verify } = require('jsonwebtoken');
-const Redis = require('ioredis-mock');
-const crypto = require('crypto');
-const bcryptjs = require('bcryptjs');
-const { constructTestServer } = require('./__utils');
-const inMemoryDb = require('./__mocks__/inMemoryDb');
+const { createTestClient } = require("apollo-server-testing");
+const { gql } = require("apollo-server");
+const { sign, verify } = require("jsonwebtoken");
+const Redis = require("ioredis-mock");
+const crypto = require("crypto");
+const bcryptjs = require("bcryptjs");
+const { constructTestServer } = require("./__utils");
+const inMemoryDb = require("./__mocks__/inMemoryDb");
 const {
   createInitData,
   fcmToken,
@@ -15,22 +15,22 @@ const {
   mockCommunity02,
   mockUploadResponse,
   updatedMockUploadResponse,
-} = require('./__mocks__/createInitData');
-const User = require('../models/user');
-const Community = require('../models/community');
+} = require("./__mocks__/createInitData");
+const User = require("../models/user");
+const Community = require("../models/community");
 
 // Mocking dependencies
-jest.mock('../utils/uploadImg');
-const uploadImg = require('../utils/uploadImg');
+jest.mock("../utils/uploadImg");
+const uploadImg = require("../utils/uploadImg");
 
-jest.mock('../utils/sendMail/index');
-const sendMail = require('../utils/sendMail/index');
+jest.mock("../utils/sendMail/index");
+const sendMail = require("../utils/sendMail/index");
 
 // Connect to a new in-memory database before running any tests
 // & set enviorment variables
 beforeAll(async () => {
   await inMemoryDb.connect();
-  process.env = Object.assign(process.env, { JWT_SECRET: 'secret' });
+  process.env = Object.assign(process.env, { JWT_SECRET: "secret" });
 });
 
 // Write initial data to to database
@@ -108,9 +108,9 @@ const ADD_FCM_TOKEN_TO_USER = gql`
 `;
 
 /* USERS QUERY */
-describe('[Query.users]', () => {
+describe("[Query.users]", () => {
   // USER QUERY
-  it('Get user data and user posts', async () => {
+  it("Get user data and user posts", async () => {
     const GET_USER = gql`
       query User {
         user {
@@ -161,8 +161,8 @@ describe('[Query.users]', () => {
   });
 
   // VALIDATE_RESET_LINK QUERY
-  it('Validate password reset link', async () => {
-    const resetKey = crypto.randomBytes(16).toString('hex');
+  it("Validate password reset link", async () => {
+    const resetKey = crypto.randomBytes(16).toString("hex");
 
     const redis = new Redis({
       data: {
@@ -186,8 +186,8 @@ describe('[Query.users]', () => {
   });
 
   // VALIDATE_RESET_LINK QUERY WITH INVALID LINK
-  it('Validate password reset link with invalid key', async () => {
-    const resetKey = crypto.randomBytes(16).toString('hex');
+  it("Validate password reset link with invalid key", async () => {
+    const resetKey = crypto.randomBytes(16).toString("hex");
 
     const redis = new Redis({
       data: {
@@ -204,7 +204,7 @@ describe('[Query.users]', () => {
     const { query } = createTestClient(server);
     const res = await query({
       query: VALIDATE_RESET_LINK,
-      variables: { resetKey: 'invalid-key' },
+      variables: { resetKey: "invalid-key" },
     });
 
     expect(res.data.validateResetLink).not.toBeTruthy();
@@ -212,9 +212,9 @@ describe('[Query.users]', () => {
 });
 
 /* USERS MUTATION */
-describe('[Mutation.users]', () => {
+describe("[Mutation.users]", () => {
   // LOGIN MUTATION { isMigrated: true }
-  it('Login migrated user ', async () => {
+  it("Login migrated user ", async () => {
     const LOGIN = gql`
       mutation Login($email: String!, $password: String!) {
         login(email: $email, password: $password) {
@@ -234,8 +234,8 @@ describe('[Mutation.users]', () => {
     const res = await mutate({
       mutation: LOGIN,
       variables: {
-        email: 'mock.user01@email.com',
-        password: '1234567',
+        email: "mock.user01@email.com",
+        password: "1234567",
       },
     });
 
@@ -261,7 +261,7 @@ describe('[Mutation.users]', () => {
   });
 
   // LOGIN MUTATION { isMigrated: false }
-  it('Login unmigrated user ', async () => {
+  it("Login unmigrated user ", async () => {
     const LOGIN = gql`
       mutation Login($email: String!, $password: String!) {
         login(email: $email, password: $password) {
@@ -281,8 +281,8 @@ describe('[Mutation.users]', () => {
     const res = await mutate({
       mutation: LOGIN,
       variables: {
-        email: 'mock.user03@email.com',
-        password: '1234567',
+        email: "mock.user03@email.com",
+        password: "1234567",
       },
     });
 
@@ -306,7 +306,7 @@ describe('[Mutation.users]', () => {
     });
 
     const user = await User.findById(mockUser03._id.toString());
-    const userhashArr = user.password.split('$');
+    const userhashArr = user.password.split("$");
 
     // User's migration status should be changed to true
     expect(user).toMatchObject({
@@ -314,11 +314,11 @@ describe('[Mutation.users]', () => {
     });
 
     // User's password hash should not start with 'pbkdf2_sha256'
-    expect(userhashArr[0]).not.toEqual('pbkdf2_sha256');
+    expect(userhashArr[0]).not.toEqual("pbkdf2_sha256");
   });
 
   // LOGIN MUTATION WITH WRONG EMAIL
-  it('Login user with wrong email', async () => {
+  it("Login user with wrong email", async () => {
     const LOGIN = gql`
       mutation Login($email: String!, $password: String!) {
         login(email: $email, password: $password) {
@@ -338,17 +338,17 @@ describe('[Mutation.users]', () => {
     const res = await mutate({
       mutation: LOGIN,
       variables: {
-        email: 'non.existent@email.com',
-        password: '1234567',
+        email: "non.existent@email.com",
+        password: "1234567",
       },
     });
 
     // Expected error comparison
-    expect(res.errors[0].message).toEqual('email: User not found');
+    expect(res.errors[0].message).toEqual("email: User not found");
   });
 
   // LOGIN MUTATION WITH WRONG PASSWORD
-  it('Login user with wrong password', async () => {
+  it("Login user with wrong password", async () => {
     const LOGIN = gql`
       mutation Login($email: String!, $password: String!) {
         login(email: $email, password: $password) {
@@ -368,17 +368,17 @@ describe('[Mutation.users]', () => {
     const res = await mutate({
       mutation: LOGIN,
       variables: {
-        email: 'mock.user01@email.com',
-        password: 'wrongPassword',
+        email: "mock.user01@email.com",
+        password: "wrongPassword",
       },
     });
 
     // Expected error comparison
-    expect(res.errors[0].message).toEqual('password: Invalid credentials');
+    expect(res.errors[0].message).toEqual("password: Invalid credentials");
   });
 
   // LOGOUT MUTATION
-  it('logout user ', async () => {
+  it("logout user ", async () => {
     const LOGOUT = gql`
       mutation {
         logout
@@ -406,7 +406,7 @@ describe('[Mutation.users]', () => {
   });
 
   // REGISTER_AND_OR_CREATE_COMMUNITY MUTATION FOR USER & COMMUNITY
-  it('Register user and create community', async () => {
+  it("Register user and create community", async () => {
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
       context: () => {},
@@ -417,18 +417,18 @@ describe('[Mutation.users]', () => {
 
     // userInput & communityInput
     const userInput = {
-      name: 'TestUser01',
-      email: 'test.user01@email.com',
-      password: '1234567',
-      apartment: '101',
+      name: "TestUser01",
+      email: "test.user01@email.com",
+      password: "1234567",
+      apartment: "101",
       isNotified: true,
       isCreator: true,
       image: uploadImg(),
     };
     const communityInput = {
-      name: 'TestCommunity01',
-      code: 'testCommunity01',
-      zipCode: '10001',
+      name: "TestCommunity01",
+      code: "testCommunity01",
+      zipCode: "10001",
     };
 
     // Create test interface
@@ -491,7 +491,7 @@ describe('[Mutation.users]', () => {
   });
 
   // REGISTER_AND_OR_CREATE_COMMUNITY MUTATION
-  it('Register user to existing community', async () => {
+  it("Register user to existing community", async () => {
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
       context: () => {},
@@ -501,10 +501,10 @@ describe('[Mutation.users]', () => {
     uploadImg.mockImplementation(() => JSON.stringify(mockUploadResponse));
 
     const userInput = {
-      name: 'TestUser02',
-      email: 'test.user02@email.com',
-      password: '1234567',
-      apartment: '102',
+      name: "TestUser02",
+      email: "test.user02@email.com",
+      password: "1234567",
+      apartment: "102",
       isNotified: true,
       communityId: mockCommunity01._id.toString(),
       image: uploadImg(),
@@ -561,7 +561,7 @@ describe('[Mutation.users]', () => {
   });
 
   // UPDATE_USER MUTATION
-  it('Update user data', async () => {
+  it("Update user data", async () => {
     // User update mutation
     const UPDATE_USER = gql`
       mutation UpdateUser($userInput: UserInput) {
@@ -587,8 +587,8 @@ describe('[Mutation.users]', () => {
 
     // User input for mutation
     const mutationInput = {
-      name: 'MockUser01+',
-      apartment: '001+',
+      name: "MockUser01+",
+      apartment: "001+",
       image: uploadImg(),
     };
 
@@ -616,7 +616,7 @@ describe('[Mutation.users]', () => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: '7d',
+        expiresIn: "7d",
       }
     );
 
@@ -661,7 +661,7 @@ describe('[Mutation.users]', () => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: '7d',
+        expiresIn: "7d",
       }
     );
 
@@ -677,7 +677,7 @@ describe('[Mutation.users]', () => {
       variables: { token: refreshToken },
     });
 
-    expect(res.errors[0].message).toEqual('Please login again');
+    expect(res.errors[0].message).toEqual("Please login again");
   });
 
   // TOKEN_REFRESH MUTATION { token }
@@ -686,7 +686,7 @@ describe('[Mutation.users]', () => {
       { userId: mockUser01._id.toString() },
       process.env.JWT_SECRET,
       {
-        expiresIn: '0s',
+        expiresIn: "0s",
       }
     );
 
@@ -702,11 +702,11 @@ describe('[Mutation.users]', () => {
       variables: { token: refreshToken },
     });
 
-    expect(res.errors[0].message).toEqual('Please login again');
+    expect(res.errors[0].message).toEqual("Please login again");
   });
 
   // FORGOT_PASSWORD MUTATION
-  it('Create forgot password link', async () => {
+  it("Create forgot password link", async () => {
     const redis = new Redis();
 
     const { server } = constructTestServer({
@@ -729,8 +729,8 @@ describe('[Mutation.users]', () => {
   });
 
   // FORGOT_PASSWORD MUTATION
-  it('Resend forgot password link', async () => {
-    const resetKey = crypto.randomBytes(16).toString('hex');
+  it("Resend forgot password link", async () => {
+    const resetKey = crypto.randomBytes(16).toString("hex");
 
     const redis = new Redis({
       data: {
@@ -758,7 +758,7 @@ describe('[Mutation.users]', () => {
   });
 
   // FORGOT_PASSWORD MUTATION WITH WRONG EMAIL
-  it('Forgot password mutation with invalid email', async () => {
+  it("Forgot password mutation with invalid email", async () => {
     const redis = new Redis();
 
     const { server } = constructTestServer({
@@ -770,15 +770,15 @@ describe('[Mutation.users]', () => {
     const { mutate } = createTestClient(server);
     const res = await mutate({
       mutation: FORGOT_PASSWORD,
-      variables: { email: 'non.existent@email.com' },
+      variables: { email: "non.existent@email.com" },
     });
 
-    expect(res.errors[0].message).toEqual('email: User not found');
+    expect(res.errors[0].message).toEqual("email: User not found");
   });
 
   // RESET_PASSWORD MUTATION { resetKey, password }
-  it('Reset user password', async () => {
-    const resetKey = crypto.randomBytes(16).toString('hex');
+  it("Reset user password", async () => {
+    const resetKey = crypto.randomBytes(16).toString("hex");
 
     const redis = new Redis({
       data: {
@@ -789,7 +789,7 @@ describe('[Mutation.users]', () => {
 
     const resetPasswordInput = {
       resetKey,
-      password: 'new_password',
+      password: "new_password",
     };
 
     const { server } = constructTestServer({
@@ -821,8 +821,8 @@ describe('[Mutation.users]', () => {
   });
 
   // RESET_PASSWORD MUTATION { resetKey, password }
-  it('Reset user password for unmigrated user', async () => {
-    const resetKey = crypto.randomBytes(16).toString('hex');
+  it("Reset user password for unmigrated user", async () => {
+    const resetKey = crypto.randomBytes(16).toString("hex");
 
     const redis = new Redis({
       data: {
@@ -833,7 +833,7 @@ describe('[Mutation.users]', () => {
 
     const resetPasswordInput = {
       resetKey,
-      password: 'new_password',
+      password: "new_password",
     };
 
     const { server } = constructTestServer({
@@ -866,7 +866,7 @@ describe('[Mutation.users]', () => {
   });
 
   // ADD_FCM_TOKEN_TO_USER FOR NEW TOKEN
-  it('Add new FCM token to user', async () => {
+  it("Add new FCM token to user", async () => {
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser03._id.toString() } }),
     });
@@ -889,7 +889,7 @@ describe('[Mutation.users]', () => {
   });
 
   // ADD_FCM_TOKEN_TO_USER FOR EXISTING TOKEN
-  it('Add existing FCM token to user', async () => {
+  it("Add existing FCM token to user", async () => {
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser03._id.toString() } }),
     });

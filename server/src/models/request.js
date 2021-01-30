@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 const requestSchema = new Schema(
   {
@@ -30,16 +30,16 @@ const requestSchema = new Schema(
 
     creator: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
     threads: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Thread',
+        ref: "Thread",
       },
     ],
   },
   { timestamps: true }
 );
 
-module.exports = model('Request', requestSchema);
+module.exports = model("Request", requestSchema);

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { Redirect } from 'react-router-dom';
-import { gql, useQuery, useMutation } from '@apollo/client';
-import InlineError from '../../components/InlineError';
-import Spinner from '../../components/Spinner';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { Redirect } from "react-router-dom";
+import { gql, useQuery, useMutation } from "@apollo/client";
+import InlineError from "../../components/InlineError";
+import Spinner from "../../components/Spinner";
 
 const GET_ACCESS_TOKEN = gql`
   {
@@ -18,8 +18,8 @@ const FORGOT_PASSWORD = gql`
 `;
 
 function ForgotPassword({ location }) {
-  const { from } = location.state || { from: { pathname: '/' } };
-  const [email, setEmail] = useState('');
+  const { from } = location.state || { from: { pathname: "/" } };
+  const [email, setEmail] = useState("");
   const [error, setError] = useState({});
   const [isSuccess, setIsSuccess] = useState(false);
   const [isReSend, setIsReSend] = useState(false);
@@ -34,15 +34,15 @@ function ForgotPassword({ location }) {
         if (forgotPassword) setIsSuccess(true);
       },
       onError: ({ message }) => {
-        const errMsgArr = message.split(': ');
+        const errMsgArr = message.split(": ");
         setError({ [errMsgArr[0]]: errMsgArr[1] });
       },
-    },
+    }
   );
 
   function validate() {
     const errors = {};
-    if (!email) errors.email = 'Please enter your email address';
+    if (!email) errors.email = "Please enter your email address";
     setError(errors);
     return errors;
   }
@@ -113,7 +113,7 @@ function ForgotPassword({ location }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .forgot-password-control {
             margin: auto;
@@ -146,7 +146,7 @@ ForgotPassword.defaultProps = {
   location: PropTypes.shape({
     state: PropTypes.shape({
       from: PropTypes.shape({
-        pathname: '/',
+        pathname: "/",
       }),
     }),
   }),

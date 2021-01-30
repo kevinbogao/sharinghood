@@ -1,5 +1,5 @@
-const gcm = require('node-gcm');
-const User = require('../models/user');
+const gcm = require("node-gcm");
+const User = require("../models/user");
 
 async function removeInvalidTokens(invalidTokens) {
   try {
@@ -26,10 +26,10 @@ function pushNotification(data, body, receivers) {
   const message = new gcm.Message({
     data,
     notification: {
-      title: 'Sharinghood',
+      title: "Sharinghood",
       body,
       icon:
-        'https://res.cloudinary.com/dyr3b99uj/image/upload/v1595095559/qgrumirwk412dq4t0hql.png',
+        "https://res.cloudinary.com/dyr3b99uj/image/upload/v1595095559/qgrumirwk412dq4t0hql.png",
     },
   });
 

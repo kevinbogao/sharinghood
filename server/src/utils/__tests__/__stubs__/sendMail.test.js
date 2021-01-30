@@ -1,21 +1,21 @@
-const nodemailer = require('nodemailer');
-const { stubTransport } = require('nodemailer-stub');
-const sendMail = require('../../sendMail/index');
+const nodemailer = require("nodemailer");
+const { stubTransport } = require("nodemailer-stub");
+const sendMail = require("../../sendMail/index");
 
-describe('Test sendMail function', () => {
-  it('Should send mail', async () => {
+describe("Test sendMail function", () => {
+  it("Should send mail", async () => {
     // Create stub transport
     const transport = nodemailer.createTransport(stubTransport);
 
     // Mock transport
     jest
-      .spyOn(nodemailer, 'createTransport')
+      .spyOn(nodemailer, "createTransport")
       .mockImplementation(() => transport);
 
     const mailArgs = {
-      to: 'stub01@email.com',
-      subject: 'Stub 01 subject',
-      text: '',
+      to: "stub01@email.com",
+      subject: "Stub 01 subject",
+      text: "",
       html: `
       <!DOCTYPE html>
       <html>
@@ -37,7 +37,7 @@ describe('Test sendMail function', () => {
     );
 
     expect(mail).toMatchObject({
-      from: 'sharinghood@gmail.com',
+      from: "sharinghood@gmail.com",
       subject: mailArgs.subject,
       to: expect.arrayContaining([mailArgs.to]),
     });

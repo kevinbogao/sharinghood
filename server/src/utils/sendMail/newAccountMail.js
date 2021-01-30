@@ -1,11 +1,11 @@
-const sendMail = require('./index');
+const sendMail = require("./index");
 
 async function newAccountMail(
   confirmationUrl,
   communityName,
   to,
   subject,
-  text = ''
+  text = ""
 ) {
   const html = `
     <!DOCTYPE html>

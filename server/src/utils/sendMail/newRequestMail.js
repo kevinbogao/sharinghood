@@ -1,4 +1,4 @@
-const sendMail = require('./index');
+const sendMail = require("./index");
 
 async function newRequestMail(
   userName,
@@ -8,7 +8,7 @@ async function newRequestMail(
   dateNeed,
   to,
   subject,
-  text = ''
+  text = ""
 ) {
   const html = `
     <!DOCTYPE html>

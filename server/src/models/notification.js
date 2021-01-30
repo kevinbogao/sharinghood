@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 const notificationSchema = new Schema(
   {
@@ -13,20 +13,20 @@ const notificationSchema = new Schema(
     // For ofType 1
     booking: {
       type: Schema.Types.ObjectId,
-      ref: 'Booking',
+      ref: "Booking",
     },
 
     // For ofType 2
     post: {
       type: Schema.Types.ObjectId,
-      ref: 'Post',
+      ref: "Post",
     },
 
     // All messages associated with booking or chat
     messages: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Message',
+        ref: "Message",
       },
     ],
 
@@ -34,7 +34,7 @@ const notificationSchema = new Schema(
     participants: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: "User",
       },
     ],
 
@@ -44,7 +44,7 @@ const notificationSchema = new Schema(
     // Notification community
     community: {
       type: Schema.Types.ObjectId,
-      ref: 'Community',
+      ref: "Community",
     },
   },
   { timestamps: true }
@@ -62,4 +62,4 @@ notificationSchema.index({ booking: 1 });
 // Secondary index for post
 notificationSchema.index({ post: 1 });
 
-module.exports = model('Notification', notificationSchema);
+module.exports = model("Notification", notificationSchema);

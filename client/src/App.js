@@ -32,6 +32,10 @@ import NotificationDetails from "./views/Notification/NotificationDetails";
 // eslint-disable-next-line
 import _JSXStyle from "styled-jsx/style";
 
+if (typeof global !== "undefined") {
+  Object.assign(global, { _JSXStyle });
+}
+
 // Initialize firebase
 firebase.initializeApp({
   apiKey: "AIzaSyD5Qi78uPMJbZIdP4Xrso_Xgw_KkoUNIFc",

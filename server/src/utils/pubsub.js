@@ -1,5 +1,5 @@
-const { RedisPubSub } = require('graphql-redis-subscriptions');
-const Redis = require('ioredis');
+const { RedisPubSub } = require("graphql-redis-subscriptions");
+const Redis = require("ioredis");
 
 const options = {
   retryStrategy: (times) => Math.min(times * 100, 3000),

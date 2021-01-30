@@ -1,16 +1,16 @@
-const { sign, verify } = require('jsonwebtoken');
-const { generateTokens, verifyToken } = require('../authToken');
-const { mockUser01 } = require('../../__tests__/__mocks__/createInitData');
+const { sign, verify } = require("jsonwebtoken");
+const { generateTokens, verifyToken } = require("../authToken");
+const { mockUser01 } = require("../../__tests__/__mocks__/createInitData");
 
 // Set enviorment variables
 beforeAll(() => {
-  process.env = Object.assign(process.env, { JWT_SECRET: 'secret' });
+  process.env = Object.assign(process.env, { JWT_SECRET: "secret" });
 });
 
 /* AUTH_TOKEN UTILS */
-describe('[Utils.authToken]', () => {
+describe("[Utils.authToken]", () => {
   // GENERATE_TOKENS
-  it('Should generate accessToken and refreshToken', () => {
+  it("Should generate accessToken and refreshToken", () => {
     const { accessToken, refreshToken } = generateTokens(mockUser01);
 
     const accessTokenPayload = verify(accessToken, process.env.JWT_SECRET);
@@ -28,7 +28,7 @@ describe('[Utils.authToken]', () => {
   });
 
   // VERIFY_TOKEN
-  it('Should validate accessToken', () => {
+  it("Should validate accessToken", () => {
     const accessToken = sign(
       {
         userId: mockUser01._id.toString(),
@@ -37,7 +37,7 @@ describe('[Utils.authToken]', () => {
         ...(mockUser01.isAdmin && { isAdmin: true }),
       },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: "1h" }
     );
 
     const accessTokenPayload = verifyToken(accessToken);
@@ -50,12 +50,12 @@ describe('[Utils.authToken]', () => {
   });
 
   // VERIFY_TOKEN
-  it('Should validate refreshToken', () => {
+  it("Should validate refreshToken", () => {
     const refreshToken = sign(
       { userId: mockUser01._id.toString() },
       process.env.JWT_SECRET,
       {
-        expiresIn: '7d',
+        expiresIn: "7d",
       }
     );
     const refreshTokenPayload = verifyToken(refreshToken);
@@ -66,21 +66,21 @@ describe('[Utils.authToken]', () => {
   });
 
   // VERIFY_TOKEN
-  it('Should return null for if token is not given', () => {
+  it("Should return null for if token is not given", () => {
     const undefinedTokenPayload = verifyToken();
     expect(undefinedTokenPayload).toBeNull();
   });
 
   // VERIFY_TOKEN
-  it('Should return null for invalid token', () => {
+  it("Should return null for invalid token", () => {
     const invalidToken = sign(
       {
         userId: mockUser01._id.toString(),
         userName: mockUser01.name,
         email: mockUser01.email,
       },
-      'fake_jwt_secret',
-      { expiresIn: '1h' }
+      "fake_jwt_secret",
+      { expiresIn: "1h" }
     );
 
     const invalidTokenPayload = verifyToken(invalidToken);
@@ -89,15 +89,15 @@ describe('[Utils.authToken]', () => {
   });
 
   // VERIFY_TOKEN
-  it('Should return null for expired token', () => {
+  it("Should return null for expired token", () => {
     const expiredToken = sign(
       {
         userId: mockUser01._id.toString(),
         userName: mockUser01.name,
         email: mockUser01.email,
       },
-      'fake_jwt_secret',
-      { expiresIn: '0s' }
+      "fake_jwt_secret",
+      { expiresIn: "0s" }
     );
 
     const expiredTokenPayload = verifyToken(expiredToken);

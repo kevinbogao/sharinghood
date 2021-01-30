@@ -1,6 +1,6 @@
-const sendMail = require('./index');
+const sendMail = require("./index");
 
-async function newCommunityMail(communityUrl, to, subject, text = '') {
+async function newCommunityMail(communityUrl, to, subject, text = "") {
   const html = `
     <!DOCTYPE html>
     <html style="margin: 0; padding: 0;">

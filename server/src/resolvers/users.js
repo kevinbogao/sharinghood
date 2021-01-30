@@ -1,21 +1,21 @@
-const { AuthenticationError } = require('apollo-server');
-const crypto = require('crypto');
-const bcryptjs = require('bcryptjs');
-const mongoose = require('mongoose');
-const User = require('../models/user');
-const Community = require('../models/community');
-const uploadImg = require('../utils/uploadImg');
-const sendMail = require('../utils/sendMail/index');
-const pbkdf2Verify = require('../utils/pbkdf2Verify');
-const newAccountMail = require('../utils/sendMail/newAccountMail');
-const newCommunityMail = require('../utils/sendMail/newCommunityMail');
-const handleErrors = require('../utils/handleErrors');
-const { generateTokens, verifyToken } = require('../utils/authToken');
+const { AuthenticationError } = require("apollo-server");
+const crypto = require("crypto");
+const bcryptjs = require("bcryptjs");
+const mongoose = require("mongoose");
+const User = require("../models/user");
+const Community = require("../models/community");
+const uploadImg = require("../utils/uploadImg");
+const sendMail = require("../utils/sendMail/index");
+const pbkdf2Verify = require("../utils/pbkdf2Verify");
+const newAccountMail = require("../utils/sendMail/newAccountMail");
+const newCommunityMail = require("../utils/sendMail/newCommunityMail");
+const handleErrors = require("../utils/handleErrors");
+const { generateTokens, verifyToken } = require("../utils/authToken");
 
 const usersResolvers = {
   Query: {
     user: async (_, { userId, communityId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         let posts;
@@ -32,8 +32,8 @@ const usersResolvers = {
           { $match: { _id: mongoose.Types.ObjectId(userId || user.userId) } },
           {
             $lookup: {
-              from: 'posts',
-              let: { posts: '$posts' },
+              from: "posts",
+              let: { posts: "$posts" },
               pipeline: [
                 {
                   $match: {
@@ -42,45 +42,45 @@ const usersResolvers = {
                         ? // Match post id in user's posts and community's posts is userId is given
                           {
                             $and: [
-                              { $in: ['$_id', '$$posts'] },
-                              { $in: ['$_id', posts] },
+                              { $in: ["$_id", "$$posts"] },
+                              { $in: ["$_id", posts] },
                             ],
                           }
                         : // Else only match ids in user's posts
-                          { $in: ['$_id', '$$posts'] }),
+                          { $in: ["$_id", "$$posts"] }),
                     },
                   },
                 },
               ],
-              as: 'posts',
+              as: "posts",
             },
           },
           {
             $lookup: {
-              from: 'notifications',
-              let: { notifications: '$notifications' },
+              from: "notifications",
+              let: { notifications: "$notifications" },
               pipeline: [
                 {
                   $match: {
-                    $expr: { $in: ['$_id', '$$notifications'] },
+                    $expr: { $in: ["$_id", "$$notifications"] },
                   },
                 },
                 {
                   $lookup: {
-                    from: 'bookings',
-                    localField: 'booking',
-                    foreignField: '_id',
-                    as: 'booking',
+                    from: "bookings",
+                    localField: "booking",
+                    foreignField: "_id",
+                    as: "booking",
                   },
                 },
                 {
                   $unwind: {
-                    path: '$booking',
+                    path: "$booking",
                     preserveNullAndEmptyArrays: true,
                   },
                 },
               ],
-              as: 'notifications',
+              as: "notifications",
             },
           },
         ]);
@@ -107,7 +107,7 @@ const usersResolvers = {
     login: async (_, { email, password }) => {
       // Get user by email
       const user = await User.findOne({ email });
-      if (!user) throw new AuthenticationError('email: User not found');
+      if (!user) throw new AuthenticationError("email: User not found");
 
       // Re-hash user password if user is not migrated
       if (!user.isMigrated) {
@@ -123,7 +123,7 @@ const usersResolvers = {
 
           // Throw auth error if password is invalid
         } else {
-          throw new AuthenticationError('password: Invalid credentials');
+          throw new AuthenticationError("password: Invalid credentials");
         }
 
         // If user is migrated
@@ -131,7 +131,7 @@ const usersResolvers = {
         // Check user password
         const isEqual = await bcryptjs.compare(password, user.password);
         if (!isEqual) {
-          throw new AuthenticationError('password: Invalid credentials');
+          throw new AuthenticationError("password: Invalid credentials");
         }
       }
 
@@ -178,7 +178,7 @@ const usersResolvers = {
         // Get user and check if email exists
         const existingUser = await User.findOne({ email }).lean();
         if (existingUser) {
-          throw new AuthenticationError('email: User exist already');
+          throw new AuthenticationError("email: User exist already");
         }
 
         // Hash password & upload image to Cloudinary
@@ -222,17 +222,17 @@ const usersResolvers = {
           community.save(),
 
           // Sent new account mail if user is notified
-          process.env.NODE_ENV === 'production' &&
+          process.env.NODE_ENV === "production" &&
             isNotified &&
             newAccountMail(
               `${process.env.ORIGIN}/share`,
               community.name,
               user.email,
-              'Welcome to Sharinghood'
+              "Welcome to Sharinghood"
             ),
 
           // Sent new community mail if user is notified & isCreator
-          process.env.NODE_ENV === 'production' &&
+          process.env.NODE_ENV === "production" &&
             isNotified &&
             isCreator &&
             newCommunityMail(
@@ -262,7 +262,7 @@ const usersResolvers = {
       { userInput: { name, image, desc, apartment } },
       { user }
     ) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId } = user;
 
       try {
@@ -293,7 +293,7 @@ const usersResolvers = {
 
         // Throw auth error if token is invalid or userId is not included
         if (!tokenPayload || !tokenPayload.userId) {
-          throw new AuthenticationError('Please login again');
+          throw new AuthenticationError("Please login again");
         }
 
         // Find user by id
@@ -301,7 +301,7 @@ const usersResolvers = {
 
         // Throw auth error if token's verison is not the same as user's tokenVersion
         if (tokenPayload.tokenVersion !== user.tokenVersion) {
-          throw new AuthenticationError('Please login again');
+          throw new AuthenticationError("Please login again");
         }
 
         // Refresh accessToken & refreshToken
@@ -326,25 +326,25 @@ const usersResolvers = {
         ]);
 
         // Throw error if user is not found
-        if (!user) throw new AuthenticationError('email: User not found');
+        if (!user) throw new AuthenticationError("email: User not found");
 
         // Create and send reset password link to email if existing resetkey is not found
         if (!existingResetKey) {
           // Generate random reset key
-          const resetKey = crypto.randomBytes(16).toString('hex');
+          const resetKey = crypto.randomBytes(16).toString("hex");
 
           // Save reset_password key & reset_key in redis cache && send reset link to user
           await Promise.all([
             redis.set(
               `reset_password:${resetKey}`,
               user._id,
-              'ex',
+              "ex",
               60 * 60 * 24
             ),
-            redis.set(`reset_key:${email}`, resetKey, 'ex', 60 * 60 * 2),
+            redis.set(`reset_key:${email}`, resetKey, "ex", 60 * 60 * 2),
             sendMail(
               user.email,
-              'Reset your Sharinghood password',
+              "Reset your Sharinghood password",
               `${process.env.ORIGIN}/reset-password/${resetKey}`
             ),
           ]);
@@ -355,7 +355,7 @@ const usersResolvers = {
         // Re-send reset link if existing resetkey is found
         await sendMail(
           email,
-          'Reset your Sharinghood password',
+          "Reset your Sharinghood password",
           `${process.env.ORIGIN}/reset-password/${existingResetKey}`
         );
 
@@ -391,7 +391,7 @@ const usersResolvers = {
       }
     },
     addFcmToken: async (_, { fcmToken }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Add FCM token to user's fcmTokens array

@@ -1,10 +1,10 @@
-const { AuthenticationError } = require('apollo-server');
-const User = require('../models/user');
-const Post = require('../models/post');
-const Booking = require('../models/booking');
-const Notification = require('../models/notification');
-const updateBookingMail = require('../utils/sendMail/updateBookingMail');
-const pushNotification = require('../utils/pushNotification');
+const { AuthenticationError } = require("apollo-server");
+const User = require("../models/user");
+const Post = require("../models/post");
+const Booking = require("../models/booking");
+const Notification = require("../models/notification");
+const updateBookingMail = require("../utils/sendMail/updateBookingMail");
+const pushNotification = require("../utils/pushNotification");
 
 const bookingsResolvers = {
   Mutation: {
@@ -22,12 +22,12 @@ const bookingsResolvers = {
       },
       { user, redis }
     ) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Find booking, notification & recipient by id
         const [booking, notification, recipient] = await Promise.all([
-          Booking.findById(bookingId).populate('post'),
+          Booking.findById(bookingId).populate("post"),
           Notification.findById(notificationId),
           User.findById(notifyRecipientId).lean(),
         ]);
@@ -36,7 +36,7 @@ const bookingsResolvers = {
         // && throw error if not
         const post = await Post.findById(booking.post).lean();
         if (!post.creator.equals(user.userId)) {
-          throw new Error('Unauthorized user');
+          throw new Error("Unauthorized user");
         }
 
         // Update booking status
@@ -44,13 +44,13 @@ const bookingsResolvers = {
 
         // Set recipient's notification isRead status to false
         notification.isRead[notifyRecipientId] = false;
-        notification.markModified('isRead');
+        notification.markModified("isRead");
 
         // Save booking & send booking notification email if user is notified
         await Promise.all([
           booking.save(),
           notification.save(),
-          process.env.NODE_ENV === 'production' &&
+          process.env.NODE_ENV === "production" &&
             recipient.isNotified &&
             updateBookingMail(
               `${process.env.ORIGIN}/notifications`,
@@ -69,7 +69,7 @@ const bookingsResolvers = {
         pushNotification(
           { communityId },
           `${user.userName} ${
-            status === 1 ? 'accepted' : 'denied'
+            status === 1 ? "accepted" : "denied"
           } your booking on ${post.title}`,
           [
             {

@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 const communitySchema = new Schema(
   {
@@ -21,24 +21,24 @@ const communitySchema = new Schema(
     },
     creator: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
     members: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: "User",
       },
     ],
     posts: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Post',
+        ref: "Post",
       },
     ],
     requests: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Requests',
+        ref: "Requests",
       },
     ],
   },
@@ -48,4 +48,4 @@ const communitySchema = new Schema(
 // Create index for community code
 communitySchema.index({ code: 1 });
 
-module.exports = model('Community', communitySchema);
+module.exports = model("Community", communitySchema);

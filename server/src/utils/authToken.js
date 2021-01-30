@@ -1,4 +1,4 @@
-const { sign, verify } = require('jsonwebtoken');
+const { sign, verify } = require("jsonwebtoken");
 
 function generateTokens(user) {
   // Save refreshToken as cookie
@@ -12,7 +12,7 @@ function generateTokens(user) {
     { userId: user._id, tokenVersion: user.tokenVersion },
     process.env.JWT_SECRET,
     {
-      expiresIn: '7d',
+      expiresIn: "7d",
     }
   );
 
@@ -24,7 +24,7 @@ function generateTokens(user) {
       ...(user.isAdmin && { isAdmin: true }),
     },
     process.env.JWT_SECRET,
-    { expiresIn: '30m' }
+    { expiresIn: "30m" }
   );
 
   // Return accessToken & refreshToken

@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 const messageSchema = new Schema(
   {
@@ -8,14 +8,14 @@ const messageSchema = new Schema(
     },
     sender: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
     notification: {
       type: Schema.Types.ObjectId,
-      ref: 'Notification',
+      ref: "Notification",
     },
   },
   { timestamps: true }
 );
 
-module.exports = model('Message', messageSchema);
+module.exports = model("Message", messageSchema);

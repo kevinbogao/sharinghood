@@ -1,17 +1,17 @@
-const { AuthenticationError, ForbiddenError } = require('apollo-server');
-const mongoose = require('mongoose');
-const User = require('../models/user');
-const Thread = require('../models/thread');
-const Request = require('../models/request');
-const Community = require('../models/community');
-const uploadImg = require('../utils/uploadImg');
-const newRequestMail = require('../utils/sendMail/newRequestMail');
-const pushNotification = require('../utils/pushNotification');
+const { AuthenticationError, ForbiddenError } = require("apollo-server");
+const mongoose = require("mongoose");
+const User = require("../models/user");
+const Thread = require("../models/thread");
+const Request = require("../models/request");
+const Community = require("../models/community");
+const uploadImg = require("../utils/uploadImg");
+const newRequestMail = require("../utils/sendMail/newRequestMail");
+const pushNotification = require("../utils/pushNotification");
 
 const requestsResolvers = {
   Query: {
     request: async (_, { requestId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get request && lookup creator & threads
@@ -21,19 +21,19 @@ const requestsResolvers = {
           },
           {
             $lookup: {
-              from: 'users',
-              localField: 'creator',
-              foreignField: '_id',
-              as: 'creator',
+              from: "users",
+              localField: "creator",
+              foreignField: "_id",
+              as: "creator",
             },
           },
-          { $unwind: '$creator' },
+          { $unwind: "$creator" },
           {
             $lookup: {
-              from: 'threads',
-              localField: 'threads',
-              foreignField: '_id',
-              as: 'threads',
+              from: "threads",
+              localField: "threads",
+              foreignField: "_id",
+              as: "threads",
             },
           },
         ]);
@@ -44,7 +44,7 @@ const requestsResolvers = {
       }
     },
     requests: async (_, { communityId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get all requests from given community
@@ -54,28 +54,28 @@ const requestsResolvers = {
           },
           {
             $lookup: {
-              from: 'requests',
-              let: { requests: '$requests' },
+              from: "requests",
+              let: { requests: "$requests" },
               pipeline: [
-                { $match: { $expr: { $in: ['$_id', '$$requests'] } } },
+                { $match: { $expr: { $in: ["$_id", "$$requests"] } } },
                 {
                   $lookup: {
-                    from: 'users',
-                    let: { creator: '$creator' },
+                    from: "users",
+                    let: { creator: "$creator" },
                     pipeline: [
-                      { $match: { $expr: { $eq: ['$_id', '$$creator'] } } },
+                      { $match: { $expr: { $eq: ["$_id", "$$creator"] } } },
                     ],
-                    as: 'creator',
+                    as: "creator",
                   },
                 },
-                { $unwind: '$creator' },
+                { $unwind: "$creator" },
                 {
                   $sort: {
                     createdAt: -1,
                   },
                 },
               ],
-              as: 'requests',
+              as: "requests",
             },
           },
           {
@@ -98,7 +98,7 @@ const requestsResolvers = {
       },
       { user }
     ) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId, userName } = user;
 
       try {
@@ -119,9 +119,9 @@ const requestsResolvers = {
           // Populate community members, exclude current user & unsubscribe user
           // & only return email
           Community.findById(communityId).populate({
-            path: 'members',
+            path: "members",
             match: { _id: { $ne: userId } },
-            select: 'email isNotified fcmTokens',
+            select: "email isNotified fcmTokens",
           }),
         ]);
 
@@ -138,7 +138,7 @@ const requestsResolvers = {
         await Promise.all([
           community.save(),
           creator.save(),
-          process.env.NODE_ENV === 'production' &&
+          process.env.NODE_ENV === "production" &&
             emails.length &&
             newRequestMail(
               userName,
@@ -178,7 +178,7 @@ const requestsResolvers = {
       }
     },
     deleteRequest: async (_, { requestId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Find request & currentUser
@@ -189,7 +189,7 @@ const requestsResolvers = {
 
         // Throw error if user is not post creator
         if (!request.creator.equals(user.userId)) {
-          throw new ForbiddenError('Unauthorized user');
+          throw new ForbiddenError("Unauthorized user");
         }
 
         // Destruct threads from request

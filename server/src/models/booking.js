@@ -1,10 +1,10 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 const bookingSchema = new Schema(
   {
     post: {
       type: Schema.Types.ObjectId,
-      ref: 'Post',
+      ref: "Post",
     },
 
     // 0: pending
@@ -31,13 +31,13 @@ const bookingSchema = new Schema(
     // User who booked the post
     booker: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
 
     // Which community is the booking part of
     community: {
       type: Schema.Types.ObjectId,
-      ref: 'Community',
+      ref: "Community",
     },
   },
   { timestamps: true }
@@ -46,4 +46,4 @@ const bookingSchema = new Schema(
 // Index for booking community
 bookingSchema.index({ community: 1 });
 
-module.exports = model('Booking', bookingSchema);
+module.exports = model("Booking", bookingSchema);

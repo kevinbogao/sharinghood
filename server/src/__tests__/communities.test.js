@@ -1,15 +1,15 @@
-const { createTestClient } = require('apollo-server-testing');
-const { gql } = require('apollo-server');
-const Redis = require('ioredis-mock');
-const { constructTestServer } = require('./__utils');
-const inMemoryDb = require('./__mocks__/inMemoryDb');
+const { createTestClient } = require("apollo-server-testing");
+const { gql } = require("apollo-server");
+const Redis = require("ioredis-mock");
+const { constructTestServer } = require("./__utils");
+const inMemoryDb = require("./__mocks__/inMemoryDb");
 const {
   createInitData,
   mockUser01,
   mockUser02,
   mockCommunity01,
   mockCommunity02,
-} = require('./__mocks__/createInitData');
+} = require("./__mocks__/createInitData");
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {
@@ -47,9 +47,9 @@ const FIND_COMMUNITY = gql`
 `;
 
 /* COMMUNITIES QUERY */
-describe('[Query.communities]', () => {
+describe("[Query.communities]", () => {
   // COMMUNITY MUTATION
-  it('Get community by community code', async () => {
+  it("Get community by community code", async () => {
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
       context: () => {},
@@ -96,7 +96,7 @@ describe('[Query.communities]', () => {
     const redis = new Redis({
       data: {
         [`notifications:${mockUser01._id.toString()}`]: {
-          [mockCommunity01._id.toString()]: 'true',
+          [mockCommunity01._id.toString()]: "true",
         },
       },
     });
@@ -131,9 +131,9 @@ describe('[Query.communities]', () => {
 });
 
 /* COMMUNITIES MUTATIONS */
-describe('[Mutation.communities]', () => {
+describe("[Mutation.communities]", () => {
   // communities resolvers
-  it('Create community with registered user', async () => {
+  it("Create community with registered user", async () => {
     // Create community mutation
     const CREATE_COMMUNITY = gql`
       mutation CreateCommunity($communityInput: CommunityInput!) {
@@ -156,9 +156,9 @@ describe('[Mutation.communities]', () => {
 
     // Create community mutation input
     const communityInput = {
-      name: 'TestCommunity01',
-      code: 'testCommunity01',
-      zipCode: '10001',
+      name: "TestCommunity01",
+      code: "testCommunity01",
+      zipCode: "10001",
     };
 
     // Create test instance
@@ -180,7 +180,7 @@ describe('[Mutation.communities]', () => {
   });
 
   // JOIN_COMMUNITY RESOLVER
-  it('Join community for registered user', async () => {
+  it("Join community for registered user", async () => {
     const JOIN_COMMUNITY = gql`
       mutation JoinCommunity($communityId: ID!) {
         joinCommunity(communityId: $communityId) {

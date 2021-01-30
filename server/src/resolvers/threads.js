@@ -1,9 +1,9 @@
-const { AuthenticationError } = require('apollo-server');
-const User = require('../models/user');
-const Post = require('../models/post');
-const Thread = require('../models/thread');
-const Request = require('../models/request');
-const pushNotification = require('../utils/pushNotification');
+const { AuthenticationError } = require("apollo-server");
+const User = require("../models/user");
+const Post = require("../models/post");
+const Thread = require("../models/thread");
+const Request = require("../models/request");
+const pushNotification = require("../utils/pushNotification");
 
 const threadsResolvers = {
   Mutation: {
@@ -12,7 +12,7 @@ const threadsResolvers = {
       { threadInput: { content, isPost, parentId, communityId, recipientId } },
       { user }
     ) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId } = user;
 
       try {
@@ -36,7 +36,7 @@ const threadsResolvers = {
           pushNotification(
             {},
             `${user.userName} commented your ${
-              isPost ? 'post' : 'request'
+              isPost ? "post" : "request"
             } of ${parent.title}`,
             [
               {

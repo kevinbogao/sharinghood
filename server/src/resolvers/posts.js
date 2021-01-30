@@ -1,19 +1,19 @@
-const { AuthenticationError, ForbiddenError } = require('apollo-server');
-const mongoose = require('mongoose');
-const User = require('../models/user');
-const Post = require('../models/post');
-const Thread = require('../models/thread');
-const Booking = require('../models/booking');
-const Message = require('../models/message');
-const Community = require('../models/community');
-const Notification = require('../models/notification');
-const uploadImg = require('../utils/uploadImg');
-const pushNotification = require('../utils/pushNotification');
+const { AuthenticationError, ForbiddenError } = require("apollo-server");
+const mongoose = require("mongoose");
+const User = require("../models/user");
+const Post = require("../models/post");
+const Thread = require("../models/thread");
+const Booking = require("../models/booking");
+const Message = require("../models/message");
+const Community = require("../models/community");
+const Notification = require("../models/notification");
+const uploadImg = require("../utils/uploadImg");
+const pushNotification = require("../utils/pushNotification");
 
 const postsResolvers = {
   Query: {
     post: async (_, { postId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get post && lookup creator & threads
@@ -23,23 +23,23 @@ const postsResolvers = {
           },
           {
             $lookup: {
-              from: 'users',
-              localField: 'creator',
-              foreignField: '_id',
-              as: 'creator',
+              from: "users",
+              localField: "creator",
+              foreignField: "_id",
+              as: "creator",
             },
           },
-          { $unwind: '$creator' },
+          { $unwind: "$creator" },
           {
             $lookup: {
-              from: 'threads',
-              let: { threads: '$threads' },
+              from: "threads",
+              let: { threads: "$threads" },
               pipeline: [
                 {
-                  $match: { $expr: { $in: ['$_id', '$$threads'] } },
+                  $match: { $expr: { $in: ["$_id", "$$threads"] } },
                 },
               ],
-              as: 'threads',
+              as: "threads",
             },
           },
         ]);
@@ -50,7 +50,7 @@ const postsResolvers = {
       }
     },
     posts: async (_, { communityId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get all posts from given community
@@ -60,28 +60,28 @@ const postsResolvers = {
           },
           {
             $lookup: {
-              from: 'posts',
-              let: { posts: '$posts' },
+              from: "posts",
+              let: { posts: "$posts" },
               pipeline: [
-                { $match: { $expr: { $in: ['$_id', '$$posts'] } } },
+                { $match: { $expr: { $in: ["$_id", "$$posts"] } } },
                 {
                   $lookup: {
-                    from: 'users',
-                    let: { creator: '$creator' },
+                    from: "users",
+                    let: { creator: "$creator" },
                     pipeline: [
-                      { $match: { $expr: { $eq: ['$_id', '$$creator'] } } },
+                      { $match: { $expr: { $eq: ["$_id", "$$creator"] } } },
                     ],
-                    as: 'creator',
+                    as: "creator",
                   },
                 },
-                { $unwind: '$creator' },
+                { $unwind: "$creator" },
                 {
                   $sort: {
                     createdAt: -1,
                   },
                 },
               ],
-              as: 'posts',
+              as: "posts",
             },
           },
           {
@@ -104,7 +104,7 @@ const postsResolvers = {
       },
       { user, redis }
     ) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId, userName } = user;
 
       try {
@@ -125,9 +125,9 @@ const postsResolvers = {
           User.findById(userId),
           communityId &&
             Community.findById(communityId).populate({
-              path: 'members',
+              path: "members",
               match: { _id: { $ne: userId } },
-              select: 'fcmTokens',
+              select: "fcmTokens",
             }),
           requesterId && User.findById(requesterId),
         ]);
@@ -206,7 +206,7 @@ const postsResolvers = {
       { postInput: { postId, title, desc, image, condition } },
       { user }
     ) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Find post by id
@@ -214,7 +214,7 @@ const postsResolvers = {
 
         // Throw error if user is not creator
         if (!post._doc.creator.equals(user.userId)) {
-          throw new ForbiddenError('Unauthorized user');
+          throw new ForbiddenError("Unauthorized user");
         }
 
         // Upload image if it exists
@@ -235,7 +235,7 @@ const postsResolvers = {
       }
     },
     inactivatePost: async (_, { postId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get user & post
@@ -246,7 +246,7 @@ const postsResolvers = {
 
         // Throw error if user is not post creator
         if (!post.creator.equals(currentUser._id)) {
-          throw new ForbiddenError('Unauthorized user');
+          throw new ForbiddenError("Unauthorized user");
         }
 
         // Find user's communities and remove post from
@@ -266,7 +266,7 @@ const postsResolvers = {
       }
     },
     deletePost: async (_, { postId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Find post & currentUser
@@ -277,7 +277,7 @@ const postsResolvers = {
 
         // Throw error if user is not post creator
         if (!post.creator.equals(user.userId)) {
-          throw new ForbiddenError('Unauthorized user');
+          throw new ForbiddenError("Unauthorized user");
         }
 
         // Save thread ids array
@@ -348,7 +348,7 @@ const postsResolvers = {
       }
     },
     addPostToCommunity: async (_, { postId, communityId }, { user }) => {
-      if (!user) throw new AuthenticationError('Not Authenticated');
+      if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get community by id and add post if to the community's
@@ -360,7 +360,7 @@ const postsResolvers = {
 
         // Throw error if user is not post creator
         if (!post.creator.equals(user.userId)) {
-          throw new ForbiddenError('Unauthorized user');
+          throw new ForbiddenError("Unauthorized user");
         }
 
         // Add post to community & save community

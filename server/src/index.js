@@ -1,11 +1,11 @@
-require('dotenv').config();
-const { ApolloServer, AuthenticationError } = require('apollo-server');
-const Redis = require('ioredis');
-const mongoose = require('mongoose');
-const typeDefs = require('./typeDefs');
-const resolvers = require('./resolvers');
-const logger = require('./utils/loggger');
-const { verifyToken } = require('./utils/authToken');
+require("dotenv").config();
+const { ApolloServer, AuthenticationError } = require("apollo-server");
+const Redis = require("ioredis");
+const mongoose = require("mongoose");
+const typeDefs = require("./typeDefs");
+const resolvers = require("./resolvers");
+const logger = require("./utils/loggger");
+const { verifyToken } = require("./utils/authToken");
 
 // Create redis instance
 const redis = new Redis(process.env.REDIS_URL);
@@ -27,7 +27,7 @@ const server = new ApolloServer({
             // Log error if errors are encountered
             if (requestContext.response.errors) {
               logger.log(
-                'error',
+                "error",
                 `Request for ${requestContext.request.operationName}`,
                 {
                   query: requestContext.request.query,
@@ -38,7 +38,7 @@ const server = new ApolloServer({
               // Log request
             } else {
               logger.log(
-                'info',
+                "info",
                 `Request for ${requestContext.request.operationName}`,
                 {
                   query: requestContext.request.query,
@@ -59,8 +59,8 @@ const server = new ApolloServer({
     }
 
     // Query & Mutation context
-    const tokenWithBearer = req.headers.authorization || '';
-    const token = tokenWithBearer.split(' ')[1];
+    const tokenWithBearer = req.headers.authorization || "";
+    const token = tokenWithBearer.split(" ")[1];
     const user = verifyToken(token);
     return { user, redis };
   },
@@ -69,10 +69,10 @@ const server = new ApolloServer({
       // Validate user token & throw err if not valid
       if (authToken) {
         const user = verifyToken(authToken);
-        if (!user) throw new AuthenticationError('Not Authenticated');
+        if (!user) throw new AuthenticationError("Not Authenticated");
         return { user };
       }
-      throw new AuthenticationError('Not Authenticated');
+      throw new AuthenticationError("Not Authenticated");
     },
   },
   cors: {
@@ -82,12 +82,12 @@ const server = new ApolloServer({
         const whitelist = [
           process.env.ORIGIN,
           process.env.ORIGIN_INSECURE,
-          'http://localhost:4000',
+          "http://localhost:4000",
         ];
         if (whitelist.includes(origin)) {
           callback(null, true);
         } else {
-          callback(new Error('Not allowed by CORS'));
+          callback(new Error("Not allowed by CORS"));
         }
         // Mobile client
       } else {

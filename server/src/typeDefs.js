@@ -1,5 +1,5 @@
-const { gql } = require('apollo-server');
-const GraphQLJSON = require('graphql-type-json');
+const { gql } = require("apollo-server");
+const GraphQLJSON = require("graphql-type-json");
 
 const typeDefs = gql`
   ### JSON scalar

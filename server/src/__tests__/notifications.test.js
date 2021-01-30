@@ -1,8 +1,8 @@
-const { createTestClient } = require('apollo-server-testing');
-const { gql } = require('apollo-server');
-const Redis = require('ioredis-mock');
-const { constructTestServer } = require('./__utils');
-const inMemoryDb = require('./__mocks__/inMemoryDb');
+const { createTestClient } = require("apollo-server-testing");
+const { gql } = require("apollo-server");
+const Redis = require("ioredis-mock");
+const { constructTestServer } = require("./__utils");
+const inMemoryDb = require("./__mocks__/inMemoryDb");
 const {
   createInitData,
   mockUser01,
@@ -20,10 +20,10 @@ const {
   mockNotification02,
   mockNotification03,
   mockUploadResponse,
-} = require('./__mocks__/createInitData');
+} = require("./__mocks__/createInitData");
 
-jest.mock('../utils/pushNotification');
-const pushNotification = require('../utils/pushNotification');
+jest.mock("../utils/pushNotification");
+const pushNotification = require("../utils/pushNotification");
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {
@@ -87,9 +87,9 @@ const CREATE_NOTIFICATION = gql`
 `;
 
 /* NOTIFICATIONS QUERIES */
-describe('[Query.notifications]', () => {
+describe("[Query.notifications]", () => {
   // NOTIFICATIONS QUERY { notificationId }
-  it('Get notification by id', async () => {
+  it("Get notification by id", async () => {
     const GET_NOTIFICATION = gql`
       query GetNotification($notificationId: ID!) {
         notification(notificationId: $notificationId) {
@@ -232,7 +232,7 @@ describe('[Query.notifications]', () => {
     const redis = new Redis({
       data: {
         [`notifications:${mockUser01._id.toString()}`]: {
-          [mockCommunity01._id.toString()]: 'true',
+          [mockCommunity01._id.toString()]: "true",
         },
       },
     });
@@ -352,7 +352,7 @@ describe('[Query.notifications]', () => {
   });
 
   // FIND_NOTIFICATION { recipientId, communityId },
-  it('Find existing chat notification', async () => {
+  it("Find existing chat notification", async () => {
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser01._id.toString() } }),
     });
@@ -372,7 +372,7 @@ describe('[Query.notifications]', () => {
   });
 
   // FIND_NOTIFICATION { recipientId, communityId },
-  it('Find existing chat notification with wrong communityId', async () => {
+  it("Find existing chat notification with wrong communityId", async () => {
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser01._id.toString() } }),
     });
@@ -390,7 +390,7 @@ describe('[Query.notifications]', () => {
   });
 
   // FIND_NOTIFICATION { recipientId, communityId },
-  it('Find existing chat notification with wrong recipientId', async () => {
+  it("Find existing chat notification with wrong recipientId", async () => {
     const { server } = constructTestServer({
       context: () => ({ user: { userId: mockUser01._id.toString() } }),
     });
@@ -409,9 +409,9 @@ describe('[Query.notifications]', () => {
 });
 
 /* NOTIFICATIONS MUTATIONS */
-describe('[Mutation.notifications]', () => {
+describe("[Mutation.notifications]", () => {
   // CREATE_NOTIFICATION MUTATION { ofType === 0 }
-  it('Create chat notification', async () => {
+  it("Create chat notification", async () => {
     const redis = new Redis();
 
     const { server } = constructTestServer({
@@ -456,11 +456,11 @@ describe('[Mutation.notifications]', () => {
       }),
     });
     expect(res.data.createNotification.messages).toHaveLength(0);
-    expect(hasNotifications).toEqual('true');
+    expect(hasNotifications).toEqual("true");
   });
 
   // CREATE_NOTIFICATION MUTATION { ofType === 1 }
-  it('Create booking notification', async () => {
+  it("Create booking notification", async () => {
     const redis = new Redis();
 
     const { server } = constructTestServer({
@@ -524,6 +524,6 @@ describe('[Mutation.notifications]', () => {
       }),
     });
     expect(res.data.createNotification.messages).toHaveLength(0);
-    expect(hasNotifications).toEqual('true');
+    expect(hasNotifications).toEqual("true");
   });
 });

@@ -1,5 +1,5 @@
-import React from 'react';
-import { render } from 'react-dom';
+import React from "react";
+import { render } from "react-dom";
 import {
   gql,
   ApolloClient,
@@ -8,31 +8,31 @@ import {
   split,
   ApolloProvider,
   ApolloLink,
-} from '@apollo/client';
-import { onError } from '@apollo/client/link/error';
-import { setContext } from '@apollo/client/link/context';
-import { WebSocketLink } from '@apollo/client/link/ws';
-import { TokenRefreshLink } from 'apollo-link-token-refresh';
-import { getMainDefinition } from '@apollo/client/utilities';
-import jwtDecode from 'jwt-decode';
-import App from './App';
+} from "@apollo/client";
+import { onError } from "@apollo/client/link/error";
+import { setContext } from "@apollo/client/link/context";
+import { WebSocketLink } from "@apollo/client/link/ws";
+import { TokenRefreshLink } from "apollo-link-token-refresh";
+import { getMainDefinition } from "@apollo/client/utilities";
+import jwtDecode from "jwt-decode";
+import App from "./App";
 
 // Dotenv config
-require('dotenv').config();
+require("dotenv").config();
 
 // Create an http link
 const httpLink = new HttpLink({
   uri: process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP,
-  credentials: 'include',
+  credentials: "include",
 });
 
 // Auth headers
 const authLink = setContext(async (_, { headers }) => {
-  const accessToken = localStorage.getItem('@sharinghood:accessToken');
+  const accessToken = localStorage.getItem("@sharinghood:accessToken");
   return {
     headers: {
       ...headers,
-      authorization: accessToken ? `Bearer ${accessToken}` : '',
+      authorization: accessToken ? `Bearer ${accessToken}` : "",
     },
   };
 });
@@ -43,7 +43,7 @@ const wsLink = new WebSocketLink({
   options: {
     reconnect: true,
     connectionParams: () => ({
-      authToken: localStorage.getItem('@sharinghood:accessToken'),
+      authToken: localStorage.getItem("@sharinghood:accessToken"),
     }),
   },
 });
@@ -53,12 +53,12 @@ const splitLink = split(
   ({ query }) => {
     const definition = getMainDefinition(query);
     return (
-      definition.kind === 'OperationDefinition' &&
-      definition.operation === 'subscription'
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
     );
   },
   wsLink,
-  authLink.concat(httpLink),
+  authLink.concat(httpLink)
 );
 
 // Init cache
@@ -83,9 +83,9 @@ const cache = new InMemoryCache({
 const client = new ApolloClient({
   link: ApolloLink.from([
     new TokenRefreshLink({
-      accessTokenField: 'accessToken',
+      accessTokenField: "accessToken",
       isTokenValidOrUndefined: () => {
-        const accessToken = localStorage.getItem('@sharinghood:accessToken');
+        const accessToken = localStorage.getItem("@sharinghood:accessToken");
 
         if (accessToken) {
           const { exp } = jwtDecode(accessToken);
@@ -97,9 +97,9 @@ const client = new ApolloClient({
       },
       fetchAccessToken: async () => {
         const res = await fetch(process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             query: `
               mutation TokenRefresh($token: String!) {
@@ -110,7 +110,7 @@ const client = new ApolloClient({
               }
             `,
             variables: {
-              token: localStorage.getItem('@sharinghood:refreshToken'),
+              token: localStorage.getItem("@sharinghood:refreshToken"),
             },
           }),
         });
@@ -120,25 +120,25 @@ const client = new ApolloClient({
       handleResponse: () => (res) => {
         if (res.data.tokenRefresh) {
           localStorage.setItem(
-            '@sharinghood:accessToken',
-            res.data.tokenRefresh.accessToken,
+            "@sharinghood:accessToken",
+            res.data.tokenRefresh.accessToken
           );
           localStorage.setItem(
-            '@sharinghood:refreshToken',
-            res.data.tokenRefresh.refreshToken,
+            "@sharinghood:refreshToken",
+            res.data.tokenRefresh.refreshToken
           );
         }
       },
       handleError: () => {
-        console.log('Try to login again');
+        console.log("Try to login again");
       },
     }),
     onError(({ graphQLErrors, operation, forward }) => {
       graphQLErrors.map((err) => {
-        if (err.extensions.code === 'UNAUTHENTICATED') {
-          localStorage.removeItem('@sharinghood:accessToken');
-          localStorage.removeItem('@sharinghood:refreshToken');
-          localStorage.removeItem('@sharinghood:selCommunityId');
+        if (err.extensions.code === "UNAUTHENTICATED") {
+          localStorage.removeItem("@sharinghood:accessToken");
+          localStorage.removeItem("@sharinghood:refreshToken");
+          localStorage.removeItem("@sharinghood:selCommunityId");
           writeInitialData();
           return forward(operation);
         }
@@ -152,7 +152,7 @@ const client = new ApolloClient({
     Mutation: {
       selectCommunity: (_, { communityId }, { cache }) => {
         // Store community id in localStorage
-        localStorage.setItem('@sharinghood:selCommunityId', communityId);
+        localStorage.setItem("@sharinghood:selCommunityId", communityId);
 
         // Set community id in cache
         cache.writeQuery({
@@ -172,7 +172,7 @@ const client = new ApolloClient({
 
 // Default cache values
 function writeInitialData() {
-  const accessToken = localStorage.getItem('@sharinghood:accessToken');
+  const accessToken = localStorage.getItem("@sharinghood:accessToken");
 
   cache.writeQuery({
     query: gql`
@@ -184,9 +184,9 @@ function writeInitialData() {
       }
     `,
     data: {
-      accessToken: localStorage.getItem('@sharinghood:accessToken'),
-      refreshToken: localStorage.getItem('@sharinghood:refreshToken'),
-      selCommunityId: localStorage.getItem('@sharinghood:selCommunityId'),
+      accessToken: localStorage.getItem("@sharinghood:accessToken"),
+      refreshToken: localStorage.getItem("@sharinghood:refreshToken"),
+      selCommunityId: localStorage.getItem("@sharinghood:selCommunityId"),
       tokenPayload: accessToken ? jwtDecode(accessToken) : null,
     },
   });
@@ -204,5 +204,5 @@ render(
       <App />
     </ApolloProvider>
   </React.StrictMode>,
-  document.getElementById('root'),
+  document.getElementById("root")
 );

@@ -1,12 +1,12 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { gql, useQuery } from '@apollo/client';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock } from '@fortawesome/free-solid-svg-icons';
-import moment from 'moment';
-import Spinner from '../../components/Spinner';
-import ItemsGrid from '../../components/ItemsGrid';
+import React from "react";
+import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
+import { gql, useQuery } from "@apollo/client";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClock } from "@fortawesome/free-solid-svg-icons";
+import moment from "moment";
+import Spinner from "../../components/Spinner";
+import ItemsGrid from "../../components/ItemsGrid";
 
 const GET_REQUESTS = gql`
   query Requests($communityId: ID!) {
@@ -97,10 +97,10 @@ function Requests({ communityId }) {
                 <FontAwesomeIcon className="item-icons" icon={faClock} />
                 <span className="item-user">
                   {request.dateType === 0
-                    ? 'ASAP'
+                    ? "ASAP"
                     : request.dateType === 1
-                    ? 'Anytime'
-                    : moment(+request.dateNeed).format('MMM DD')}
+                    ? "Anytime"
+                    : moment(+request.dateNeed).format("MMM DD")}
                 </span>
               </div>
             </div>
@@ -109,7 +109,7 @@ function Requests({ communityId }) {
       ))}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .item-card {
             background: $grey-100;

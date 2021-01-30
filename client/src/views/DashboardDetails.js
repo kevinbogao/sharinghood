@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { Redirect } from 'react-router-dom';
-import { gql, useQuery } from '@apollo/client';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import moment from 'moment';
-import { faArrowDown } from '@fortawesome/free-solid-svg-icons';
-import Spinner from '../components/Spinner';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { Redirect } from "react-router-dom";
+import { gql, useQuery } from "@apollo/client";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import moment from "moment";
+import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
+import Spinner from "../components/Spinner";
 
 const GET_TOKEN_PAYLOAD = gql`
   query {
@@ -72,39 +72,39 @@ const GET_COMMUNITY_ACTIVITIES = gql`
   }
 `;
 
-const STATS_IDS = ['members', 'posts', 'requests', 'bookings'];
-const ID_KEYS = ['post', 'creator', 'booker'];
-const DATE_KEYS = ['createdAt', 'dateNeed', 'dateReturn', 'lastLogin'];
-const USER_KEYS = ['creator', 'booker'];
+const STATS_IDS = ["members", "posts", "requests", "bookings"];
+const ID_KEYS = ["post", "creator", "booker"];
+const DATE_KEYS = ["createdAt", "dateNeed", "dateReturn", "lastLogin"];
+const USER_KEYS = ["creator", "booker"];
 const ID_SET = new Set(ID_KEYS);
 const DATE_SET = new Set(DATE_KEYS);
 const USER_SET = new Set(USER_KEYS);
-const BOOKING_STATUS = ['Pending', 'Accepted', 'Denied'];
+const BOOKING_STATUS = ["Pending", "Accepted", "Denied"];
 const FORMATTED_KEYS = {
-  _id: 'ID',
-  post: 'Post ID',
-  name: 'Name',
-  email: 'Email',
-  title: 'Title',
-  status: 'Status',
-  booker: 'Booker ID',
-  image: 'Picture',
-  creator: 'Creator ID',
-  desc: 'Description',
-  condition: 'Condition',
-  isGiveaway: 'Giveaway',
-  isNotified: 'Notified',
-  dateNeed: 'Date Needed',
-  dateReturn: 'Return Date',
-  createdAt: 'Date Created',
-  lastLogin: 'Last Login',
+  _id: "ID",
+  post: "Post ID",
+  name: "Name",
+  email: "Email",
+  title: "Title",
+  status: "Status",
+  booker: "Booker ID",
+  image: "Picture",
+  creator: "Creator ID",
+  desc: "Description",
+  condition: "Condition",
+  isGiveaway: "Giveaway",
+  isNotified: "Notified",
+  dateNeed: "Date Needed",
+  dateReturn: "Return Date",
+  createdAt: "Date Created",
+  lastLogin: "Last Login",
 };
 
 function DashboardDetails({ location, match }) {
-  const { from } = location.state || { from: { pathname: '/' } };
-  const [selectedId, setSelectedId] = useState('');
-  const [selectedCol, setSelectedCol] = useState('_id');
-  const [selectedStat, setSelectedStat] = useState('members');
+  const { from } = location.state || { from: { pathname: "/" } };
+  const [selectedId, setSelectedId] = useState("");
+  const [selectedCol, setSelectedCol] = useState("_id");
+  const [selectedStat, setSelectedStat] = useState("members");
   const {
     data: { tokenPayload },
   } = useQuery(GET_TOKEN_PAYLOAD);
@@ -129,16 +129,16 @@ function DashboardDetails({ location, match }) {
   function findById(stat, key) {
     if (USER_SET.has(key)) {
       const targetUser = data.communityActivities.members.filter(
-        (member) => member._id === stat[key]._id,
+        (member) => member._id === stat[key]._id
       );
       setSelectedId(targetUser[0]._id);
-      setSelectedStat('members');
-    } else if (key === 'post') {
+      setSelectedStat("members");
+    } else if (key === "post") {
       const targetPost = data.communityActivities.posts.filter(
-        (post) => post._id === stat[key]._id,
+        (post) => post._id === stat[key]._id
       );
       setSelectedId(targetPost[0]._id);
-      setSelectedStat('posts');
+      setSelectedStat("posts");
     }
   }
 
@@ -155,8 +155,8 @@ function DashboardDetails({ location, match }) {
           <div className="dashboard-overview-highlight">
             <h2>{data.communityActivities.name} Community</h2>
             <h4>
-              ID: {data.communityActivities._id} | Code:{' '}
-              {data.communityActivities.code} | Zipcode:{' '}
+              ID: {data.communityActivities._id} | Code:{" "}
+              {data.communityActivities.code} | Zipcode:{" "}
               {data.communityActivities.zipCode}
             </h4>
           </div>
@@ -167,7 +167,7 @@ function DashboardDetails({ location, match }) {
               <div
                 key={stat}
                 className={`stat-clickable ${
-                  selectedStat === stat && 'active'
+                  selectedStat === stat && "active"
                 }`}
                 onClick={() => setSelectedStat(stat)}
                 role="presentation"
@@ -184,12 +184,12 @@ function DashboardDetails({ location, match }) {
           <tr className="dashboard-table-header">
             {Object.keys(
               data.communityActivities[selectedStat].length &&
-                data.communityActivities[selectedStat][0],
+                data.communityActivities[selectedStat][0]
             )
-              .filter((key) => key !== '__typename')
+              .filter((key) => key !== "__typename")
               .map((key) => (
                 <th key={key} onClick={() => sortColumns(key)}>
-                  {FORMATTED_KEYS[key]}{' '}
+                  {FORMATTED_KEYS[key]}{" "}
                   {selectedCol === key && (
                     <FontAwesomeIcon
                       className="dashboard-sort-icons"
@@ -204,19 +204,19 @@ function DashboardDetails({ location, match }) {
             <tr
               key={stat._id}
               className={`dashboard-table-row ${
-                stat._id === selectedId ? 'selected' : undefined
+                stat._id === selectedId ? "selected" : undefined
               }`}
             >
               {Object.keys(stat)
-                .filter((key) => key !== '__typename')
+                .filter((key) => key !== "__typename")
                 .map((key) => (
                   <td
                     key={key}
                     onClick={() => findById(stat, key)}
-                    className={ID_SET.has(key) ? 'id' : undefined}
+                    className={ID_SET.has(key) ? "id" : undefined}
                     role="presentation"
                   >
-                    {key === 'image' ? (
+                    {key === "image" ? (
                       <div
                         className="item-img"
                         style={{
@@ -225,14 +225,14 @@ function DashboardDetails({ location, match }) {
                           })`,
                         }}
                       />
-                    ) : key === '_id' ? (
+                    ) : key === "_id" ? (
                       `...${stat[key].slice(19)}`
-                    ) : key === 'status' ? (
+                    ) : key === "status" ? (
                       BOOKING_STATUS[stat[key]]
                     ) : ID_SET.has(key) ? (
                       `...${stat[key]._id.slice(19)}`
                     ) : DATE_SET.has(key) ? (
-                      moment(+stat[key]).format('MMM DD HH:mm')
+                      moment(+stat[key]).format("MMM DD HH:mm")
                     ) : (
                       stat[key].toString()
                     )}
@@ -244,7 +244,7 @@ function DashboardDetails({ location, match }) {
       </table>
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .dashboard-control {
             margin: 0 auto auto auto;
@@ -428,7 +428,7 @@ DashboardDetails.defaultProps = {
   location: PropTypes.shape({
     state: PropTypes.shape({
       from: PropTypes.shape({
-        pathname: '/',
+        pathname: "/",
       }),
     }),
   }),

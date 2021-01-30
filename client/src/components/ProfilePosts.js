@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { gql, useMutation } from '@apollo/client';
-import Modal from 'react-modal';
-import Spinner from './Spinner';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { gql, useMutation } from "@apollo/client";
+import Modal from "react-modal";
+import Spinner from "./Spinner";
 
 const INACTIVATE_POST = gql`
   mutation InactivatePost($postId: ID!) {
@@ -25,7 +25,7 @@ function ProfilePosts({ posts, history }) {
       onError: ({ message }) => {
         console.log(message);
       },
-    },
+    }
   );
 
   return (
@@ -34,7 +34,7 @@ function ProfilePosts({ posts, history }) {
         <p className="main-p">Items you shared</p>
         <button
           type="button"
-          className={isEditing ? 'editing' : undefined}
+          className={isEditing ? "editing" : undefined}
           onClick={() => setIsEditing(!isEditing)}
         >
           Edit
@@ -44,13 +44,13 @@ function ProfilePosts({ posts, history }) {
         {posts.map((post) => (
           <div key={post._id} className="post-instance">
             <div
-              className={`post-img ${isEditing ? 'editing' : undefined}`}
+              className={`post-img ${isEditing ? "editing" : undefined}`}
               style={{
                 backgroundImage: `url(${JSON.parse(post.image).secure_url})`,
               }}
             />
             <p>{post.title}</p>
-            <div className={`post-img-btn ${isEditing ? 'active' : undefined}`}>
+            <div className={`post-img-btn ${isEditing ? "active" : undefined}`}>
               <button
                 className="post-btn"
                 type="button"
@@ -111,7 +111,7 @@ function ProfilePosts({ posts, history }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .main-p {
             margin: 20px 10px 20px 0px;
@@ -197,7 +197,7 @@ ProfilePosts.propTypes = {
       _id: PropTypes.string.isRequired,
       title: PropTypes.string.isRequired,
       image: PropTypes.string.isRequired,
-    }),
+    })
   ).isRequired,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,

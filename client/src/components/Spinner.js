@@ -1,9 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
 function Spinner({ isCover }) {
   return (
-    <div className={`loading-control ${isCover && 'foreground'}`}>
+    <div className={`loading-control ${isCover && "foreground"}`}>
       <div className="lds-ring">
         <div />
         <div />
@@ -12,7 +12,7 @@ function Spinner({ isCover }) {
       </div>
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .loading-control {
             position: absolute;

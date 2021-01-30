@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { gql, useMutation, useApolloClient } from '@apollo/client';
-import jwtDecode from 'jwt-decode';
-import Modal from 'react-modal';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import Spinner from '../../components/Spinner';
-import InlineError from '../../components/InlineError';
-import TermsAndConditions from '../../components/TermsAndConditions';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { gql, useMutation, useApolloClient } from "@apollo/client";
+import jwtDecode from "jwt-decode";
+import Modal from "react-modal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import Spinner from "../../components/Spinner";
+import InlineError from "../../components/InlineError";
+import TermsAndConditions from "../../components/TermsAndConditions";
 
 const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
   mutation RegisterAndOrCreateCommunity(
@@ -56,15 +56,15 @@ function Register({
   ] = useMutation(REGISTER_AND_OR_CREATE_COMMUNITY, {
     onCompleted: ({ registerAndOrCreateCommunity }) => {
       localStorage.setItem(
-        '@sharinghood:accessToken',
-        registerAndOrCreateCommunity.user.accessToken,
+        "@sharinghood:accessToken",
+        registerAndOrCreateCommunity.user.accessToken
       );
       localStorage.setItem(
-        '@sharinghood:refreshToken',
-        registerAndOrCreateCommunity.user.refreshToken,
+        "@sharinghood:refreshToken",
+        registerAndOrCreateCommunity.user.refreshToken
       );
       const tokenPayload = jwtDecode(
-        registerAndOrCreateCommunity.user.accessToken,
+        registerAndOrCreateCommunity.user.accessToken
       );
       client.writeQuery({
         query: gql`
@@ -86,7 +86,7 @@ function Register({
       // redirect user to find)
       if (isCreator) {
         history.push({
-          pathname: '/community-link',
+          pathname: "/community-link",
           state: {
             communityId: registerAndOrCreateCommunity.community._id,
             communityCode: registerAndOrCreateCommunity.community.code,
@@ -95,7 +95,7 @@ function Register({
         });
       } else {
         history.push({
-          pathname: '/communities',
+          pathname: "/communities",
           state: {
             fromLogin: true,
           },
@@ -103,7 +103,7 @@ function Register({
       }
     },
     onError: ({ message }) => {
-      const errMsgArr = message.split(': ');
+      const errMsgArr = message.split(": ");
       setError({ [errMsgArr[0]]: errMsgArr[1] });
       // console.log(message);
     },
@@ -111,16 +111,16 @@ function Register({
 
   function validate() {
     const errors = {};
-    if (!email.value) errors.email = 'Please enter your email address';
+    if (!email.value) errors.email = "Please enter your email address";
     else if (!/\S+@\S+\.\S+/.test(email.value))
-      errors.email = 'Email address is invalid';
-    if (!password.value) errors.password = 'Please enter your password';
+      errors.email = "Email address is invalid";
+    if (!password.value) errors.password = "Please enter your password";
     else if (password.value.length < 7)
-      errors.password = 'Your password must be longer than 7 characters';
+      errors.password = "Your password must be longer than 7 characters";
     if (password.value !== confirmPassword.value)
-      errors.confirmPassword = 'Passwords do not match';
+      errors.confirmPassword = "Passwords do not match";
     if (!agreed.checked)
-      errors.agreed = 'Please agree to the terms and conditions';
+      errors.agreed = "Please agree to the terms and conditions";
     setError(errors);
     return errors;
   }
@@ -193,7 +193,7 @@ function Register({
         <div className="register-terms">
           <input type="checkbox" ref={(node) => (agreed = node)} />
           <p>
-            I agree to the{' '}
+            I agree to the{" "}
             <button
               type="button"
               className="terms-btn"
@@ -214,7 +214,7 @@ function Register({
         type="button"
         onClick={() => {
           history.push({
-            pathname: '/login',
+            pathname: "/login",
             state: { communityId },
           });
         }}
@@ -237,7 +237,7 @@ function Register({
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .register-control {
             margin: auto;
@@ -307,7 +307,7 @@ function Register({
       </style>
       <style jsx global>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .terms-times-icon {
             position: -webkit-sticky;

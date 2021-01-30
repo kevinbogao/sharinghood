@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { gql, useMutation } from '@apollo/client';
-import moment from 'moment';
-import DatePicker from '../../components/DatePicker';
-import InlineError from '../../components/InlineError';
-import Spinner from '../../components/Spinner';
-import uploadImg from '../../assets/images/upload.png';
-import { GET_REQUESTS } from './Requests';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { gql, useMutation } from "@apollo/client";
+import moment from "moment";
+import DatePicker from "../../components/DatePicker";
+import InlineError from "../../components/InlineError";
+import Spinner from "../../components/Spinner";
+import uploadImg from "../../assets/images/upload.png";
+import { GET_REQUESTS } from "./Requests";
 
 const CREATE_REQUEST = gql`
   mutation CreateRequest($requestInput: RequestInput!, $communityId: ID!) {
@@ -49,22 +49,22 @@ function CreateRequest({ communityId, history }) {
         } catch (err) {
           console.log(err);
         }
-        history.push('/requests');
+        history.push("/requests");
       },
       onError: () => {
         setError({
           res:
-            'We are experiencing difficulties right now :( Please try again later',
+            "We are experiencing difficulties right now :( Please try again later",
         });
       },
-    },
+    }
   );
 
   function validate() {
     const errors = {};
-    if (!title.value) errors.title = 'Please enter a title';
-    if (!desc.value) errors.desc = 'Please enter a description';
-    if (!image) errors.image = 'Please upload a picture of the item';
+    if (!title.value) errors.title = "Please enter a title";
+    if (!desc.value) errors.desc = "Please enter a description";
+    if (!image) errors.image = "Please upload a picture of the item";
     setError(errors);
     return errors;
   }
@@ -139,7 +139,7 @@ function CreateRequest({ communityId, history }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .request-control {
             margin: auto;

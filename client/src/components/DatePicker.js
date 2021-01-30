@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { DateRangePicker } from 'react-dates';
+import momentPropTypes from 'react-moment-proptypes';
 import 'react-dates/initialize';
 import 'react-dates/lib/css/_datepicker.css';
 
@@ -145,6 +146,8 @@ function DatePicker({
 
 DatePicker.propTypes = {
   dateType: PropTypes.number.isRequired,
+  dateNeed: momentPropTypes.momentObj.isRequired,
+  dateReturn: momentPropTypes.momentObj.isRequired,
   setDateType: PropTypes.func.isRequired,
   setDateNeed: PropTypes.func.isRequired,
   setDateReturn: PropTypes.func.isRequired,

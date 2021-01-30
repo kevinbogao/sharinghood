@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
 import {
   gql,
   useLazyQuery,
   useMutation,
   useApolloClient,
-} from '@apollo/client';
-import Modal from 'react-modal';
-import moment from 'moment';
-import Spinner from './Spinner';
+} from "@apollo/client";
+import Modal from "react-modal";
+import moment from "moment";
+import Spinner from "./Spinner";
 
 const FIND_NOTIFICATION = gql`
   query FindNotification($recipientId: ID!, $communityId: ID!) {
@@ -76,7 +76,7 @@ function ItemDetails({ history, item, userId, communityId, children }) {
       onError: ({ message }) => {
         console.log(message);
       },
-    },
+    }
   );
 
   return (
@@ -101,9 +101,9 @@ function ItemDetails({ history, item, userId, communityId, children }) {
             <p className="main-p name">{item.creator.name}</p>
             <h6>Find me: {item.creator.apartment}</h6>
             <p>
-              Member since{' '}
+              Member since{" "}
               <span className="join-date">
-                {moment(+item.creator.createdAt).format('MMM DD')}
+                {moment(+item.creator.createdAt).format("MMM DD")}
               </span>
             </p>
             {item.creator._id !== userId && (
@@ -173,7 +173,7 @@ function ItemDetails({ history, item, userId, communityId, children }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .item-content {
             display: flex;
@@ -306,7 +306,7 @@ function ItemDetails({ history, item, userId, communityId, children }) {
       </style>
       <style jsx global>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .item-icon {
             color: $grey-300;

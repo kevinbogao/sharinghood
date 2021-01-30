@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { gql, useQuery } from '@apollo/client';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleDoubleLeft } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useEffect, useRef } from "react";
+import { gql, useQuery } from "@apollo/client";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons";
 
 const GET_COMMUNITY_ID = gql`
   query {
@@ -42,19 +42,19 @@ function Members() {
 
   useEffect(() => {
     if (isExpanded) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     } else {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isExpanded]);
 
   return (
-    <div ref={node} className={`members-control ${isExpanded && 'expanded'}`}>
+    <div ref={node} className={`members-control ${isExpanded && "expanded"}`}>
       <FontAwesomeIcon
-        className={`expand-icon ${isExpanded && 'expanded'}`}
+        className={`expand-icon ${isExpanded && "expanded"}`}
         icon={faAngleDoubleLeft}
         onClick={() => setIsExpanded(!isExpanded)}
       />
@@ -88,7 +88,7 @@ function Members() {
       </div>
       <style jsx global>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .members-control {
             position: fixed;

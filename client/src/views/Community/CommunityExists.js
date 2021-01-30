@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import InlineError from '../../components/InlineError';
-import profileImg from '../../assets/images/profile-img.png';
-import uploadImg from '../../assets/images/upload.png';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import InlineError from "../../components/InlineError";
+import profileImg from "../../assets/images/profile-img.png";
+import uploadImg from "../../assets/images/upload.png";
 
 function CommunityExists({
   location: {
@@ -24,9 +24,9 @@ function CommunityExists({
 
   function validate() {
     const errors = {};
-    if (name.value === '') errors.name = 'Please enter your name';
-    if (apartment.value === '') {
-      errors.apartment = 'Please enter your floor or house number';
+    if (name.value === "") errors.name = "Please enter your name";
+    if (apartment.value === "") {
+      errors.apartment = "Please enter your floor or house number";
     }
     setError(errors);
     return errors;
@@ -62,7 +62,7 @@ function CommunityExists({
           const errors = validate();
           if (Object.keys(errors).length === 0) {
             history.push({
-              pathname: '/register',
+              pathname: "/register",
               state: {
                 communityId,
                 name: name.value,
@@ -127,7 +127,7 @@ function CommunityExists({
         type="button"
         onClick={() => {
           history.push({
-            pathname: '/login',
+            pathname: "/login",
             state: { communityCode },
           });
         }}
@@ -136,7 +136,7 @@ function CommunityExists({
       </button>
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .community-exists-control {
             margin: auto;
@@ -163,7 +163,7 @@ function CommunityExists({
               display: none;
             }
 
-            label[for='file-input'] > img {
+            label[for="file-input"] > img {
               cursor: pointer;
               height: 100px;
               width: 100px;
@@ -219,7 +219,7 @@ CommunityExists.propTypes = {
         PropTypes.shape({
           _id: PropTypes.string.isRequired,
           image: PropTypes.string.isRequired,
-        }),
+        })
       ),
       isCreator: PropTypes.bool.isRequired,
       communityId: PropTypes.string,

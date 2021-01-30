@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { gql, useMutation, useApolloClient } from '@apollo/client';
-import jwtDecode from 'jwt-decode';
-import InlineError from '../../components/InlineError';
-import Spinner from '../../components/Spinner';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
+import { gql, useMutation, useApolloClient } from "@apollo/client";
+import jwtDecode from "jwt-decode";
+import InlineError from "../../components/InlineError";
+import Spinner from "../../components/Spinner";
 
 const LOGIN = gql`
   mutation Login($email: String!, $password: String!) {
@@ -25,8 +25,8 @@ function Login({ history, location }) {
   const [login, { loading: mutationLoading }] = useMutation(LOGIN, {
     onCompleted: async ({ login }) => {
       const tokenPayload = jwtDecode(login.accessToken);
-      localStorage.setItem('@sharinghood:accessToken', login.accessToken);
-      localStorage.setItem('@sharinghood:refreshToken', login.refreshToken);
+      localStorage.setItem("@sharinghood:accessToken", login.accessToken);
+      localStorage.setItem("@sharinghood:refreshToken", login.refreshToken);
       client.writeQuery({
         query: gql`
           {
@@ -42,7 +42,7 @@ function Login({ history, location }) {
         },
       });
       history.push({
-        pathname: '/communities',
+        pathname: "/communities",
         state: {
           fromLogin: true,
           communityCode,
@@ -50,17 +50,17 @@ function Login({ history, location }) {
       });
     },
     onError: ({ message }) => {
-      const errMsgArr = message.split(': ');
+      const errMsgArr = message.split(": ");
       setError({ [errMsgArr[0]]: errMsgArr[1] });
     },
   });
 
   function validate() {
     const errors = {};
-    if (!email.value) errors.email = 'Please enter your email address';
+    if (!email.value) errors.email = "Please enter your email address";
     else if (!/\S+@\S+\.\S+/.test(email.value))
-      errors.email = 'Email address is invalid';
-    if (!password.value) errors.password = 'Please enter your password';
+      errors.email = "Email address is invalid";
+    if (!password.value) errors.password = "Please enter your password";
     setError(errors);
     return errors;
   }
@@ -102,7 +102,7 @@ function Login({ history, location }) {
           </Link>
         </p>
         <p className="main-p">
-          Not a member yet?{' '}
+          Not a member yet?{" "}
           <Link to="/">
             <span>Become now!</span>
           </Link>
@@ -114,7 +114,7 @@ function Login({ history, location }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .login-control {
             margin: auto;

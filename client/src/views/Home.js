@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { Link, Redirect } from 'react-router-dom';
-import { gql, useQuery, useLazyQuery } from '@apollo/client';
-import InlineError from '../components/InlineError';
-import vase from '../assets/images/vase.png';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { Link, Redirect } from "react-router-dom";
+import { gql, useQuery, useLazyQuery } from "@apollo/client";
+import InlineError from "../components/InlineError";
+import vase from "../assets/images/vase.png";
 
 const GET_ACCESS_TOKEN = gql`
   {
@@ -35,7 +35,7 @@ function Home({ history }) {
     onCompleted: ({ community }) => {
       if (community) {
         history.push({
-          pathname: '/find-community',
+          pathname: "/find-community",
           state: {
             communityId: community._id,
             communityName: community.name,
@@ -44,20 +44,20 @@ function Home({ history }) {
           },
         });
       } else {
-        setError({ code: 'Community not found' });
+        setError({ code: "Community not found" });
       }
     },
     onError: ({ message }) => {
-      const errMsgArr = message.split(': ');
+      const errMsgArr = message.split(": ");
       setError({ [errMsgArr[0]]: errMsgArr[1] });
     },
   });
 
   function validate() {
     const errors = {};
-    if (!code.value) errors.code = 'Please enter a community code';
+    if (!code.value) errors.code = "Please enter a community code";
     else if (/[ `!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(code.value)) {
-      errors.code = 'Please only use standard alphanumerics';
+      errors.code = "Please only use standard alphanumerics";
     }
     setError(errors);
     return errors;
@@ -78,7 +78,7 @@ function Home({ history }) {
           <div className="home-switch">
             <button
               type="button"
-              className={`${isCreate && 'active'}`}
+              className={`${isCreate && "active"}`}
               onClick={() => setIsCreate(true)}
             >
               Create Your Community
@@ -86,7 +86,7 @@ function Home({ history }) {
             <div className="switch-btn-separator" />
             <button
               type="button"
-              className={`${!isCreate && 'active'}`}
+              className={`${!isCreate && "active"}`}
               onClick={() => setIsCreate(false)}
             >
               Enter Community Code
@@ -130,7 +130,7 @@ function Home({ history }) {
       </div>
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .home-control {
             display: flex;

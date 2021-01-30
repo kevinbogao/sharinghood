@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation } from '@apollo/client';
-import InlineError from '../../components/InlineError';
-import Spinner from '../../components/Spinner';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
+import { gql, useQuery, useMutation } from "@apollo/client";
+import InlineError from "../../components/InlineError";
+import Spinner from "../../components/Spinner";
 
 const VALIDATE_RESET_LINK = gql`
   query ValidateResetLink($resetKey: String!) {
@@ -36,16 +36,16 @@ function ResetPassword({ match }) {
       onError: ({ message }) => {
         console.log(message);
       },
-    },
+    }
   );
 
   function validate() {
     const errors = {};
-    if (!password.value) errors.password = 'Please enter your password';
+    if (!password.value) errors.password = "Please enter your password";
     else if (password.value.length < 7)
-      errors.password = 'Your password must be longer than 7 characters';
+      errors.password = "Your password must be longer than 7 characters";
     if (password.value !== confirmPassword.value)
-      errors.confirmPassword = 'Passwords do not match';
+      errors.confirmPassword = "Passwords do not match";
     setFormError(errors);
     return errors;
   }
@@ -129,7 +129,7 @@ function ResetPassword({ match }) {
         )}
         <style jsx>
           {`
-            @import './src/assets/scss/index.scss';
+            @import "./src/assets/scss/index.scss";
 
             .reset-password-control {
               margin: auto;

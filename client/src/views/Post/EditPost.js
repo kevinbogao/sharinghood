@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation } from '@apollo/client';
-import Modal from 'react-modal';
-import Spinner from '../../components/Spinner';
-import { GET_POSTS } from './Posts';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { gql, useQuery, useMutation } from "@apollo/client";
+import Modal from "react-modal";
+import Spinner from "../../components/Spinner";
+import { GET_POSTS } from "./Posts";
 
 const GET_POST = gql`
   query Post($postId: ID!) {
@@ -58,10 +58,10 @@ const ADD_POST_TO_COMMUNITY = gql`
 `;
 
 function EditPost({ history, match }) {
-  const [title, setTitle] = useState('');
-  const [desc, setDesc] = useState('');
+  const [title, setTitle] = useState("");
+  const [desc, setDesc] = useState("");
   const [image, setImage] = useState(null);
-  const [condition, setCondition] = useState('');
+  const [condition, setCondition] = useState("");
   const [communityArr, setCommunityArr] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -76,7 +76,7 @@ function EditPost({ history, match }) {
       // Create a list of communities where the post is not present in
       const remainCommunities = communities.filter(
         (community) =>
-          !community.posts.some((post) => post._id === match.params.id),
+          !community.posts.some((post) => post._id === match.params.id)
       );
       setCommunityArr(remainCommunities);
     },
@@ -128,7 +128,7 @@ function EditPost({ history, match }) {
             ...community,
             posts: [
               ...community.posts,
-              { __typename: 'Post', _id: data.post._id },
+              { __typename: "Post", _id: data.post._id },
             ],
           };
         }
@@ -145,8 +145,8 @@ function EditPost({ history, match }) {
       // Remove the added community from communityArr
       setCommunityArr(
         communityArr.filter(
-          (community) => community._id !== addPostToCommunity._id,
-        ),
+          (community) => community._id !== addPostToCommunity._id
+        )
       );
     },
     onError: ({ message }) => {
@@ -189,7 +189,7 @@ function EditPost({ history, match }) {
       } catch (err) {}
 
       // Redirect to posts page on complete
-      history.push('/find');
+      history.push("/find");
     },
     onError: ({ message }) => {
       console.log(message);
@@ -359,7 +359,7 @@ function EditPost({ history, match }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .edit-post-control {
             margin: auto;
@@ -373,7 +373,7 @@ function EditPost({ history, match }) {
               display: none;
             }
 
-            label[for='file-input'] > img {
+            label[for="file-input"] > img {
               cursor: pointer;
               margin-top: 30px;
               border-radius: 4px;

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { gql, useQuery, useMutation } from '@apollo/client';
-import moment from 'moment';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import Spinner from '../../components/Spinner';
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { gql, useQuery, useMutation } from "@apollo/client";
+import moment from "moment";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import Spinner from "../../components/Spinner";
 
 const GET_NOTIFICATION = gql`
   query GetNotification($notificationId: ID!) {
@@ -91,9 +91,9 @@ const CREATE_MESSAGE = gql`
 `;
 
 function NotificationDetails({ communityId, match, history }) {
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const { subscribeToMore, loading, error, data } = useQuery(GET_NOTIFICATION, {
-    fetchPolicy: 'network-only',
+    fetchPolicy: "network-only",
     variables: { notificationId: match.params.id, communityId },
     onError: ({ message }) => {
       console.log(message);
@@ -103,12 +103,12 @@ function NotificationDetails({ communityId, match, history }) {
     CREATE_MESSAGE,
     {
       onCompleted: () => {
-        setText('');
+        setText("");
       },
       onError: ({ message }) => {
         console.log(message);
       },
-    },
+    }
   );
 
   // Update booking status by changing booking status int
@@ -204,11 +204,11 @@ function NotificationDetails({ communityId, match, history }) {
               ) : (
                 <span>
                   {moment(+data.notification.booking.dateNeed).format(
-                    'DD.MM.Y',
-                  )}{' '}
-                  -{' '}
+                    "DD.MM.Y"
+                  )}{" "}
+                  -{" "}
                   {moment(+data.notification.booking.dateReturn).format(
-                    'DD.MM.Y',
+                    "DD.MM.Y"
                   )}
                 </span>
               )}
@@ -303,8 +303,8 @@ function NotificationDetails({ communityId, match, history }) {
                 key={message._id}
                 className={
                   message.sender._id === data.tokenPayload.userId
-                    ? 'send'
-                    : 'received'
+                    ? "send"
+                    : "received"
                 }
               >
                 <p>{message.text}</p>
@@ -318,7 +318,7 @@ function NotificationDetails({ communityId, match, history }) {
             onChange={(e) => setText(e.target.value)}
             onKeyUp={(e) => {
               const keyCode = e.keyCode || e.which;
-              if (keyCode === 13 && text !== '') {
+              if (keyCode === 13 && text !== "") {
                 createMessage({
                   variables: {
                     messageInput: {
@@ -337,7 +337,7 @@ function NotificationDetails({ communityId, match, history }) {
             icon={faPaperPlane}
             type="submit"
             onClick={() => {
-              if (text !== '') {
+              if (text !== "") {
                 createMessage({
                   variables: {
                     messageInput: {
@@ -357,7 +357,7 @@ function NotificationDetails({ communityId, match, history }) {
       {mutationLoading && <Spinner isCover />}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .notification-details-control {
             display: flex;
@@ -493,7 +493,7 @@ function NotificationDetails({ communityId, match, history }) {
       </style>
       <style jsx global>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .send-icon {
             margin-left: 20px;

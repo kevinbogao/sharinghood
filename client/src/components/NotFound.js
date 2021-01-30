@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
 function NotFound({ itemType }) {
   return (
@@ -7,7 +7,7 @@ function NotFound({ itemType }) {
       <p className="main-p">{itemType} not found</p>
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .not-found-control {
             margin: auto;

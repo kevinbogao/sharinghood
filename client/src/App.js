@@ -1,44 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
-import firebase from 'firebase/app';
-import 'firebase/messaging';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import ProtectedRoute from './components/ProtectedRoute';
-import Home from './views/Home';
-import { Posts } from './views/Post/Posts';
-import { Navbar } from './components/Navbar';
-import { Profile } from './views/User/Profile';
-import Login from './views/User/Login';
-import Register from './views/User/Register';
-import { Requests } from './views/Request/Requests';
-import Dashboard from './views/Dashboard';
-import DashboardDetails from './views/DashboardDetails';
-import CreatePost from './views/Post/CreatePost';
-import PostDetails from './views/Post/PostDetails';
-import CreateRequest from './views/Request/CreateRequest';
-import CommunityLink from './views/Community/CommunityLink';
-import CommunityInvite from './views/Community/CommunityInvite';
-import RequestDetails from './views/Request/RequestDetails';
-import CreateCommunity from './views/Community/CreateCommunity';
-import CommunityExists from './views/Community/CommunityExists';
-import ResetPassword from './views/User/ResetPassword';
-import ForgotPassword from './views/User/ForgotPassword';
-import SelectCommunity from './views/Community/SelectCommunity';
-import EditPost from './views/Post/EditPost';
-import { Notifications } from './views/Notification/Notifications';
-import NotificationDetails from './views/Notification/NotificationDetails';
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
+import firebase from "firebase/app";
+import "firebase/messaging";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Home from "./views/Home";
+import { Posts } from "./views/Post/Posts";
+import { Navbar } from "./components/Navbar";
+import { Profile } from "./views/User/Profile";
+import Login from "./views/User/Login";
+import Register from "./views/User/Register";
+import { Requests } from "./views/Request/Requests";
+import Dashboard from "./views/Dashboard";
+import DashboardDetails from "./views/DashboardDetails";
+import CreatePost from "./views/Post/CreatePost";
+import PostDetails from "./views/Post/PostDetails";
+import CreateRequest from "./views/Request/CreateRequest";
+import CommunityLink from "./views/Community/CommunityLink";
+import CommunityInvite from "./views/Community/CommunityInvite";
+import RequestDetails from "./views/Request/RequestDetails";
+import CreateCommunity from "./views/Community/CreateCommunity";
+import CommunityExists from "./views/Community/CommunityExists";
+import ResetPassword from "./views/User/ResetPassword";
+import ForgotPassword from "./views/User/ForgotPassword";
+import SelectCommunity from "./views/Community/SelectCommunity";
+import EditPost from "./views/Post/EditPost";
+import { Notifications } from "./views/Notification/Notifications";
+import NotificationDetails from "./views/Notification/NotificationDetails";
 
 // Initialize firebase
 firebase.initializeApp({
-  apiKey: 'AIzaSyD5Qi78uPMJbZIdP4Xrso_Xgw_KkoUNIFc',
-  authDomain: 'sharinghood-4fded.firebaseapp.com',
-  databaseURL: 'https://sharinghood-4fded.firebaseio.com',
-  projectId: 'sharinghood-4fded',
-  storageBucket: 'sharinghood-4fded.appspot.com',
-  messagingSenderId: '908962399001',
-  appId: '1:908962399001:web:942e613c975dd1a86d7b88',
+  apiKey: "AIzaSyD5Qi78uPMJbZIdP4Xrso_Xgw_KkoUNIFc",
+  authDomain: "sharinghood-4fded.firebaseapp.com",
+  databaseURL: "https://sharinghood-4fded.firebaseio.com",
+  projectId: "sharinghood-4fded",
+  storageBucket: "sharinghood-4fded.appspot.com",
+  messagingSenderId: "908962399001",
+  appId: "1:908962399001:web:942e613c975dd1a86d7b88",
 });
 
 // Add FCM token mutation
@@ -86,7 +86,7 @@ function App() {
   useEffect(() => {
     if (
       accessToken &&
-      Notification.permission === 'default' &&
+      Notification.permission === "default" &&
       firebase.messaging.isSupported()
     ) {
       setIsRequestOpen(true);
@@ -103,7 +103,7 @@ function App() {
       (async () => {
         // Get currentToken if user is logged in and the the notification permission
         // is granted
-        if (accessToken && Notification.permission === 'granted') {
+        if (accessToken && Notification.permission === "granted") {
           try {
             // Request permission for notification
             await messaging.requestPermission();
@@ -139,7 +139,7 @@ function App() {
               communities: communities.map((community) =>
                 community._id === payload.data.communityId
                   ? { ...community, hasNotifications: true }
-                  : community,
+                  : community
               ),
             },
           });
@@ -157,7 +157,7 @@ function App() {
       {isRequestOpen && (
         <div className="request-notification">
           <p>
-            Sharinghood needs your premission to{' '}
+            Sharinghood needs your premission to{" "}
             <span
               role="presentation"
               onClick={async () => {
@@ -228,7 +228,7 @@ function App() {
       </div>
       <style jsx global>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           html,
           body,

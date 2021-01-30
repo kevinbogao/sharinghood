@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { gql, useApolloClient } from '@apollo/client';
-import { Link } from 'react-router-dom';
-import Members from './Members';
+import React from "react";
+import PropTypes from "prop-types";
+import { gql, useApolloClient } from "@apollo/client";
+import { Link } from "react-router-dom";
+import Members from "./Members";
 
 const GET_POSTS = gql`
   query Posts($communityId: ID!) {
@@ -40,7 +40,7 @@ function ItemsGrid({ isPost, children, communityId }) {
   return (
     <div className="items-control">
       <div className="items-switch">
-        <button type="button" className={`switch-btn ${isPost && 'active'}`}>
+        <button type="button" className={`switch-btn ${isPost && "active"}`}>
           <Link
             to="/find"
             onMouseOver={() => {
@@ -54,7 +54,7 @@ function ItemsGrid({ isPost, children, communityId }) {
           </Link>
         </button>
         <div className="switch-btn-separator" />
-        <button type="button" className={`switch-btn ${!isPost && 'active'}`}>
+        <button type="button" className={`switch-btn ${!isPost && "active"}`}>
           <Link
             to="requests"
             onMouseOver={() => {
@@ -71,7 +71,7 @@ function ItemsGrid({ isPost, children, communityId }) {
       <div className="items-content">{children}</div>
       <div className="items-footer">
         Didn&apos;t find what you are looking for?
-        <Link to={isPost ? '/request' : '/share'}>
+        <Link to={isPost ? "/request" : "/share"}>
           {isPost ? (
             <button type="button">Request now!</button>
           ) : (
@@ -82,7 +82,7 @@ function ItemsGrid({ isPost, children, communityId }) {
       <Members />
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .items-control {
             margin: 30px auto;

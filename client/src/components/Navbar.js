@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useHistory, Link, NavLink } from 'react-router-dom';
-import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useState, useEffect, useRef } from "react";
+import { useHistory, Link, NavLink } from "react-router-dom";
+import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
   faUser,
   faBell,
   faCaretDown,
   faSignOutAlt,
-} from '@fortawesome/free-solid-svg-icons';
-import { GET_USER } from '../views/User/Profile';
+} from "@fortawesome/free-solid-svg-icons";
+import { GET_USER } from "../views/User/Profile";
 
 const GET_SESSION_DATA = gql`
   query {
@@ -80,12 +80,12 @@ function Navbar() {
   // Handling clicking outside of MainDrawer
   useEffect(() => {
     if (isMenuActive) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     } else {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isMenuActive]);
 
@@ -107,19 +107,19 @@ function Navbar() {
       <div className="nav-logo">
         {data?.communities.find(
           (community) =>
-            community._id !== selCommunityId && community.hasNotifications,
+            community._id !== selCommunityId && community.hasNotifications
         ) && <span className="communities-unread" />}
-        <h1 className={selCommunityId && 'select'}>
+        <h1 className={selCommunityId && "select"}>
           <Link
             to={
               tokenPayload && selCommunityId
-                ? '/find'
+                ? "/find"
                 : tokenPayload && !selCommunityId
-                ? '/communities'
-                : '/'
+                ? "/communities"
+                : "/"
             }
           >
-            {data?.community?.name || 'Sharinghood'}
+            {data?.community?.name || "Sharinghood"}
           </Link>
         </h1>
         {data?.communities && (
@@ -137,8 +137,8 @@ function Navbar() {
                   selCommunityId: null,
                 },
               });
-              localStorage.removeItem('@sharinghood:selCommunityId');
-              history.push('/communities');
+              localStorage.removeItem("@sharinghood:selCommunityId");
+              history.push("/communities");
             }}
           />
         )}
@@ -152,7 +152,7 @@ function Navbar() {
                   <FontAwesomeIcon
                     className="nav-icon"
                     icon={faUser}
-                    onClick={() => history.push('/profile')}
+                    onClick={() => history.push("/profile")}
                     onMouseOver={() => {
                       client.query({
                         query: GET_USER,
@@ -162,10 +162,10 @@ function Navbar() {
                   <FontAwesomeIcon
                     className="nav-icon"
                     icon={faBell}
-                    onClick={() => history.push('/notifications')}
+                    onClick={() => history.push("/notifications")}
                   />
                   {data?.communities.filter(
-                    (community) => community._id === selCommunityId,
+                    (community) => community._id === selCommunityId
                   )[0]?.hasNotifications && (
                     <span className="notifications-unread" />
                   )}
@@ -179,9 +179,9 @@ function Navbar() {
                   await logout();
 
                   // Clear localStorage
-                  localStorage.removeItem('@sharinghood:accessToken');
-                  localStorage.removeItem('@sharinghood:refreshToken');
-                  localStorage.removeItem('@sharinghood:selCommunityId');
+                  localStorage.removeItem("@sharinghood:accessToken");
+                  localStorage.removeItem("@sharinghood:refreshToken");
+                  localStorage.removeItem("@sharinghood:selCommunityId");
 
                   // Clear loacl cache
                   await client.clearStore();
@@ -190,7 +190,7 @@ function Navbar() {
                   refetch();
 
                   // Return to login page
-                  history.push('/login');
+                  history.push("/login");
                 }}
               />
             </div>
@@ -201,7 +201,7 @@ function Navbar() {
           )}
         </div>
       </div>
-      <div className={`nav-menu ${isMenuActive && 'active'}`}>
+      <div className={`nav-menu ${isMenuActive && "active"}`}>
         <NavLink className="nav-menu-item" to="/" onClick={toggleMenu}>
           Home
         </NavLink>
@@ -228,7 +228,7 @@ function Navbar() {
             <NavLink
               className="invite-btn"
               to={{
-                pathname: '/community-link',
+                pathname: "/community-link",
                 state: {
                   communityId: data?.community?._id,
                   communityCode: data?.community?.code,
@@ -243,7 +243,7 @@ function Navbar() {
       </div>
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .nav-control {
             width: 100vw;
@@ -357,7 +357,7 @@ function Navbar() {
       </style>
       <style jsx global>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .hamburger-icon {
             font-size: 23px;

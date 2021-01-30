@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
 function InlineError({ text }) {
   return (
@@ -7,7 +7,7 @@ function InlineError({ text }) {
       {text}
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .inline-error {
             color: $red-200;

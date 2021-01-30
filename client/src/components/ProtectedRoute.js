@@ -1,8 +1,8 @@
 /* eslint-disable */
-import React from 'react';
-import { Route, Redirect } from 'react-router-dom';
-import { gql, useQuery } from '@apollo/client';
-import SelectCommunity from '../views/Community/SelectCommunity';
+import React from "react";
+import { Route, Redirect } from "react-router-dom";
+import { gql, useQuery } from "@apollo/client";
+import SelectCommunity from "../views/Community/SelectCommunity";
 
 const GET_ACCESS_TOKEN = gql`
   query {
@@ -30,7 +30,7 @@ function ProtectedRoute({ component: Component, ...rest }) {
           ) : (
             <Redirect
               to={{
-                pathname: '/login',
+                pathname: "/login",
                 state: { from: props.location },
               }}
             />

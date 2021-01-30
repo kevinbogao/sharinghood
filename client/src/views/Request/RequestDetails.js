@@ -1,16 +1,16 @@
-import React, { useState, Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { gql, useQuery, useMutation } from '@apollo/client';
-import moment from 'moment';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock, faUserClock } from '@fortawesome/free-solid-svg-icons';
-import Modal from 'react-modal';
-import Spinner from '../../components/Spinner';
-import Threads from '../../components/Threads';
-import NotFound from '../../components/NotFound';
-import ItemDetails from '../../components/ItemDetails';
-import { GET_REQUESTS } from './Requests';
+import React, { useState, Fragment } from "react";
+import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
+import { gql, useQuery, useMutation } from "@apollo/client";
+import moment from "moment";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClock, faUserClock } from "@fortawesome/free-solid-svg-icons";
+import Modal from "react-modal";
+import Spinner from "../../components/Spinner";
+import Threads from "../../components/Threads";
+import NotFound from "../../components/NotFound";
+import ItemDetails from "../../components/ItemDetails";
+import { GET_REQUESTS } from "./Requests";
 
 const GET_REQUEST = gql`
   query Request($requestId: ID!) {
@@ -75,7 +75,7 @@ const DELETE_REQUEST = gql`
 `;
 
 function RequestDetails({ communityId, match, history }) {
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Get request details
@@ -89,7 +89,7 @@ function RequestDetails({ communityId, match, history }) {
   // Create a thread to request for current user in current community
   const [createThread] = useMutation(CREATE_THREAD, {
     onCompleted: () => {
-      setComment('');
+      setComment("");
     },
     onError: ({ message }) => {
       console.log(message);
@@ -131,13 +131,13 @@ function RequestDetails({ communityId, match, history }) {
           variables: { communityId },
           data: {
             requests: requests.filter(
-              (request) => request._id !== deleteRequest._id,
+              (request) => request._id !== deleteRequest._id
             ),
           },
         });
-        history.push('/requests');
+        history.push("/requests");
       },
-    },
+    }
   );
 
   return loading ? (
@@ -170,14 +170,14 @@ function RequestDetails({ communityId, match, history }) {
               <div className="item-misc">
                 <FontAwesomeIcon className="item-icon" icon={faClock} />
                 <span>
-                  Date Needed: {moment(+data.request.dateNeed).format('MMM DD')}
+                  Date Needed: {moment(+data.request.dateNeed).format("MMM DD")}
                 </span>
               </div>
               <div className="item-misc">
                 <FontAwesomeIcon className="item-icon" icon={faUserClock} />
                 <span>
-                  Needed until:{' '}
-                  {moment(+data.request.dateReturn).format('MMM DD')}
+                  Needed until:{" "}
+                  {moment(+data.request.dateReturn).format("MMM DD")}
                 </span>
               </div>
             </>
@@ -193,7 +193,7 @@ function RequestDetails({ communityId, match, history }) {
           ) : (
             <Link
               to={{
-                pathname: '/share',
+                pathname: "/share",
                 state: {
                   requesterId: data.request.creator._id,
                   requesterName: data.request.creator.name,
@@ -257,7 +257,7 @@ function RequestDetails({ communityId, match, history }) {
                   onChange={(e) => setComment(e.target.value)}
                   onKeyUp={(e) => {
                     const keyCode = e.keyCode || e.which;
-                    if (keyCode === 13 && comment !== '') {
+                    if (keyCode === 13 && comment !== "") {
                       createThread({
                         variables: {
                           threadInput: {
@@ -278,7 +278,7 @@ function RequestDetails({ communityId, match, history }) {
       </div>
       <style jsx>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           .item-control {
             margin: 30px auto;

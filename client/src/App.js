@@ -29,6 +29,8 @@ import SelectCommunity from "./views/Community/SelectCommunity";
 import EditPost from "./views/Post/EditPost";
 import { Notifications } from "./views/Notification/Notifications";
 import NotificationDetails from "./views/Notification/NotificationDetails";
+// eslint-disable-next-line
+import _JSXStyle from "styled-jsx/style";
 
 // Initialize firebase
 firebase.initializeApp({

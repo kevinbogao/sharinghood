@@ -10,12 +10,12 @@
     "start": "node src/index.js",
     "client": "cd ../client && yarn start",
     "server": "nodemon src/index.js",
-    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\"",
+    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"yarn client\"",
     "test": "jest"
   },
   "engines": {
     "node": "15.x",
-    "yarn": "1.x"
+    "npm": "7.x"
   },
   "jest": {
     "testEnvironment": "node",

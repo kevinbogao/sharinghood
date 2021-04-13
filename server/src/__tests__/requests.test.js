@@ -43,7 +43,7 @@ afterAll(async () => {
   await inMemoryDb.close();
 });
 
-/* REQUETS QUERY */
+/* REQUESTS QUERIES */
 describe("[Query.requests]", () => {
   // REQUEST QUERY { requestId }
   it("Get request by id", async () => {

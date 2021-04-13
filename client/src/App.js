@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
 import firebase from "firebase/app";
 import "firebase/messaging";
+import _JSXStyle from "styled-jsx/style";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -29,23 +30,25 @@ import SelectCommunity from "./views/Community/SelectCommunity";
 import EditPost from "./views/Post/EditPost";
 import { Notifications } from "./views/Notification/Notifications";
 import NotificationDetails from "./views/Notification/NotificationDetails";
-// eslint-disable-next-line
-import _JSXStyle from "styled-jsx/style";
 
 if (typeof global !== "undefined") {
   Object.assign(global, { _JSXStyle });
 }
 
 // Initialize firebase
-firebase.initializeApp({
-  apiKey: "AIzaSyD5Qi78uPMJbZIdP4Xrso_Xgw_KkoUNIFc",
-  authDomain: "sharinghood-4fded.firebaseapp.com",
-  databaseURL: "https://sharinghood-4fded.firebaseio.com",
-  projectId: "sharinghood-4fded",
-  storageBucket: "sharinghood-4fded.appspot.com",
-  messagingSenderId: "908962399001",
-  appId: "1:908962399001:web:942e613c975dd1a86d7b88",
-});
+if (!firebase.apps.length) {
+  firebase.initializeApp({
+    apiKey: "AIzaSyD5Qi78uPMJbZIdP4Xrso_Xgw_KkoUNIFc",
+    authDomain: "sharinghood-4fded.firebaseapp.com",
+    databaseURL: "https://sharinghood-4fded.firebaseio.com",
+    projectId: "sharinghood-4fded",
+    storageBucket: "sharinghood-4fded.appspot.com",
+    messagingSenderId: "908962399001",
+    appId: "1:908962399001:web:942e613c975dd1a86d7b88",
+  });
+} else {
+  firebase.app();
+}
 
 // Add FCM token mutation
 const ADD_FCM_TOKEN_TO_USER = gql`

@@ -338,7 +338,7 @@ async function createInitData() {
       bcryptjs.hash(mockUser02.password, 12),
     ]);
 
-    // Write initial data to datebase
+    // Write initial data to database
     await Promise.all([
       User.create([
         {

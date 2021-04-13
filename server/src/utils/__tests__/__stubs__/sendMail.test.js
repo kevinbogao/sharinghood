@@ -21,7 +21,7 @@ describe("Test sendMail function", () => {
       <html>
         <body>
           <div>
-            <p>Stub HMTL content</p>
+            <p>Stub HTML content</p>
           </div>
         </body>
       </html>

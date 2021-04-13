@@ -38,7 +38,7 @@ beforeEach(async () => {
   await createInitData();
 });
 
-// Clear all test data after every test.
+// Clear all test data after every test
 afterEach(async () => {
   await inMemoryDb.cleanup();
 });
@@ -107,7 +107,7 @@ const ADD_FCM_TOKEN_TO_USER = gql`
   }
 `;
 
-/* USERS QUERY */
+/* USERS QUERIES */
 describe("[Query.users]", () => {
   // USER QUERY
   it("Get user data and user posts", async () => {
@@ -261,7 +261,7 @@ describe("[Mutation.users]", () => {
   });
 
   // LOGIN MUTATION { isMigrated: false }
-  it("Login unmigrated user ", async () => {
+  it("Login un-migrated user ", async () => {
     const LOGIN = gql`
       mutation Login($email: String!, $password: String!) {
         login(email: $email, password: $password) {
@@ -306,7 +306,7 @@ describe("[Mutation.users]", () => {
     });
 
     const user = await User.findById(mockUser03._id.toString());
-    const userhashArr = user.password.split("$");
+    const userHashArr = user.password.split("$");
 
     // User's migration status should be changed to true
     expect(user).toMatchObject({
@@ -314,7 +314,7 @@ describe("[Mutation.users]", () => {
     });
 
     // User's password hash should not start with 'pbkdf2_sha256'
-    expect(userhashArr[0]).not.toEqual("pbkdf2_sha256");
+    expect(userHashArr[0]).not.toEqual("pbkdf2_sha256");
   });
 
   // LOGIN MUTATION WITH WRONG EMAIL
@@ -821,7 +821,7 @@ describe("[Mutation.users]", () => {
   });
 
   // RESET_PASSWORD MUTATION { resetKey, password }
-  it("Reset user password for unmigrated user", async () => {
+  it("Reset user password for un-migrated user", async () => {
     const resetKey = crypto.randomBytes(16).toString("hex");
 
     const redis = new Redis({

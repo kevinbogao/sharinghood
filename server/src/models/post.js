@@ -38,12 +38,6 @@ const postSchema = new Schema(
         ref: "Thread",
       },
     ],
-    // notifications: [
-    //   {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'Notification',
-    //   },
-    // ],
   },
   { timestamps: true }
 );

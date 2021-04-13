@@ -2,7 +2,7 @@ const { sign, verify } = require("jsonwebtoken");
 const { generateTokens, verifyToken } = require("../authToken");
 const { mockUser01 } = require("../../__tests__/__mocks__/createInitData");
 
-// Set enviorment variables
+// Set environment variables
 beforeAll(() => {
   process.env = Object.assign(process.env, { JWT_SECRET: "secret" });
 });

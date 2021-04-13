@@ -378,7 +378,7 @@ describe("[Mutation.posts]", () => {
 
     expect(res.data.inactivatePost).toBeTruthy();
 
-    // Check if post is removed from community01, community02 on sucess
+    // Check if post is removed from community01, community02 on success
     if (res.data.inactivatePost) {
       const communities = await Community.find({
         _id: {

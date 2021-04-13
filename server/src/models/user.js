@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 
-// Limite number of communities a user can be to 5
+// Limit number of communities a user can be in to 5
 function communitiesLimit(communities) {
   return communities.length < 6;
 }

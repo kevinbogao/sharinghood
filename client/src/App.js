@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
 import firebase from "firebase/app";
 import "firebase/messaging";
+import _JSXStyle from "styled-jsx/style";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -30,8 +31,11 @@ import EditPost from "./views/Post/EditPost";
 import { Notifications } from "./views/Notification/Notifications";
 import NotificationDetails from "./views/Notification/NotificationDetails";
 
-// Initialize firebase
+if (typeof global !== "undefined") {
+  Object.assign(global, { _JSXStyle });
+}
 
+// Initialize firebase
 if (!firebase.apps.length) {
   firebase.initializeApp({
     apiKey: "AIzaSyD5Qi78uPMJbZIdP4Xrso_Xgw_KkoUNIFc",

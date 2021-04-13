@@ -4,13 +4,13 @@
   "version": "1.0.0",
   "repository": "https://github.com/kevinbogao/sharinghood/tree/master/server",
   "author": "Bo Gao <bo.gao@code.berlin>",
-  "private": true,
+  "license": "MIT",
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
-    "client": "cd ../client && yarn start",
+    "client": "cd ../client && npm run start",
     "server": "nodemon src/index.js",
-    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"yarn client\"",
+    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\"",
     "test": "jest"
   },
   "engines": {

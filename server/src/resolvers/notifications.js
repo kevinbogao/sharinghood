@@ -253,7 +253,10 @@ const notificationsResolvers = {
 
       try {
         // Declare top level variables
-        let booking, post, recipient, existingChat;
+        let booking;
+        let post;
+        let recipient;
+        let existingChat;
 
         // If type is 0 (i.e chat), create chat notification
         if (ofType === 0) {

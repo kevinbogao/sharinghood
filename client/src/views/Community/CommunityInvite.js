@@ -123,12 +123,12 @@ function CommunityInvite({ match, history }) {
       });
 
       // Open error modal if user is part of 5 communities already
-      if (communities.length >= 5) {
-        setPageError("You have reached the maximum number of communities");
+      if (userIsMember) {
+        setPageError(`You are already a member of ${data.community.name}`);
         setIsErrModalOpen(true);
         // Open error modal if user is part of the the community already
-      } else if (userIsMember) {
-        setPageError(`You are already a member of ${data.community.name}`);
+      } else if (communities.length >= 5) {
+        setPageError("You have reached the maximum number of communities");
         setIsErrModalOpen(true);
       } else {
         setIsJoinModalOpen(true);
@@ -151,7 +151,7 @@ function CommunityInvite({ match, history }) {
     <Spinner />
   ) : (
     <div className="community-invite-control">
-      {error ? (
+      {!data?.community ? (
         <h3>The invite link you have entered is invalid.</h3>
       ) : (
         <>

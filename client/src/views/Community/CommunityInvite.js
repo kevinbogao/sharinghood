@@ -54,7 +54,7 @@ function CommunityInvite({ match, history }) {
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
   // Find community by community code from url
-  const { loading, error, data } = useQuery(FIND_COMMUNITY, {
+  const { loading, data } = useQuery(FIND_COMMUNITY, {
     variables: { communityCode: match.params.communityCode },
     onError: ({ message }) => {
       console.log(message);
@@ -248,6 +248,7 @@ function CommunityInvite({ match, history }) {
       <style jsx>
         {`
           @import "./src/assets/scss/index.scss";
+
           .community-invite-control {
             margin: auto;
             display: flex;

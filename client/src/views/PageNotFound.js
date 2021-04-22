@@ -3,8 +3,10 @@ import React from "react";
 function PageNotFound() {
   return (
     <div className="page-not-found-control">
-      <h1>404</h1>
-      <h3>Oops! We can't find the page that you're looking for.</h3>
+      <div className="invalid-link">
+        <h1>404</h1>
+        <h3>Oops! We can't find the page that you're looking for.</h3>
+      </div>
       <style jsx>
         {`
           @import "./src/assets/scss/index.scss";
@@ -37,6 +39,14 @@ function PageNotFound() {
             h3 {
               margin: 0 auto auto auto;
               font-size: 20px;
+            }
+
+            .invalid-link {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              -ms-transform: translate(-50%, -50%);
+              transform: translate(-50%, -50%);
             }
           }
         `}

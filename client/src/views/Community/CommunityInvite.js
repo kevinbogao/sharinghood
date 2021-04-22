@@ -152,7 +152,9 @@ function CommunityInvite({ match, history }) {
   ) : (
     <div className="community-invite-control">
       {!data?.community ? (
-        <h3>The invite link you have entered is invalid.</h3>
+        <div className="invalid-link">
+          <h3>The invite link you have entered is invalid.</h3>
+        </div>
       ) : (
         <>
           <div className="invite-text">

@@ -31,15 +31,7 @@
       "indent": "off",
       "no-console": "off",
       "no-plusplus": "off",
-      "no-underscore-dangle": [
-        "error",
-        {
-          "allow": [
-            "_id",
-            "_doc"
-          ]
-        }
-      ],
+      "no-underscore-dangle": "off",
       "react/jsx-filename-extension": [
         1,
         {

@@ -4,22 +4,13 @@ import PropTypes from "prop-types";
 import InlineError from "../../components/InlineError";
 import profileImg from "../../assets/images/profile-img.png";
 import uploadImg from "../../assets/images/upload.png";
+import { validateForm } from "../../utils/helpers";
 
 function CommunityExists({ location: { state }, history }) {
   let name;
   let apartment;
   const [image, setImage] = useState(null);
   const [error, setError] = useState({});
-
-  function validate() {
-    const errors = {};
-    if (name.value === "") errors.name = "Please enter your name";
-    if (apartment.value === "") {
-      errors.apartment = "Please enter your floor or house number";
-    }
-    setError(errors);
-    return errors;
-  }
 
   return !state ? (
     <Redirect push to="/" />
@@ -50,12 +41,12 @@ function CommunityExists({ location: { state }, history }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validate();
+          const errors = validateForm({ name, apartment }, setError);
           if (Object.keys(errors).length === 0) {
             history.push({
               pathname: "/register",
               state: {
-                community: state.communityId,
+                communityId: state.communityId,
                 name: name.value,
                 image: image || profileImg,
                 apartment: apartment.value,

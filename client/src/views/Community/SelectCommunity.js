@@ -4,6 +4,7 @@ import { gql, useQuery, useLazyQuery, useMutation } from "@apollo/client";
 import Spinner from "../../components/Spinner";
 import { GET_COMMUNITY } from "../../components/Navbar";
 import InlineError from "../../components/InlineError";
+import { validateForm } from "../../utils/helpers";
 
 const GET_USER_COMMUNITIES = gql`
   query Communities {
@@ -126,7 +127,7 @@ function SelectCommunity({ history, location }) {
           (member) => member._id === tokenPayload.userId
         );
 
-        // Throw erorr if user is in 5 communities already
+        // Throw error if user is in 5 communities already
         if (data.communities.length >= 5)
           setPageError({
             code: "You have reached the maximum number of communities",
@@ -181,17 +182,6 @@ function SelectCommunity({ history, location }) {
     }
   );
 
-  // Validate if community code is valid or is entered
-  function validate() {
-    const errors = {};
-    if (!code.value) errors.code = "Please enter a community code";
-    else if (/[ `!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(code.value)) {
-      errors.code = "Please only use standard alphanumerics";
-    }
-    setPageError(errors);
-    return errors;
-  }
-
   return loading ? (
     <Spinner />
   ) : error ? (
@@ -241,7 +231,7 @@ function SelectCommunity({ history, location }) {
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
-                  const errors = validate();
+                  const errors = validateForm({ code }, setPageError);
                   if (Object.keys(errors).length === 0) {
                     community({
                       variables: {

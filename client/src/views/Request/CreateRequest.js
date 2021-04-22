@@ -7,6 +7,7 @@ import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
 import uploadImg from "../../assets/images/upload.png";
 import { GET_REQUESTS } from "./Requests";
+import { validateForm } from "../../utils/helpers";
 
 const CREATE_REQUEST = gql`
   mutation CreateRequest($requestInput: RequestInput!, $communityId: ID!) {
@@ -60,21 +61,12 @@ function CreateRequest({ communityId, history }) {
     }
   );
 
-  function validate() {
-    const errors = {};
-    if (!title.value) errors.title = "Please enter a title";
-    if (!desc.value) errors.desc = "Please enter a description";
-    if (!image) errors.image = "Please upload a picture of the item";
-    setError(errors);
-    return errors;
-  }
-
   return (
     <div className="request-control">
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validate();
+          const errors = validateForm({ title, desc, image }, setError);
           if (Object.keys(errors).length === 0) {
             createRequest({
               variables: {

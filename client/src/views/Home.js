@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { Link, Redirect } from "react-router-dom";
 import { gql, useQuery, useLazyQuery } from "@apollo/client";
 import InlineError from "../components/InlineError";
+import { validateForm } from "../utils/helpers";
 import vase from "../assets/images/vase.png";
 
 const GET_ACCESS_TOKEN = gql`
@@ -53,16 +54,6 @@ function Home({ history }) {
     },
   });
 
-  function validate() {
-    const errors = {};
-    if (!code.value) errors.code = "Please enter a community code";
-    else if (/[ `!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(code.value)) {
-      errors.code = "Please only use standard alphanumerics";
-    }
-    setError(errors);
-    return errors;
-  }
-
   return accessToken ? (
     <Redirect to="/find" />
   ) : (
@@ -102,7 +93,7 @@ function Home({ history }) {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                const errors = validate();
+                const errors = validateForm({ code }, setError);
                 if (Object.keys(errors).length === 0) {
                   community({
                     variables: {

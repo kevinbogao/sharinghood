@@ -4,6 +4,7 @@ import { gql, useLazyQuery, useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
 import { GET_COMMUNITY } from "../../components/Navbar";
+import { validateForm } from "../../utils/helpers";
 
 const FIND_COMMUNITY = gql`
   query Community($communityCode: String!) {
@@ -29,7 +30,7 @@ const CREATE_COMMUNITY = gql`
 
 function CreateCommunity({ history, location }) {
   const { isLoggedIn } = location.state || { isLoggedIn: false };
-  let name, code, zipCode;
+  let communityName, code, zipCode;
   const [error, setError] = useState({});
   const [selectedId, setSelectedId] = useState(null);
 
@@ -43,7 +44,7 @@ function CreateCommunity({ history, location }) {
         history.push({
           pathname: "/find-community",
           state: {
-            communityName: name.value,
+            communityName: communityName.value,
             communityCode: code.value,
             communityZipCode: zipCode.value,
             isCreator: true,
@@ -75,7 +76,7 @@ function CreateCommunity({ history, location }) {
     CREATE_COMMUNITY,
     {
       onCompleted: ({ createCommunity }) => {
-        // Set selected community id for refetching community query
+        // Set selected community id for re-fetching community query
         setSelectedId(createCommunity._id);
 
         // Call selectCommunity local mutation
@@ -92,17 +93,6 @@ function CreateCommunity({ history, location }) {
     }
   );
 
-  function validate() {
-    const errors = {};
-    if (!code.value) errors.code = "Please enter a community code";
-    else if (/[ `!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(code.value))
-      errors.code = "Please only use standard alphanumerics";
-    if (!name.value) errors.name = "Please enter a community name";
-    if (!zipCode.value) errors.zipCode = "Please enter your zip code";
-    setError(errors);
-    return errors;
-  }
-
   return (
     <div className="create-community-control">
       <h1>You are a hero already!</h1>
@@ -111,13 +101,16 @@ function CreateCommunity({ history, location }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validate();
+          const errors = validateForm(
+            { communityName, code, zipCode },
+            setError
+          );
           if (Object.keys(errors).length === 0) {
             if (isLoggedIn) {
               createCommunity({
                 variables: {
                   communityInput: {
-                    name: name.value,
+                    name: communityName.value,
                     code: code.value,
                     zipCode: zipCode.value,
                   },
@@ -138,10 +131,10 @@ function CreateCommunity({ history, location }) {
           className="main-input new"
           placeholder="Community Name"
           ref={(node) => {
-            name = node;
+            communityName = node;
           }}
         />
-        {error.name && <InlineError text={error.name} />}
+        {error.communityName && <InlineError text={error.communityName} />}
         <p className="main-p new">Create a unique code for your community</p>
         <input
           type="text"

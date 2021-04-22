@@ -1,22 +1,11 @@
 import React, { useState } from "react";
+import { Redirect } from "react-router-dom";
 import PropTypes from "prop-types";
 import InlineError from "../../components/InlineError";
 import profileImg from "../../assets/images/profile-img.png";
 import uploadImg from "../../assets/images/upload.png";
 
-function CommunityExists({
-  location: {
-    state: {
-      members,
-      communityId,
-      communityName,
-      communityCode,
-      communityZipCode,
-      isCreator,
-    },
-  },
-  history,
-}) {
+function CommunityExists({ location: { state }, history }) {
   let name;
   let apartment;
   const [image, setImage] = useState(null);
@@ -32,15 +21,17 @@ function CommunityExists({
     return errors;
   }
 
-  return (
+  return !state ? (
+    <Redirect push to="/" />
+  ) : (
     <div className="community-exists-control">
-      {!isCreator && (
+      {!state.isCreator && (
         <>
           <p>Lucky you, your community already exists!</p>
           <p>This is your community</p>
-          <h1>{communityName}</h1>
+          <h1>{state.communityName}</h1>
           <div className="community-members">
-            {members.map((member) => (
+            {state.members.map((member) => (
               <div key={member._id}>
                 <div
                   className="member-img"
@@ -64,14 +55,14 @@ function CommunityExists({
             history.push({
               pathname: "/register",
               state: {
-                communityId,
+                community: state.communityId,
                 name: name.value,
                 image: image || profileImg,
                 apartment: apartment.value,
-                isCreator,
-                communityName,
-                communityCode,
-                communityZipCode,
+                isCreator: state.isCreator,
+                communityName: state.communityName,
+                communityCode: state.communityCode,
+                communityZipCode: state.communityZipCode,
               },
             });
           }
@@ -128,7 +119,7 @@ function CommunityExists({
         onClick={() => {
           history.push({
             pathname: "/login",
-            state: { communityCode },
+            state: { communityCode: state.communityZipCode },
           });
         }}
       >

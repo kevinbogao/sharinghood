@@ -5,6 +5,7 @@ import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../../components/Spinner";
+import { transformImgUrl } from "../../utils/helpers";
 
 const GET_NOTIFICATION = gql`
   query GetNotification($notificationId: ID!) {
@@ -165,18 +166,20 @@ function NotificationDetails({ communityId, match, history }) {
                 key={member._id}
                 className="user-img user"
                 style={{
-                  backgroundImage: `url(${
-                    JSON.parse(member.image).secure_url
-                  })`,
+                  backgroundImage: `url(${transformImgUrl(
+                    JSON.parse(member.image).secure_url,
+                    200
+                  )})`,
                 }}
               />
             ))}
           <div
             className="user-img recipient"
             style={{
-              backgroundImage: `url(${
-                JSON.parse(data.notification.participants[0].image).secure_url
-              })`,
+              backgroundImage: `url(${transformImgUrl(
+                JSON.parse(data.notification.participants[0].image).secure_url,
+                200
+              )})`,
             }}
           />
         </div>

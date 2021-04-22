@@ -1,5 +1,6 @@
 import React, { Fragment } from "react";
 import PropTypes from "prop-types";
+import { transformImgUrl } from "../utils/helpers";
 
 function Threads({ threads, members, communityId }) {
   return (
@@ -17,7 +18,8 @@ function Threads({ threads, members, communityId }) {
                       className="member-img"
                       style={{
                         backgroundImage: `url(${
-                          JSON.parse(member.image).secure_url
+                          (transformImgUrl(JSON.parse(member.image).secure_url),
+                          200)
                         })`,
                       }}
                     />

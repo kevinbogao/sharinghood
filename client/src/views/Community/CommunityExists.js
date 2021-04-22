@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import InlineError from "../../components/InlineError";
 import profileImg from "../../assets/images/profile-img.png";
 import uploadImg from "../../assets/images/upload.png";
-import { validateForm } from "../../utils/helpers";
+import { validateForm, transformImgUrl } from "../../utils/helpers";
 
 function CommunityExists({ location: { state }, history }) {
   let name;
@@ -27,9 +27,10 @@ function CommunityExists({ location: { state }, history }) {
                 <div
                   className="member-img"
                   style={{
-                    backgroundImage: `url(${
-                      JSON.parse(member.image).secure_url
-                    })`,
+                    backgroundImage: `url(${transformImgUrl(
+                      JSON.parse(member.image).secure_url,
+                      200
+                    )})`,
                   }}
                 />
               </div>

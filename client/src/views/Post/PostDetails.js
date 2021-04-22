@@ -15,6 +15,7 @@ import Threads from "../../components/Threads";
 import Spinner from "../../components/Spinner";
 import NotFound from "../../components/NotFound";
 import ItemDetails from "../../components/ItemDetails";
+import { transformImgUrl } from "../../utils/helpers";
 
 const CONDITIONS = ["New", "Used but good", "Used but little damaged"];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
@@ -259,7 +260,10 @@ function PostDetails({ communityId, match, history }) {
           .filter((member) => member._id === data.tokenPayload.userId)
           .map((member) => (
             <Fragment key={member._id}>
-              <img src={JSON.parse(member.image).secure_url} alt="" />
+              <img
+                src={transformImgUrl(JSON.parse(member.image).secure_url, 200)}
+                alt=""
+              />
               <div className="new-thread-content">
                 <span className="main-p">{member.name}</span>
                 <input

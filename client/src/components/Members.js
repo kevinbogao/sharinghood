@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { gql, useQuery } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons";
+import { transformImgUrl } from "../utils/helpers";
 
 const GET_COMMUNITY_ID = gql`
   query {
@@ -78,7 +79,8 @@ function Members() {
                   className="member-img"
                   style={{
                     backgroundImage: `url(${
-                      JSON.parse(member.image).secure_url
+                      (transformImgUrl(JSON.parse(member.image).secure_url),
+                      200)
                     })`,
                   }}
                 />

@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { gql, useQuery, useMutation } from "@apollo/client";
 import Spinner from "../../components/Spinner";
 import ProfilePosts from "../../components/ProfilePosts";
+import { transformImgUrl } from "../../utils/helpers";
 
 const GET_USER = gql`
   query User {
@@ -91,7 +92,10 @@ function Profile({ history }) {
           <label htmlFor="file-input">
             <img
               alt="profile pic"
-              src={image || JSON.parse(data.user.image).secure_url}
+              src={
+                image ||
+                transformImgUrl(JSON.parse(data.user.image).secure_url, 300)
+              }
             />
           </label>
           <input

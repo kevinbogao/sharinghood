@@ -17,10 +17,10 @@ function Threads({ threads, members, communityId }) {
                     <div
                       className="member-img"
                       style={{
-                        backgroundImage: `url(${
-                          (transformImgUrl(JSON.parse(member.image).secure_url),
-                          200)
-                        })`,
+                        backgroundImage: `url(${transformImgUrl(
+                          JSON.parse(member.image).secure_url,
+                          200
+                        )})`,
                       }}
                     />
                     <div className="thread-content">

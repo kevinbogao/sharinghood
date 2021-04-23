@@ -1,29 +1,11 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Link, Redirect } from "react-router-dom";
-import { gql, useQuery, useLazyQuery } from "@apollo/client";
+import { useQuery, useLazyQuery } from "@apollo/client";
 import InlineError from "../components/InlineError";
-import { validateForm } from "../utils/helpers";
+import { queries } from "../utils/gql";
+import { validateForm, setErrorMsg } from "../utils/helpers";
 import vase from "../assets/images/vase.png";
-
-const GET_ACCESS_TOKEN = gql`
-  {
-    accessToken @client
-  }
-`;
-
-const FIND_COMMUNITY = gql`
-  query Community($communityCode: String) {
-    community(communityCode: $communityCode) {
-      _id
-      name
-      members {
-        _id
-        image
-      }
-    }
-  }
-`;
 
 function Home({ history }) {
   let code;
@@ -31,8 +13,8 @@ function Home({ history }) {
   const [error, setError] = useState({});
   const {
     data: { accessToken },
-  } = useQuery(GET_ACCESS_TOKEN);
-  const [community] = useLazyQuery(FIND_COMMUNITY, {
+  } = useQuery(queries.LOCAL_ACCESS_TOKEN);
+  const [community] = useLazyQuery(queries.FIND_COMMUNITY_AND_MEMBERS, {
     onCompleted: ({ community }) => {
       if (community) {
         history.push({
@@ -49,8 +31,7 @@ function Home({ history }) {
       }
     },
     onError: ({ message }) => {
-      const errMsgArr = message.split(": ");
-      setError({ [errMsgArr[0]]: errMsgArr[1] });
+      setErrorMsg(message, setError);
     },
   });
 

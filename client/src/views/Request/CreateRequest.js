@@ -1,28 +1,13 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import moment from "moment";
 import DatePicker from "../../components/DatePicker";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
 import uploadImg from "../../assets/images/upload.png";
-import { GET_REQUESTS } from "./Requests";
+import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
-
-const CREATE_REQUEST = gql`
-  mutation CreateRequest($requestInput: RequestInput!, $communityId: ID!) {
-    createRequest(requestInput: $requestInput, communityId: $communityId) {
-      _id
-      desc
-      image
-      dateNeed
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
 
 function CreateRequest({ communityId, history }) {
   let title, desc;
@@ -33,17 +18,17 @@ function CreateRequest({ communityId, history }) {
   const [dateReturn, setDateReturn] = useState(moment());
 
   const [createRequest, { loading: mutationLoading }] = useMutation(
-    CREATE_REQUEST,
+    mutations.CREATE_REQUEST,
     {
       update(cache, { data: { createRequest } }) {
         // Try catch block to avoid empty requests cache error
         try {
           const { requests } = cache.readQuery({
-            query: GET_REQUESTS,
+            query: queries.GET_REQUESTS,
             variables: { communityId },
           });
           cache.writeQuery({
-            query: GET_REQUESTS,
+            query: queries.GET_REQUESTS,
             variables: { communityId },
             data: { requests: [createRequest, ...requests] },
           });

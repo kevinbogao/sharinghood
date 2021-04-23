@@ -1,90 +1,27 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
+import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 import moment from "moment";
 import Spinner from "../../components/Spinner";
+import { queries, mutations } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
-
-const GET_USER_COMMUNITIES = gql`
-  query Communities {
-    communities {
-      _id
-      name
-      hasNotifications
-    }
-  }
-`;
-
-const GET_NOTIFICATIONS = gql`
-  query GetNotifications($communityId: ID!) {
-    notifications(communityId: $communityId) {
-      _id
-      ofType
-      booking {
-        _id
-        status
-        dateType
-        dateNeed
-        dateReturn
-        post {
-          _id
-          title
-          image
-        }
-        booker {
-          _id
-        }
-      }
-      post {
-        _id
-        creator {
-          _id
-          name
-        }
-      }
-      participants {
-        _id
-        name
-        image
-      }
-      isRead
-      community {
-        _id
-      }
-      messages {
-        _id
-        text
-      }
-    }
-    tokenPayload @client
-  }
-`;
-
-const UPDATE_BOOKING = gql`
-  mutation UpdateBooking($bookingInput: BookingInput!) {
-    updateBooking(bookingInput: $bookingInput) {
-      _id
-      status
-    }
-  }
-`;
 
 function Notifications({ history, communityId }) {
   const client = useApolloClient();
-  const { loading, error, data } = useQuery(GET_NOTIFICATIONS, {
+  const { loading, error, data } = useQuery(queries.GET_NOTIFICATIONS, {
     variables: { communityId },
     fetchPolicy: "network-only",
     onCompleted: () => {
       try {
         // Get communities from cache
         const { communities } = client.readQuery({
-          query: GET_USER_COMMUNITIES,
+          query: queries.GET_USER_COMMUNITIES,
         });
 
         // Write to cache with a new communities array with the current
         // community's hasNotifications is set to false
         client.writeQuery({
-          query: GET_USER_COMMUNITIES,
+          query: queries.GET_USER_COMMUNITIES,
           data: {
             communities: communities.map((community) =>
               community._id === communityId
@@ -107,7 +44,7 @@ function Notifications({ history, communityId }) {
     {
       loading: { mutationLoading },
     },
-  ] = useMutation(UPDATE_BOOKING, {
+  ] = useMutation(mutations.UPDATE_BOOKING, {
     onError: ({ message }) => {
       console.log(message);
     },
@@ -497,4 +434,4 @@ Notifications.propTypes = {
   communityId: PropTypes.string.isRequired,
 };
 
-export { GET_NOTIFICATIONS, Notifications };
+export default Notifications;

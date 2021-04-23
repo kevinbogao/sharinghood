@@ -8,29 +8,8 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../../components/Spinner";
 import InlineError from "../../components/InlineError";
 import TermsAndConditions from "../../components/TermsAndConditions";
+import { mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
-
-const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
-  mutation RegisterAndOrCreateCommunity(
-    $userInput: UserInput!
-    $communityInput: CommunityInput
-  ) {
-    registerAndOrCreateCommunity(
-      communityInput: $communityInput
-      userInput: $userInput
-    ) {
-      user {
-        accessToken
-        refreshToken
-      }
-      community {
-        _id
-        name
-        code
-      }
-    }
-  }
-`;
 
 function Register({
   location: {
@@ -54,7 +33,7 @@ function Register({
   const [
     registerAndOrCreateCommunity,
     { loading: mutationLoading },
-  ] = useMutation(REGISTER_AND_OR_CREATE_COMMUNITY, {
+  ] = useMutation(mutations.REGISTER_AND_OR_CREATE_COMMUNITY, {
     onCompleted: ({ registerAndOrCreateCommunity }) => {
       localStorage.setItem(
         "@sharinghood:accessToken",

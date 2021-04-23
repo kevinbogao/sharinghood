@@ -1,77 +1,13 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import moment from "moment";
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../components/Spinner";
+import { queries } from "../utils/gql";
 import { transformImgUrl } from "../utils/helpers";
-
-const GET_TOKEN_PAYLOAD = gql`
-  query {
-    tokenPayload @client
-  }
-`;
-
-const GET_COMMUNITY_ACTIVITIES = gql`
-  query CommunityActivities($communityId: ID!) {
-    communityActivities(communityId: $communityId) {
-      _id
-      name
-      code
-      zipCode
-      creator {
-        _id
-      }
-      members {
-        _id
-        name
-        email
-        image
-        isNotified
-        createdAt
-        lastLogin
-      }
-      posts {
-        _id
-        title
-        desc
-        condition
-        image
-        isGiveaway
-        creator {
-          _id
-        }
-        createdAt
-      }
-      requests {
-        _id
-        title
-        desc
-        dateNeed
-        dateReturn
-        image
-        creator {
-          _id
-        }
-        createdAt
-      }
-      bookings {
-        _id
-        post {
-          _id
-        }
-        status
-        dateNeed
-        dateReturn
-        booker {
-          _id
-        }
-      }
-    }
-  }
-`;
 
 const STATS_IDS = ["members", "posts", "requests", "bookings"];
 const ID_KEYS = ["post", "creator", "booker"];
@@ -108,15 +44,12 @@ function DashboardDetails({ location, match }) {
   const [selectedStat, setSelectedStat] = useState("members");
   const {
     data: { tokenPayload },
-  } = useQuery(GET_TOKEN_PAYLOAD);
-  const { loading, error, data } = useQuery(GET_COMMUNITY_ACTIVITIES, {
+  } = useQuery(queries.LOCAL_TOKEN_PAYLOAD);
+  const { loading, error, data } = useQuery(queries.GET_COMMUNITY_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
     variables: { communityId: match.params.id },
     onError: ({ message }) => {
       console.log(message);
-    },
-    onCompleted: (data) => {
-      console.log(data);
     },
   });
 

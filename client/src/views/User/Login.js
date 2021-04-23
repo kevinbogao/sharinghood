@@ -5,6 +5,7 @@ import { gql, useMutation, useApolloClient } from "@apollo/client";
 import jwtDecode from "jwt-decode";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
+import { validateForm } from "../../utils/helpers";
 
 const LOGIN = gql`
   mutation Login($email: String!, $password: String!) {
@@ -55,23 +56,13 @@ function Login({ history, location }) {
     },
   });
 
-  function validate() {
-    const errors = {};
-    if (!email.value) errors.email = "Please enter your email address";
-    else if (!/\S+@\S+\.\S+/.test(email.value))
-      errors.email = "Email address is invalid";
-    if (!password.value) errors.password = "Please enter your password";
-    setError(errors);
-    return errors;
-  }
-
   return (
     <div className="login-control">
       <p className="main-p">Login and start sharing!</p>
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validate();
+          const errors = validateForm({ email, password }, setError);
           if (Object.keys(errors).length === 0) {
             login({
               variables: {

@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { gql, useMutation } from "@apollo/client";
 import Modal from "react-modal";
 import Spinner from "./Spinner";
+import { transformImgUrl } from "../utils/helpers";
 
 const INACTIVATE_POST = gql`
   mutation InactivatePost($postId: ID!) {
@@ -46,7 +47,10 @@ function ProfilePosts({ posts, history }) {
             <div
               className={`post-img ${isEditing ? "editing" : undefined}`}
               style={{
-                backgroundImage: `url(${JSON.parse(post.image).secure_url})`,
+                backgroundImage: `url(${transformImgUrl(
+                  JSON.parse(post.image).secure_url,
+                  250
+                )})`,
               }}
             />
             <p>{post.title}</p>

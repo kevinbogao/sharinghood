@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { gql, useQuery } from "@apollo/client";
 import ItemsGrid from "../../components/ItemsGrid";
 import Spinner from "../../components/Spinner";
+import { transformImgUrl } from "../../utils/helpers";
 
 const GET_POSTS = gql`
   query Posts($communityId: ID!) {
@@ -81,7 +82,10 @@ function Posts({ communityId }) {
             <div
               className="item-img"
               style={{
-                backgroundImage: `url(${JSON.parse(post.image).secure_url})`,
+                backgroundImage: `url(${transformImgUrl(
+                  JSON.parse(post.image).secure_url,
+                  300
+                )})`,
               }}
             />
             <div className="item-info">

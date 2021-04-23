@@ -299,7 +299,7 @@ const usersResolvers = {
         // Find user by id
         const user = await User.findOne({ _id: tokenPayload.userId });
 
-        // Throw auth error if token's verison is not the same as user's tokenVersion
+        // Throw auth error if token's version is not the same as user's tokenVersion
         if (tokenPayload.tokenVersion !== user.tokenVersion) {
           throw new AuthenticationError("Please login again");
         }

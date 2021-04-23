@@ -4,6 +4,7 @@ import { Redirect } from "react-router-dom";
 import { gql, useQuery, useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
+import { setErrorMsg, validateForm } from "../../utils/helpers";
 
 const GET_ACCESS_TOKEN = gql`
   {
@@ -18,8 +19,8 @@ const FORGOT_PASSWORD = gql`
 `;
 
 function ForgotPassword({ location }) {
+  let email;
   const { from } = location.state || { from: { pathname: "/" } };
-  const [email, setEmail] = useState("");
   const [error, setError] = useState({});
   const [isSuccess, setIsSuccess] = useState(false);
   const [isReSend, setIsReSend] = useState(false);
@@ -34,18 +35,10 @@ function ForgotPassword({ location }) {
         if (forgotPassword) setIsSuccess(true);
       },
       onError: ({ message }) => {
-        const errMsgArr = message.split(": ");
-        setError({ [errMsgArr[0]]: errMsgArr[1] });
+        setErrorMsg(message, setError);
       },
     }
   );
-
-  function validate() {
-    const errors = {};
-    if (!email) errors.email = "Please enter your email address";
-    setError(errors);
-    return errors;
-  }
 
   return accessToken ? (
     <Redirect to={from} />
@@ -63,10 +56,10 @@ function ForgotPassword({ location }) {
               type="submit"
               onClick={(e) => {
                 e.preventDefault();
-                const errors = validate();
+                const errors = validateForm({ email }, setError);
                 if (Object.keys(errors).length === 0) {
                   forgotPassword({
-                    variables: { email },
+                    variables: { email: email.value.toLowerCase() },
                   });
                   // Stop render resend button for 5 sec, and re-render again
                   setIsReSend(true);
@@ -89,10 +82,10 @@ function ForgotPassword({ location }) {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              const errors = validate();
+              const errors = validateForm({ email }, setError);
               if (Object.keys(errors).length === 0) {
                 forgotPassword({
-                  variables: { email },
+                  variables: { email: email.value.toLowerCase() },
                 });
               }
             }}
@@ -101,7 +94,8 @@ function ForgotPassword({ location }) {
               className="main-input"
               type="text"
               placeholder="Email"
-              onChange={(e) => setEmail(e.target.value)}
+              // onChange={(e) => setEmail(e.target.value)}
+              ref={(node) => (email = node)}
             />
             {error.email && <InlineError text={error.email} />}
             <button className="main-btn block" type="submit">

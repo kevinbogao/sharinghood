@@ -13,6 +13,7 @@ import { Navbar } from "./components/Navbar";
 import { Profile } from "./views/User/Profile";
 import Login from "./views/User/Login";
 import Register from "./views/User/Register";
+import PageNotFound from "./views/PageNotFound";
 import { Requests } from "./views/Request/Requests";
 import Dashboard from "./views/Dashboard";
 import DashboardDetails from "./views/DashboardDetails";
@@ -186,23 +187,23 @@ function App() {
       )}
       <Navbar />
       <div className="base-control">
-        <Route exact path="/" component={Home} />
-        <Route exact path="/register" component={Register} />
-        <Route exact path="/create-community" component={CreateCommunity} />
-        <Route exact path="/community-link" component={CommunityLink} />
-        <Route exact path="/find-community" component={CommunityExists} />
-        <Route
-          exact
-          path="/community/:communityCode"
-          component={CommunityInvite}
-        />
-        <Route
-          exact
-          path="/reset-password/:resetKey"
-          component={ResetPassword}
-        />
-        <Route exact path="/forgot-password" component={ForgotPassword} />
         <Switch>
+          <Route exact path="/" component={Home} />
+          <Route exact path="/register" component={Register} />
+          <Route exact path="/create-community" component={CreateCommunity} />
+          <Route exact path="/community-link" component={CommunityLink} />
+          <Route exact path="/find-community" component={CommunityExists} />
+          <Route
+            exact
+            path="/community/:communityCode"
+            component={CommunityInvite}
+          />
+          <Route
+            exact
+            path="/reset-password/:resetKey"
+            component={ResetPassword}
+          />
+          <Route exact path="/forgot-password" component={ForgotPassword} />
           <Route path="/login" component={Login} />
           <ProtectedRoute path="/find" component={Posts} />
           <ProtectedRoute path="/profile" component={Profile} />
@@ -233,6 +234,7 @@ function App() {
             path="/requests/:id"
             component={RequestDetails}
           />
+          <Route component={PageNotFound} />
         </Switch>
       </div>
       <style jsx global>

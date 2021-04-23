@@ -8,6 +8,7 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../../components/Spinner";
 import InlineError from "../../components/InlineError";
 import TermsAndConditions from "../../components/TermsAndConditions";
+import { validateForm } from "../../utils/helpers";
 
 const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
   mutation RegisterAndOrCreateCommunity(
@@ -105,25 +106,8 @@ function Register({
     onError: ({ message }) => {
       const errMsgArr = message.split(": ");
       setError({ [errMsgArr[0]]: errMsgArr[1] });
-      // console.log(message);
     },
   });
-
-  function validate() {
-    const errors = {};
-    if (!email.value) errors.email = "Please enter your email address";
-    else if (!/\S+@\S+\.\S+/.test(email.value))
-      errors.email = "Email address is invalid";
-    if (!password.value) errors.password = "Please enter your password";
-    else if (password.value.length < 7)
-      errors.password = "Your password must be longer than 7 characters";
-    if (password.value !== confirmPassword.value)
-      errors.confirmPassword = "Passwords do not match";
-    if (!agreed.checked)
-      errors.agreed = "Please agree to the terms and conditions";
-    setError(errors);
-    return errors;
-  }
 
   return (
     <div className="register-control">
@@ -132,7 +116,10 @@ function Register({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validate();
+          const errors = validateForm(
+            { email, password, confirmPassword, agreed },
+            setError
+          );
           if (Object.keys(errors).length === 0) {
             registerAndOrCreateCommunity({
               variables: {

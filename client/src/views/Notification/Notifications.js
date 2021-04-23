@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
 import moment from "moment";
 import Spinner from "../../components/Spinner";
+import { transformImgUrl } from "../../utils/helpers";
 
 const GET_USER_COMMUNITIES = gql`
   query Communities {
@@ -148,10 +149,11 @@ function Notifications({ history, communityId }) {
                       <div
                         className="noti-img"
                         style={{
-                          backgroundImage: `url(${
+                          backgroundImage: `url(${transformImgUrl(
                             JSON.parse(notification.participants[0].image)
-                              .secure_url
-                          })`,
+                              .secure_url,
+                            300
+                          )})`,
                         }}
                       />
                     </div>
@@ -194,10 +196,11 @@ function Notifications({ history, communityId }) {
                       <div
                         className="noti-img"
                         style={{
-                          backgroundImage: `url(${
+                          backgroundImage: `url(${transformImgUrl(
                             JSON.parse(notification.booking.post.image)
-                              .secure_url
-                          })`,
+                              .secure_url,
+                            300
+                          )})`,
                         }}
                       />
                     </div>
@@ -344,10 +347,11 @@ function Notifications({ history, communityId }) {
                       <div
                         className="noti-img"
                         style={{
-                          backgroundImage: `url(${
+                          backgroundImage: `url(${transformImgUrl(
                             JSON.parse(notification.participants[0].image)
-                              .secure_url
-                          })`,
+                              .secure_url,
+                            300
+                          )})`,
                         }}
                       />
                     </div>

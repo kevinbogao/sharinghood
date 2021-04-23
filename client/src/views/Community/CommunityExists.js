@@ -1,53 +1,36 @@
 import React, { useState } from "react";
+import { Redirect } from "react-router-dom";
 import PropTypes from "prop-types";
 import InlineError from "../../components/InlineError";
 import profileImg from "../../assets/images/profile-img.png";
 import uploadImg from "../../assets/images/upload.png";
+import { validateForm, transformImgUrl } from "../../utils/helpers";
 
-function CommunityExists({
-  location: {
-    state: {
-      members,
-      communityId,
-      communityName,
-      communityCode,
-      communityZipCode,
-      isCreator,
-    },
-  },
-  history,
-}) {
+function CommunityExists({ location: { state }, history }) {
   let name;
   let apartment;
   const [image, setImage] = useState(null);
   const [error, setError] = useState({});
 
-  function validate() {
-    const errors = {};
-    if (name.value === "") errors.name = "Please enter your name";
-    if (apartment.value === "") {
-      errors.apartment = "Please enter your floor or house number";
-    }
-    setError(errors);
-    return errors;
-  }
-
-  return (
+  return !state ? (
+    <Redirect push to="/" />
+  ) : (
     <div className="community-exists-control">
-      {!isCreator && (
+      {!state.isCreator && (
         <>
           <p>Lucky you, your community already exists!</p>
           <p>This is your community</p>
-          <h1>{communityName}</h1>
+          <h1>{state.communityName}</h1>
           <div className="community-members">
-            {members.map((member) => (
+            {state.members.map((member) => (
               <div key={member._id}>
                 <div
                   className="member-img"
                   style={{
-                    backgroundImage: `url(${
-                      JSON.parse(member.image).secure_url
-                    })`,
+                    backgroundImage: `url(${transformImgUrl(
+                      JSON.parse(member.image).secure_url,
+                      200
+                    )})`,
                   }}
                 />
               </div>
@@ -59,19 +42,19 @@ function CommunityExists({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validate();
+          const errors = validateForm({ name, apartment }, setError);
           if (Object.keys(errors).length === 0) {
             history.push({
               pathname: "/register",
               state: {
-                communityId,
+                communityId: state.communityId,
                 name: name.value,
                 image: image || profileImg,
                 apartment: apartment.value,
-                isCreator,
-                communityName,
-                communityCode,
-                communityZipCode,
+                isCreator: state.isCreator,
+                communityName: state.communityName,
+                communityCode: state.communityCode,
+                communityZipCode: state.communityZipCode,
               },
             });
           }
@@ -128,7 +111,7 @@ function CommunityExists({
         onClick={() => {
           history.push({
             pathname: "/login",
-            state: { communityCode },
+            state: { communityCode: state.communityZipCode },
           });
         }}
       >

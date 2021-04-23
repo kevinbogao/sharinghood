@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import moment from "moment";
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../components/Spinner";
+import { transformImgUrl } from "../utils/helpers";
 
 const GET_TOKEN_PAYLOAD = gql`
   query {
@@ -220,9 +221,10 @@ function DashboardDetails({ location, match }) {
                       <div
                         className="item-img"
                         style={{
-                          backgroundImage: `url(${
-                            JSON.parse(stat[key]).secure_url
-                          })`,
+                          backgroundImage: `url(${transformImgUrl(
+                            JSON.parse(stat[key]).secure_url,
+                            150
+                          )})`,
                         }}
                       />
                     ) : key === "_id" ? (

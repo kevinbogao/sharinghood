@@ -5,6 +5,7 @@ import InlineError from "../../components/InlineError";
 import uploadImg from "../../assets/images/upload.png";
 import Spinner from "../../components/Spinner";
 import { GET_POSTS } from "./Posts";
+import { validateForm } from "../../utils/helpers";
 
 const CREATE_POST = gql`
   mutation CreatePost($postInput: PostInput!, $communityId: ID) {
@@ -52,21 +53,12 @@ function CreatePost({ communityId, history, location }) {
     },
   });
 
-  function validate() {
-    const errors = {};
-    if (!title.value) errors.title = "Please enter a title";
-    if (!desc.value) errors.desc = "Please enter a description";
-    if (!image) errors.image = "Please upload a picture of the item";
-    setError(errors);
-    return errors;
-  }
-
   return (
     <div className="share-control">
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validate();
+          const errors = validateForm({ title, desc, image }, setError);
           if (Object.keys(errors).length === 0) {
             createPost({
               variables: {

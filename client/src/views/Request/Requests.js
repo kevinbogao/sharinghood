@@ -7,6 +7,7 @@ import { faClock } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment";
 import Spinner from "../../components/Spinner";
 import ItemsGrid from "../../components/ItemsGrid";
+import { transformImgUrl } from "../../utils/helpers";
 
 const GET_REQUESTS = gql`
   query Requests($communityId: ID!) {
@@ -87,7 +88,10 @@ function Requests({ communityId }) {
             <div
               className="item-img"
               style={{
-                backgroundImage: `url(${JSON.parse(request.image).secure_url})`,
+                backgroundImage: `url(${transformImgUrl(
+                  JSON.parse(request.image).secure_url,
+                  300
+                )})`,
               }}
             />
             <div className="item-info">

@@ -9,6 +9,7 @@ import {
 import Modal from "react-modal";
 import moment from "moment";
 import Spinner from "./Spinner";
+import { transformImgUrl } from "../utils/helpers";
 
 const FIND_NOTIFICATION = gql`
   query FindNotification($recipientId: ID!, $communityId: ID!) {
@@ -84,7 +85,10 @@ function ItemDetails({ history, item, userId, communityId, children }) {
       <div className="item-content">
         <div className="item-info">
           <div className="item-img">
-            <img src={JSON.parse(item.image).secure_url} alt="" />
+            <img
+              src={transformImgUrl(JSON.parse(item.image).secure_url, 700)}
+              alt=""
+            />
           </div>
           {children}
         </div>
@@ -92,9 +96,10 @@ function ItemDetails({ history, item, userId, communityId, children }) {
           <div
             className="creator-img"
             style={{
-              backgroundImage: `url(${
-                JSON.parse(item.creator.image).secure_url
-              })`,
+              backgroundImage: `url(${transformImgUrl(
+                JSON.parse(item.creator.image).secure_url,
+                500
+              )})`,
             }}
           />
           <div className="creator-info">

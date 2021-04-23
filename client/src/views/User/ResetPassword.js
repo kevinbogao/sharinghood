@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { gql, useQuery, useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
+import { validateForm } from "../../utils/helpers";
 
 const VALIDATE_RESET_LINK = gql`
   query ValidateResetLink($resetKey: String!) {
@@ -39,17 +40,6 @@ function ResetPassword({ match }) {
     }
   );
 
-  function validate() {
-    const errors = {};
-    if (!password.value) errors.password = "Please enter your password";
-    else if (password.value.length < 7)
-      errors.password = "Your password must be longer than 7 characters";
-    if (password.value !== confirmPassword.value)
-      errors.confirmPassword = "Passwords do not match";
-    setFormError(errors);
-    return errors;
-  }
-
   return loading ? (
     <Spinner />
   ) : error ? (
@@ -80,7 +70,10 @@ function ResetPassword({ match }) {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    const errors = validate();
+                    const errors = validateForm(
+                      { password, confirmPassword },
+                      setFormError
+                    );
                     if (Object.keys(errors).length === 0) {
                       resetPassword({
                         variables: {

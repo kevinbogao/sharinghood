@@ -87,9 +87,9 @@ const client = new ApolloClient({
       isTokenValidOrUndefined: () => {
         const accessToken = localStorage.getItem("@sharinghood:accessToken");
 
+        // Return false if accessToken is not expired
         if (accessToken) {
           const { exp } = jwtDecode(accessToken);
-          // Return false if accessToken is not expired
           if (Date.now() >= exp * 1000) return false;
         }
 
@@ -134,16 +134,18 @@ const client = new ApolloClient({
       },
     }),
     onError(({ graphQLErrors, operation, forward }) => {
-      graphQLErrors.map((err) => {
-        if (err.extensions.code === "UNAUTHENTICATED") {
-          localStorage.removeItem("@sharinghood:accessToken");
-          localStorage.removeItem("@sharinghood:refreshToken");
-          localStorage.removeItem("@sharinghood:selCommunityId");
-          writeInitialData();
+      if (graphQLErrors) {
+        graphQLErrors.forEach((err) => {
+          if (err.extensions.code === "UNAUTHENTICATED") {
+            localStorage.removeItem("@sharinghood:accessToken");
+            localStorage.removeItem("@sharinghood:refreshToken");
+            localStorage.removeItem("@sharinghood:selCommunityId");
+            writeInitialData();
+            return forward(operation);
+          }
           return forward(operation);
-        }
-        return forward(operation);
-      });
+        });
+      }
     }),
     splitLink,
   ]),

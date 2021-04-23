@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import uploadImg from "../../assets/images/upload.png";
 import Spinner from "../../components/Spinner";

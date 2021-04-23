@@ -9,44 +9,7 @@ import {
   faCaretDown,
   faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { GET_USER } from "../views/User/Profile";
-
-const GET_SESSION_DATA = gql`
-  query {
-    accessToken @client
-    tokenPayload @client
-    selCommunityId @client
-  }
-`;
-
-const GET_COMMUNITY = gql`
-  query Community($communityId: ID) {
-    community(communityId: $communityId) {
-      _id
-      name
-      code
-      creator {
-        _id
-      }
-      members {
-        _id
-        name
-        image
-      }
-    }
-    communities {
-      _id
-      name
-      hasNotifications
-    }
-  }
-`;
-
-const LOGOUT = gql`
-  mutation {
-    logout
-  }
-`;
+import { queries, mutations } from "../utils/gql";
 
 function Navbar() {
   const node = useRef();
@@ -58,17 +21,17 @@ function Navbar() {
   const {
     data: { accessToken, tokenPayload, selCommunityId },
     refetch,
-  } = useQuery(GET_SESSION_DATA);
+  } = useQuery(queries.LOCAL_SESSION_DATA);
 
   // Get current community & user's communities
-  const { data } = useQuery(GET_COMMUNITY, {
+  const { data } = useQuery(queries.GET_CURRENT_COMMUNITY_AND_COMMUNITIES, {
     skip: !accessToken || !selCommunityId,
     variables: { communityId: selCommunityId },
     onError: () => {},
   });
 
   // Revoke user's refreshToken
-  const [logout] = useMutation(LOGOUT);
+  const [logout] = useMutation(mutations.LOGOUT);
 
   function handleClickOutside(e) {
     if (node.current.contains(e.target)) {
@@ -155,7 +118,7 @@ function Navbar() {
                     onClick={() => history.push("/profile")}
                     onMouseOver={() => {
                       client.query({
-                        query: GET_USER,
+                        query: queries.GET_USER,
                       });
                     }}
                   />
@@ -430,4 +393,4 @@ function Navbar() {
   );
 }
 
-export { GET_COMMUNITY, Navbar };
+export default Navbar;

@@ -5,16 +5,8 @@ import { gql, useMutation, useApolloClient } from "@apollo/client";
 import jwtDecode from "jwt-decode";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
+import { mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
-
-const LOGIN = gql`
-  mutation Login($email: String!, $password: String!) {
-    login(email: $email, password: $password) {
-      accessToken
-      refreshToken
-    }
-  }
-`;
 
 function Login({ history, location }) {
   // Get communityCode from props if user is directed from CommunityExists
@@ -23,7 +15,7 @@ function Login({ history, location }) {
   const { communityCode } = location.state || { communityCode: null };
   const client = useApolloClient();
   const [error, setError] = useState({});
-  const [login, { loading: mutationLoading }] = useMutation(LOGIN, {
+  const [login, { loading: mutationLoading }] = useMutation(mutations.LOGIN, {
     onCompleted: async ({ login }) => {
       const tokenPayload = jwtDecode(login.accessToken);
       localStorage.setItem("@sharinghood:accessToken", login.accessToken);

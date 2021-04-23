@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 import firebase from "firebase/app";
 import "firebase/messaging";
-// import _JSXStyle from "styled-jsx/style";
+import _JSXStyle from "styled-jsx/style";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -33,9 +33,10 @@ import Notifications from "./views/Notification/Notifications";
 import NotificationDetails from "./views/Notification/NotificationDetails";
 import { queries, mutations } from "./utils/gql";
 
-// if (typeof global !== "undefined") {
-//   Object.assign(global, { _JSXStyle });
-// }
+// _JSXStyle
+if (typeof global !== "undefined") {
+  Object.assign(global, { _JSXStyle });
+}
 
 // Initialize firebase
 if (!firebase.apps.length) {

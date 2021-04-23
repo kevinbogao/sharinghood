@@ -325,6 +325,7 @@ function Navbar() {
           .hamburger-icon {
             font-size: 23px;
             transform: scale(1.3, 1);
+            cursor: pointer;
 
             @include sm {
               font-size: 19px;
@@ -354,6 +355,7 @@ function Navbar() {
             color: $beige;
             margin: auto 12px;
             font-size: 22px;
+            cursor: pointer;
           }
 
           .nav-menu-item {

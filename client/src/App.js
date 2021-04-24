@@ -240,6 +240,14 @@ function App() {
             text-decoration: none;
           }
 
+          ::selection {
+            background: $orange-bg;
+          }
+
+          ::-moz-selection {
+            background: $orange-bg;
+          }
+
           .main-p {
             display: block;
             font-size: 20px;

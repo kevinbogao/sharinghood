@@ -1,32 +1,10 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { gql, useLazyQuery, useMutation } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
-import { GET_COMMUNITY } from "../../components/Navbar";
+import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
-
-const FIND_COMMUNITY = gql`
-  query Community($communityCode: String!) {
-    community(communityCode: $communityCode) {
-      _id
-    }
-  }
-`;
-
-const SELECT_COMMUNITY = gql`
-  mutation SelectCommunity($communityId: ID) {
-    selectCommunity(communityId: $communityId) @client
-  }
-`;
-
-const CREATE_COMMUNITY = gql`
-  mutation CreateCommunity($communityInput: CommunityInput!) {
-    createCommunity(communityInput: $communityInput) {
-      _id
-    }
-  }
-`;
 
 function CreateCommunity({ history, location }) {
   const { isLoggedIn } = location.state || { isLoggedIn: false };
@@ -35,7 +13,7 @@ function CreateCommunity({ history, location }) {
   const [selectedId, setSelectedId] = useState(null);
 
   // Find community & check if community code exists
-  const [community, { loading }] = useLazyQuery(FIND_COMMUNITY, {
+  const [community, { loading }] = useLazyQuery(queries.FIND_COMMUNITY, {
     onCompleted: ({ community }) => {
       // Set code error if community exists
       if (community) {
@@ -59,10 +37,10 @@ function CreateCommunity({ history, location }) {
 
   // Set selectedCommunityId in cache & localStorage, refetch community
   // with selected communityId
-  const [selectCommunity] = useMutation(SELECT_COMMUNITY, {
+  const [selectCommunity] = useMutation(mutations.LOCAL_SELECT_COMMUNITY, {
     refetchQueries: [
       {
-        query: GET_COMMUNITY,
+        query: queries.GET_CURRENT_COMMUNITY_AND_COMMUNITIES,
         variables: { communityId: selectedId },
       },
     ],
@@ -73,7 +51,7 @@ function CreateCommunity({ history, location }) {
 
   // Create a new community for user
   const [createCommunity, { loading: mutationLoading }] = useMutation(
-    CREATE_COMMUNITY,
+    mutations.CREATE_COMMUNITY,
     {
       onCompleted: ({ createCommunity }) => {
         // Set selected community id for re-fetching community query

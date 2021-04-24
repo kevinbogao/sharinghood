@@ -1,35 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons";
+import { queries } from "../utils/gql";
 import { transformImgUrl } from "../utils/helpers";
-
-const GET_COMMUNITY_ID = gql`
-  query {
-    selCommunityId @client
-  }
-`;
-
-const GET_MEMBERS = gql`
-  {
-    tokenPayload @client
-    community(communityId: $communityId) @client {
-      members {
-        _id
-        name
-        image
-      }
-    }
-  }
-`;
 
 function Members() {
   const node = useRef();
   const [isExpanded, setIsExpanded] = useState(false);
   const {
     data: { selCommunityId },
-  } = useQuery(GET_COMMUNITY_ID);
-  const { data } = useQuery(GET_MEMBERS, {
+  } = useQuery(queries.LOCAL_COMMUNITY_ID);
+  const { data } = useQuery(queries.LOCAL_TOKEN_PAYLOAD_AND_MEMBERS, {
     skip: !selCommunityId,
     variables: { communityId: selCommunityId },
   });

@@ -1,49 +1,10 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { gql, useQuery, useLazyQuery, useMutation } from "@apollo/client";
+import { useQuery, useLazyQuery, useMutation } from "@apollo/client";
 import Spinner from "../../components/Spinner";
-import { GET_COMMUNITY } from "../../components/Navbar";
 import InlineError from "../../components/InlineError";
+import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
-
-const GET_USER_COMMUNITIES = gql`
-  query Communities {
-    selCommunityId @client
-    communities {
-      _id
-      name
-      hasNotifications
-    }
-  }
-`;
-
-const FIND_COMMUNITY = gql`
-  query Community($communityCode: String) {
-    community(communityCode: $communityCode) {
-      _id
-      name
-      members {
-        _id
-      }
-    }
-    tokenPayload @client
-  }
-`;
-
-const SELECT_COMMUNITY = gql`
-  mutation SelectCommunity($communityId: ID) {
-    selectCommunity(communityId: $communityId) @client
-  }
-`;
-
-const JOIN_COMMUNITY = gql`
-  mutation JoinCommunity($communityId: ID!) {
-    joinCommunity(communityId: $communityId) {
-      _id
-      name
-    }
-  }
-`;
 
 function SelectCommunity({ history, location }) {
   let code;
@@ -56,10 +17,10 @@ function SelectCommunity({ history, location }) {
 
   // Set selectedCommunityId in cache & localStorage, refetch community
   // with selected communityId
-  const [selectCommunity] = useMutation(SELECT_COMMUNITY, {
+  const [selectCommunity] = useMutation(mutations.LOCAL_SELECT_COMMUNITY, {
     refetchQueries: [
       {
-        query: GET_COMMUNITY,
+        query: queries.GET_CURRENT_COMMUNITY_AND_COMMUNITIES,
         variables: { communityId: selectedId },
       },
     ],
@@ -74,7 +35,7 @@ function SelectCommunity({ history, location }) {
 
   // Redirect user to posts page if selCommunityId exists (communityId)
   // in localStorage or user is only in one community.
-  const { loading, error, data } = useQuery(GET_USER_COMMUNITIES, {
+  const { loading, error, data } = useQuery(queries.GET_USER_COMMUNITIES, {
     onCompleted: ({ selCommunityId, communities }) => {
       // Check if selectedCommunityId exists in communities array
       const isIdInArray = communities.some(
@@ -119,7 +80,7 @@ function SelectCommunity({ history, location }) {
   });
 
   // Find community, limit user communities to 5
-  const [community] = useLazyQuery(FIND_COMMUNITY, {
+  const [community] = useLazyQuery(queries.FIND_COMMUNITY_AND_MEMBERS, {
     onCompleted: ({ community, tokenPayload }) => {
       if (community) {
         // True if user is inside of community members array
@@ -154,15 +115,15 @@ function SelectCommunity({ history, location }) {
 
   // Add user to community
   const [joinCommunity, { loading: mutationLoading }] = useMutation(
-    JOIN_COMMUNITY,
+    mutations.JOIN_COMMUNITY,
     {
       update(cache, { data: { joinCommunity } }) {
         // Get and update communities cache
         const { communities } = cache.readQuery({
-          query: GET_USER_COMMUNITIES,
+          query: queries.GET_USER_COMMUNITIES,
         });
         cache.writeQuery({
-          query: GET_USER_COMMUNITIES,
+          query: queries.GET_USER_COMMUNITIES,
           communities: [...communities, joinCommunity],
         });
 

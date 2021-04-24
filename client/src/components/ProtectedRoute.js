@@ -1,18 +1,11 @@
-/* eslint-disable */
 import React from "react";
 import { Route, Redirect } from "react-router-dom";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import SelectCommunity from "../views/Community/SelectCommunity";
-
-const GET_ACCESS_TOKEN = gql`
-  query {
-    accessToken @client
-    selCommunityId @client
-  }
-`;
+import { queries } from "../utils/gql";
 
 function ProtectedRoute({ component: Component, ...rest }) {
-  const { data } = useQuery(GET_ACCESS_TOKEN);
+  const { data } = useQuery(queries.LOCAL_SESSION_DATA);
 
   return (
     data && (

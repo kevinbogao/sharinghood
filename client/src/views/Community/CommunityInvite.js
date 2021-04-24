@@ -1,50 +1,10 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
+import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 import Modal from "react-modal";
 import Spinner from "../../components/Spinner";
 import ProductScreenshot from "../../assets/images/product-screenshot.png";
-import { GET_COMMUNITY } from "../../components/Navbar";
-
-const GET_USER_COMMUNITIES = gql`
-  query Communities {
-    selCommunityId @client
-    communities {
-      _id
-      name
-    }
-  }
-`;
-
-const FIND_COMMUNITY = gql`
-  query Community($communityCode: String!) {
-    community(communityCode: $communityCode) {
-      _id
-      name
-      code
-      members {
-        _id
-        image
-      }
-    }
-    tokenPayload @client
-  }
-`;
-
-const SELECT_COMMUNITY = gql`
-  mutation SelectCommunity($communityId: ID) {
-    selectCommunity(communityId: $communityId) @client
-  }
-`;
-
-const JOIN_COMMUNITY = gql`
-  mutation JoinCommunity($communityId: ID!) {
-    joinCommunity(communityId: $communityId) {
-      _id
-      name
-    }
-  }
-`;
+import { queries, mutations } from "../../utils/gql";
 
 function CommunityInvite({ match, history }) {
   const client = useApolloClient();
@@ -54,7 +14,7 @@ function CommunityInvite({ match, history }) {
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
   // Find community by community code from url
-  const { loading, data } = useQuery(FIND_COMMUNITY, {
+  const { loading, data } = useQuery(queries.FIND_COMMUNITY_AND_MEMBERS, {
     variables: { communityCode: match.params.communityCode },
     onError: ({ message }) => {
       console.log(message);
@@ -63,10 +23,10 @@ function CommunityInvite({ match, history }) {
 
   // Set selectedCommunityId in cache & localStorage, refetch community
   // with selected communityId
-  const [selectCommunity] = useMutation(SELECT_COMMUNITY, {
+  const [selectCommunity] = useMutation(mutations.LOCAL_SELECT_COMMUNITY, {
     refetchQueries: [
       {
-        query: GET_COMMUNITY,
+        query: queries.GET_CURRENT_COMMUNITY_AND_COMMUNITIES,
         variables: { communityId: selectedId },
       },
     ],
@@ -78,17 +38,17 @@ function CommunityInvite({ match, history }) {
 
   // Mutation for user to joinCommunity
   const [joinCommunity, { loading: mutationLoading }] = useMutation(
-    JOIN_COMMUNITY,
+    mutations.JOIN_COMMUNITY,
     {
       update(cache, { data: { joinCommunity } }) {
         // Get and update communities cache
         try {
           const { communities } = cache.readQuery({
-            query: GET_USER_COMMUNITIES,
+            query: queries.GET_USER_COMMUNITIES,
           });
 
           cache.writeQuery({
-            query: GET_USER_COMMUNITIES,
+            query: queries.GET_USER_COMMUNITIES,
             communities: [...communities, joinCommunity],
           });
 
@@ -109,7 +69,7 @@ function CommunityInvite({ match, history }) {
   );
 
   // Try to join user to community if user is logged in,
-  // esle redirect user CommunityExist component
+  // else redirect user CommunityExist component
   function handleSubmit(data) {
     if (data.tokenPayload) {
       // Check if user is part of the community
@@ -119,7 +79,7 @@ function CommunityInvite({ match, history }) {
 
       // Get user communities from cache
       const { communities } = client.readQuery({
-        query: GET_USER_COMMUNITIES,
+        query: queries.GET_USER_COMMUNITIES,
       });
 
       // Open error modal if user is part of 5 communities already

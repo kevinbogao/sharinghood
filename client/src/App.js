@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
+import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 import firebase from "firebase/app";
 import "firebase/messaging";
 import _JSXStyle from "styled-jsx/style";
@@ -8,13 +8,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./views/Home";
-import { Posts } from "./views/Post/Posts";
-import { Navbar } from "./components/Navbar";
-import { Profile } from "./views/User/Profile";
+import Posts from "./views/Post/Posts";
+import Navbar from "./components/Navbar";
+import Profile from "./views/User/Profile";
 import Login from "./views/User/Login";
 import Register from "./views/User/Register";
 import PageNotFound from "./views/PageNotFound";
-import { Requests } from "./views/Request/Requests";
+import Requests from "./views/Request/Requests";
 import Dashboard from "./views/Dashboard";
 import DashboardDetails from "./views/DashboardDetails";
 import CreatePost from "./views/Post/CreatePost";
@@ -29,9 +29,11 @@ import ResetPassword from "./views/User/ResetPassword";
 import ForgotPassword from "./views/User/ForgotPassword";
 import SelectCommunity from "./views/Community/SelectCommunity";
 import EditPost from "./views/Post/EditPost";
-import { Notifications } from "./views/Notification/Notifications";
+import Notifications from "./views/Notification/Notifications";
 import NotificationDetails from "./views/Notification/NotificationDetails";
+import { queries, mutations } from "./utils/gql";
 
+// _JSXStyle
 if (typeof global !== "undefined") {
   Object.assign(global, { _JSXStyle });
 }
@@ -51,30 +53,6 @@ if (!firebase.apps.length) {
   firebase.app();
 }
 
-// Add FCM token mutation
-const ADD_FCM_TOKEN_TO_USER = gql`
-  mutation AddFcmToken($fcmToken: String!) {
-    addFcmToken(fcmToken: $fcmToken)
-  }
-`;
-
-// Get local accessToken
-const GET_ACCESS_TOKEN = gql`
-  query {
-    accessToken @client
-  }
-`;
-
-const GET_USER_COMMUNITIES = gql`
-  query Communities {
-    communities {
-      _id
-      name
-      hasNotifications
-    }
-  }
-`;
-
 function App() {
   const client = useApolloClient();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
@@ -82,10 +60,10 @@ function App() {
   // Get access token from cache
   const {
     data: { accessToken },
-  } = useQuery(GET_ACCESS_TOKEN);
+  } = useQuery(queries.LOCAL_ACCESS_TOKEN);
 
   // Mutation to add FCM token to user
-  const [addFcmToken] = useMutation(ADD_FCM_TOKEN_TO_USER, {
+  const [addFcmToken] = useMutation(mutations.ADD_FCM_TOKEN_TO_USER, {
     onError: ({ message }) => {
       console.log(message);
     },
@@ -137,15 +115,16 @@ function App() {
       messaging.onMessage((payload) => {
         try {
           // Get all user's communities from cache
-          const { communities } = client.readQuery({
-            query: GET_USER_COMMUNITIES,
+          const { selCommunityId, communities } = client.readQuery({
+            query: queries.GET_USER_COMMUNITIES,
           });
 
           // Write to cache with a new array of communities with target
           // community's hasNotifications status to true to cache
           client.writeQuery({
-            query: GET_USER_COMMUNITIES,
+            query: queries.GET_USER_COMMUNITIES,
             data: {
+              selCommunityId,
               communities: communities.map((community) =>
                 community._id === payload.data.communityId
                   ? { ...community, hasNotifications: true }
@@ -167,7 +146,7 @@ function App() {
       {isRequestOpen && (
         <div className="request-notification">
           <p>
-            Sharinghood needs your premission to{" "}
+            Sharinghood needs your permission to{" "}
             <span
               role="presentation"
               onClick={async () => {

@@ -1,37 +1,11 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../components/Spinner";
-
-const GET_TOKEN_PAYLOAD = gql`
-  {
-    tokenPayload @client
-  }
-`;
-
-const GET_ACTIVITIES = gql`
-  query {
-    totalActivities {
-      totalCommunities
-      totalUsers
-      totalPosts
-      totalRequests
-      totalBookings
-      communitiesActivities {
-        _id
-        name
-        code
-        numUsers
-        numPosts
-        numRequests
-        numBookings
-      }
-    }
-  }
-`;
+import { queries } from "../utils/gql";
 
 const FORMATTED_KEYS = {
   _id: "Community ID",
@@ -50,8 +24,8 @@ function Dashboard({ location, history }) {
   const [communitiesActivities, setCommunitiesActivities] = useState([]);
   const {
     data: { tokenPayload },
-  } = useQuery(GET_TOKEN_PAYLOAD);
-  const { loading, error, data } = useQuery(GET_ACTIVITIES, {
+  } = useQuery(queries.LOCAL_TOKEN_PAYLOAD);
+  const { loading, error, data } = useQuery(queries.GET_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
     onCompleted: ({ totalActivities }) => {
       setCommunitiesActivities(totalActivities.communitiesActivities);

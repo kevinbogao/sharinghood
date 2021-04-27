@@ -2,7 +2,7 @@ export default function ServerError() {
   return (
     <div className="page-not-found-control">
       <div className="invalid-link">
-        <h1>500</h1>
+        <h1>5XX</h1>
         <h3>
           Oops! We're experiencing an error and we're working to fix it. Please
           come back later.

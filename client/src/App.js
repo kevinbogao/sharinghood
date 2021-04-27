@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./views/Home";
 import Posts from "./views/Post/Posts";
 import Navbar from "./components/Navbar";
+import ServerError from "./components/ServerError";
 import Profile from "./views/User/Profile";
 import Login from "./views/User/Login";
 import Register from "./views/User/Register";
@@ -57,10 +58,10 @@ export default function App() {
   const client = useApolloClient();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
 
-  // Get access token from cache
+  // Get accessToken & networkError from cache
   const {
-    data: { accessToken },
-  } = useQuery(queries.LOCAL_ACCESS_TOKEN);
+    data: { accessToken, serverError },
+  } = useQuery(queries.LOCAL_TOKEN_AND_SERVER_ERROR);
 
   // Mutation to add FCM token to user
   const [addFcmToken] = useMutation(mutations.ADD_FCM_TOKEN_TO_USER, {
@@ -164,58 +165,76 @@ export default function App() {
           />
         </div>
       )}
-      <Navbar />
-      <div className="base-control">
-        <Switch>
-          <Route exact path="/" component={Home} />
-          <Route exact path="/register" component={Register} />
-          <Route exact path="/create-community" component={CreateCommunity} />
-          <Route exact path="/community-link" component={CommunityLink} />
-          <Route exact path="/find-community" component={CommunityExists} />
-          <Route
-            exact
-            path="/community/:communityCode"
-            component={CommunityInvite}
-          />
-          <Route
-            exact
-            path="/reset-password/:resetKey"
-            component={ResetPassword}
-          />
-          <Route exact path="/forgot-password" component={ForgotPassword} />
-          <Route path="/login" component={Login} />
-          <ProtectedRoute path="/find" component={Posts} />
-          <ProtectedRoute path="/profile" component={Profile} />
-          <ProtectedRoute path="/share" component={CreatePost} />
-          <ProtectedRoute path="/communities" component={SelectCommunity} />
-          <ProtectedRoute
-            exact
-            path="/notifications"
-            component={Notifications}
-          />
-          <ProtectedRoute
-            exact
-            path="/notification/:id"
-            component={NotificationDetails}
-          />
-          <ProtectedRoute exact path="/dashboard" component={Dashboard} />
-          <ProtectedRoute
-            exact
-            path="/dashboard/:id"
-            component={DashboardDetails}
-          />
-          <ProtectedRoute path="/request" component={CreateRequest} />
-          <ProtectedRoute exact path="/shared/:id" component={PostDetails} />
-          <ProtectedRoute exact path="/shared/:id/edit" component={EditPost} />
-          <ProtectedRoute exact path="/requests" component={Requests} />
-          <ProtectedRoute
-            exact
-            path="/requests/:id"
-            component={RequestDetails}
-          />
-          <Route component={PageNotFound} />
-        </Switch>
-      </div>
+      {serverError ? (
+        <ServerError />
+      ) : (
+        <>
+          <Navbar />
+          <div className="base-control">
+            <Switch>
+              <Route exact path="/" component={Home} />
+              <Route exact path="/register" component={Register} />
+              <Route
+                exact
+                path="/create-community"
+                component={CreateCommunity}
+              />
+              <Route exact path="/community-link" component={CommunityLink} />
+              <Route exact path="/find-community" component={CommunityExists} />
+              <Route
+                exact
+                path="/community/:communityCode"
+                component={CommunityInvite}
+              />
+              <Route
+                exact
+                path="/reset-password/:resetKey"
+                component={ResetPassword}
+              />
+              <Route exact path="/forgot-password" component={ForgotPassword} />
+              <Route path="/login" component={Login} />
+              <ProtectedRoute path="/find" component={Posts} />
+              <ProtectedRoute path="/profile" component={Profile} />
+              <ProtectedRoute path="/share" component={CreatePost} />
+              <ProtectedRoute path="/communities" component={SelectCommunity} />
+              <ProtectedRoute
+                exact
+                path="/notifications"
+                component={Notifications}
+              />
+              <ProtectedRoute
+                exact
+                path="/notification/:id"
+                component={NotificationDetails}
+              />
+              <ProtectedRoute exact path="/dashboard" component={Dashboard} />
+              <ProtectedRoute
+                exact
+                path="/dashboard/:id"
+                component={DashboardDetails}
+              />
+              <ProtectedRoute path="/request" component={CreateRequest} />
+              <ProtectedRoute
+                exact
+                path="/shared/:id"
+                component={PostDetails}
+              />
+              <ProtectedRoute
+                exact
+                path="/shared/:id/edit"
+                component={EditPost}
+              />
+              <ProtectedRoute exact path="/requests" component={Requests} />
+              <ProtectedRoute
+                exact
+                path="/requests/:id"
+                component={RequestDetails}
+              />
+              <Route component={PageNotFound} />
+            </Switch>
+          </div>
+        </>
+      )}
       <style jsx global>
         {`
           @import "./src/assets/scss/index.scss";

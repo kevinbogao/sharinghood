@@ -13,6 +13,13 @@ export const queries = {
     }
   `,
 
+  LOCAL_TOKEN_AND_SERVER_ERROR: gql`
+    query LocalTokenAndServerError {
+      accessToken @client
+      serverError @client
+    }
+  `,
+
   LOCAL_TOKEN_PAYLOAD: gql`
     query LocalTokenPayload {
       tokenPayload @client

@@ -138,7 +138,7 @@ const client = new ApolloClient({
         }
       },
     }),
-    onError(({ graphQLErrors, operation, forward }) => {
+    onError(({ graphQLErrors, networkError, operation, forward }) => {
       if (graphQLErrors) {
         graphQLErrors.forEach((err) => {
           if (err.extensions.code === "UNAUTHENTICATED") {
@@ -148,6 +148,19 @@ const client = new ApolloClient({
           }
           return forward(operation);
         });
+      }
+
+      // Set global serverError to true in case of server errors
+      if (networkError) {
+        cache.writeQuery({
+          query: gql`
+            query {
+              serverError @client
+            }
+          `,
+          data: { serverError: true },
+        });
+        return forward(operation);
       }
     }),
     splitLink,
@@ -186,6 +199,7 @@ function writeInitialData() {
         refreshToken
         tokenPayload
         selCommunityId
+        serverError
       }
     `,
     data: {
@@ -193,6 +207,7 @@ function writeInitialData() {
       refreshToken: localStorage.getItem("@sharinghood:refreshToken"),
       selCommunityId: localStorage.getItem("@sharinghood:selCommunityId"),
       tokenPayload: accessToken ? jwtDecode(accessToken) : null,
+      serverError: false,
     },
   });
 }

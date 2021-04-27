@@ -10,6 +10,7 @@ import Spinner from "../../components/Spinner";
 import Threads from "../../components/Threads";
 import NotFound from "../../components/NotFound";
 import ItemDetails from "../../components/ItemDetails";
+import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
@@ -82,7 +83,7 @@ export default function RequestDetails({ communityId, match, history }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error! ${error.message}`
+    <ServerError />
   ) : data?.request ? (
     <div className="item-control">
       <ItemDetails

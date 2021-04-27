@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 import moment from "moment";
 import Spinner from "../../components/Spinner";
+import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
@@ -52,7 +53,7 @@ export default function Notifications({ history, communityId }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="notifications-control">
       {data.notifications.length ? (

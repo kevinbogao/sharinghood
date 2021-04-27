@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { useQuery, useMutation } from "@apollo/client";
 import Modal from "react-modal";
 import Spinner from "../../components/Spinner";
+import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
 
 export default function EditPost({ history, match }) {
@@ -150,7 +151,7 @@ export default function EditPost({ history, match }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="edit-post-control">
       <form

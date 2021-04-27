@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import moment from "moment";
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../components/Spinner";
+import ServerError from "../components/ServerError";
 import { queries } from "../utils/gql";
 import { transformImgUrl } from "../utils/helpers";
 
@@ -81,7 +82,7 @@ export default function DashboardDetails({ location, match }) {
   ) : loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="dashboard-control">
       <div className="dashboard-overview">

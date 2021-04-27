@@ -5,6 +5,7 @@ import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../../components/Spinner";
+import ServerError from "../../components/ServerError";
 import { queries, mutations, subscriptions } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
@@ -74,7 +75,7 @@ export default function NotificationDetails({ communityId, match, history }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="notification-details-control">
       <div className="notification-info">

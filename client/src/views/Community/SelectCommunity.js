@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { useQuery, useLazyQuery, useMutation } from "@apollo/client";
 import Spinner from "../../components/Spinner";
 import InlineError from "../../components/InlineError";
+import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
 
@@ -146,7 +147,7 @@ export default function SelectCommunity({ history, location }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="communities-control">
       {isNewCommunity ? (

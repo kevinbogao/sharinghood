@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import ItemsGrid from "../../components/ItemsGrid";
 import Spinner from "../../components/Spinner";
+import ServerError from "../../components/ServerError";
 import { transformImgUrl } from "../../utils/helpers";
 import { queries } from "../../utils/gql";
 
@@ -11,14 +12,14 @@ export default function Posts({ communityId }) {
     skip: !communityId,
     variables: { communityId },
     onError: ({ message }) => {
-      console.log(message);
+      console.warn(message);
     },
   });
 
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <ItemsGrid isPost communityId={communityId}>
       {data?.posts?.map((post) => (

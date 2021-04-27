@@ -5,6 +5,7 @@ import { useQuery } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../components/Spinner";
+import ServerError from "../components/ServerError";
 import { queries } from "../utils/gql";
 
 const FORMATTED_KEYS = {
@@ -48,7 +49,7 @@ export default function Dashboard({ location, history }) {
   ) : loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="dashboard-control">
       <div className="dashboard-overview">

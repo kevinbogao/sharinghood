@@ -6,6 +6,7 @@ import { faClock } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment";
 import Spinner from "../../components/Spinner";
 import ItemsGrid from "../../components/ItemsGrid";
+import ServerError from "../../components/ServerError";
 import { queries } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
@@ -21,7 +22,7 @@ export default function Requests({ communityId }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error! ${error.message}`
+    <ServerError />
   ) : (
     <ItemsGrid isPost={false} communityId={communityId}>
       {data?.requests.map((request) => (

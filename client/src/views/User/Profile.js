@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { useQuery, useMutation } from "@apollo/client";
 import Spinner from "../../components/Spinner";
 import ProfilePosts from "../../components/ProfilePosts";
+import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
@@ -36,7 +37,7 @@ export default function Profile({ history }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="profile-control">
       <form

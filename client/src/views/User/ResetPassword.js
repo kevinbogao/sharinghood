@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useQuery, useMutation } from "@apollo/client";
-import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
+import InlineError from "../../components/InlineError";
+import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
 
@@ -32,7 +33,7 @@ export default function ResetPassword({ match }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error! ${error.message}`
+    <ServerError />
   ) : (
     <>
       <div className="reset-password-control">

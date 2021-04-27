@@ -15,6 +15,7 @@ import { WebSocketLink } from "@apollo/client/link/ws";
 import { TokenRefreshLink } from "apollo-link-token-refresh";
 import { getMainDefinition } from "@apollo/client/utilities";
 import jwtDecode from "jwt-decode";
+import { clearLocalStorage } from "./utils/session";
 import App from "./App";
 
 // Dotenv config
@@ -129,17 +130,19 @@ const client = new ApolloClient({
           );
         }
       },
-      handleError: () => {
-        console.log("Try to login again");
+      handleError: ({ message }) => {
+        if (message === "Failed to fetch") {
+          console.warn("Network error. Please try to login again");
+          clearLocalStorage();
+          writeInitialData();
+        }
       },
     }),
     onError(({ graphQLErrors, operation, forward }) => {
       if (graphQLErrors) {
         graphQLErrors.forEach((err) => {
           if (err.extensions.code === "UNAUTHENTICATED") {
-            localStorage.removeItem("@sharinghood:accessToken");
-            localStorage.removeItem("@sharinghood:refreshToken");
-            localStorage.removeItem("@sharinghood:selCommunityId");
+            clearLocalStorage();
             writeInitialData();
             return forward(operation);
           }

@@ -10,6 +10,7 @@ import {
   faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { queries, mutations } from "../utils/gql";
+import { clearLocalStorage } from "../utils/session";
 
 function Navbar() {
   const node = useRef();
@@ -142,11 +143,9 @@ function Navbar() {
                   await logout();
 
                   // Clear localStorage
-                  localStorage.removeItem("@sharinghood:accessToken");
-                  localStorage.removeItem("@sharinghood:refreshToken");
-                  localStorage.removeItem("@sharinghood:selCommunityId");
+                  clearLocalStorage();
 
-                  // Clear loacl cache
+                  // Clear local cache
                   await client.clearStore();
 
                   // Fetch tokenPayload to clean local state

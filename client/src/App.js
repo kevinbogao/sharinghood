@@ -13,7 +13,7 @@ import Navbar from "./components/Navbar";
 import Profile from "./views/User/Profile";
 import Login from "./views/User/Login";
 import Register from "./views/User/Register";
-import PageNotFound from "./views/PageNotFound";
+import PageNotFound from "./components/PageNotFound";
 import Requests from "./views/Request/Requests";
 import Dashboard from "./views/Dashboard";
 import DashboardDetails from "./views/DashboardDetails";

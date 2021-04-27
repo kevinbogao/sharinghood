@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
@@ -7,7 +7,7 @@ import Spinner from "../../components/Spinner";
 import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
 
-function CreatePost({ communityId, history, location }) {
+export default function CreatePost({ communityId, history, location }) {
   let title, desc, isGiveaway;
   const [image, setImage] = useState(null);
   const [condition, setCondition] = useState(0);
@@ -208,5 +208,3 @@ CreatePost.propTypes = {
     }),
   }).isRequired,
 };
-
-export default CreatePost;

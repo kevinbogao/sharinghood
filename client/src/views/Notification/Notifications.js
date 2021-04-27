@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 import moment from "moment";
@@ -6,7 +5,7 @@ import Spinner from "../../components/Spinner";
 import { queries, mutations } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
-function Notifications({ history, communityId }) {
+export default function Notifications({ history, communityId }) {
   const client = useApolloClient();
   const { loading, error, data } = useQuery(queries.GET_NOTIFICATIONS, {
     variables: { communityId },
@@ -433,5 +432,3 @@ Notifications.propTypes = {
   }).isRequired,
   communityId: PropTypes.string.isRequired,
 };
-
-export default Notifications;

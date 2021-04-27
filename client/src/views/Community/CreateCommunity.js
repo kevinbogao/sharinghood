@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
@@ -6,7 +6,7 @@ import Spinner from "../../components/Spinner";
 import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
 
-function CreateCommunity({ history, location }) {
+export default function CreateCommunity({ history, location }) {
   const { isLoggedIn } = location.state || { isLoggedIn: false };
   let communityName, code, zipCode;
   const [error, setError] = useState({});
@@ -192,5 +192,3 @@ CreateCommunity.propTypes = {
     }),
   }).isRequired,
 };
-
-export default CreateCommunity;

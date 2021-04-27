@@ -1,11 +1,10 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { useApolloClient } from "@apollo/client";
 import { Link } from "react-router-dom";
 import { queries } from "../utils/gql";
 import Members from "./Members";
 
-function ItemsGrid({ isPost, children, communityId }) {
+export default function ItemsGrid({ isPost, children, communityId }) {
   const client = useApolloClient();
 
   return (
@@ -131,5 +130,3 @@ ItemsGrid.propTypes = {
   children: PropTypes.node.isRequired,
   communityId: PropTypes.string.isRequired,
 };
-
-export default ItemsGrid;

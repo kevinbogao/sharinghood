@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Link, Redirect } from "react-router-dom";
 import { useQuery, useLazyQuery } from "@apollo/client";
@@ -7,7 +7,7 @@ import { queries } from "../utils/gql";
 import { validateForm, setErrorMsg } from "../utils/helpers";
 import vase from "../assets/images/vase.png";
 
-function Home({ history }) {
+export default function Home({ history }) {
   let code;
   const [isCreate, setIsCreate] = useState(false);
   const [error, setError] = useState({});
@@ -228,5 +228,3 @@ Home.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default Home;

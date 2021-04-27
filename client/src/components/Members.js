@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons";
 import { queries } from "../utils/gql";
 import { transformImgUrl } from "../utils/helpers";
 
-function Members() {
+export default function Members() {
   const node = useRef();
   const [isExpanded, setIsExpanded] = useState(false);
   const {
@@ -180,5 +180,3 @@ function Members() {
     </div>
   );
 }
-
-export default Members;

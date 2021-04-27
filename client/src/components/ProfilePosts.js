@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { useMutation } from "@apollo/client";
 import Modal from "react-modal";
@@ -6,7 +6,7 @@ import Spinner from "./Spinner";
 import { mutations } from "../utils/gql";
 import { transformImgUrl } from "../utils/helpers";
 
-function ProfilePosts({ posts, history }) {
+export default function ProfilePosts({ posts, history }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selPost, setSelPost] = useState(null);
@@ -202,5 +202,3 @@ ProfilePosts.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default ProfilePosts;

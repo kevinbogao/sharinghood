@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { useMutation } from "@apollo/client";
 import moment from "moment";
@@ -9,7 +9,7 @@ import uploadImg from "../../assets/images/upload.png";
 import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
 
-function CreateRequest({ communityId, history }) {
+export default function CreateRequest({ communityId, history }) {
   let title, desc;
   const [image, setImage] = useState(null);
   const [error, setError] = useState({});
@@ -170,5 +170,3 @@ CreateRequest.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default CreateRequest;

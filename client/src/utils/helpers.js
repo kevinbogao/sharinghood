@@ -13,7 +13,7 @@ const EMPTY_INPUT_ERRORS = {
   communityName: "Please enter a community name",
 };
 
-function _isValidEmail(email) {
+export function _isValidEmail(email) {
   const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
 }
@@ -22,7 +22,7 @@ function _hasNonStdChars(str) {
   return /[ `!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(str);
 }
 
-function validateForm(elements, setError) {
+export function validateForm(elements, setError) {
   let errors = {};
   for (const key in elements) {
     // Empty image object
@@ -70,14 +70,12 @@ function validateForm(elements, setError) {
   return errors;
 }
 
-function transformImgUrl(url, width) {
+export function transformImgUrl(url, width) {
   const splitUrl = url.split("upload");
   return `${splitUrl[0]}upload/w_${width},c_scale,f_auto${splitUrl[1]}`;
 }
 
-function setErrorMsg(message, setError) {
+export function setErrorMsg(message, setError) {
   const errMsgArr = message.split(": ");
   setError({ [errMsgArr[0]]: errMsgArr[1] });
 }
-
-export { validateForm, transformImgUrl, setErrorMsg, _isValidEmail };

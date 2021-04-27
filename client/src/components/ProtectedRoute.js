@@ -1,10 +1,9 @@
-import React from "react";
 import { Route, Redirect } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import SelectCommunity from "../views/Community/SelectCommunity";
 import { queries } from "../utils/gql";
 
-function ProtectedRoute({ component: Component, ...rest }) {
+export default function ProtectedRoute({ component: Component, ...rest }) {
   const { data } = useQuery(queries.LOCAL_SESSION_DATA);
 
   return (
@@ -33,5 +32,3 @@ function ProtectedRoute({ component: Component, ...rest }) {
     )
   );
 }
-
-export default ProtectedRoute;

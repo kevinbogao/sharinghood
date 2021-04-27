@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { gql, useMutation, useApolloClient } from "@apollo/client";
@@ -8,7 +8,7 @@ import Spinner from "../../components/Spinner";
 import { mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
 
-function Login({ history, location }) {
+export default function Login({ history, location }) {
   // Get communityCode from props if user is directed from CommunityExists
   // else set it as null
   let email, password;
@@ -127,5 +127,3 @@ Login.propTypes = {
     }),
   }).isRequired,
 };
-
-export default Login;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { useLazyQuery, useMutation, useApolloClient } from "@apollo/client";
 import Modal from "react-modal";
@@ -7,7 +7,13 @@ import Spinner from "./Spinner";
 import { queries, mutations } from "../utils/gql";
 import { transformImgUrl } from "../utils/helpers";
 
-function ItemDetails({ history, item, userId, communityId, children }) {
+export default function ItemDetails({
+  history,
+  item,
+  userId,
+  communityId,
+  children,
+}) {
   const client = useApolloClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [findNotification] = useLazyQuery(queries.FIND_NOTIFICATION, {
@@ -295,5 +301,3 @@ ItemDetails.propTypes = {
   communityId: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
 };
-
-export default ItemDetails;

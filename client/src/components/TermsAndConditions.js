@@ -1,6 +1,4 @@
-import React from "react";
-
-function TermsAndConditions() {
+export default function TermsAndConditions() {
   return (
     <div className="terms-and-conditions">
       <h1 className="terms">Terms and Conditions</h1>
@@ -494,5 +492,3 @@ function TermsAndConditions() {
     </div>
   );
 }
-
-export default TermsAndConditions;

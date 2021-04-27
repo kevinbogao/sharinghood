@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { useQuery, useMutation } from "@apollo/client";
 import Spinner from "../../components/Spinner";
@@ -6,7 +6,7 @@ import ProfilePosts from "../../components/ProfilePosts";
 import { queries, mutations } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
-function Profile({ history }) {
+export default function Profile({ history }) {
   const [name, setName] = useState("");
   const [image, setImage] = useState(null);
   const [apartment, setApartment] = useState("");
@@ -177,5 +177,3 @@ Profile.propTypes = {
     }),
   }).isRequired,
 };
-
-export default Profile;

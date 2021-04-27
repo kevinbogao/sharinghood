@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useQuery, useMutation } from "@apollo/client";
 import moment from "moment";
@@ -8,7 +8,7 @@ import Spinner from "../../components/Spinner";
 import { queries, mutations, subscriptions } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
-function NotificationDetails({ communityId, match, history }) {
+export default function NotificationDetails({ communityId, match, history }) {
   const [text, setText] = useState("");
   const { subscribeToMore, loading, error, data } = useQuery(
     queries.GET_NOTIFICATION,
@@ -444,5 +444,3 @@ NotificationDetails.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default NotificationDetails;

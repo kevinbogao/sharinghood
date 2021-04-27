@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useQuery, useMutation } from "@apollo/client";
@@ -7,7 +7,7 @@ import Spinner from "../../components/Spinner";
 import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
 
-function ResetPassword({ match }) {
+export default function ResetPassword({ match }) {
   let password, confirmPassword;
   const [formError, setFormError] = useState({});
   const [success, setSuccess] = useState(false);
@@ -135,5 +135,3 @@ ResetPassword.propTypes = {
     }).isRequired,
   }).isRequired,
 };
-
-export default ResetPassword;

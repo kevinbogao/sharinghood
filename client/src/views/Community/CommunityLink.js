@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import JsPDF from "jspdf";
@@ -7,7 +7,7 @@ import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import karlaBold from "../../assets/fonts/karla-bold";
 import invitePoster from "../../assets/images/invite-poster.png";
 
-function CommunityLink({
+export default function CommunityLink({
   location: {
     state: { communityCode, isRegistered },
   },
@@ -297,5 +297,3 @@ CommunityLink.propTypes = {
     }).isRequired,
   }).isRequired,
 };
-
-export default CommunityLink;

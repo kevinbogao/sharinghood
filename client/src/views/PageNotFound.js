@@ -1,6 +1,4 @@
-import React from "react";
-
-function PageNotFound() {
+export default function PageNotFound() {
   return (
     <div className="page-not-found-control">
       <div className="invalid-link">
@@ -54,5 +52,3 @@ function PageNotFound() {
     </div>
   );
 }
-
-export default PageNotFound;

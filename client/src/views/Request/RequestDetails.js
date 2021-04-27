@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from "react";
+import { useState, Fragment } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
@@ -13,7 +13,7 @@ import ItemDetails from "../../components/ItemDetails";
 import { queries, mutations } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
-function RequestDetails({ communityId, match, history }) {
+export default function RequestDetails({ communityId, match, history }) {
   const [comment, setComment] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -321,5 +321,3 @@ RequestDetails.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default RequestDetails;

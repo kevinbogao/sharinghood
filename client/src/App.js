@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 import firebase from "firebase/app";
@@ -53,7 +53,7 @@ if (!firebase.apps.length) {
   firebase.app();
 }
 
-function App() {
+export default function App() {
   const client = useApolloClient();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
 
@@ -536,5 +536,3 @@ function App() {
     </BrowserRouter>
   );
 }
-
-export default App;

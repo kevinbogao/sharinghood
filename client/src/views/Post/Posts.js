@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { useQuery } from "@apollo/client";
@@ -7,7 +6,7 @@ import Spinner from "../../components/Spinner";
 import { transformImgUrl } from "../../utils/helpers";
 import { queries } from "../../utils/gql";
 
-function Posts({ communityId }) {
+export default function Posts({ communityId }) {
   const { loading, error, data, client } = useQuery(queries.GET_POSTS, {
     skip: !communityId,
     variables: { communityId },
@@ -104,5 +103,3 @@ function Posts({ communityId }) {
 Posts.propTypes = {
   communityId: PropTypes.string.isRequired,
 };
-
-export default Posts;

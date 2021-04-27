@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
 import { useQuery } from "@apollo/client";
@@ -37,7 +37,7 @@ const FORMATTED_KEYS = {
   lastLogin: "Last Login",
 };
 
-function DashboardDetails({ location, match }) {
+export default function DashboardDetails({ location, match }) {
   const { from } = location.state || { from: { pathname: "/" } };
   const [selectedId, setSelectedId] = useState("");
   const [selectedCol, setSelectedCol] = useState("_id");
@@ -368,5 +368,3 @@ DashboardDetails.defaultProps = {
     }),
   }),
 };
-
-export default DashboardDetails;

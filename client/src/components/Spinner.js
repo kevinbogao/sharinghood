@@ -1,7 +1,6 @@
-import React from "react";
 import PropTypes from "prop-types";
 
-function Spinner({ isCover }) {
+export default function Spinner({ isCover }) {
   return (
     <div className={`loading-control ${isCover && "foreground"}`}>
       <div className="lds-ring">
@@ -82,5 +81,3 @@ Spinner.propTypes = {
 Spinner.defaultProps = {
   isCover: false,
 };
-
-export default Spinner;

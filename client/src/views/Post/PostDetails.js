@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from "react";
+import { useState, Fragment } from "react";
 import PropTypes from "prop-types";
 import { useQuery, useMutation } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -21,7 +21,7 @@ import { transformImgUrl } from "../../utils/helpers";
 const CONDITIONS = ["New", "Used but good", "Used but little damaged"];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
 
-function PostDetails({ communityId, match, history }) {
+export default function PostDetails({ communityId, match, history }) {
   const [comment, setComment] = useState("");
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [dateType, setDateType] = useState(0);
@@ -312,5 +312,3 @@ PostDetails.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default PostDetails;

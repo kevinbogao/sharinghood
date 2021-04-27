@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 import Modal from "react-modal";
@@ -6,7 +6,7 @@ import Spinner from "../../components/Spinner";
 import ProductScreenshot from "../../assets/images/product-screenshot.png";
 import { queries, mutations } from "../../utils/gql";
 
-function CommunityInvite({ match, history }) {
+export default function CommunityInvite({ match, history }) {
   const client = useApolloClient();
   const [pageError, setPageError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
@@ -300,5 +300,3 @@ CommunityInvite.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default CommunityInvite;

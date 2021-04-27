@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
@@ -7,7 +7,7 @@ import Spinner from "../../components/Spinner";
 import { queries, mutations } from "../../utils/gql";
 import { validateForm, setErrorMsg } from "../../utils/helpers";
 
-function ForgotPassword({ location }) {
+export default function ForgotPassword({ location }) {
   let email;
   const { from } = location.state || { from: { pathname: "/" } };
   const [error, setError] = useState({});
@@ -134,5 +134,3 @@ ForgotPassword.defaultProps = {
     }),
   }),
 };
-
-export default ForgotPassword;

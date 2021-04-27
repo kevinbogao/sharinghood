@@ -1,8 +1,8 @@
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 import PropTypes from "prop-types";
 import { transformImgUrl } from "../utils/helpers";
 
-function Threads({ threads, members, communityId }) {
+export default function Threads({ threads, members, communityId }) {
   return (
     <div className="threads-container">
       {threads
@@ -106,5 +106,3 @@ Threads.propTypes = {
     })
   ).isRequired,
 };
-
-export default Threads;

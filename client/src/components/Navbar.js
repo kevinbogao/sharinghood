@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useHistory, Link, NavLink } from "react-router-dom";
 import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,7 +12,7 @@ import {
 import { queries, mutations } from "../utils/gql";
 import { clearLocalStorage } from "../utils/session";
 
-function Navbar() {
+export default function Navbar() {
   const node = useRef();
   const history = useHistory();
   const client = useApolloClient();
@@ -393,5 +393,3 @@ function Navbar() {
     </div>
   );
 }
-
-export default Navbar;

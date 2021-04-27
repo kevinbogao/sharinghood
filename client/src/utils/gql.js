@@ -3,7 +3,7 @@ import { gql } from "@apollo/client";
 ///
 /* QUERIES */
 ///
-const queries = {
+export const queries = {
   ///
   /// LOCAL
   ///
@@ -527,7 +527,7 @@ const queries = {
 ///
 /* MUTATIONS */
 ///
-const mutations = {
+export const mutations = {
   ///
   /// LOCAL
   ///
@@ -794,7 +794,7 @@ const mutations = {
 ///
 /* SUBSCRIPTIONS  */
 ///
-const subscriptions = {
+export const subscriptions = {
   ///
   /// MESSAGE
   ///
@@ -811,5 +811,3 @@ const subscriptions = {
     }
   `,
 };
-
-export { queries, mutations, subscriptions };

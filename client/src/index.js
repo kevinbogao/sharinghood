@@ -1,4 +1,4 @@
-import React from "react";
+import { StrictMode } from "react";
 import { render } from "react-dom";
 import {
   gql,
@@ -204,10 +204,10 @@ writeInitialData();
 client.onClearStore(writeInitialData);
 
 render(
-  <React.StrictMode>
+  <StrictMode>
     <ApolloProvider client={client}>
       <App />
     </ApolloProvider>
-  </React.StrictMode>,
+  </StrictMode>,
   document.getElementById("root")
 );

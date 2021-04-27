@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { useQuery, useMutation } from "@apollo/client";
 import Modal from "react-modal";
 import Spinner from "../../components/Spinner";
 import { queries, mutations } from "../../utils/gql";
 
-function EditPost({ history, match }) {
+export default function EditPost({ history, match }) {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [image, setImage] = useState(null);
@@ -387,5 +387,3 @@ EditPost.propTypes = {
     replace: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default EditPost;

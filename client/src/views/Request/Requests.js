@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { useQuery } from "@apollo/client";
@@ -10,7 +9,7 @@ import ItemsGrid from "../../components/ItemsGrid";
 import { queries } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
-function Requests({ communityId }) {
+export default function Requests({ communityId }) {
   const { loading, error, data, client } = useQuery(queries.GET_REQUESTS, {
     skip: !communityId,
     variables: { communityId },
@@ -130,5 +129,3 @@ function Requests({ communityId }) {
 Requests.propTypes = {
   communityId: PropTypes.string.isRequired,
 };
-
-export default Requests;

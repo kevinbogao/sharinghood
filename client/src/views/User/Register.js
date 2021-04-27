@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { gql, useMutation, useApolloClient } from "@apollo/client";
 import jwtDecode from "jwt-decode";
@@ -11,7 +11,7 @@ import TermsAndConditions from "../../components/TermsAndConditions";
 import { mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
 
-function Register({
+export default function Register({
   location: {
     state: {
       name,
@@ -308,5 +308,3 @@ Register.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default Register;

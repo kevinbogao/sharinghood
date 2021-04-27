@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
 import { useQuery } from "@apollo/client";
@@ -17,7 +17,7 @@ const FORMATTED_KEYS = {
   numBookings: "Bookings",
 };
 
-function Dashboard({ location, history }) {
+export default function Dashboard({ location, history }) {
   const { from } = location.state || { from: { pathname: "/" } };
   const [sortOrder, setSortOrder] = useState(-1);
   const [selectedCol, setSelectedCol] = useState("_id");
@@ -264,5 +264,3 @@ Dashboard.defaultProps = {
     }),
   }),
 };
-
-export default Dashboard;

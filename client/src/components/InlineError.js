@@ -1,7 +1,6 @@
-import React from "react";
 import PropTypes from "prop-types";
 
-function InlineError({ text }) {
+export default function InlineError({ text }) {
   return (
     <span className="inline-error">
       {text}
@@ -23,5 +22,3 @@ function InlineError({ text }) {
 InlineError.propTypes = {
   text: PropTypes.string.isRequired,
 };
-
-export default InlineError;

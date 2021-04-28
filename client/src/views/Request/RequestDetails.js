@@ -1,7 +1,7 @@
 import { useState, Fragment } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faUserClock } from "@fortawesome/free-solid-svg-icons";
@@ -12,11 +12,13 @@ import NotFound from "../../components/NotFound";
 import ItemDetails from "../../components/ItemDetails";
 import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
+import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 
 export default function RequestDetails({ communityId, match, history }) {
   const [comment, setComment] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
 
   // Get request details
   const { loading, error, data } = useQuery(queries.GET_REQUEST_DETAILS, {
@@ -89,7 +91,7 @@ export default function RequestDetails({ communityId, match, history }) {
       <ItemDetails
         item={data.request}
         history={history}
-        userId={data.tokenPayload.userId}
+        userId={tokenPayload.userId}
         communityId={communityId}
       >
         <div className="item-desc">
@@ -122,7 +124,7 @@ export default function RequestDetails({ communityId, match, history }) {
               </div>
             </>
           )}
-          {data.request.creator._id === data.tokenPayload.userId ? (
+          {data.request.creator._id === tokenPayload.userId ? (
             <button
               type="button"
               className="main-btn item"
@@ -183,7 +185,7 @@ export default function RequestDetails({ communityId, match, history }) {
       />
       <div className="new-thread-control">
         {data.community.members
-          .filter((member) => member._id === data.tokenPayload.userId)
+          .filter((member) => member._id === tokenPayload.userId)
           .map((member) => (
             <Fragment key={member._id}>
               <img

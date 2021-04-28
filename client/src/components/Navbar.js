@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useHistory, Link, NavLink } from "react-router-dom";
-import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
+import {
+  useQuery,
+  useMutation,
+  useApolloClient,
+  useReactiveVar,
+} from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
@@ -10,19 +15,21 @@ import {
   faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { queries, mutations } from "../utils/gql";
-import { clearLocalStorage } from "../utils/session";
+import {
+  accessTokenVar,
+  tokenPayloadVar,
+  selCommunityIdVar,
+  clearLocalStorageAndCache,
+} from "../utils/cache";
 
 export default function Navbar() {
   const node = useRef();
   const history = useHistory();
   const client = useApolloClient();
   const [isMenuActive, setIsMenuActive] = useState(false);
-
-  // Get local session data
-  const {
-    data: { accessToken, tokenPayload, selCommunityId },
-    refetch,
-  } = useQuery(queries.LOCAL_SESSION_DATA);
+  const accessToken = useReactiveVar(accessTokenVar);
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const selCommunityId = useReactiveVar(selCommunityIdVar);
 
   // Get current community & user's communities
   const { data } = useQuery(queries.GET_CURRENT_COMMUNITY_AND_COMMUNITIES, {
@@ -91,17 +98,8 @@ export default function Navbar() {
             className="logo-icon"
             icon={faCaretDown}
             onClick={() => {
-              client.writeQuery({
-                query: gql`
-                  query {
-                    selCommunityId
-                  }
-                `,
-                data: {
-                  selCommunityId: null,
-                },
-              });
               localStorage.removeItem("@sharinghood:selCommunityId");
+              selCommunityIdVar(null);
               history.push("/communities");
             }}
           />
@@ -138,18 +136,12 @@ export default function Navbar() {
               <FontAwesomeIcon
                 className="nav-icon"
                 icon={faSignOutAlt}
-                onClick={async () => {
+                onClick={() => {
                   // revoke refreshToken
-                  await logout();
+                  logout();
 
                   // Clear localStorage
-                  clearLocalStorage();
-
-                  // Clear local cache
-                  await client.clearStore();
-
-                  // Fetch tokenPayload to clean local state
-                  refetch();
+                  clearLocalStorageAndCache();
 
                   // Return to login page
                   history.push("/login");

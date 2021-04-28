@@ -4,13 +4,13 @@ import { useLazyQuery, useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
 import { queries, mutations } from "../../utils/gql";
+import { selCommunityIdVar } from "../../utils/cache";
 import { validateForm } from "../../utils/helpers";
 
 export default function CreateCommunity({ history, location }) {
   const { isLoggedIn } = location.state || { isLoggedIn: false };
   let communityName, code, zipCode;
   const [error, setError] = useState({});
-  const [selectedId, setSelectedId] = useState(null);
 
   // Find community & check if community code exists
   const [community, { loading }] = useLazyQuery(queries.FIND_COMMUNITY, {
@@ -35,34 +35,19 @@ export default function CreateCommunity({ history, location }) {
     },
   });
 
-  // Set selectedCommunityId in cache & localStorage, refetch community
-  // with selected communityId
-  const [selectCommunity] = useMutation(mutations.LOCAL_SELECT_COMMUNITY, {
-    refetchQueries: [
-      {
-        query: queries.GET_CURRENT_COMMUNITY_AND_COMMUNITIES,
-        variables: { communityId: selectedId },
-      },
-    ],
-    onCompleted: () => {
-      history.push("/find");
-    },
-  });
-
   // Create a new community for user
   const [createCommunity, { loading: mutationLoading }] = useMutation(
     mutations.CREATE_COMMUNITY,
     {
       onCompleted: ({ createCommunity }) => {
-        // Set selected community id for re-fetching community query
-        setSelectedId(createCommunity._id);
-
-        // Call selectCommunity local mutation
-        selectCommunity({
-          variables: {
-            communityId: createCommunity._id,
-          },
-        });
+        // Set community id to localStorage, change community id cache
+        // & redirect to /find
+        localStorage.setItem(
+          "@sharinghood:selCommunityId",
+          createCommunity._id
+        );
+        selCommunityIdVar(createCommunity._id);
+        history.push("/find");
       },
       onError: ({ message }) => {
         const errMsgArr = message.split(": ");

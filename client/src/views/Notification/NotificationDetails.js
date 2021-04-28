@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../../components/Spinner";
 import ServerError from "../../components/ServerError";
 import { queries, mutations, subscriptions } from "../../utils/gql";
+import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 
 export default function NotificationDetails({ communityId, match, history }) {
   const [text, setText] = useState("");
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
   const { subscribeToMore, loading, error, data } = useQuery(
     queries.GET_NOTIFICATION,
     {
@@ -81,7 +83,7 @@ export default function NotificationDetails({ communityId, match, history }) {
       <div className="notification-info">
         <div className="info-imgs">
           {data?.community?.members
-            .filter((member) => member._id === data.tokenPayload.userId)
+            .filter((member) => member._id === tokenPayload.userId)
             .map((member) => (
               <div
                 key={member._id}
@@ -138,8 +140,7 @@ export default function NotificationDetails({ communityId, match, history }) {
               )}
             </div>
             <div className="item-btns">
-              {data.notification.booking.booker._id ===
-              data.tokenPayload.userId ? (
+              {data.notification.booking.booker._id === tokenPayload.userId ? (
                 <>
                   {data.notification.booking.status === 0 ? (
                     <button type="button" className="noti-btn status pending">
@@ -171,7 +172,7 @@ export default function NotificationDetails({ communityId, match, history }) {
                                 bookingId: data.notification.booking._id,
                                 communityId,
                                 notificationId: data.notification._id,
-                                notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${data.notification.booking.post.title}`,
+                                notifyContent: `${tokenPayload.userName} has accepted your booking on ${data.notification.booking.post.title}`,
                                 notifyRecipientId:
                                   data.notification.booking.booker._id,
                               },
@@ -193,7 +194,7 @@ export default function NotificationDetails({ communityId, match, history }) {
                                 bookingId: data.notification.booking._id,
                                 communityId,
                                 notificationId: data.notification._id,
-                                notifyContent: `${data.tokenPayload.userName} has denied your booking on ${data.notification.booking.post.title}`,
+                                notifyContent: `${tokenPayload.userName} has denied your booking on ${data.notification.booking.post.title}`,
                                 notifyRecipientId:
                                   data.notification.booking.booker._id,
                               },
@@ -226,7 +227,7 @@ export default function NotificationDetails({ communityId, match, history }) {
               <div
                 key={message._id}
                 className={
-                  message.sender._id === data.tokenPayload.userId
+                  message.sender._id === tokenPayload.userId
                     ? "send"
                     : "received"
                 }

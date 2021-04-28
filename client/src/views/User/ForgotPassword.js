@@ -1,10 +1,11 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
-import { useQuery, useMutation } from "@apollo/client";
+import { useMutation, useReactiveVar } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
-import { queries, mutations } from "../../utils/gql";
+import { mutations } from "../../utils/gql";
+import { accessTokenVar } from "../../utils/cache";
 import { validateForm, setErrorMsg } from "../../utils/helpers";
 
 export default function ForgotPassword({ location }) {
@@ -13,9 +14,7 @@ export default function ForgotPassword({ location }) {
   const [error, setError] = useState({});
   const [isSuccess, setIsSuccess] = useState(false);
   const [isReSend, setIsReSend] = useState(false);
-  const {
-    data: { accessToken },
-  } = useQuery(queries.LOCAL_ACCESS_TOKEN);
+  const accessToken = useReactiveVar(accessTokenVar);
   const [forgotPassword, { loading: mutationLoading }] = useMutation(
     mutations.FORGOT_PASSWORD,
     {

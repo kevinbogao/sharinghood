@@ -53,7 +53,7 @@ const activitiesResolvers = {
               numRequests: { $size: "$requests" },
               numBookings: {
                 $sum: {
-                  $map: { input: "$posts", in: { $size: "$$this.bookings" } },
+                  $map: { input: "$posts", in: { $size: "$$this.bookings" } }, // TODO: need better filter
                 },
               },
             },
@@ -134,6 +134,7 @@ const activitiesResolvers = {
                 _id: 1,
                 title: 1,
                 desc: 1,
+                dateType: 1,
                 dateNeed: 1,
                 dateReturn: 1,
                 image: 1,

@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { ApolloServer, AuthenticationError } = require("apollo-server");
-const Redis = require("ioredis");
+import Redis from "ioredis";
 const mongoose = require("mongoose");
 const typeDefs = require("./typeDefs");
 const resolvers = require("./resolvers");
@@ -23,7 +23,7 @@ const server = new ApolloServer({
       // Log server request
       requestDidStart() {
         return {
-          willSendResponse(requestContext) {
+          willSendResponse(requestContext: any) {
             // Log error if errors are encountered
             if (requestContext.response.errors) {
               logger.log(
@@ -51,7 +51,7 @@ const server = new ApolloServer({
       },
     },
   ],
-  context: async ({ req, connection }) => {
+  context: async ({ req, connection }: { req: any; connection: any }) => {
     // Subscription context
     if (connection) {
       const user = verifyToken(connection.context.authToken);
@@ -65,7 +65,7 @@ const server = new ApolloServer({
     return { user, redis };
   },
   subscriptions: {
-    onConnect: async ({ authToken }) => {
+    onConnect: async ({ authToken }: { authToken: any }) => {
       // Validate user token & throw err if not valid
       if (authToken) {
         const user = verifyToken(authToken);
@@ -77,7 +77,7 @@ const server = new ApolloServer({
   },
   cors: {
     credentials: true,
-    origin: (origin, callback) => {
+    origin: (origin: any, callback: any) => {
       if (origin) {
         const whitelist = [
           process.env.ORIGIN,

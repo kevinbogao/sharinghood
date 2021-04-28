@@ -1,7 +1,10 @@
+import logo from "../assets/images/logo.png";
+
 export default function ServerError() {
   return (
     <div className="page-not-found-control">
       <div className="invalid-link">
+        <img src={logo} alt="" />
         <h1>5XX</h1>
         <h3>
           Oops! We're experiencing an error and we're working to fix it. Please
@@ -13,6 +16,7 @@ export default function ServerError() {
           @import "./src/assets/scss/index.scss";
 
           .page-not-found-control {
+            font-family: $font-stack;
             margin: auto;
             display: flex;
             align-items: center;
@@ -29,6 +33,11 @@ export default function ServerError() {
               margin-top: 0;
               justify-content: flex-start;
               align-items: stretch;
+            }
+
+            img {
+              width: 75px;
+              margin-bottom: 60px;
             }
 
             h1 {

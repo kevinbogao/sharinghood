@@ -1,19 +1,18 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { Link, Redirect } from "react-router-dom";
-import { useQuery, useLazyQuery } from "@apollo/client";
+import { useLazyQuery, useReactiveVar } from "@apollo/client";
 import InlineError from "../components/InlineError";
 import { queries } from "../utils/gql";
 import { validateForm, setErrorMsg } from "../utils/helpers";
+import { accessTokenVar } from "../utils/cache";
 import vase from "../assets/images/vase.png";
 
 export default function Home({ history }) {
   let code;
   const [isCreate, setIsCreate] = useState(false);
   const [error, setError] = useState({});
-  const {
-    data: { accessToken },
-  } = useQuery(queries.LOCAL_ACCESS_TOKEN);
+  const accessToken = useReactiveVar(accessTokenVar);
   const [community] = useLazyQuery(queries.FIND_COMMUNITY_AND_MEMBERS, {
     onCompleted: ({ community }) => {
       if (community) {

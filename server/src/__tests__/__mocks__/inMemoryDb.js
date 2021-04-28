@@ -7,7 +7,7 @@ const mongod = new MongoMemoryServer();
 // Connect to in-memory DB
 async function connect() {
   // Generate connection uri
-  const uri = await mongod.getConnectionString();
+  const uri = await mongod.getUri();
 
   // Mongoose connection to in-memory DB
   await mongoose.connect(uri, {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import { useQuery, useMutation, useApolloClient } from "@apollo/client";
+import { useMutation, useApolloClient, useReactiveVar } from "@apollo/client";
 import firebase from "firebase/app";
 import "firebase/messaging";
 import _JSXStyle from "styled-jsx/style";
@@ -33,6 +33,7 @@ import EditPost from "./views/Post/EditPost";
 import Notifications from "./views/Notification/Notifications";
 import NotificationDetails from "./views/Notification/NotificationDetails";
 import { queries, mutations } from "./utils/gql";
+import { accessTokenVar, serverErrorVar } from "./utils/cache";
 
 // _JSXStyle
 if (typeof global !== "undefined") {
@@ -57,11 +58,8 @@ if (!firebase.apps.length) {
 export default function App() {
   const client = useApolloClient();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
-
-  // Get accessToken & networkError from cache
-  const {
-    data: { accessToken, serverError },
-  } = useQuery(queries.LOCAL_TOKEN_AND_SERVER_ERROR);
+  const accessToken = useReactiveVar(accessTokenVar);
+  const serverError = useReactiveVar(serverErrorVar);
 
   // Mutation to add FCM token to user
   const [addFcmToken] = useMutation(mutations.ADD_FCM_TOKEN_TO_USER, {

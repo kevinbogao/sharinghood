@@ -1,6 +1,6 @@
 import { useState, Fragment } from "react";
 import PropTypes from "prop-types";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheckDouble,
@@ -17,6 +17,7 @@ import NotFound from "../../components/NotFound";
 import ItemDetails from "../../components/ItemDetails";
 import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
+import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 
 const CONDITIONS = ["New", "Used but good", "Used but little damaged"];
@@ -28,6 +29,7 @@ export default function PostDetails({ communityId, match, history }) {
   const [dateType, setDateType] = useState(0);
   const [dateNeed, setDateNeed] = useState(moment());
   const [dateReturn, setDateReturn] = useState(moment());
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
   const { loading, error, data } = useQuery(queries.GET_POST_DETAILS, {
     variables: { postId: match.params.id, communityId },
     onError: ({ message }) => {
@@ -81,7 +83,7 @@ export default function PostDetails({ communityId, match, history }) {
       <ItemDetails
         item={data.post}
         history={history}
-        userId={data.tokenPayload.userId}
+        userId={tokenPayload.userId}
         communityId={communityId}
       >
         <div className="item-desc">
@@ -100,7 +102,7 @@ export default function PostDetails({ communityId, match, history }) {
               <span>This is a give away</span>
             </div>
           )}
-          {data.post.creator._id === data.tokenPayload.userId ? (
+          {data.post.creator._id === tokenPayload.userId ? (
             <button
               type="button"
               className="main-btn item"
@@ -172,7 +174,7 @@ export default function PostDetails({ communityId, match, history }) {
       />
       <div className="new-thread-control">
         {data.community.members
-          .filter((member) => member._id === data.tokenPayload.userId)
+          .filter((member) => member._id === tokenPayload.userId)
           .map((member) => (
             <Fragment key={member._id}>
               <img

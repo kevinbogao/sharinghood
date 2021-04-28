@@ -1,10 +1,11 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import Modal from "react-modal";
 import Spinner from "../../components/Spinner";
 import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
+import { tokenPayloadVar } from "../../utils/cache";
 
 export default function EditPost({ history, match }) {
   const [title, setTitle] = useState("");
@@ -14,9 +15,10 @@ export default function EditPost({ history, match }) {
   const [communityArr, setCommunityArr] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
   const { loading, error, data } = useQuery(queries.GET_POST_AND_COMMUNITIES, {
     variables: { postId: match.params.id },
-    onCompleted: ({ post, communities, tokenPayload }) => {
+    onCompleted: ({ post, communities }) => {
       // Redirect user back to post details page if user is not post creator
       if (post.creator._id !== tokenPayload.userId) {
         history.replace(`/shared/${post._id}`);

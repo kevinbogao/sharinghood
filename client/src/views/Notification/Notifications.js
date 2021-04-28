@@ -1,13 +1,20 @@
 import PropTypes from "prop-types";
-import { useQuery, useMutation, useApolloClient } from "@apollo/client";
+import {
+  useQuery,
+  useMutation,
+  useApolloClient,
+  useReactiveVar,
+} from "@apollo/client";
 import moment from "moment";
 import Spinner from "../../components/Spinner";
 import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
+import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 
 export default function Notifications({ history, communityId }) {
   const client = useApolloClient();
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
   const { loading, error, data } = useQuery(queries.GET_NOTIFICATIONS, {
     variables: { communityId },
     fetchPolicy: "network-only",
@@ -77,7 +84,7 @@ export default function Notifications({ history, communityId }) {
                   <div className="left-img">
                     <div
                       className={`noti-img-border ${
-                        notification.isRead[data.tokenPayload.userId]
+                        notification.isRead[tokenPayload.userId]
                           ? undefined
                           : "unread"
                       }
@@ -124,7 +131,7 @@ export default function Notifications({ history, communityId }) {
                   <div className="left-img">
                     <div
                       className={`noti-img-border ${
-                        notification.isRead[data.tokenPayload.userId]
+                        notification.isRead[tokenPayload.userId]
                           ? undefined
                           : "unread"
                       }
@@ -145,7 +152,7 @@ export default function Notifications({ history, communityId }) {
                   <div className="item-info">
                     <div className="item-status">
                       {notification.booking.booker._id ===
-                      data.tokenPayload.userId ? (
+                      tokenPayload.userId ? (
                         <p className="title">
                           You requested {notification.participants[0].name}
                           &apos;s {notification.booking.post.title}
@@ -174,7 +181,7 @@ export default function Notifications({ history, communityId }) {
                     </div>
                     <div className="item-btns">
                       {notification.booking.booker._id ===
-                      data.tokenPayload.userId ? (
+                      tokenPayload.userId ? (
                         <>
                           {notification.booking.status === 0 ? (
                             <button
@@ -216,7 +223,7 @@ export default function Notifications({ history, communityId }) {
                                         bookingId: notification.booking._id,
                                         communityId,
                                         notificationId: notification._id,
-                                        notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${notification.booking.post.title}`,
+                                        notifyContent: `${tokenPayload.userName} has accepted your booking on ${notification.booking.post.title}`,
                                         notifyRecipientId:
                                           notification.booking.booker._id,
                                       },
@@ -239,7 +246,7 @@ export default function Notifications({ history, communityId }) {
                                         bookingId: notification.booking._id,
                                         communityId,
                                         notificationId: notification._id,
-                                        notifyContent: `${data.tokenPayload.userName} has denied your booking on ${notification.booking.post.title}`,
+                                        notifyContent: `${tokenPayload.userName} has denied your booking on ${notification.booking.post.title}`,
                                         notifyRecipientId:
                                           notification.booking.booker._id,
                                       },
@@ -275,7 +282,7 @@ export default function Notifications({ history, communityId }) {
                   <div className="left-img">
                     <div
                       className={`noti-img-border ${
-                        notification.isRead[data.tokenPayload.userId]
+                        notification.isRead[tokenPayload.userId]
                           ? undefined
                           : "unread"
                       }

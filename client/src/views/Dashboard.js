@@ -1,12 +1,13 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
-import { useQuery } from "@apollo/client";
+import { useQuery, useReactiveVar } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../components/Spinner";
 import ServerError from "../components/ServerError";
 import { queries } from "../utils/gql";
+import { tokenPayloadVar } from "../utils/cache";
 
 const FORMATTED_KEYS = {
   _id: "Community ID",
@@ -23,9 +24,7 @@ export default function Dashboard({ location, history }) {
   const [sortOrder, setSortOrder] = useState(-1);
   const [selectedCol, setSelectedCol] = useState("_id");
   const [communitiesActivities, setCommunitiesActivities] = useState([]);
-  const {
-    data: { tokenPayload },
-  } = useQuery(queries.LOCAL_TOKEN_PAYLOAD);
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
   const { loading, error, data } = useQuery(queries.GET_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
     onCompleted: ({ totalActivities }) => {

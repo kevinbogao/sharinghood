@@ -1,11 +1,16 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { gql, useMutation, useApolloClient } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import jwtDecode from "jwt-decode";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
 import { mutations } from "../../utils/gql";
+import {
+  accessTokenVar,
+  refreshTokenVar,
+  tokenPayloadVar,
+} from "../../utils/cache";
 import { validateForm } from "../../utils/helpers";
 
 export default function Login({ history, location }) {
@@ -13,27 +18,15 @@ export default function Login({ history, location }) {
   // else set it as null
   let email, password;
   const { communityCode } = location.state || { communityCode: null };
-  const client = useApolloClient();
   const [error, setError] = useState({});
   const [login, { loading: mutationLoading }] = useMutation(mutations.LOGIN, {
     onCompleted: async ({ login }) => {
-      const tokenPayload = jwtDecode(login.accessToken);
+      const tokenPayload = await jwtDecode(login.accessToken);
       localStorage.setItem("@sharinghood:accessToken", login.accessToken);
       localStorage.setItem("@sharinghood:refreshToken", login.refreshToken);
-      client.writeQuery({
-        query: gql`
-          {
-            accessToken
-            refreshToken
-            tokenPayload
-          }
-        `,
-        data: {
-          accessToken: login.accessToken,
-          refreshToken: login.refreshToken,
-          tokenPayload,
-        },
-      });
+      accessTokenVar(login.accessToken);
+      refreshTokenVar(login.refreshTokenVar);
+      tokenPayloadVar(tokenPayload);
       history.push({
         pathname: "/communities",
         state: {

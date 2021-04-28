@@ -1,22 +1,20 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
-import { useQuery } from "@apollo/client";
+import { useQuery, useReactiveVar } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import moment from "moment";
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../components/Spinner";
 import ServerError from "../components/ServerError";
 import { queries } from "../utils/gql";
+import { tokenPayloadVar } from "../utils/cache";
 import { transformImgUrl } from "../utils/helpers";
 
 const STATS_IDS = ["members", "posts", "requests", "bookings"];
-const ID_KEYS = ["post", "creator", "booker"];
-const DATE_KEYS = ["createdAt", "dateNeed", "dateReturn", "lastLogin"];
-const USER_KEYS = ["creator", "booker"];
-const ID_SET = new Set(ID_KEYS);
-const DATE_SET = new Set(DATE_KEYS);
-const USER_SET = new Set(USER_KEYS);
+const ID_SET = new Set(["post", "creator", "booker"]);
+const DATE_SET = new Set(["createdAt", "dateNeed", "dateReturn", "lastLogin"]);
+const USER_SET = new Set(["creator", "booker"]);
 const BOOKING_STATUS = ["Pending", "Accepted", "Denied"];
 const FORMATTED_KEYS = {
   _id: "ID",
@@ -43,9 +41,7 @@ export default function DashboardDetails({ location, match }) {
   const [selectedId, setSelectedId] = useState("");
   const [selectedCol, setSelectedCol] = useState("_id");
   const [selectedStat, setSelectedStat] = useState("members");
-  const {
-    data: { tokenPayload },
-  } = useQuery(queries.LOCAL_TOKEN_PAYLOAD);
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
   const { loading, error, data } = useQuery(queries.GET_COMMUNITY_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
     variables: { communityId: match.params.id },

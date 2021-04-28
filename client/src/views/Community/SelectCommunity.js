@@ -1,77 +1,68 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { useQuery, useLazyQuery, useMutation } from "@apollo/client";
+import {
+  useQuery,
+  useLazyQuery,
+  useMutation,
+  useReactiveVar,
+} from "@apollo/client";
 import Spinner from "../../components/Spinner";
 import InlineError from "../../components/InlineError";
 import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
+import { tokenPayloadVar, selCommunityIdVar } from "../../utils/cache";
 
 export default function SelectCommunity({ history, location }) {
   let code;
   const { fromLogin } = location.state || { fromLogin: false };
   const { communityCode } = location.state || { communityCode: null };
   const [pageError, setPageError] = useState({});
-  const [selectedId, setSelectedId] = useState(null);
   const [isNewCommunity, setIsNewCommunity] = useState(false);
   const [foundCommunity, setFoundCommunity] = useState(null);
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const selCommunityId = useReactiveVar(selCommunityIdVar);
 
-  // Set selectedCommunityId in cache & localStorage, refetch community
-  // with selected communityId
-  const [selectCommunity] = useMutation(mutations.LOCAL_SELECT_COMMUNITY, {
-    refetchQueries: [
-      {
-        query: queries.GET_CURRENT_COMMUNITY_AND_COMMUNITIES,
-        variables: { communityId: selectedId },
-      },
-    ],
+  function selectCommunity(communityId) {
+    // Store communityId in localStorage
+    localStorage.setItem("@sharinghood:selCommunityId", communityId);
 
-    onCompleted: () => {
-      // Redirect user to CommunityInvite page if user is redirected from
-      // Login page and has a communityCode; else redirect user to posts page
-      if (communityCode) history.push(`/community/${communityCode}`);
-      else history.push("/find");
-    },
-  });
+    // Update selCommunityId cache
+    selCommunityIdVar(communityId);
+
+    // Redirect user to CommunityInvite page if user is redirected from
+    // Login page and has a communityCode; else redirect user to posts page
+    if (communityCode) history.push(`/community/${communityCode}`);
+    else history.push("/find");
+  }
 
   // Redirect user to posts page if selCommunityId exists (communityId)
   // in localStorage or user is only in one community.
   const { loading, error, data } = useQuery(queries.GET_USER_COMMUNITIES, {
-    onCompleted: ({ selCommunityId, communities }) => {
+    onCompleted: ({ communities }) => {
       // Check if selectedCommunityId exists in communities array
       const isIdInArray = communities.some(
         (community) => community._id === selCommunityId
       );
 
-      // If selected community id exists in localStorage & it the user is a member of that community
+      // If selected community id exists in localStorage & it the user is a
+      // member of that community
       if (selCommunityId && isIdInArray) {
-        selectCommunity({
-          variables: {
-            communityId: selCommunityId,
-          },
-        });
+        selectCommunity(selCommunityId);
 
         // Redirect to posts page
         history.push("/find");
 
         // If user is redirect from login and only has one community
       } else if (communities.length === 1 && fromLogin) {
-        selectCommunity({
-          variables: {
-            communityId: communities[0]._id,
-          },
-        });
+        selectCommunity(communities[0]._id);
 
         // Redirect to posts page
         history.push("/find");
 
         // If user is redirect from login and communityCode is given
       } else if (fromLogin && communityCode) {
-        selectCommunity({
-          variables: {
-            communityId: communities[0]._id,
-          },
-        });
+        selectCommunity(communities[0]._id);
       }
       // eslint-disable-next-line
     },
@@ -82,7 +73,7 @@ export default function SelectCommunity({ history, location }) {
 
   // Find community, limit user communities to 5
   const [community] = useLazyQuery(queries.FIND_COMMUNITY_AND_MEMBERS, {
-    onCompleted: ({ community, tokenPayload }) => {
+    onCompleted: ({ community }) => {
       if (community) {
         // True if user is inside of community members array
         const userIsMember = community.members.some(
@@ -129,11 +120,7 @@ export default function SelectCommunity({ history, location }) {
         });
 
         // Set community id
-        selectCommunity({
-          variables: {
-            communityId: joinCommunity._id,
-          },
-        });
+        selectCommunity(joinCommunity._id);
 
         // Redirect to posts page
         history.push("/find");
@@ -247,14 +234,7 @@ export default function SelectCommunity({ history, location }) {
                 key={community._id}
                 className="main-btn block beige"
                 type="submit"
-                onClick={() => {
-                  setSelectedId(community._id);
-                  selectCommunity({
-                    variables: {
-                      communityId: community._id,
-                    },
-                  });
-                }}
+                onClick={() => selectCommunity(community._id)}
               >
                 {community.name}
                 {community.hasNotifications && (

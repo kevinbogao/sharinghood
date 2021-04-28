@@ -1,6 +1,6 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { gql, useMutation, useApolloClient } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import jwtDecode from "jwt-decode";
 import Modal from "react-modal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,6 +9,11 @@ import Spinner from "../../components/Spinner";
 import InlineError from "../../components/InlineError";
 import TermsAndConditions from "../../components/TermsAndConditions";
 import { mutations } from "../../utils/gql";
+import {
+  accessTokenVar,
+  refreshTokenVar,
+  tokenPayloadVar,
+} from "../../utils/cache";
 import { validateForm } from "../../utils/helpers";
 
 export default function Register({
@@ -26,7 +31,6 @@ export default function Register({
   },
   history,
 }) {
-  const client = useApolloClient();
   let email, password, confirmPassword, isNotified, agreed;
   const [error, setError] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,7 +38,10 @@ export default function Register({
     registerAndOrCreateCommunity,
     { loading: mutationLoading },
   ] = useMutation(mutations.REGISTER_AND_OR_CREATE_COMMUNITY, {
-    onCompleted: ({ registerAndOrCreateCommunity }) => {
+    onCompleted: async ({ registerAndOrCreateCommunity }) => {
+      const tokenPayload = await jwtDecode(
+        registerAndOrCreateCommunity.user.accessToken
+      );
       localStorage.setItem(
         "@sharinghood:accessToken",
         registerAndOrCreateCommunity.user.accessToken
@@ -43,23 +50,9 @@ export default function Register({
         "@sharinghood:refreshToken",
         registerAndOrCreateCommunity.user.refreshToken
       );
-      const tokenPayload = jwtDecode(
-        registerAndOrCreateCommunity.user.accessToken
-      );
-      client.writeQuery({
-        query: gql`
-          {
-            accessToken
-            refreshToken
-            tokenPayload
-          }
-        `,
-        data: {
-          accessToken: registerAndOrCreateCommunity.user.accessToken,
-          refreshToken: registerAndOrCreateCommunity.user.refreshToken,
-          tokenPayload,
-        },
-      });
+      accessTokenVar(registerAndOrCreateCommunity.accessToken);
+      refreshTokenVar(registerAndOrCreateCommunity.refreshTokenVar);
+      tokenPayloadVar(tokenPayload);
 
       // Redirect user to community invite link if user is creator
       // else redirect user to communities page (fromLogin state will

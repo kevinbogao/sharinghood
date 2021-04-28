@@ -7,42 +7,8 @@ export const queries = {
   ///
   /// LOCAL
   ///
-  LOCAL_ACCESS_TOKEN: gql`
-    query LocalAccessToken {
-      accessToken @client
-    }
-  `,
-
-  LOCAL_TOKEN_AND_SERVER_ERROR: gql`
-    query LocalTokenAndServerError {
-      accessToken @client
-      serverError @client
-    }
-  `,
-
-  LOCAL_TOKEN_PAYLOAD: gql`
-    query LocalTokenPayload {
-      tokenPayload @client
-    }
-  `,
-
-  LOCAL_COMMUNITY_ID: gql`
-    query LocalCommunityId {
-      selCommunityId @client
-    }
-  `,
-
-  LOCAL_SESSION_DATA: gql`
-    query LocalSessionData {
-      accessToken @client
-      tokenPayload @client
-      selCommunityId @client
-    }
-  `,
-
-  LOCAL_TOKEN_PAYLOAD_AND_MEMBERS: gql`
-    query LocalTokenPayloadAndMembers {
-      tokenPayload @client
+  LOCAL_COMMUNITY: gql`
+    query LocalCommunity {
       community(communityId: $communityId) @client {
         members {
           _id
@@ -105,13 +71,11 @@ export const queries = {
           image
         }
       }
-      tokenPayload @client
     }
   `,
 
   GET_USER_COMMUNITIES: gql`
     query Communities {
-      selCommunityId @client
       communities {
         _id
         name
@@ -203,7 +167,6 @@ export const queries = {
           }
         }
       }
-      tokenPayload @client
       community(communityId: $communityId) @client {
         members {
           _id
@@ -249,7 +212,6 @@ export const queries = {
           _id
         }
       }
-      tokenPayload @client
     }
   `,
 
@@ -314,7 +276,6 @@ export const queries = {
           }
         }
       }
-      tokenPayload @client
       community(communityId: $communityId) @client {
         members {
           _id
@@ -383,7 +344,6 @@ export const queries = {
         }
         isRead
       }
-      tokenPayload @client
       community(communityId: $communityId) @client {
         members {
           _id
@@ -435,7 +395,6 @@ export const queries = {
           text
         }
       }
-      tokenPayload @client
     }
   `,
 
@@ -535,15 +494,6 @@ export const queries = {
 /* MUTATIONS */
 ///
 export const mutations = {
-  ///
-  /// LOCAL
-  ///
-  LOCAL_SELECT_COMMUNITY: gql`
-    mutation SelectCommunity($communityId: ID) {
-      selectCommunity(communityId: $communityId) @client
-    }
-  `,
-
   ///
   /// USER
   ///

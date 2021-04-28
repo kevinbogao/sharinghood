@@ -35,11 +35,26 @@ export default function Dashboard({ location, history }) {
     },
   });
 
-  function sortColumns(key) {
+  function sortColumns(column) {
+    // Copy communitiesActivities
     const stats = communitiesActivities.slice();
-    stats.sort((a, b) => sortOrder * (a[key] - b[key]));
+
+    // Sort string elements
+    if (typeof stats[0][column] === "string") {
+      stats.sort((a, b) => {
+        const elemA = a[column].toUpperCase();
+        const elemB = b[column].toUpperCase();
+        if (elemA < elemB) return sortOrder * -1;
+        if (elemA > elemB) return sortOrder * 1;
+        return 0;
+      });
+    }
+
+    // Sort number elements
+    stats.sort((a, b) => sortOrder * (a[column] - b[column]));
+
     setCommunitiesActivities(stats);
-    setSelectedCol(key);
+    setSelectedCol(column);
     setSortOrder(sortOrder * -1);
   }
 

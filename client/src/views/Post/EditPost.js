@@ -39,14 +39,14 @@ export default function EditPost({ history, match }) {
   // Add post to selected community
   const [addPostToCommunity] = useMutation(mutations.ADD_POST_TO_COMMUNITY, {
     update(cache, { data: { addPostToCommunity } }) {
-      try {
-        // Get posts by community id, if posts exist, add selected post to the
-        // posts array
-        const { posts } = cache.readQuery({
-          query: queries.GET_POSTS,
-          variables: { communityId: addPostToCommunity._id },
-        });
+      // Get posts by community id, if posts exist, add selected post to the
+      // posts array
+      const postsData = cache.readQuery({
+        query: queries.GET_POSTS,
+        variables: { communityId: addPostToCommunity._id },
+      });
 
+      if (postsData) {
         // Create a post object with selected fields
         const postSel = (({ _id, __typename, title, image, creator }) => ({
           _id,
@@ -60,10 +60,9 @@ export default function EditPost({ history, match }) {
         cache.writeQuery({
           query: queries.GET_POSTS,
           variables: { communityId: addPostToCommunity._id },
-          data: { posts: [postSel, ...posts] },
+          data: { posts: [postSel, ...postsData.posts] },
         });
-        // eslint-disable-next-line
-      } catch (err) {}
+      }
 
       // Add post to select community's posts array in cache
       const { communities } = cache.readQuery({
@@ -121,26 +120,27 @@ export default function EditPost({ history, match }) {
   // Delete user's post
   const [deletePost] = useMutation(mutations.DELETE_POST, {
     update(cache, { data: { deletePost } }) {
-      try {
-        // Delete post from all communities in cache
-        data.communities.forEach((community) => {
-          // Get post by community id from cache
-          const { posts } = cache.readQuery({
-            query: queries.GET_POSTS,
-            variables: { communityId: community._id },
-          });
+      // Delete post from all communities in cache
+      data.communities.forEach((community) => {
+        // Get post by community id from cache
+        const postsData = cache.readQuery({
+          query: queries.GET_POSTS,
+          variables: { communityId: community._id },
+        });
 
+        if (postsData) {
           // Remove the post from posts array
           cache.writeQuery({
             query: queries.GET_POSTS,
             variables: { communityId: community._id },
             data: {
-              posts: posts.filter((post) => post._id !== deletePost._id),
+              posts: postsData.posts.filter(
+                (post) => post._id !== deletePost._id
+              ),
             },
           });
-        });
-        // eslint-disable-next-line
-      } catch (err) {}
+        }
+      });
 
       // Redirect to posts page on complete
       history.push("/find");

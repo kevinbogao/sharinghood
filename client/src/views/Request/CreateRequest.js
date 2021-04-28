@@ -21,19 +21,19 @@ export default function CreateRequest({ communityId, history }) {
     mutations.CREATE_REQUEST,
     {
       update(cache, { data: { createRequest } }) {
-        // Try catch block to avoid empty requests cache error
-        try {
-          const { requests } = cache.readQuery({
-            query: queries.GET_REQUESTS,
-            variables: { communityId },
-          });
+        // Fetch requests from cache
+        const data = cache.readQuery({
+          query: queries.GET_REQUESTS,
+          variables: { communityId },
+        });
+
+        // Update cached requests if it exists
+        if (data) {
           cache.writeQuery({
             query: queries.GET_REQUESTS,
             variables: { communityId },
-            data: { requests: [createRequest, ...requests] },
+            data: { requests: [createRequest, ...data.requests] },
           });
-        } catch (err) {
-          console.log(err);
         }
         history.push("/requests");
       },

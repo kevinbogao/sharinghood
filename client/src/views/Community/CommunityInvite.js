@@ -33,18 +33,16 @@ export default function CommunityInvite({ match, history }) {
     {
       update(cache, { data: { joinCommunity } }) {
         // Get and update communities cache
-        try {
-          const { communities } = cache.readQuery({
-            query: queries.GET_USER_COMMUNITIES,
-          });
+        const communitiesData = cache.readQuery({
+          query: queries.GET_USER_COMMUNITIES,
+        });
 
+        if (communitiesData) {
           cache.writeQuery({
             query: queries.GET_USER_COMMUNITIES,
-            communities: [...communities, joinCommunity],
+            communities: [...communitiesData.communities, joinCommunity],
           });
-
-          // eslint-disable-next-line
-        } catch (err) {}
+        }
 
         // Set community id to localStorage, change community id cache
         // & redirect to /find

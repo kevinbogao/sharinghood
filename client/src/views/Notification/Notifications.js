@@ -19,26 +19,25 @@ export default function Notifications({ history, communityId }) {
     variables: { communityId },
     fetchPolicy: "network-only",
     onCompleted: () => {
-      try {
-        // Get communities from cache
-        const { communities } = client.readQuery({
-          query: queries.GET_USER_COMMUNITIES,
-        });
+      // Get communities from cache
+      const communitiesData = client.readQuery({
+        query: queries.GET_USER_COMMUNITIES,
+      });
 
-        // Write to cache with a new communities array with the current
-        // community's hasNotifications is set to false
+      // Write to cache with a new communities array with the current
+      // community's hasNotifications is set to false
+      if (communitiesData) {
         client.writeQuery({
           query: queries.GET_USER_COMMUNITIES,
           data: {
-            communities: communities.map((community) =>
+            communities: communitiesData.communities.map((community) =>
               community._id === communityId
                 ? { ...community, hasNotifications: false }
                 : community
             ),
           },
         });
-        // eslint-disable-next-line
-      } catch (err) {}
+      }
     },
   });
 

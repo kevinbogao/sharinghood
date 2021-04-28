@@ -16,19 +16,19 @@ export default function CreatePost({ communityId, history, location }) {
     mutations.CREATE_POST,
     {
       update(cache, { data: { createPost } }) {
-        // Try catch block to avoid empty requests cache error
-        try {
-          const { posts } = cache.readQuery({
-            query: queries.GET_POSTS,
-            variables: { communityId },
-          });
+        // Fetch posts from cache
+        const data = cache.readQuery({
+          query: queries.GET_POSTS,
+          variables: { communityId },
+        });
+
+        // Update cached posts if it exists
+        if (data) {
           cache.writeQuery({
             query: queries.GET_POSTS,
             variables: { communityId },
-            data: { posts: [createPost, ...posts] },
+            data: { posts: [createPost, ...data.posts] },
           });
-        } catch (err) {
-          console.log(err);
         }
         history.push("/find");
       },

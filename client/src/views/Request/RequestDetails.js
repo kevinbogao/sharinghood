@@ -37,22 +37,20 @@ export default function RequestDetails({ communityId, match, history }) {
       console.log(message);
     },
     update(cache, { data: { createThread } }) {
-      try {
-        const { request } = cache.readQuery({
-          query: queries.GET_REQUEST_DETAILS,
-          variables: { requestId: data.request._id, communityId },
-        });
-        cache.writeQuery({
-          query: queries.GET_REQUEST_DETAILS,
-          data: {
-            request: {
-              ...request,
-              threads: [...request.threads, createThread],
-            },
+      const { request } = cache.readQuery({
+        query: queries.GET_REQUEST_DETAILS,
+        variables: { requestId: data.request._id, communityId },
+      });
+
+      cache.writeQuery({
+        query: queries.GET_REQUEST_DETAILS,
+        data: {
+          request: {
+            ...request,
+            threads: [...request.threads, createThread],
           },
-        });
-        // eslint-disable-next-line
-      } catch (err) {}
+        },
+      });
     },
   });
 

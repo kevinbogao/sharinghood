@@ -87,53 +87,45 @@ export default function App() {
       // Retrieve messaging object
       const messaging = firebase.messaging();
 
-      (async () => {
-        // Get currentToken if user is logged in and the the notification permission
-        // is granted
-        if (accessToken && Notification.permission === "granted") {
-          try {
-            // Request permission for notification
-            await messaging.requestPermission();
-
-            // Get token
-            const token = await messaging.getToken();
-
+      // Get currentToken if user is logged in and the notification
+      // permission is granted
+      if (accessToken && Notification.permission === "granted") {
+        messaging
+          .getToken({
+            vapidKey: process.env.REACT_APP_FCM_VAPID_KEY,
+          })
+          .then((token) => {
             // Add token to user
             if (token) {
               addFcmToken({
                 variables: { fcmToken: token },
               });
             }
-          } catch (err) {
-            console.log(err);
-          }
-        }
-      })();
+          })
+          .catch((err) => console.warn(err));
+      }
 
       // Subscribe to new FCM
       messaging.onMessage((payload) => {
-        try {
-          // Get all user's communities from cache
-          const { selCommunityId, communities } = client.readQuery({
-            query: queries.GET_USER_COMMUNITIES,
-          });
+        // Get all user's communities from cache
+        const data = client.readQuery({
+          query: queries.GET_USER_COMMUNITIES,
+        });
 
-          // Write to cache with a new array of communities with target
-          // community's hasNotifications status to true to cache
+        // Write to cache with a new array of communities with target
+        // community's hasNotifications status to true to cache
+        if (data) {
           client.writeQuery({
             query: queries.GET_USER_COMMUNITIES,
             data: {
-              selCommunityId,
-              communities: communities.map((community) =>
+              communities: data.communities.map((community) =>
                 community._id === payload.data.communityId
                   ? { ...community, hasNotifications: true }
                   : community
               ),
             },
           });
-
-          // eslint-disable-next-line
-        } catch {}
+        }
       });
     }
 

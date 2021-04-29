@@ -465,6 +465,7 @@ export const queries = {
           _id
           title
           desc
+          dateType
           dateNeed
           dateReturn
           image
@@ -479,6 +480,7 @@ export const queries = {
             _id
           }
           status
+          dateType
           dateNeed
           dateReturn
           booker {

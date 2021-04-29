@@ -1,4 +1,4 @@
-import { Schema, Document, model } from "mongoose";
+import { Document, Schema, model } from "mongoose";
 
 interface IBooking extends Document {
   post: Schema.Types.ObjectId;
@@ -10,7 +10,7 @@ interface IBooking extends Document {
   community: Schema.Types.ObjectId;
 }
 
-const bookingSchema = new Schema(
+const bookingSchema: Schema = new Schema(
   {
     post: {
       type: Schema.Types.ObjectId,

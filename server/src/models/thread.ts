@@ -1,4 +1,4 @@
-import { Schema, Document, model } from "mongoose";
+import { Document, Schema, model } from "mongoose";
 
 interface IThread extends Document {
   content: string;

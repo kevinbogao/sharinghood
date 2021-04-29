@@ -1,4 +1,14 @@
-const { Schema, model } = require("mongoose");
+import { Schema, Document, model } from "mongoose";
+
+interface IBooking extends Document {
+  post: Schema.Types.ObjectId;
+  status: number;
+  dateType: number;
+  dateNeed: Date;
+  dateReturn: Date;
+  booker: Schema.Types.ObjectId;
+  community: Schema.Types.ObjectId;
+}
 
 const bookingSchema = new Schema(
   {
@@ -46,4 +56,4 @@ const bookingSchema = new Schema(
 // Index for booking community
 bookingSchema.index({ community: 1 });
 
-module.exports = model("Booking", bookingSchema);
+export default model<IBooking>("Booking", bookingSchema);

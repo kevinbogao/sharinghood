@@ -1,6 +1,17 @@
-const { Schema, model } = require("mongoose");
+import { Document, Schema, model } from "mongoose";
 
-const communitySchema = new Schema(
+interface ICommunity extends Document {
+  name: string;
+  code: string;
+  zipCode: string;
+  password: string;
+  creator: Schema.Types.ObjectId;
+  members: Array<Schema.Types.ObjectId>;
+  posts: Array<Schema.Types.ObjectId>;
+  requests: Array<Schema.Types.ObjectId>;
+}
+
+const communitySchema: Schema = new Schema(
   {
     name: {
       type: String,
@@ -48,4 +59,4 @@ const communitySchema = new Schema(
 // Create index for community code
 communitySchema.index({ code: 1 });
 
-module.exports = model("Community", communitySchema);
+export default model<ICommunity>("Community", communitySchema);

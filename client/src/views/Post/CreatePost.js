@@ -1,57 +1,45 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import uploadImg from "../../assets/images/upload.png";
 import Spinner from "../../components/Spinner";
-import { GET_POSTS } from "./Posts";
+import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
 
-const CREATE_POST = gql`
-  mutation CreatePost($postInput: PostInput!, $communityId: ID) {
-    createPost(postInput: $postInput, communityId: $communityId) {
-      _id
-      title
-      desc
-      image
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
-
-function CreatePost({ communityId, history, location }) {
+export default function CreatePost({ communityId, history, location }) {
   let title, desc, isGiveaway;
   const [image, setImage] = useState(null);
   const [condition, setCondition] = useState(0);
   const [error, setError] = useState({});
-  const [createPost, { loading: mutationLoading }] = useMutation(CREATE_POST, {
-    update(cache, { data: { createPost } }) {
-      // Try catch block to avoid empty requests cache error
-      try {
-        const { posts } = cache.readQuery({
-          query: GET_POSTS,
+  const [createPost, { loading: mutationLoading }] = useMutation(
+    mutations.CREATE_POST,
+    {
+      update(cache, { data: { createPost } }) {
+        // Fetch posts from cache
+        const data = cache.readQuery({
+          query: queries.GET_POSTS,
           variables: { communityId },
         });
-        cache.writeQuery({
-          query: GET_POSTS,
-          variables: { communityId },
-          data: { posts: [createPost, ...posts] },
+
+        // Update cached posts if it exists
+        if (data) {
+          cache.writeQuery({
+            query: queries.GET_POSTS,
+            variables: { communityId },
+            data: { posts: [createPost, ...data.posts] },
+          });
+        }
+        history.push("/find");
+      },
+      onError: () => {
+        setError({
+          res:
+            "We are experiencing difficulties right now :( Please try again later",
         });
-      } catch (err) {
-        console.log(err);
-      }
-      history.push("/find");
-    },
-    onError: () => {
-      setError({
-        res:
-          "We are experiencing difficulties right now :( Please try again later",
-      });
-    },
-  });
+      },
+    }
+  );
 
   return (
     <div className="share-control">
@@ -220,5 +208,3 @@ CreatePost.propTypes = {
     }),
   }).isRequired,
 };
-
-export default CreatePost;

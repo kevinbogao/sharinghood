@@ -1,107 +1,30 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { gql, useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../../components/Spinner";
+import ServerError from "../../components/ServerError";
+import { queries, mutations, subscriptions } from "../../utils/gql";
+import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 
-const GET_NOTIFICATION = gql`
-  query GetNotification($notificationId: ID!) {
-    notification(notificationId: $notificationId) {
-      _id
-      ofType
-      booking {
-        _id
-        status
-        dateType
-        dateNeed
-        dateReturn
-        post {
-          _id
-          title
-          image
-        }
-        booker {
-          _id
-        }
-      }
-      post {
-        _id
-      }
-      participants {
-        _id
-        name
-        image
-      }
-      messages {
-        _id
-        text
-        sender {
-          _id
-        }
-        createdAt
-      }
-      isRead
-    }
-    tokenPayload @client
-    community(communityId: $communityId) @client {
-      members {
-        _id
-        name
-        image
-      }
-    }
-  }
-`;
-
-const UPDATE_BOOKING = gql`
-  mutation UpdateBooking($bookingInput: BookingInput!) {
-    updateBooking(bookingInput: $bookingInput) {
-      _id
-      status
-    }
-  }
-`;
-
-const MESSAGES_SUBSCRIPTION = gql`
-  subscription onNewNotificationMessage($notificationId: ID!) {
-    newNotificationMessage(notificationId: $notificationId) {
-      _id
-      text
-      createdAt
-      sender {
-        _id
-      }
-    }
-  }
-`;
-
-const CREATE_MESSAGE = gql`
-  mutation CreateMessage($messageInput: MessageInput!) {
-    createMessage(messageInput: $messageInput) {
-      _id
-      text
-      sender {
-        _id
-      }
-      createdAt
-    }
-  }
-`;
-
-function NotificationDetails({ communityId, match, history }) {
+export default function NotificationDetails({ communityId, match, history }) {
   const [text, setText] = useState("");
-  const { subscribeToMore, loading, error, data } = useQuery(GET_NOTIFICATION, {
-    fetchPolicy: "network-only",
-    variables: { notificationId: match.params.id, communityId },
-    onError: ({ message }) => {
-      console.log(message);
-    },
-  });
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const { subscribeToMore, loading, error, data } = useQuery(
+    queries.GET_NOTIFICATION,
+    {
+      fetchPolicy: "network-only",
+      variables: { notificationId: match.params.id, communityId },
+      onError: ({ message }) => {
+        console.log(message);
+      },
+    }
+  );
   const [createMessage, { error: mutationError }] = useMutation(
-    CREATE_MESSAGE,
+    mutations.CREATE_MESSAGE,
     {
       onCompleted: () => {
         setText("");
@@ -121,7 +44,7 @@ function NotificationDetails({ communityId, match, history }) {
     {
       loading: { mutationLoading },
     },
-  ] = useMutation(UPDATE_BOOKING, {
+  ] = useMutation(mutations.UPDATE_BOOKING, {
     onError: ({ message }) => {
       console.log(message);
     },
@@ -130,7 +53,7 @@ function NotificationDetails({ communityId, match, history }) {
   // Subscribe to new messages
   useEffect(() => {
     const unsubscribe = subscribeToMore({
-      document: MESSAGES_SUBSCRIPTION,
+      document: subscriptions.MESSAGES_SUBSCRIPTION,
       variables: { notificationId: match.params.id },
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
@@ -154,13 +77,13 @@ function NotificationDetails({ communityId, match, history }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="notification-details-control">
       <div className="notification-info">
         <div className="info-imgs">
           {data?.community?.members
-            .filter((member) => member._id === data.tokenPayload.userId)
+            .filter((member) => member._id === tokenPayload.userId)
             .map((member) => (
               <div
                 key={member._id}
@@ -217,8 +140,7 @@ function NotificationDetails({ communityId, match, history }) {
               )}
             </div>
             <div className="item-btns">
-              {data.notification.booking.booker._id ===
-              data.tokenPayload.userId ? (
+              {data.notification.booking.booker._id === tokenPayload.userId ? (
                 <>
                   {data.notification.booking.status === 0 ? (
                     <button type="button" className="noti-btn status pending">
@@ -250,7 +172,7 @@ function NotificationDetails({ communityId, match, history }) {
                                 bookingId: data.notification.booking._id,
                                 communityId,
                                 notificationId: data.notification._id,
-                                notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${data.notification.booking.post.title}`,
+                                notifyContent: `${tokenPayload.userName} has accepted your booking on ${data.notification.booking.post.title}`,
                                 notifyRecipientId:
                                   data.notification.booking.booker._id,
                               },
@@ -272,7 +194,7 @@ function NotificationDetails({ communityId, match, history }) {
                                 bookingId: data.notification.booking._id,
                                 communityId,
                                 notificationId: data.notification._id,
-                                notifyContent: `${data.tokenPayload.userName} has denied your booking on ${data.notification.booking.post.title}`,
+                                notifyContent: `${tokenPayload.userName} has denied your booking on ${data.notification.booking.post.title}`,
                                 notifyRecipientId:
                                   data.notification.booking.booker._id,
                               },
@@ -305,7 +227,7 @@ function NotificationDetails({ communityId, match, history }) {
               <div
                 key={message._id}
                 className={
-                  message.sender._id === data.tokenPayload.userId
+                  message.sender._id === tokenPayload.userId
                     ? "send"
                     : "received"
                 }
@@ -524,5 +446,3 @@ NotificationDetails.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default NotificationDetails;

@@ -1,64 +1,24 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
-import {
-  gql,
-  useLazyQuery,
-  useMutation,
-  useApolloClient,
-} from "@apollo/client";
+import { useLazyQuery, useMutation, useApolloClient } from "@apollo/client";
 import Modal from "react-modal";
 import moment from "moment";
 import Spinner from "./Spinner";
+import { queries, mutations } from "../utils/gql";
 import { transformImgUrl } from "../utils/helpers";
 
-const FIND_NOTIFICATION = gql`
-  query FindNotification($recipientId: ID!, $communityId: ID!) {
-    findNotification(recipientId: $recipientId, communityId: $communityId) {
-      _id
-    }
-  }
-`;
-
-const CREATE_NOTIFICATION = gql`
-  mutation CreateNotification($notificationInput: NotificationInput) {
-    createNotification(notificationInput: $notificationInput) {
-      _id
-      ofType
-      booking {
-        _id
-        status
-        dateType
-        dateNeed
-        dateReturn
-        post {
-          _id
-          title
-          image
-        }
-        booker {
-          _id
-        }
-      }
-      participants {
-        _id
-        name
-        image
-      }
-      isRead
-      messages {
-        _id
-        text
-      }
-    }
-  }
-`;
-
-function ItemDetails({ history, item, userId, communityId, children }) {
+export default function ItemDetails({
+  history,
+  item,
+  userId,
+  communityId,
+  children,
+}) {
   const client = useApolloClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [findNotification] = useLazyQuery(FIND_NOTIFICATION, {
+  const [findNotification] = useLazyQuery(queries.FIND_NOTIFICATION, {
     onCompleted: ({ findNotification }) => {
-      // Redirect user to chat if chat (notification) exists, esle
+      // Redirect user to chat if chat (notification) exists, else
       // open the send message modal for the user to create a new notification
       if (findNotification)
         history.push(`/notification/${findNotification._id}`);
@@ -68,7 +28,7 @@ function ItemDetails({ history, item, userId, communityId, children }) {
 
   // Create chat related notification
   const [createNotification, { loading: mutationLoading }] = useMutation(
-    CREATE_NOTIFICATION,
+    mutations.CREATE_NOTIFICATION,
     {
       onCompleted: ({ createNotification }) => {
         // Redirect user to chat on mutation complete
@@ -126,7 +86,7 @@ function ItemDetails({ history, item, userId, communityId, children }) {
                 }}
                 onMouseOver={() => {
                   client.query({
-                    query: FIND_NOTIFICATION,
+                    query: queries.FIND_NOTIFICATION,
                     variables: {
                       recipientId: item.creator._id,
                       communityId,
@@ -341,5 +301,3 @@ ItemDetails.propTypes = {
   communityId: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
 };
-
-export default ItemDetails;

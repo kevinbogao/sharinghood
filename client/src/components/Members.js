@@ -1,43 +1,23 @@
-import React, { useState, useEffect, useRef } from "react";
-import { gql, useQuery } from "@apollo/client";
+import { useState, useEffect, useRef } from "react";
+import { useQuery, useReactiveVar } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons";
+import { queries } from "../utils/gql";
 import { transformImgUrl } from "../utils/helpers";
+import { tokenPayloadVar, selCommunityIdVar } from "../utils/cache";
 
-const GET_COMMUNITY_ID = gql`
-  query {
-    selCommunityId @client
-  }
-`;
-
-const GET_MEMBERS = gql`
-  {
-    tokenPayload @client
-    community(communityId: $communityId) @client {
-      members {
-        _id
-        name
-        image
-      }
-    }
-  }
-`;
-
-function Members() {
+export default function Members() {
   const node = useRef();
   const [isExpanded, setIsExpanded] = useState(false);
-  const {
-    data: { selCommunityId },
-  } = useQuery(GET_COMMUNITY_ID);
-  const { data } = useQuery(GET_MEMBERS, {
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const selCommunityId = useReactiveVar(selCommunityIdVar);
+  const { data } = useQuery(queries.LOCAL_COMMUNITY, {
     skip: !selCommunityId,
     variables: { communityId: selCommunityId },
   });
 
   function handleClickOutside(e) {
-    if (node.current.contains(e.target)) {
-      return;
-    }
+    if (node.current.contains(e.target)) return;
     setIsExpanded(false);
   }
 
@@ -69,7 +49,7 @@ function Members() {
         )}
         <div className="members-icon">
           {data?.community?.members
-            .filter((member) => member._id !== data.tokenPayload.userId)
+            .filter((member) => member._id !== tokenPayload.userId)
             .map((member) => (
               <div key={member._id} className="member-icon">
                 {isExpanded && (
@@ -198,5 +178,3 @@ function Members() {
     </div>
   );
 }
-
-export default Members;

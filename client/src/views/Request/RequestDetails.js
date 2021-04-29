@@ -1,7 +1,7 @@
-import React, { useState, Fragment } from "react";
+import { useState, Fragment } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { gql, useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faUserClock } from "@fortawesome/free-solid-svg-icons";
@@ -10,77 +10,18 @@ import Spinner from "../../components/Spinner";
 import Threads from "../../components/Threads";
 import NotFound from "../../components/NotFound";
 import ItemDetails from "../../components/ItemDetails";
-import { GET_REQUESTS } from "./Requests";
+import ServerError from "../../components/ServerError";
+import { queries, mutations } from "../../utils/gql";
+import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 
-const GET_REQUEST = gql`
-  query Request($requestId: ID!) {
-    request(requestId: $requestId) {
-      _id
-      title
-      desc
-      image
-      dateType
-      dateNeed
-      dateReturn
-      creator {
-        _id
-        name
-        image
-        apartment
-        createdAt
-      }
-      threads {
-        _id
-        content
-        poster {
-          _id
-        }
-        community {
-          _id
-        }
-      }
-    }
-    tokenPayload @client
-    community(communityId: $communityId) @client {
-      members {
-        _id
-        name
-        image
-      }
-    }
-  }
-`;
-
-const CREATE_THREAD = gql`
-  mutation CreateThread($threadInput: ThreadInput!) {
-    createThread(threadInput: $threadInput) {
-      _id
-      content
-      poster {
-        _id
-      }
-      community {
-        _id
-      }
-    }
-  }
-`;
-
-const DELETE_REQUEST = gql`
-  mutation DeleteRequest($requestId: ID!) {
-    deleteRequest(requestId: $requestId) {
-      _id
-    }
-  }
-`;
-
-function RequestDetails({ communityId, match, history }) {
+export default function RequestDetails({ communityId, match, history }) {
   const [comment, setComment] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
 
   // Get request details
-  const { loading, error, data } = useQuery(GET_REQUEST, {
+  const { loading, error, data } = useQuery(queries.GET_REQUEST_DETAILS, {
     variables: { requestId: match.params.id, communityId },
     onError: ({ message }) => {
       console.log(message);
@@ -88,7 +29,7 @@ function RequestDetails({ communityId, match, history }) {
   });
 
   // Create a thread to request for current user in current community
-  const [createThread] = useMutation(CREATE_THREAD, {
+  const [createThread] = useMutation(mutations.CREATE_THREAD, {
     onCompleted: () => {
       setComment("");
     },
@@ -96,39 +37,37 @@ function RequestDetails({ communityId, match, history }) {
       console.log(message);
     },
     update(cache, { data: { createThread } }) {
-      try {
-        const { request } = cache.readQuery({
-          query: GET_REQUEST,
-          variables: { requestId: data.request._id, communityId },
-        });
-        cache.writeQuery({
-          query: GET_REQUEST,
-          data: {
-            request: {
-              ...request,
-              threads: [...request.threads, createThread],
-            },
+      const { request } = cache.readQuery({
+        query: queries.GET_REQUEST_DETAILS,
+        variables: { requestId: data.request._id, communityId },
+      });
+
+      cache.writeQuery({
+        query: queries.GET_REQUEST_DETAILS,
+        data: {
+          request: {
+            ...request,
+            threads: [...request.threads, createThread],
           },
-        });
-        // eslint-disable-next-line
-      } catch (err) {}
+        },
+      });
     },
   });
 
   // Delete request if user is request creator
   const [deleteRequest, { loading: mutationLoading }] = useMutation(
-    DELETE_REQUEST,
+    mutations.DELETE_REQUEST,
     {
       onError: ({ message }) => {
         console.log(message);
       },
       update(cache, { data: { deleteRequest } }) {
         const { requests } = cache.readQuery({
-          query: GET_REQUESTS,
+          query: queries.GET_REQUESTS,
           variables: { communityId },
         });
         cache.writeQuery({
-          query: GET_REQUESTS,
+          query: queries.GET_REQUESTS,
           variables: { communityId },
           data: {
             requests: requests.filter(
@@ -144,13 +83,13 @@ function RequestDetails({ communityId, match, history }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error! ${error.message}`
+    <ServerError />
   ) : data?.request ? (
     <div className="item-control">
       <ItemDetails
         item={data.request}
         history={history}
-        userId={data.tokenPayload.userId}
+        userId={tokenPayload.userId}
         communityId={communityId}
       >
         <div className="item-desc">
@@ -183,7 +122,7 @@ function RequestDetails({ communityId, match, history }) {
               </div>
             </>
           )}
-          {data.request.creator._id === data.tokenPayload.userId ? (
+          {data.request.creator._id === tokenPayload.userId ? (
             <button
               type="button"
               className="main-btn item"
@@ -244,7 +183,7 @@ function RequestDetails({ communityId, match, history }) {
       />
       <div className="new-thread-control">
         {data.community.members
-          .filter((member) => member._id === data.tokenPayload.userId)
+          .filter((member) => member._id === tokenPayload.userId)
           .map((member) => (
             <Fragment key={member._id}>
               <img
@@ -383,5 +322,3 @@ RequestDetails.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default RequestDetails;

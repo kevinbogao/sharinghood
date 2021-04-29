@@ -1,106 +1,54 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
-import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
+import {
+  useQuery,
+  useMutation,
+  useApolloClient,
+  useReactiveVar,
+} from "@apollo/client";
 import Modal from "react-modal";
 import Spinner from "../../components/Spinner";
 import ProductScreenshot from "../../assets/images/product-screenshot.png";
-import { GET_COMMUNITY } from "../../components/Navbar";
+import { queries, mutations } from "../../utils/gql";
+import { tokenPayloadVar, selCommunityIdVar } from "../../utils/cache";
 
-const GET_USER_COMMUNITIES = gql`
-  query Communities {
-    selCommunityId @client
-    communities {
-      _id
-      name
-    }
-  }
-`;
-
-const FIND_COMMUNITY = gql`
-  query Community($communityCode: String!) {
-    community(communityCode: $communityCode) {
-      _id
-      name
-      code
-      members {
-        _id
-        image
-      }
-    }
-    tokenPayload @client
-  }
-`;
-
-const SELECT_COMMUNITY = gql`
-  mutation SelectCommunity($communityId: ID) {
-    selectCommunity(communityId: $communityId) @client
-  }
-`;
-
-const JOIN_COMMUNITY = gql`
-  mutation JoinCommunity($communityId: ID!) {
-    joinCommunity(communityId: $communityId) {
-      _id
-      name
-    }
-  }
-`;
-
-function CommunityInvite({ match, history }) {
+export default function CommunityInvite({ match, history }) {
   const client = useApolloClient();
   const [pageError, setPageError] = useState("");
-  const [selectedId, setSelectedId] = useState(null);
   const [isErrModalOpen, setIsErrModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
 
   // Find community by community code from url
-  const { loading, data } = useQuery(FIND_COMMUNITY, {
+  const { loading, data } = useQuery(queries.FIND_COMMUNITY_AND_MEMBERS, {
     variables: { communityCode: match.params.communityCode },
     onError: ({ message }) => {
       console.log(message);
     },
   });
 
-  // Set selectedCommunityId in cache & localStorage, refetch community
-  // with selected communityId
-  const [selectCommunity] = useMutation(SELECT_COMMUNITY, {
-    refetchQueries: [
-      {
-        query: GET_COMMUNITY,
-        variables: { communityId: selectedId },
-      },
-    ],
-    // Redirect user to posts page on complete
-    onCompleted: () => {
-      history.push("/find");
-    },
-  });
-
   // Mutation for user to joinCommunity
   const [joinCommunity, { loading: mutationLoading }] = useMutation(
-    JOIN_COMMUNITY,
+    mutations.JOIN_COMMUNITY,
     {
       update(cache, { data: { joinCommunity } }) {
         // Get and update communities cache
-        try {
-          const { communities } = cache.readQuery({
-            query: GET_USER_COMMUNITIES,
-          });
-
-          cache.writeQuery({
-            query: GET_USER_COMMUNITIES,
-            communities: [...communities, joinCommunity],
-          });
-
-          // eslint-disable-next-line
-        } catch (err) {}
-
-        // Set community id
-        selectCommunity({
-          variables: {
-            communityId: joinCommunity._id,
-          },
+        const communitiesData = cache.readQuery({
+          query: queries.GET_USER_COMMUNITIES,
         });
+
+        if (communitiesData) {
+          cache.writeQuery({
+            query: queries.GET_USER_COMMUNITIES,
+            communities: [...communitiesData.communities, joinCommunity],
+          });
+        }
+
+        // Set community id to localStorage, change community id cache
+        // & redirect to /find
+        localStorage.setItem("@sharinghood:selCommunityId", joinCommunity._id);
+        selCommunityIdVar(joinCommunity._id);
+        history.push("/find");
       },
       onError: ({ message }) => {
         setPageError(message);
@@ -109,17 +57,17 @@ function CommunityInvite({ match, history }) {
   );
 
   // Try to join user to community if user is logged in,
-  // esle redirect user CommunityExist component
+  // else redirect user CommunityExist component
   function handleSubmit(data) {
-    if (data.tokenPayload) {
+    if (tokenPayload) {
       // Check if user is part of the community
       const userIsMember = data.community.members.some(
-        (member) => member._id === data.tokenPayload.userId
+        (member) => member._id === tokenPayload.userId
       );
 
       // Get user communities from cache
       const { communities } = client.readQuery({
-        query: GET_USER_COMMUNITIES,
+        query: queries.GET_USER_COMMUNITIES,
       });
 
       // Open error modal if user is part of 5 communities already
@@ -206,7 +154,6 @@ function CommunityInvite({ match, history }) {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                setSelectedId(data.community._id);
                 joinCommunity({
                   variables: {
                     communityId: data.community._id,
@@ -340,5 +287,3 @@ CommunityInvite.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default CommunityInvite;

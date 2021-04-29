@@ -1,71 +1,43 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
-import { gql, useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import Spinner from "../../components/Spinner";
 import ProfilePosts from "../../components/ProfilePosts";
+import ServerError from "../../components/ServerError";
+import { queries, mutations } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
-const GET_USER = gql`
-  query User {
-    user {
-      _id
-      image
-      name
-      email
-      apartment
-      isAdmin
-      communities {
-        _id
-      }
-      posts {
-        _id
-        title
-        image
-      }
-    }
-  }
-`;
-
-const UPDATE_USER = gql`
-  mutation UpdateUser($userInput: UserInput) {
-    updateUser(userInput: $userInput) {
-      _id
-      name
-      image
-      email
-      apartment
-    }
-  }
-`;
-
-function Profile({ history }) {
+export default function Profile({ history }) {
   const [name, setName] = useState("");
   const [image, setImage] = useState(null);
   const [apartment, setApartment] = useState("");
-  const { data, error, loading } = useQuery(GET_USER, {
+  const { data, error, loading } = useQuery(queries.GET_USER, {
     onError: ({ message }) => {
       console.log(message);
     },
   });
-  const [updateUser, { loading: mutationLoading }] = useMutation(UPDATE_USER, {
-    update(cache, { data: { updateUser } }) {
-      cache.writeQuery({
-        query: GET_USER,
-        data: {
-          user: updateUser,
-        },
-      });
-      history.push("/find");
-    },
-    onError: ({ message }) => {
-      console.log(message);
-    },
-  });
+  const [updateUser, { loading: mutationLoading }] = useMutation(
+    mutations.UPDATE_USER,
+    {
+      update(cache, { data: { updateUser } }) {
+        cache.writeQuery({
+          query: queries.GET_USER,
+          data: {
+            user: updateUser,
+          },
+        });
+        history.push("/find");
+      },
+      onError: ({ message }) => {
+        console.log(message);
+      },
+    }
+  );
 
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="profile-control">
       <form
@@ -206,5 +178,3 @@ Profile.propTypes = {
     }),
   }).isRequired,
 };
-
-export { GET_USER, Profile };

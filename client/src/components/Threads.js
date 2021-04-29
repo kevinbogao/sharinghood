@@ -1,8 +1,8 @@
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 import PropTypes from "prop-types";
 import { transformImgUrl } from "../utils/helpers";
 
-function Threads({ threads, members, communityId }) {
+export default function Threads({ threads, members, communityId }) {
   return (
     <div className="threads-container">
       {threads
@@ -54,6 +54,15 @@ function Threads({ threads, members, communityId }) {
               display: flex;
               flex-direction: column;
               justify-content: space-evenly;
+              max-width: 88%;
+
+              @include sm {
+                max-width: 68%;
+              }
+
+              @include sm {
+                max-width: 77%;
+              }
 
               span {
                 font-size: 20px;
@@ -62,6 +71,7 @@ function Threads({ threads, members, communityId }) {
               p {
                 color: $black;
                 font-size: 16px;
+                word-wrap: break-word;
               }
             }
           }
@@ -96,5 +106,3 @@ Threads.propTypes = {
     })
   ).isRequired,
 };
-
-export default Threads;

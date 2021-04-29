@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Redirect } from "react-router-dom";
 import PropTypes from "prop-types";
 import InlineError from "../../components/InlineError";
@@ -6,7 +6,7 @@ import profileImg from "../../assets/images/profile-img.png";
 import uploadImg from "../../assets/images/upload.png";
 import { validateForm, transformImgUrl } from "../../utils/helpers";
 
-function CommunityExists({ location: { state }, history }) {
+export default function CommunityExists({ location: { state }, history }) {
   let name;
   let apartment;
   const [image, setImage] = useState(null);
@@ -215,5 +215,3 @@ CommunityExists.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default CommunityExists;

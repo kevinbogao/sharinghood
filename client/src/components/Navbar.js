@@ -1,6 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useHistory, Link, NavLink } from "react-router-dom";
-import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
+import {
+  useQuery,
+  useMutation,
+  useApolloClient,
+  useReactiveVar,
+} from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
@@ -9,66 +14,32 @@ import {
   faCaretDown,
   faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { GET_USER } from "../views/User/Profile";
+import { queries, mutations } from "../utils/gql";
+import {
+  accessTokenVar,
+  tokenPayloadVar,
+  selCommunityIdVar,
+  clearLocalStorageAndCache,
+} from "../utils/cache";
 
-const GET_SESSION_DATA = gql`
-  query {
-    accessToken @client
-    tokenPayload @client
-    selCommunityId @client
-  }
-`;
-
-const GET_COMMUNITY = gql`
-  query Community($communityId: ID) {
-    community(communityId: $communityId) {
-      _id
-      name
-      code
-      creator {
-        _id
-      }
-      members {
-        _id
-        name
-        image
-      }
-    }
-    communities {
-      _id
-      name
-      hasNotifications
-    }
-  }
-`;
-
-const LOGOUT = gql`
-  mutation {
-    logout
-  }
-`;
-
-function Navbar() {
+export default function Navbar() {
   const node = useRef();
   const history = useHistory();
   const client = useApolloClient();
   const [isMenuActive, setIsMenuActive] = useState(false);
-
-  // Get local session data
-  const {
-    data: { accessToken, tokenPayload, selCommunityId },
-    refetch,
-  } = useQuery(GET_SESSION_DATA);
+  const accessToken = useReactiveVar(accessTokenVar);
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const selCommunityId = useReactiveVar(selCommunityIdVar);
 
   // Get current community & user's communities
-  const { data } = useQuery(GET_COMMUNITY, {
+  const { data } = useQuery(queries.GET_CURRENT_COMMUNITY_AND_COMMUNITIES, {
     skip: !accessToken || !selCommunityId,
     variables: { communityId: selCommunityId },
     onError: () => {},
   });
 
   // Revoke user's refreshToken
-  const [logout] = useMutation(LOGOUT);
+  const [logout] = useMutation(mutations.LOGOUT);
 
   function handleClickOutside(e) {
     if (node.current.contains(e.target)) {
@@ -127,17 +98,8 @@ function Navbar() {
             className="logo-icon"
             icon={faCaretDown}
             onClick={() => {
-              client.writeQuery({
-                query: gql`
-                  query {
-                    selCommunityId
-                  }
-                `,
-                data: {
-                  selCommunityId: null,
-                },
-              });
               localStorage.removeItem("@sharinghood:selCommunityId");
+              selCommunityIdVar(null);
               history.push("/communities");
             }}
           />
@@ -155,7 +117,7 @@ function Navbar() {
                     onClick={() => history.push("/profile")}
                     onMouseOver={() => {
                       client.query({
-                        query: GET_USER,
+                        query: queries.GET_USER,
                       });
                     }}
                   />
@@ -174,20 +136,12 @@ function Navbar() {
               <FontAwesomeIcon
                 className="nav-icon"
                 icon={faSignOutAlt}
-                onClick={async () => {
+                onClick={() => {
                   // revoke refreshToken
-                  await logout();
+                  logout();
 
                   // Clear localStorage
-                  localStorage.removeItem("@sharinghood:accessToken");
-                  localStorage.removeItem("@sharinghood:refreshToken");
-                  localStorage.removeItem("@sharinghood:selCommunityId");
-
-                  // Clear loacl cache
-                  await client.clearStore();
-
-                  // Fetch tokenPayload to clean local state
-                  refetch();
+                  clearLocalStorageAndCache();
 
                   // Return to login page
                   history.push("/login");
@@ -362,6 +316,7 @@ function Navbar() {
           .hamburger-icon {
             font-size: 23px;
             transform: scale(1.3, 1);
+            cursor: pointer;
 
             @include sm {
               font-size: 19px;
@@ -391,6 +346,7 @@ function Navbar() {
             color: $beige;
             margin: auto 12px;
             font-size: 22px;
+            cursor: pointer;
           }
 
           .nav-menu-item {
@@ -429,5 +385,3 @@ function Navbar() {
     </div>
   );
 }
-
-export { GET_COMMUNITY, Navbar };

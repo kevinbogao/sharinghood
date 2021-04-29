@@ -1,35 +1,25 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
-import { gql, useQuery, useMutation } from "@apollo/client";
-import InlineError from "../../components/InlineError";
+import { useQuery, useMutation } from "@apollo/client";
 import Spinner from "../../components/Spinner";
+import InlineError from "../../components/InlineError";
+import ServerError from "../../components/ServerError";
+import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
 
-const VALIDATE_RESET_LINK = gql`
-  query ValidateResetLink($resetKey: String!) {
-    validateResetLink(resetKey: $resetKey)
-  }
-`;
-
-const RESET_PASSWORD = gql`
-  mutation ResetPassword($resetKey: String!, $password: String!) {
-    resetPassword(resetKey: $resetKey, password: $password)
-  }
-`;
-
-function ResetPassword({ match }) {
+export default function ResetPassword({ match }) {
   let password, confirmPassword;
   const [formError, setFormError] = useState({});
   const [success, setSuccess] = useState(false);
-  const { loading, error, data } = useQuery(VALIDATE_RESET_LINK, {
+  const { loading, error, data } = useQuery(queries.VALIDATE_RESET_LINK, {
     variables: { resetKey: match.params.resetKey },
     onError: ({ message }) => {
       console.log(message);
     },
   });
   const [resetPassword, { loading: mutationLoading }] = useMutation(
-    RESET_PASSWORD,
+    mutations.RESET_PASSWORD,
     {
       onCompleted: ({ resetPassword }) => {
         if (resetPassword) setSuccess(true);
@@ -43,7 +33,7 @@ function ResetPassword({ match }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error! ${error.message}`
+    <ServerError />
   ) : (
     <>
       <div className="reset-password-control">
@@ -146,5 +136,3 @@ ResetPassword.propTypes = {
     }).isRequired,
   }).isRequired,
 };
-
-export default ResetPassword;

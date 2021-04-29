@@ -1,63 +1,17 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment";
 import Spinner from "../../components/Spinner";
 import ItemsGrid from "../../components/ItemsGrid";
+import ServerError from "../../components/ServerError";
+import { queries } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
-const GET_REQUESTS = gql`
-  query Requests($communityId: ID!) {
-    requests(communityId: $communityId) {
-      _id
-      title
-      desc
-      image
-      dateType
-      dateNeed
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
-
-const GET_REQUEST = gql`
-  query Request($requestId: ID!) {
-    request(requestId: $requestId) {
-      _id
-      title
-      desc
-      image
-      dateNeed
-      dateReturn
-      creator {
-        _id
-        name
-        image
-        apartment
-        createdAt
-      }
-      threads {
-        _id
-        content
-        poster {
-          _id
-        }
-        community {
-          _id
-        }
-      }
-    }
-  }
-`;
-
-function Requests({ communityId }) {
-  const { loading, error, data, client } = useQuery(GET_REQUESTS, {
+export default function Requests({ communityId }) {
+  const { loading, error, data, client } = useQuery(queries.GET_REQUESTS, {
     skip: !communityId,
     variables: { communityId },
     onError: ({ message }) => {
@@ -68,7 +22,7 @@ function Requests({ communityId }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error! ${error.message}`
+    <ServerError />
   ) : (
     <ItemsGrid isPost={false} communityId={communityId}>
       {data?.requests.map((request) => (
@@ -80,7 +34,7 @@ function Requests({ communityId }) {
             }}
             onMouseOver={() => {
               client.query({
-                query: GET_REQUEST,
+                query: queries.GET_REQUEST,
                 variables: { requestId: request._id },
               });
             }}
@@ -176,5 +130,3 @@ function Requests({ communityId }) {
 Requests.propTypes = {
   communityId: PropTypes.string.isRequired,
 };
-
-export { GET_REQUESTS, Requests };

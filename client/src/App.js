@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
+import { useMutation, useApolloClient, useReactiveVar } from "@apollo/client";
 import firebase from "firebase/app";
 import "firebase/messaging";
 import _JSXStyle from "styled-jsx/style";
@@ -8,13 +8,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./views/Home";
-import { Posts } from "./views/Post/Posts";
-import { Navbar } from "./components/Navbar";
-import { Profile } from "./views/User/Profile";
+import Posts from "./views/Post/Posts";
+import Navbar from "./components/Navbar";
+import ServerError from "./components/ServerError";
+import Profile from "./views/User/Profile";
 import Login from "./views/User/Login";
 import Register from "./views/User/Register";
-import PageNotFound from "./views/PageNotFound";
-import { Requests } from "./views/Request/Requests";
+import PageNotFound from "./components/PageNotFound";
+import Requests from "./views/Request/Requests";
 import Dashboard from "./views/Dashboard";
 import DashboardDetails from "./views/DashboardDetails";
 import CreatePost from "./views/Post/CreatePost";
@@ -29,9 +30,12 @@ import ResetPassword from "./views/User/ResetPassword";
 import ForgotPassword from "./views/User/ForgotPassword";
 import SelectCommunity from "./views/Community/SelectCommunity";
 import EditPost from "./views/Post/EditPost";
-import { Notifications } from "./views/Notification/Notifications";
+import Notifications from "./views/Notification/Notifications";
 import NotificationDetails from "./views/Notification/NotificationDetails";
+import { queries, mutations } from "./utils/gql";
+import { accessTokenVar, serverErrorVar } from "./utils/cache";
 
+// _JSXStyle
 if (typeof global !== "undefined") {
   Object.assign(global, { _JSXStyle });
 }
@@ -51,41 +55,14 @@ if (!firebase.apps.length) {
   firebase.app();
 }
 
-// Add FCM token mutation
-const ADD_FCM_TOKEN_TO_USER = gql`
-  mutation AddFcmToken($fcmToken: String!) {
-    addFcmToken(fcmToken: $fcmToken)
-  }
-`;
-
-// Get local accessToken
-const GET_ACCESS_TOKEN = gql`
-  query {
-    accessToken @client
-  }
-`;
-
-const GET_USER_COMMUNITIES = gql`
-  query Communities {
-    communities {
-      _id
-      name
-      hasNotifications
-    }
-  }
-`;
-
-function App() {
+export default function App() {
   const client = useApolloClient();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
-
-  // Get access token from cache
-  const {
-    data: { accessToken },
-  } = useQuery(GET_ACCESS_TOKEN);
+  const accessToken = useReactiveVar(accessTokenVar);
+  const serverError = useReactiveVar(serverErrorVar);
 
   // Mutation to add FCM token to user
-  const [addFcmToken] = useMutation(ADD_FCM_TOKEN_TO_USER, {
+  const [addFcmToken] = useMutation(mutations.ADD_FCM_TOKEN_TO_USER, {
     onError: ({ message }) => {
       console.log(message);
     },
@@ -110,64 +87,60 @@ function App() {
       // Retrieve messaging object
       const messaging = firebase.messaging();
 
-      (async () => {
-        // Get currentToken if user is logged in and the the notification permission
-        // is granted
-        if (accessToken && Notification.permission === "granted") {
-          try {
-            // Request permission for notification
-            await messaging.requestPermission();
-
-            // Get token
-            const token = await messaging.getToken();
-
+      // Get currentToken if user is logged in and the notification
+      // permission is granted
+      if (accessToken && Notification.permission === "granted") {
+        messaging
+          .getToken({
+            vapidKey: process.env.REACT_APP_FCM_VAPID_KEY,
+          })
+          .then((token) => {
             // Add token to user
             if (token) {
               addFcmToken({
                 variables: { fcmToken: token },
               });
             }
-          } catch (err) {
-            console.log(err);
-          }
-        }
-      })();
+          })
+          .catch((err) => console.warn(err));
+      }
 
       // Subscribe to new FCM
       messaging.onMessage((payload) => {
-        try {
-          // Get all user's communities from cache
-          const { communities } = client.readQuery({
-            query: GET_USER_COMMUNITIES,
-          });
+        // Get all user's communities from cache
+        const data = client.readQuery({
+          query: queries.GET_USER_COMMUNITIES,
+        });
 
-          // Write to cache with a new array of communities with target
-          // community's hasNotifications status to true to cache
+        // Write to cache with a new array of communities with target
+        // community's hasNotifications status to true to cache
+        if (data) {
           client.writeQuery({
-            query: GET_USER_COMMUNITIES,
+            query: queries.GET_USER_COMMUNITIES,
             data: {
-              communities: communities.map((community) =>
+              communities: data.communities.map((community) =>
                 community._id === payload.data.communityId
                   ? { ...community, hasNotifications: true }
                   : community
               ),
             },
           });
-
-          // eslint-disable-next-line
-        } catch {}
+        }
       });
     }
 
     // eslint-disable-next-line
   }, [accessToken, Notification.permission]);
 
+  // Render ServerError page in case of network error
+  if (serverError) return <ServerError />;
+
   return (
     <BrowserRouter>
       {isRequestOpen && (
         <div className="request-notification">
           <p>
-            Sharinghood needs your premission to{" "}
+            Sharinghood needs your permission to{" "}
             <span
               role="presentation"
               onClick={async () => {
@@ -259,6 +232,14 @@ function App() {
           a {
             color: inherit;
             text-decoration: none;
+          }
+
+          ::selection {
+            background: $orange-bg;
+          }
+
+          ::-moz-selection {
+            background: $orange-bg;
           }
 
           .main-p {
@@ -549,5 +530,3 @@ function App() {
     </BrowserRouter>
   );
 }
-
-export default App;

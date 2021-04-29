@@ -1,63 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
-import { gql, useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import Modal from "react-modal";
 import Spinner from "../../components/Spinner";
-import { GET_POSTS } from "./Posts";
+import ServerError from "../../components/ServerError";
+import { queries, mutations } from "../../utils/gql";
+import { tokenPayloadVar } from "../../utils/cache";
 
-const GET_POST = gql`
-  query Post($postId: ID!) {
-    post(postId: $postId) {
-      _id
-      title
-      desc
-      image
-      condition
-      isGiveaway
-      creator {
-        _id
-        name
-      }
-    }
-    communities {
-      _id
-      name
-      posts {
-        _id
-      }
-    }
-    tokenPayload @client
-  }
-`;
-
-const UPDATE_POST = gql`
-  mutation UpdatePost($postInput: PostInput!) {
-    updatePost(postInput: $postInput) {
-      _id
-      title
-      image
-      condition
-    }
-  }
-`;
-
-const DELETE_POST = gql`
-  mutation DeletePost($postId: ID!) {
-    deletePost(postId: $postId) {
-      _id
-    }
-  }
-`;
-
-const ADD_POST_TO_COMMUNITY = gql`
-  mutation AddPostToCommunity($postId: ID!, $communityId: ID!) {
-    addPostToCommunity(postId: $postId, communityId: $communityId) {
-      _id
-    }
-  }
-`;
-
-function EditPost({ history, match }) {
+export default function EditPost({ history, match }) {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [image, setImage] = useState(null);
@@ -65,9 +15,10 @@ function EditPost({ history, match }) {
   const [communityArr, setCommunityArr] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const { loading, error, data } = useQuery(GET_POST, {
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const { loading, error, data } = useQuery(queries.GET_POST_AND_COMMUNITIES, {
     variables: { postId: match.params.id },
-    onCompleted: ({ post, communities, tokenPayload }) => {
+    onCompleted: ({ post, communities }) => {
       // Redirect user back to post details page if user is not post creator
       if (post.creator._id !== tokenPayload.userId) {
         history.replace(`/shared/${post._id}`);
@@ -86,16 +37,16 @@ function EditPost({ history, match }) {
   });
 
   // Add post to selected community
-  const [addPostToCommunity] = useMutation(ADD_POST_TO_COMMUNITY, {
+  const [addPostToCommunity] = useMutation(mutations.ADD_POST_TO_COMMUNITY, {
     update(cache, { data: { addPostToCommunity } }) {
-      try {
-        // Get posts by community id, if posts exist, add selected post to the
-        // posts array
-        const { posts } = cache.readQuery({
-          query: GET_POSTS,
-          variables: { communityId: addPostToCommunity._id },
-        });
+      // Get posts by community id, if posts exist, add selected post to the
+      // posts array
+      const postsData = cache.readQuery({
+        query: queries.GET_POSTS,
+        variables: { communityId: addPostToCommunity._id },
+      });
 
+      if (postsData) {
         // Create a post object with selected fields
         const postSel = (({ _id, __typename, title, image, creator }) => ({
           _id,
@@ -107,16 +58,15 @@ function EditPost({ history, match }) {
 
         // Add post to the posts array in cache
         cache.writeQuery({
-          query: GET_POSTS,
+          query: queries.GET_POSTS,
           variables: { communityId: addPostToCommunity._id },
-          data: { posts: [postSel, ...posts] },
+          data: { posts: [postSel, ...postsData.posts] },
         });
-        // eslint-disable-next-line
-      } catch (err) {}
+      }
 
       // Add post to select community's posts array in cache
       const { communities } = cache.readQuery({
-        query: GET_POST,
+        query: queries.GET_POST_AND_COMMUNITIES,
         variables: { postId: match.params.id },
       });
 
@@ -137,7 +87,7 @@ function EditPost({ history, match }) {
 
       // Write newCommunities array to cache
       cache.writeQuery({
-        query: GET_POST,
+        query: queries.GET_POST_AND_COMMUNITIES,
         variables: { postId: match.params.id },
         data: { communities: newCommunities },
       });
@@ -155,38 +105,42 @@ function EditPost({ history, match }) {
   });
 
   // Update post mutation & redirect user to home
-  const [updatePost, { loading: mutationLoading }] = useMutation(UPDATE_POST, {
-    onCompleted: () => {
-      history.goBack();
-    },
-    onError: ({ message }) => {
-      console.log(message);
-    },
-  });
+  const [updatePost, { loading: mutationLoading }] = useMutation(
+    mutations.UPDATE_POST,
+    {
+      onCompleted: () => {
+        history.goBack();
+      },
+      onError: ({ message }) => {
+        console.log(message);
+      },
+    }
+  );
 
   // Delete user's post
-  const [deletePost] = useMutation(DELETE_POST, {
+  const [deletePost] = useMutation(mutations.DELETE_POST, {
     update(cache, { data: { deletePost } }) {
-      try {
-        // Delete post from all communities in cache
-        data.communities.forEach((community) => {
-          // Get post by community id from cache
-          const { posts } = cache.readQuery({
-            query: GET_POSTS,
-            variables: { communityId: community._id },
-          });
+      // Delete post from all communities in cache
+      data.communities.forEach((community) => {
+        // Get post by community id from cache
+        const postsData = cache.readQuery({
+          query: queries.GET_POSTS,
+          variables: { communityId: community._id },
+        });
 
+        if (postsData) {
           // Remove the post from posts array
           cache.writeQuery({
-            query: GET_POSTS,
+            query: queries.GET_POSTS,
             variables: { communityId: community._id },
             data: {
-              posts: posts.filter((post) => post._id !== deletePost._id),
+              posts: postsData.posts.filter(
+                (post) => post._id !== deletePost._id
+              ),
             },
           });
-        });
-        // eslint-disable-next-line
-      } catch (err) {}
+        }
+      });
 
       // Redirect to posts page on complete
       history.push("/find");
@@ -199,7 +153,7 @@ function EditPost({ history, match }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="edit-post-control">
       <form
@@ -436,5 +390,3 @@ EditPost.propTypes = {
     replace: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default EditPost;

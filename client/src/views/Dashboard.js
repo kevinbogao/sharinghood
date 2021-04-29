@@ -1,37 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery, useReactiveVar } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../components/Spinner";
-
-const GET_TOKEN_PAYLOAD = gql`
-  {
-    tokenPayload @client
-  }
-`;
-
-const GET_ACTIVITIES = gql`
-  query {
-    totalActivities {
-      totalCommunities
-      totalUsers
-      totalPosts
-      totalRequests
-      totalBookings
-      communitiesActivities {
-        _id
-        name
-        code
-        numUsers
-        numPosts
-        numRequests
-        numBookings
-      }
-    }
-  }
-`;
+import ServerError from "../components/ServerError";
+import { queries } from "../utils/gql";
+import { tokenPayloadVar } from "../utils/cache";
 
 const FORMATTED_KEYS = {
   _id: "Community ID",
@@ -43,15 +19,13 @@ const FORMATTED_KEYS = {
   numBookings: "Bookings",
 };
 
-function Dashboard({ location, history }) {
+export default function Dashboard({ location, history }) {
   const { from } = location.state || { from: { pathname: "/" } };
   const [sortOrder, setSortOrder] = useState(-1);
   const [selectedCol, setSelectedCol] = useState("_id");
   const [communitiesActivities, setCommunitiesActivities] = useState([]);
-  const {
-    data: { tokenPayload },
-  } = useQuery(GET_TOKEN_PAYLOAD);
-  const { loading, error, data } = useQuery(GET_ACTIVITIES, {
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const { loading, error, data } = useQuery(queries.GET_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
     onCompleted: ({ totalActivities }) => {
       setCommunitiesActivities(totalActivities.communitiesActivities);
@@ -61,11 +35,26 @@ function Dashboard({ location, history }) {
     },
   });
 
-  function sortColumns(key) {
+  function sortColumns(column) {
+    // Copy communitiesActivities
     const stats = communitiesActivities.slice();
-    stats.sort((a, b) => sortOrder * (a[key] - b[key]));
+
+    // Sort string elements
+    if (typeof stats[0][column] === "string") {
+      stats.sort((a, b) => {
+        const elemA = a[column].toUpperCase();
+        const elemB = b[column].toUpperCase();
+        if (elemA < elemB) return sortOrder * -1;
+        if (elemA > elemB) return sortOrder * 1;
+        return 0;
+      });
+    }
+
+    // Sort number elements
+    stats.sort((a, b) => sortOrder * (a[column] - b[column]));
+
     setCommunitiesActivities(stats);
-    setSelectedCol(key);
+    setSelectedCol(column);
     setSortOrder(sortOrder * -1);
   }
 
@@ -74,7 +63,7 @@ function Dashboard({ location, history }) {
   ) : loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="dashboard-control">
       <div className="dashboard-overview">
@@ -290,5 +279,3 @@ Dashboard.defaultProps = {
     }),
   }),
 };
-
-export default Dashboard;

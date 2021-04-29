@@ -1,40 +1,10 @@
-import React from "react";
 import PropTypes from "prop-types";
-import { gql, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
 import { Link } from "react-router-dom";
+import { queries } from "../utils/gql";
 import Members from "./Members";
 
-const GET_POSTS = gql`
-  query Posts($communityId: ID!) {
-    posts(communityId: $communityId) {
-      _id
-      title
-      image
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
-
-const GET_REQUESTS = gql`
-  query Requests($communityId: ID!) {
-    requests(communityId: $communityId) {
-      _id
-      title
-      desc
-      image
-      dateNeed
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
-
-function ItemsGrid({ isPost, children, communityId }) {
+export default function ItemsGrid({ isPost, children, communityId }) {
   const client = useApolloClient();
 
   return (
@@ -45,7 +15,7 @@ function ItemsGrid({ isPost, children, communityId }) {
             to="/find"
             onMouseOver={() => {
               client.query({
-                query: GET_POSTS,
+                query: queries.GET_POSTS,
                 variables: { communityId },
               });
             }}
@@ -59,7 +29,7 @@ function ItemsGrid({ isPost, children, communityId }) {
             to="requests"
             onMouseOver={() => {
               client.query({
-                query: GET_REQUESTS,
+                query: queries.GET_REQUESTS,
                 variables: { communityId },
               });
             }}
@@ -160,5 +130,3 @@ ItemsGrid.propTypes = {
   children: PropTypes.node.isRequired,
   communityId: PropTypes.string.isRequired,
 };
-
-export default ItemsGrid;

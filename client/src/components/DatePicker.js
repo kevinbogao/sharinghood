@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { DateRangePicker } from 'react-dates';
-import momentPropTypes from 'react-moment-proptypes';
-import 'react-dates/initialize';
-import 'react-dates/lib/css/_datepicker.css';
+import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { DateRangePicker } from "react-dates";
+import momentPropTypes from "react-moment-proptypes";
+import "react-dates/initialize";
+import "react-dates/lib/css/_datepicker.css";
 
-function DatePicker({
+export default function DatePicker({
   dateType,
   dateNeed,
   dateReturn,
@@ -19,18 +19,18 @@ function DatePicker({
   // Set isMobile boolean value based on window width
   useEffect(() => {
     // Set isMobile on init
-    setIsMobile(window.matchMedia('(max-width: 576px)').matches);
+    setIsMobile(window.matchMedia("(max-width: 576px)").matches);
 
     // Set isMobile on screen size
     function handleWindowResize() {
-      setIsMobile(window.matchMedia('(max-width: 576px)').matches);
+      setIsMobile(window.matchMedia("(max-width: 576px)").matches);
     }
 
     // Event listener for screen resizing
-    window.addEventListener('resize', handleWindowResize);
+    window.addEventListener("resize", handleWindowResize);
 
     // Return a function from the effect that removes the event listener
-    return () => window.removeEventListener('resize', handleWindowResize);
+    return () => window.removeEventListener("resize", handleWindowResize);
   }, []);
 
   return (
@@ -55,7 +55,7 @@ function DatePicker({
             }}
             focusedInput={focusedInput}
             onFocusChange={(focusedInput) => setFocusedInput(focusedInput)}
-            orientation={isMobile ? 'vertical' : 'horizontal'}
+            orientation={isMobile ? "vertical" : "horizontal"}
             withFullScreenPortal
             displayFormat="yyyy.MM.DD"
             hideKeyboardShortcutsPanel
@@ -64,7 +64,7 @@ function DatePicker({
       )}
       <style jsx global>
         {`
-          @import './src/assets/scss/index.scss';
+          @import "./src/assets/scss/index.scss";
 
           select {
             font-size: 18px;
@@ -152,5 +152,3 @@ DatePicker.propTypes = {
   setDateNeed: PropTypes.func.isRequired,
   setDateReturn: PropTypes.func.isRequired,
 };
-
-export default DatePicker;

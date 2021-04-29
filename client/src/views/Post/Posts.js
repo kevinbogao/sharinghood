@@ -1,68 +1,25 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import ItemsGrid from "../../components/ItemsGrid";
 import Spinner from "../../components/Spinner";
+import ServerError from "../../components/ServerError";
 import { transformImgUrl } from "../../utils/helpers";
+import { queries } from "../../utils/gql";
 
-const GET_POSTS = gql`
-  query Posts($communityId: ID!) {
-    posts(communityId: $communityId) {
-      _id
-      title
-      image
-      creator {
-        _id
-        name
-      }
-    }
-  }
-`;
-
-const GET_POST = gql`
-  query Post($postId: ID!) {
-    post(postId: $postId) {
-      _id
-      title
-      desc
-      image
-      condition
-      isGiveaway
-      creator {
-        _id
-        name
-        image
-        apartment
-        createdAt
-      }
-      threads {
-        _id
-        content
-        poster {
-          _id
-        }
-        community {
-          _id
-        }
-      }
-    }
-  }
-`;
-
-function Posts({ communityId }) {
-  const { loading, error, data, client } = useQuery(GET_POSTS, {
+export default function Posts({ communityId }) {
+  const { loading, error, data, client } = useQuery(queries.GET_POSTS, {
     skip: !communityId,
     variables: { communityId },
     onError: ({ message }) => {
-      console.log(message);
+      console.warn(message);
     },
   });
 
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <ItemsGrid isPost communityId={communityId}>
       {data?.posts?.map((post) => (
@@ -74,7 +31,7 @@ function Posts({ communityId }) {
             }}
             onMouseOver={() => {
               client.query({
-                query: GET_POST,
+                query: queries.GET_POST,
                 variables: { postId: post._id },
               });
             }}
@@ -147,5 +104,3 @@ function Posts({ communityId }) {
 Posts.propTypes = {
   communityId: PropTypes.string.isRequired,
 };
-
-export { GET_POSTS, Posts };

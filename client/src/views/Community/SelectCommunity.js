@@ -1,115 +1,68 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
-import { gql, useQuery, useLazyQuery, useMutation } from "@apollo/client";
+import {
+  useQuery,
+  useLazyQuery,
+  useMutation,
+  useReactiveVar,
+} from "@apollo/client";
 import Spinner from "../../components/Spinner";
-import { GET_COMMUNITY } from "../../components/Navbar";
 import InlineError from "../../components/InlineError";
+import ServerError from "../../components/ServerError";
+import { queries, mutations } from "../../utils/gql";
 import { validateForm } from "../../utils/helpers";
+import { tokenPayloadVar, selCommunityIdVar } from "../../utils/cache";
 
-const GET_USER_COMMUNITIES = gql`
-  query Communities {
-    selCommunityId @client
-    communities {
-      _id
-      name
-      hasNotifications
-    }
-  }
-`;
-
-const FIND_COMMUNITY = gql`
-  query Community($communityCode: String) {
-    community(communityCode: $communityCode) {
-      _id
-      name
-      members {
-        _id
-      }
-    }
-    tokenPayload @client
-  }
-`;
-
-const SELECT_COMMUNITY = gql`
-  mutation SelectCommunity($communityId: ID) {
-    selectCommunity(communityId: $communityId) @client
-  }
-`;
-
-const JOIN_COMMUNITY = gql`
-  mutation JoinCommunity($communityId: ID!) {
-    joinCommunity(communityId: $communityId) {
-      _id
-      name
-    }
-  }
-`;
-
-function SelectCommunity({ history, location }) {
+export default function SelectCommunity({ history, location }) {
   let code;
   const { fromLogin } = location.state || { fromLogin: false };
   const { communityCode } = location.state || { communityCode: null };
   const [pageError, setPageError] = useState({});
-  const [selectedId, setSelectedId] = useState(null);
   const [isNewCommunity, setIsNewCommunity] = useState(false);
   const [foundCommunity, setFoundCommunity] = useState(null);
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const selCommunityId = useReactiveVar(selCommunityIdVar);
 
-  // Set selectedCommunityId in cache & localStorage, refetch community
-  // with selected communityId
-  const [selectCommunity] = useMutation(SELECT_COMMUNITY, {
-    refetchQueries: [
-      {
-        query: GET_COMMUNITY,
-        variables: { communityId: selectedId },
-      },
-    ],
+  function selectCommunity(communityId) {
+    // Store communityId in localStorage
+    localStorage.setItem("@sharinghood:selCommunityId", communityId);
 
-    onCompleted: () => {
-      // Redirect user to CommunityInvite page if user is redirected from
-      // Login page and has a communityCode; else redirect user to posts page
-      if (communityCode) history.push(`/community/${communityCode}`);
-      else history.push("/find");
-    },
-  });
+    // Update selCommunityId cache
+    selCommunityIdVar(communityId);
+
+    // Redirect user to CommunityInvite page if user is redirected from
+    // Login page and has a communityCode; else redirect user to posts page
+    if (communityCode) history.push(`/community/${communityCode}`);
+    else history.push("/find");
+  }
 
   // Redirect user to posts page if selCommunityId exists (communityId)
   // in localStorage or user is only in one community.
-  const { loading, error, data } = useQuery(GET_USER_COMMUNITIES, {
-    onCompleted: ({ selCommunityId, communities }) => {
+  const { loading, error, data } = useQuery(queries.GET_USER_COMMUNITIES, {
+    onCompleted: ({ communities }) => {
       // Check if selectedCommunityId exists in communities array
       const isIdInArray = communities.some(
         (community) => community._id === selCommunityId
       );
 
-      // If selected community id exists in localStorage & it the user is a member of that community
+      // If selected community id exists in localStorage & it the user is a
+      // member of that community
       if (selCommunityId && isIdInArray) {
-        selectCommunity({
-          variables: {
-            communityId: selCommunityId,
-          },
-        });
+        selectCommunity(selCommunityId);
 
         // Redirect to posts page
         history.push("/find");
 
         // If user is redirect from login and only has one community
       } else if (communities.length === 1 && fromLogin) {
-        selectCommunity({
-          variables: {
-            communityId: communities[0]._id,
-          },
-        });
+        selectCommunity(communities[0]._id);
 
         // Redirect to posts page
         history.push("/find");
 
         // If user is redirect from login and communityCode is given
       } else if (fromLogin && communityCode) {
-        selectCommunity({
-          variables: {
-            communityId: communities[0]._id,
-          },
-        });
+        selectCommunity(communities[0]._id);
       }
       // eslint-disable-next-line
     },
@@ -119,8 +72,8 @@ function SelectCommunity({ history, location }) {
   });
 
   // Find community, limit user communities to 5
-  const [community] = useLazyQuery(FIND_COMMUNITY, {
-    onCompleted: ({ community, tokenPayload }) => {
+  const [community] = useLazyQuery(queries.FIND_COMMUNITY_AND_MEMBERS, {
+    onCompleted: ({ community }) => {
       if (community) {
         // True if user is inside of community members array
         const userIsMember = community.members.some(
@@ -154,24 +107,20 @@ function SelectCommunity({ history, location }) {
 
   // Add user to community
   const [joinCommunity, { loading: mutationLoading }] = useMutation(
-    JOIN_COMMUNITY,
+    mutations.JOIN_COMMUNITY,
     {
       update(cache, { data: { joinCommunity } }) {
         // Get and update communities cache
         const { communities } = cache.readQuery({
-          query: GET_USER_COMMUNITIES,
+          query: queries.GET_USER_COMMUNITIES,
         });
         cache.writeQuery({
-          query: GET_USER_COMMUNITIES,
+          query: queries.GET_USER_COMMUNITIES,
           communities: [...communities, joinCommunity],
         });
 
         // Set community id
-        selectCommunity({
-          variables: {
-            communityId: joinCommunity._id,
-          },
-        });
+        selectCommunity(joinCommunity._id);
 
         // Redirect to posts page
         history.push("/find");
@@ -185,7 +134,7 @@ function SelectCommunity({ history, location }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="communities-control">
       {isNewCommunity ? (
@@ -285,14 +234,7 @@ function SelectCommunity({ history, location }) {
                 key={community._id}
                 className="main-btn block beige"
                 type="submit"
-                onClick={() => {
-                  setSelectedId(community._id);
-                  selectCommunity({
-                    variables: {
-                      communityId: community._id,
-                    },
-                  });
-                }}
+                onClick={() => selectCommunity(community._id)}
               >
                 {community.name}
                 {community.hasNotifications && (
@@ -362,5 +304,3 @@ SelectCommunity.propTypes = {
     }),
   }).isRequired,
 };
-
-export default SelectCommunity;

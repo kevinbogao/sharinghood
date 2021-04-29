@@ -1,6 +1,6 @@
-import React, { useState, Fragment } from "react";
+import { useState, Fragment } from "react";
 import PropTypes from "prop-types";
-import { gql, useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheckDouble,
@@ -15,111 +15,28 @@ import Threads from "../../components/Threads";
 import Spinner from "../../components/Spinner";
 import NotFound from "../../components/NotFound";
 import ItemDetails from "../../components/ItemDetails";
+import ServerError from "../../components/ServerError";
+import { queries, mutations } from "../../utils/gql";
+import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 
 const CONDITIONS = ["New", "Used but good", "Used but little damaged"];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
 
-const GET_POST = gql`
-  query Post($postId: ID!) {
-    post(postId: $postId) {
-      _id
-      title
-      desc
-      image
-      condition
-      isGiveaway
-      creator {
-        _id
-        name
-        image
-        apartment
-        createdAt
-      }
-      threads {
-        _id
-        content
-        poster {
-          _id
-        }
-        community {
-          _id
-        }
-      }
-    }
-    tokenPayload @client
-    community(communityId: $communityId) @client {
-      members {
-        _id
-        name
-        image
-      }
-    }
-  }
-`;
-
-const CREATE_THREAD = gql`
-  mutation CreateThread($threadInput: ThreadInput!) {
-    createThread(threadInput: $threadInput) {
-      _id
-      content
-      poster {
-        _id
-      }
-      community {
-        _id
-      }
-    }
-  }
-`;
-
-const CREATE_NOTIFICATION = gql`
-  mutation CreateNotification($notificationInput: NotificationInput) {
-    createNotification(notificationInput: $notificationInput) {
-      _id
-      ofType
-      booking {
-        _id
-        status
-        dateType
-        dateNeed
-        dateReturn
-        post {
-          _id
-          title
-          image
-        }
-        booker {
-          _id
-        }
-      }
-      participants {
-        _id
-        name
-        image
-      }
-      isRead
-      messages {
-        _id
-        text
-      }
-    }
-  }
-`;
-
-function PostDetails({ communityId, match, history }) {
+export default function PostDetails({ communityId, match, history }) {
   const [comment, setComment] = useState("");
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [dateType, setDateType] = useState(0);
   const [dateNeed, setDateNeed] = useState(moment());
   const [dateReturn, setDateReturn] = useState(moment());
-  const { loading, error, data } = useQuery(GET_POST, {
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const { loading, error, data } = useQuery(queries.GET_POST_DETAILS, {
     variables: { postId: match.params.id, communityId },
     onError: ({ message }) => {
       console.log(message);
     },
   });
-  const [createThread] = useMutation(CREATE_THREAD, {
+  const [createThread] = useMutation(mutations.CREATE_THREAD, {
     onCompleted: () => {
       setComment("");
     },
@@ -128,11 +45,11 @@ function PostDetails({ communityId, match, history }) {
     },
     update(cache, { data: { createThread } }) {
       const { post } = cache.readQuery({
-        query: GET_POST,
+        query: queries.GET_POST_DETAILS,
         variables: { postId: data.post._id, communityId },
       });
       cache.writeQuery({
-        query: GET_POST,
+        query: queries.GET_POST_DETAILS,
         data: {
           post: {
             ...post,
@@ -145,7 +62,7 @@ function PostDetails({ communityId, match, history }) {
 
   // Create a new booking notification for user and owner
   const [createNotification, { loading: mutationLoading }] = useMutation(
-    CREATE_NOTIFICATION,
+    mutations.CREATE_NOTIFICATION,
     {
       onCompleted: ({ createNotification }) => {
         // Redirect user to chat on mutation complete
@@ -160,13 +77,13 @@ function PostDetails({ communityId, match, history }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error! ${error.message}`
+    <ServerError />
   ) : data?.post ? (
     <div className="item-control">
       <ItemDetails
         item={data.post}
         history={history}
-        userId={data.tokenPayload.userId}
+        userId={tokenPayload.userId}
         communityId={communityId}
       >
         <div className="item-desc">
@@ -185,7 +102,7 @@ function PostDetails({ communityId, match, history }) {
               <span>This is a give away</span>
             </div>
           )}
-          {data.post.creator._id === data.tokenPayload.userId ? (
+          {data.post.creator._id === tokenPayload.userId ? (
             <button
               type="button"
               className="main-btn item"
@@ -257,7 +174,7 @@ function PostDetails({ communityId, match, history }) {
       />
       <div className="new-thread-control">
         {data.community.members
-          .filter((member) => member._id === data.tokenPayload.userId)
+          .filter((member) => member._id === tokenPayload.userId)
           .map((member) => (
             <Fragment key={member._id}>
               <img
@@ -398,5 +315,3 @@ PostDetails.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
 };
-
-export default PostDetails;

@@ -1,100 +1,43 @@
-import React from "react";
 import PropTypes from "prop-types";
-import { gql, useQuery, useMutation, useApolloClient } from "@apollo/client";
+import {
+  useQuery,
+  useMutation,
+  useApolloClient,
+  useReactiveVar,
+} from "@apollo/client";
 import moment from "moment";
 import Spinner from "../../components/Spinner";
+import ServerError from "../../components/ServerError";
+import { queries, mutations } from "../../utils/gql";
+import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 
-const GET_USER_COMMUNITIES = gql`
-  query Communities {
-    communities {
-      _id
-      name
-      hasNotifications
-    }
-  }
-`;
-
-const GET_NOTIFICATIONS = gql`
-  query GetNotifications($communityId: ID!) {
-    notifications(communityId: $communityId) {
-      _id
-      ofType
-      booking {
-        _id
-        status
-        dateType
-        dateNeed
-        dateReturn
-        post {
-          _id
-          title
-          image
-        }
-        booker {
-          _id
-        }
-      }
-      post {
-        _id
-        creator {
-          _id
-          name
-        }
-      }
-      participants {
-        _id
-        name
-        image
-      }
-      isRead
-      community {
-        _id
-      }
-      messages {
-        _id
-        text
-      }
-    }
-    tokenPayload @client
-  }
-`;
-
-const UPDATE_BOOKING = gql`
-  mutation UpdateBooking($bookingInput: BookingInput!) {
-    updateBooking(bookingInput: $bookingInput) {
-      _id
-      status
-    }
-  }
-`;
-
-function Notifications({ history, communityId }) {
+export default function Notifications({ history, communityId }) {
   const client = useApolloClient();
-  const { loading, error, data } = useQuery(GET_NOTIFICATIONS, {
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const { loading, error, data } = useQuery(queries.GET_NOTIFICATIONS, {
     variables: { communityId },
     fetchPolicy: "network-only",
     onCompleted: () => {
-      try {
-        // Get communities from cache
-        const { communities } = client.readQuery({
-          query: GET_USER_COMMUNITIES,
-        });
+      // Get communities from cache
+      const communitiesData = client.readQuery({
+        query: queries.GET_USER_COMMUNITIES,
+      });
 
-        // Write to cache with a new communities array with the current
-        // community's hasNotifications is set to false
+      // Write to cache with a new communities array with the current
+      // community's hasNotifications is set to false
+      if (communitiesData) {
         client.writeQuery({
-          query: GET_USER_COMMUNITIES,
+          query: queries.GET_USER_COMMUNITIES,
           data: {
-            communities: communities.map((community) =>
+            communities: communitiesData.communities.map((community) =>
               community._id === communityId
                 ? { ...community, hasNotifications: false }
                 : community
             ),
           },
         });
-        // eslint-disable-next-line
-      } catch (err) {}
+      }
     },
   });
 
@@ -107,7 +50,7 @@ function Notifications({ history, communityId }) {
     {
       loading: { mutationLoading },
     },
-  ] = useMutation(UPDATE_BOOKING, {
+  ] = useMutation(mutations.UPDATE_BOOKING, {
     onError: ({ message }) => {
       console.log(message);
     },
@@ -116,7 +59,7 @@ function Notifications({ history, communityId }) {
   return loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="notifications-control">
       {data.notifications.length ? (
@@ -140,7 +83,7 @@ function Notifications({ history, communityId }) {
                   <div className="left-img">
                     <div
                       className={`noti-img-border ${
-                        notification.isRead[data.tokenPayload.userId]
+                        notification.isRead[tokenPayload.userId]
                           ? undefined
                           : "unread"
                       }
@@ -187,7 +130,7 @@ function Notifications({ history, communityId }) {
                   <div className="left-img">
                     <div
                       className={`noti-img-border ${
-                        notification.isRead[data.tokenPayload.userId]
+                        notification.isRead[tokenPayload.userId]
                           ? undefined
                           : "unread"
                       }
@@ -208,7 +151,7 @@ function Notifications({ history, communityId }) {
                   <div className="item-info">
                     <div className="item-status">
                       {notification.booking.booker._id ===
-                      data.tokenPayload.userId ? (
+                      tokenPayload.userId ? (
                         <p className="title">
                           You requested {notification.participants[0].name}
                           &apos;s {notification.booking.post.title}
@@ -237,7 +180,7 @@ function Notifications({ history, communityId }) {
                     </div>
                     <div className="item-btns">
                       {notification.booking.booker._id ===
-                      data.tokenPayload.userId ? (
+                      tokenPayload.userId ? (
                         <>
                           {notification.booking.status === 0 ? (
                             <button
@@ -279,7 +222,7 @@ function Notifications({ history, communityId }) {
                                         bookingId: notification.booking._id,
                                         communityId,
                                         notificationId: notification._id,
-                                        notifyContent: `${data.tokenPayload.userName} has accepted your booking on ${notification.booking.post.title}`,
+                                        notifyContent: `${tokenPayload.userName} has accepted your booking on ${notification.booking.post.title}`,
                                         notifyRecipientId:
                                           notification.booking.booker._id,
                                       },
@@ -302,7 +245,7 @@ function Notifications({ history, communityId }) {
                                         bookingId: notification.booking._id,
                                         communityId,
                                         notificationId: notification._id,
-                                        notifyContent: `${data.tokenPayload.userName} has denied your booking on ${notification.booking.post.title}`,
+                                        notifyContent: `${tokenPayload.userName} has denied your booking on ${notification.booking.post.title}`,
                                         notifyRecipientId:
                                           notification.booking.booker._id,
                                       },
@@ -338,7 +281,7 @@ function Notifications({ history, communityId }) {
                   <div className="left-img">
                     <div
                       className={`noti-img-border ${
-                        notification.isRead[data.tokenPayload.userId]
+                        notification.isRead[tokenPayload.userId]
                           ? undefined
                           : "unread"
                       }
@@ -496,5 +439,3 @@ Notifications.propTypes = {
   }).isRequired,
   communityId: PropTypes.string.isRequired,
 };
-
-export { GET_NOTIFICATIONS, Notifications };

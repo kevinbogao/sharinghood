@@ -1,85 +1,20 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery, useReactiveVar } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import moment from "moment";
-import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
+import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../components/Spinner";
+import ServerError from "../components/ServerError";
+import { queries } from "../utils/gql";
+import { tokenPayloadVar } from "../utils/cache";
 import { transformImgUrl } from "../utils/helpers";
 
-const GET_TOKEN_PAYLOAD = gql`
-  query {
-    tokenPayload @client
-  }
-`;
-
-const GET_COMMUNITY_ACTIVITIES = gql`
-  query CommunityActivities($communityId: ID!) {
-    communityActivities(communityId: $communityId) {
-      _id
-      name
-      code
-      zipCode
-      creator {
-        _id
-      }
-      members {
-        _id
-        name
-        email
-        image
-        isNotified
-        createdAt
-        lastLogin
-      }
-      posts {
-        _id
-        title
-        desc
-        condition
-        image
-        isGiveaway
-        creator {
-          _id
-        }
-        createdAt
-      }
-      requests {
-        _id
-        title
-        desc
-        dateNeed
-        dateReturn
-        image
-        creator {
-          _id
-        }
-        createdAt
-      }
-      bookings {
-        _id
-        post {
-          _id
-        }
-        status
-        dateNeed
-        dateReturn
-        booker {
-          _id
-        }
-      }
-    }
-  }
-`;
-
 const STATS_IDS = ["members", "posts", "requests", "bookings"];
-const ID_KEYS = ["post", "creator", "booker"];
-const DATE_KEYS = ["createdAt", "dateNeed", "dateReturn", "lastLogin"];
-const USER_KEYS = ["creator", "booker"];
-const ID_SET = new Set(ID_KEYS);
-const DATE_SET = new Set(DATE_KEYS);
-const USER_SET = new Set(USER_KEYS);
+const ID_SET = new Set(["post", "creator", "booker"]);
+const DATE_SET = new Set(["createdAt", "dateNeed", "dateReturn", "lastLogin"]);
+const USER_SET = new Set(["creator", "booker"]);
 const BOOKING_STATUS = ["Pending", "Accepted", "Denied"];
 const FORMATTED_KEYS = {
   _id: "ID",
@@ -101,28 +36,46 @@ const FORMATTED_KEYS = {
   lastLogin: "Last Login",
 };
 
-function DashboardDetails({ location, match }) {
+export default function DashboardDetails({ location, match }) {
   const { from } = location.state || { from: { pathname: "/" } };
+  const [sortOrder, setSortOrder] = useState(-1);
   const [selectedId, setSelectedId] = useState("");
   const [selectedCol, setSelectedCol] = useState("_id");
   const [selectedStat, setSelectedStat] = useState("members");
-  const {
-    data: { tokenPayload },
-  } = useQuery(GET_TOKEN_PAYLOAD);
-  const { loading, error, data } = useQuery(GET_COMMUNITY_ACTIVITIES, {
+  const [selectedStatActivities, setSelectedStatActivities] = useState([]);
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const { loading, error, data } = useQuery(queries.GET_COMMUNITY_ACTIVITIES, {
     skip: !tokenPayload.isAdmin,
     variables: { communityId: match.params.id },
+    onCompleted: ({ communityActivities }) => {
+      setSelectedStatActivities(communityActivities["members"]);
+    },
     onError: ({ message }) => {
       console.log(message);
     },
-    onCompleted: (data) => {
-      console.log(data);
-    },
   });
 
-  // TODO: implement sorting
   function sortColumns(column) {
+    const stats = selectedStatActivities.slice();
+    if (typeof stats[0][column] === "string") {
+      stats.sort((a, b) => {
+        const elemA = a[column].toUpperCase();
+        const elemB = b[column].toUpperCase();
+        if (elemA < elemB) return sortOrder * -1;
+        if (elemA > elemB) return sortOrder * 1;
+        return 0;
+      });
+    }
+    stats.sort((a, b) => sortOrder * (a[column] - b[column]));
+    setSelectedStatActivities(stats);
     setSelectedCol(column);
+    setSortOrder(sortOrder * -1);
+  }
+
+  function formatTime(dateType, timeString) {
+    if (dateType === 0) return "ASAP";
+    else if (dateType === 1) return "N/A";
+    return moment(+timeString).format("MMM DD HH:mm");
   }
 
   // Find selected item in its associated array by id and set it as selected id in state,
@@ -134,12 +87,14 @@ function DashboardDetails({ location, match }) {
       );
       setSelectedId(targetUser[0]._id);
       setSelectedStat("members");
+      setSelectedStatActivities(data.communityActivities["members"]);
     } else if (key === "post") {
       const targetPost = data.communityActivities.posts.filter(
         (post) => post._id === stat[key]._id
       );
       setSelectedId(targetPost[0]._id);
       setSelectedStat("posts");
+      setSelectedStatActivities(data.communityActivities["posts"]);
     }
   }
 
@@ -148,7 +103,7 @@ function DashboardDetails({ location, match }) {
   ) : loading ? (
     <Spinner />
   ) : error ? (
-    `Error ${error.message}`
+    <ServerError />
   ) : (
     <div className="dashboard-control">
       <div className="dashboard-overview">
@@ -170,7 +125,10 @@ function DashboardDetails({ location, match }) {
                 className={`stat-clickable ${
                   selectedStat === stat && "active"
                 }`}
-                onClick={() => setSelectedStat(stat)}
+                onClick={() => {
+                  setSelectedStat(stat);
+                  setSelectedStatActivities(data.communityActivities[stat]);
+                }}
                 role="presentation"
               >
                 <h2>{data.communityActivities[stat].length}</h2>
@@ -184,24 +142,23 @@ function DashboardDetails({ location, match }) {
         <tbody>
           <tr className="dashboard-table-header">
             {Object.keys(
-              data.communityActivities[selectedStat].length &&
-                data.communityActivities[selectedStat][0]
+              selectedStatActivities.length && selectedStatActivities[0]
             )
-              .filter((key) => key !== "__typename")
+              .filter((key) => key !== "__typename" && key !== "dateType")
               .map((key) => (
                 <th key={key} onClick={() => sortColumns(key)}>
                   {FORMATTED_KEYS[key]}{" "}
                   {selectedCol === key && (
                     <FontAwesomeIcon
                       className="dashboard-sort-icons"
-                      icon={faArrowDown}
+                      icon={sortOrder === -1 ? faArrowUp : faArrowDown}
                       size="1x"
                     />
                   )}
                 </th>
               ))}
           </tr>
-          {data.communityActivities[selectedStat].map((stat) => (
+          {selectedStatActivities.map((stat) => (
             <tr
               key={stat._id}
               className={`dashboard-table-row ${
@@ -209,7 +166,7 @@ function DashboardDetails({ location, match }) {
               }`}
             >
               {Object.keys(stat)
-                .filter((key) => key !== "__typename")
+                .filter((key) => key !== "__typename" && key !== "dateType")
                 .map((key) => (
                   <td
                     key={key}
@@ -234,7 +191,7 @@ function DashboardDetails({ location, match }) {
                     ) : ID_SET.has(key) ? (
                       `...${stat[key]._id.slice(19)}`
                     ) : DATE_SET.has(key) ? (
-                      moment(+stat[key]).format("MMM DD HH:mm")
+                      formatTime(stat.dateType, stat[key])
                     ) : (
                       stat[key].toString()
                     )}
@@ -435,5 +392,3 @@ DashboardDetails.defaultProps = {
     }),
   }),
 };
-
-export default DashboardDetails;

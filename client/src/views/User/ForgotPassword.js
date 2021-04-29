@@ -1,34 +1,22 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Redirect } from "react-router-dom";
-import { gql, useQuery, useMutation } from "@apollo/client";
+import { useMutation, useReactiveVar } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
-import { setErrorMsg, validateForm } from "../../utils/helpers";
+import { mutations } from "../../utils/gql";
+import { accessTokenVar } from "../../utils/cache";
+import { validateForm, setErrorMsg } from "../../utils/helpers";
 
-const GET_ACCESS_TOKEN = gql`
-  {
-    accessToken @client
-  }
-`;
-
-const FORGOT_PASSWORD = gql`
-  mutation ForgotPassword($email: String!) {
-    forgotPassword(email: $email)
-  }
-`;
-
-function ForgotPassword({ location }) {
+export default function ForgotPassword({ location }) {
   let email;
   const { from } = location.state || { from: { pathname: "/" } };
   const [error, setError] = useState({});
   const [isSuccess, setIsSuccess] = useState(false);
   const [isReSend, setIsReSend] = useState(false);
-  const {
-    data: { accessToken },
-  } = useQuery(GET_ACCESS_TOKEN);
+  const accessToken = useReactiveVar(accessTokenVar);
   const [forgotPassword, { loading: mutationLoading }] = useMutation(
-    FORGOT_PASSWORD,
+    mutations.FORGOT_PASSWORD,
     {
       onCompleted: ({ forgotPassword }) => {
         // Set success if true is returned
@@ -145,5 +133,3 @@ ForgotPassword.defaultProps = {
     }),
   }),
 };
-
-export default ForgotPassword;

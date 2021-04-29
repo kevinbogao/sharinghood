@@ -1,17 +1,22 @@
-import React from "react";
+import logo from "../assets/images/logo.png";
 
-function PageNotFound() {
+export default function ServerError() {
   return (
     <div className="page-not-found-control">
       <div className="invalid-link">
-        <h1>404</h1>
-        <h3>Oops! We can't find the page that you're looking for.</h3>
+        <img src={logo} alt="" />
+        <h1>5XX</h1>
+        <h3>
+          Oops! We're experiencing an error and we're working to fix it. Please
+          come back later.
+        </h3>
       </div>
       <style jsx>
         {`
           @import "./src/assets/scss/index.scss";
 
           .page-not-found-control {
+            font-family: $font-stack;
             margin: auto;
             display: flex;
             align-items: center;
@@ -28,6 +33,11 @@ function PageNotFound() {
               margin-top: 0;
               justify-content: flex-start;
               align-items: stretch;
+            }
+
+            img {
+              width: 75px;
+              margin-bottom: 60px;
             }
 
             h1 {
@@ -54,5 +64,3 @@ function PageNotFound() {
     </div>
   );
 }
-
-export default PageNotFound;

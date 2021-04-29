@@ -1,7 +1,6 @@
-import React from "react";
 import PropTypes from "prop-types";
 
-function NotFound({ itemType }) {
+export default function NotFound({ itemType }) {
   return (
     <div className="not-found-control">
       <p className="main-p">{itemType} not found</p>
@@ -21,5 +20,3 @@ function NotFound({ itemType }) {
 NotFound.propTypes = {
   itemType: PropTypes.string.isRequired,
 };
-
-export default NotFound;

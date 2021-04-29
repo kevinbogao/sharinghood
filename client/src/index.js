@@ -1,7 +1,6 @@
-import React from "react";
+import { StrictMode } from "react";
 import { render } from "react-dom";
 import {
-  gql,
   ApolloClient,
   HttpLink,
   InMemoryCache,
@@ -15,6 +14,14 @@ import { WebSocketLink } from "@apollo/client/link/ws";
 import { TokenRefreshLink } from "apollo-link-token-refresh";
 import { getMainDefinition } from "@apollo/client/utilities";
 import jwtDecode from "jwt-decode";
+import {
+  accessTokenVar,
+  refreshTokenVar,
+  tokenPayloadVar,
+  selCommunityIdVar,
+  serverErrorVar,
+  clearLocalStorageAndCache,
+} from "./utils/cache";
 import App from "./App";
 
 // Dotenv config
@@ -64,6 +71,35 @@ const splitLink = split(
 // Init cache
 const cache = new InMemoryCache({
   typePolicies: {
+    Query: {
+      fields: {
+        accessToken: {
+          read() {
+            return accessTokenVar();
+          },
+        },
+        refreshToken: {
+          read() {
+            return refreshTokenVar();
+          },
+        },
+        tokenPayload: {
+          read() {
+            return tokenPayloadVar();
+          },
+        },
+        selCommunityId: {
+          read() {
+            return selCommunityIdVar();
+          },
+        },
+        serverError: {
+          read() {
+            return serverErrorVar();
+          },
+        },
+      },
+    },
     Notification: {
       fields: {
         messages: {
@@ -129,82 +165,40 @@ const client = new ApolloClient({
           );
         }
       },
-      handleError: () => {
-        console.log("Try to login again");
+      handleError: ({ message }) => {
+        if (message === "Failed to fetch") {
+          console.warn("Network error. Please try to login again");
+          clearLocalStorageAndCache();
+        }
       },
     }),
-    onError(({ graphQLErrors, operation, forward }) => {
+    onError(({ graphQLErrors, networkError, operation, forward }) => {
       if (graphQLErrors) {
         graphQLErrors.forEach((err) => {
           if (err.extensions.code === "UNAUTHENTICATED") {
-            localStorage.removeItem("@sharinghood:accessToken");
-            localStorage.removeItem("@sharinghood:refreshToken");
-            localStorage.removeItem("@sharinghood:selCommunityId");
-            writeInitialData();
+            clearLocalStorageAndCache();
             return forward(operation);
           }
           return forward(operation);
         });
       }
+
+      // Set global serverError to true in case of server errors
+      if (networkError) {
+        serverErrorVar(true);
+        return forward(operation);
+      }
     }),
     splitLink,
   ]),
   cache,
-  resolvers: {
-    Mutation: {
-      selectCommunity: (_, { communityId }, { cache }) => {
-        // Store community id in localStorage
-        localStorage.setItem("@sharinghood:selCommunityId", communityId);
-
-        // Set community id in cache
-        cache.writeQuery({
-          query: gql`
-            query {
-              selCommunityId @client
-            }
-          `,
-          data: {
-            selCommunityId: communityId,
-          },
-        });
-      },
-    },
-  },
 });
 
-// Default cache values
-function writeInitialData() {
-  const accessToken = localStorage.getItem("@sharinghood:accessToken");
-
-  cache.writeQuery({
-    query: gql`
-      query {
-        accessToken
-        refreshToken
-        tokenPayload
-        selCommunityId
-      }
-    `,
-    data: {
-      accessToken: localStorage.getItem("@sharinghood:accessToken"),
-      refreshToken: localStorage.getItem("@sharinghood:refreshToken"),
-      selCommunityId: localStorage.getItem("@sharinghood:selCommunityId"),
-      tokenPayload: accessToken ? jwtDecode(accessToken) : null,
-    },
-  });
-}
-
-// Init cache values
-writeInitialData();
-
-// Reset cache on logout
-client.onClearStore(writeInitialData);
-
 render(
-  <React.StrictMode>
+  <StrictMode>
     <ApolloProvider client={client}>
       <App />
     </ApolloProvider>
-  </React.StrictMode>,
+  </StrictMode>,
   document.getElementById("root")
 );

@@ -1,10 +1,5 @@
-import { Document, Schema, model } from "mongoose";
-
-interface IThread extends Document {
-  content: string;
-  poster: Schema.Types.ObjectId;
-  community: Schema.Types.ObjectId;
-}
+import { Schema, model } from "mongoose";
+import { IThread } from "../types/models";
 
 const threadSchema: Schema = new Schema(
   {

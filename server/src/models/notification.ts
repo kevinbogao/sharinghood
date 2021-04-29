@@ -1,6 +1,7 @@
-const { Schema, model } = require("mongoose");
+import { Schema, model } from "mongoose";
+import { INotification } from "../types/models";
 
-const notificationSchema = new Schema(
+const notificationSchema: Schema = new Schema(
   {
     // 0: Chats
     // 1: Bookings
@@ -62,4 +63,4 @@ notificationSchema.index({ booking: 1 });
 // Secondary index for post
 notificationSchema.index({ post: 1 });
 
-module.exports = model("Notification", notificationSchema);
+export default model<INotification>("Notification", notificationSchema);

@@ -1,6 +1,7 @@
-const { Schema, model } = require("mongoose");
+import { Schema, model } from "mongoose";
+import { IMessage } from "../types/models";
 
-const messageSchema = new Schema(
+const messageSchema: Schema = new Schema(
   {
     text: {
       type: String,
@@ -18,4 +19,4 @@ const messageSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = model("Message", messageSchema);
+export default model<IMessage>("Message", messageSchema);

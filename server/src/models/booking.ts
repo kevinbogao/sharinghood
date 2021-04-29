@@ -1,14 +1,5 @@
-import { Document, Schema, model } from "mongoose";
-
-interface IBooking extends Document {
-  post: Schema.Types.ObjectId;
-  status: number;
-  dateType: number;
-  dateNeed: Date;
-  dateReturn: Date;
-  booker: Schema.Types.ObjectId;
-  community: Schema.Types.ObjectId;
-}
+import { Schema, model } from "mongoose";
+import { IBooking } from "../types/models";
 
 const bookingSchema: Schema = new Schema(
   {

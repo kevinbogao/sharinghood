@@ -1,11 +1,12 @@
-const { Schema, model } = require("mongoose");
+import { Schema, model } from "mongoose";
+import { IUser } from "../types/models";
 
 // Limit number of communities a user can be in to 5
-function communitiesLimit(communities) {
+function communitiesLimit(communities: any): boolean {
   return communities.length < 6;
 }
 
-const userSchema = new Schema(
+const userSchema: Schema = new Schema(
   {
     name: {
       type: String,
@@ -79,4 +80,4 @@ const userSchema = new Schema(
 // Index for user email
 userSchema.index({ email: 1 });
 
-module.exports = model("User", userSchema);
+export default model<IUser>("User", userSchema);

@@ -1,15 +1,5 @@
-import { Document, Schema, model } from "mongoose";
-
-interface ICommunity extends Document {
-  name: string;
-  code: string;
-  zipCode: string;
-  password: string;
-  creator: Schema.Types.ObjectId;
-  members: Array<Schema.Types.ObjectId>;
-  posts: Array<Schema.Types.ObjectId>;
-  requests: Array<Schema.Types.ObjectId>;
-}
+import { Schema, model } from "mongoose";
+import { ICommunity } from "../types/models";
 
 const communitySchema: Schema = new Schema(
   {

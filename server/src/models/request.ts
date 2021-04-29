@@ -1,6 +1,7 @@
-const { Schema, model } = require("mongoose");
+import { Schema, model } from "mongoose";
+import { IRequest } from "../types/models";
 
-const postSchema = new Schema(
+const requestSchema: Schema = new Schema(
   {
     title: {
       type: String,
@@ -10,28 +11,28 @@ const postSchema = new Schema(
       type: String,
       required: true,
     },
-    condition: {
-      type: Number,
-      required: true,
-    },
     image: {
       type: String,
       required: true,
     },
-    isGiveaway: {
-      type: Boolean,
+
+    // 0: asap
+    // 1: any
+    // 2: need & return
+    dateType: {
+      type: Number,
       required: true,
     },
+
+    // dateNeed & dateReturn are not needed for
+    // date type 0 & 1
+    dateNeed: Date,
+    dateReturn: Date,
+
     creator: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    bookings: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Booking",
-      },
-    ],
     threads: [
       {
         type: Schema.Types.ObjectId,
@@ -42,4 +43,4 @@ const postSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = model("Post", postSchema);
+export default model<IRequest>("Request", requestSchema);

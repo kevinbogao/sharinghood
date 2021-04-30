@@ -92,8 +92,10 @@
     "winston-mongodb": "^5.0.7"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
     "@types/ioredis": "^4.26.0",
     "@types/jsonwebtoken": "^8.5.1",
+    "@types/lodash": "^4.14.168",
     "concurrently": "^6.0.2",
     "eslint": "^7.24.0",
     "eslint-config-airbnb-base": "^14.2.0",

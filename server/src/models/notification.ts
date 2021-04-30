@@ -1,5 +1,23 @@
-import { Schema, model } from "mongoose";
-import { INotification } from "../types/models";
+import { Document, Schema, Types, model } from "mongoose";
+import { PostDocument } from "./post";
+import { UserDocument } from "./user";
+import { BookingDocument } from "./booking";
+import { MessageDocument } from "./message";
+import { CommunityDocument } from "./community";
+
+export interface Notification {
+  ofType: number;
+  post: Types.ObjectId | PostDocument;
+  booking: Types.ObjectId | BookingDocument;
+  community: Types.ObjectId | CommunityDocument;
+  messages: Array<Types.ObjectId | MessageDocument>;
+  participants: Array<Types.ObjectId | UserDocument>;
+  isRead: {
+    [userId: string]: boolean;
+  };
+}
+
+export interface NotificationDocument extends Notification, Document {}
 
 const notificationSchema: Schema = new Schema(
   {
@@ -63,4 +81,4 @@ notificationSchema.index({ booking: 1 });
 // Secondary index for post
 notificationSchema.index({ post: 1 });
 
-export default model<INotification>("Notification", notificationSchema);
+export default model<NotificationDocument>("Notification", notificationSchema);

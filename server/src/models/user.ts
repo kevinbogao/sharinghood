@@ -1,5 +1,29 @@
-import { Schema, model } from "mongoose";
-import { IUser } from "../types/models";
+import { Document, Schema, Types, model } from "mongoose";
+import { PostDocument } from "./post";
+import { RequestDocument } from "./request";
+import { CommunityDocument } from "./community";
+import { NotificationDocument } from "./notification";
+
+export interface User {
+  name: string;
+  email: string;
+  password: string;
+  image: string;
+  desc?: string;
+  apartment?: string;
+  lastLogin: Date;
+  isNotified: boolean;
+  isAdmin: boolean;
+  isMigrated: boolean;
+  tokenVersion: number;
+  fcmTokens: Array<string>;
+  posts: Array<Types.ObjectId | PostDocument>;
+  requests: Array<Types.ObjectId | RequestDocument>;
+  communities: Array<Types.ObjectId | CommunityDocument>;
+  notifications: Array<Types.ObjectId | NotificationDocument>;
+}
+
+export interface UserDocument extends User, Document {}
 
 // Limit number of communities a user can be in to 5
 function communitiesLimit(communities: any): boolean {
@@ -80,4 +104,4 @@ const userSchema: Schema = new Schema(
 // Index for user email
 userSchema.index({ email: 1 });
 
-export default model<IUser>("User", userSchema);
+export default model<UserDocument>("User", userSchema);

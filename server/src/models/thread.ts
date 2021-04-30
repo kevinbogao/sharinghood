@@ -1,5 +1,12 @@
-import { Schema, model } from "mongoose";
-import { IThread } from "../types/models";
+import { Document, Schema, Types, model } from "mongoose";
+import { UserDocument } from "./user";
+
+export interface Thread {
+  content: string;
+  poster: Types.ObjectId | UserDocument;
+  community: Types.ObjectId | UserDocument;
+}
+export interface ThreadDocument extends Thread, Document {}
 
 const threadSchema: Schema = new Schema(
   {
@@ -19,4 +26,4 @@ const threadSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default model<IThread>("Thread", threadSchema);
+export default model<ThreadDocument>("Thread", threadSchema);

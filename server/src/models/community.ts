@@ -1,5 +1,20 @@
-import { Schema, model } from "mongoose";
-import { ICommunity } from "../types/models";
+import { Document, Schema, Types, model } from "mongoose";
+import { PostDocument } from "./post";
+import { UserDocument } from "./user";
+import { RequestDocument } from "./request";
+
+export interface Community {
+  name: string;
+  code: string;
+  zipCode: string;
+  password?: string;
+  creator: Types.ObjectId | UserDocument;
+  members: Array<Types.ObjectId | UserDocument>;
+  posts: Array<Types.ObjectId | PostDocument>;
+  requests: Array<Types.ObjectId | RequestDocument>;
+}
+
+export interface CommunityDocument extends Community, Document {}
 
 const communitySchema: Schema = new Schema(
   {
@@ -23,6 +38,7 @@ const communitySchema: Schema = new Schema(
     creator: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
     members: [
       {
@@ -49,4 +65,4 @@ const communitySchema: Schema = new Schema(
 // Create index for community code
 communitySchema.index({ code: 1 });
 
-export default model<ICommunity>("Community", communitySchema);
+export default model<CommunityDocument>("Community", communitySchema);

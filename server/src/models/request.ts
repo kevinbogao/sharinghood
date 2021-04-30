@@ -1,5 +1,19 @@
-import { Schema, model } from "mongoose";
-import { IRequest } from "../types/models";
+import { Document, Schema, Types, model } from "mongoose";
+import { UserDocument } from "./user";
+import { ThreadDocument } from "./thread";
+
+export interface Request {
+  title: string;
+  desc: string;
+  image: string;
+  dateType: number;
+  dateNeed: Date;
+  dateReturn: Date;
+  creator: Types.ObjectId | UserDocument;
+  threads: Array<Types.ObjectId | ThreadDocument>;
+}
+
+export interface RequestDocument extends Request, Document {}
 
 const requestSchema: Schema = new Schema(
   {
@@ -43,4 +57,4 @@ const requestSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default model<IRequest>("Request", requestSchema);
+export default model<RequestDocument>("Request", requestSchema);

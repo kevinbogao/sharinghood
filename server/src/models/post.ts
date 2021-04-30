@@ -1,5 +1,20 @@
-import { Schema, model } from "mongoose";
-import { IPost } from "../types/models";
+import { Document, Schema, Types, model } from "mongoose";
+import { UserDocument } from "./user";
+import { ThreadDocument } from "./thread";
+import { BookingDocument } from "./booking";
+
+export interface Post {
+  title: string;
+  desc: string;
+  condition: number;
+  image: string;
+  isGiveaway: boolean;
+  creator: Types.ObjectId | UserDocument;
+  threads: Array<Types.ObjectId | ThreadDocument>;
+  bookings: Array<Types.ObjectId | BookingDocument>;
+}
+
+export interface PostDocument extends Post, Document {}
 
 const postSchema: Schema = new Schema(
   {
@@ -43,4 +58,4 @@ const postSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default model<IPost>("Post", postSchema);
+export default model<PostDocument>("Post", postSchema);

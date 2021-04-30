@@ -1,5 +1,19 @@
-import { Schema, model } from "mongoose";
-import { IBooking } from "../types/models";
+import { Document, Schema, Types, model } from "mongoose";
+import { PostDocument } from "./post";
+import { UserDocument } from "./user";
+import { CommunityDocument } from "./community";
+
+export interface Booking {
+  status: number;
+  dateType: number;
+  dateNeed: Date;
+  dateReturn: Date;
+  post: Types.ObjectId | PostDocument;
+  booker: Types.ObjectId | UserDocument;
+  community: Types.ObjectId | CommunityDocument;
+}
+
+export interface BookingDocument extends Booking, Document {}
 
 const bookingSchema: Schema = new Schema(
   {
@@ -47,4 +61,4 @@ const bookingSchema: Schema = new Schema(
 // Index for booking community
 bookingSchema.index({ community: 1 });
 
-export default model<IBooking>("Booking", bookingSchema);
+export default model<BookingDocument>("Booking", bookingSchema);

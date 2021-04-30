@@ -1,11 +1,18 @@
-// @ts-nocheck
-
 import { AuthenticationError } from "apollo-server";
 import crypto from "crypto";
 import bcryptjs from "bcryptjs";
-import mongoose from "mongoose";
-import User from "../models/user";
+import { Types } from "mongoose";
+import User, { UserDocument } from "../models/user";
+import { PostDocument } from "../models/post";
 import Community from "../models/community";
+import { UserContext } from "../types";
+import { CommunityInput } from "./communities";
+import {
+  generateTokens,
+  verifyToken,
+  TokenPayload,
+  GeneratedTokens,
+} from "../utils/authToken";
 
 const uploadImg = require("../utils/uploadImg");
 const sendMail = require("../utils/sendMail/index");
@@ -13,26 +20,41 @@ const pbkdf2Verify = require("../utils/pbkdf2Verify");
 const newAccountMail = require("../utils/sendMail/newAccountMail");
 const newCommunityMail = require("../utils/sendMail/newCommunityMail");
 const handleErrors = require("../utils/handleErrors");
-const { generateTokens, verifyToken } = require("../utils/authToken");
+
+interface UserInput {
+  name: string;
+  email: string;
+  password: string;
+  image: string;
+  desc: string;
+  apartment: string;
+  communityId: string;
+  isNotified: boolean;
+  isCreator: boolean;
+}
 
 const usersResolvers = {
   Query: {
-    user: async (_, { userId, communityId }, { user }) => {
+    user: async (
+      _: unknown,
+      { userId, communityId }: { userId: string; communityId: string },
+      { user }: { user: UserContext }
+    ): Promise<UserDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
-        let posts;
+        let posts: Array<PostDocument | Types.ObjectId> | undefined;
 
         // Get the community's posts if userId is given
         if (userId) {
           const community = await Community.findById(communityId);
-          posts = community.posts;
+          if (community) posts = community.posts;
         }
 
         // Get user data && get user posts & notifications
         // If userId is given only match user's posts from given community
-        const userData = await User.aggregate([
-          { $match: { _id: mongoose.Types.ObjectId(userId || user.userId) } },
+        const userData: Array<UserDocument> = await User.aggregate([
+          { $match: { _id: Types.ObjectId(userId || user.userId) } },
           {
             $lookup: {
               from: "posts",
@@ -93,7 +115,11 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
-    validateResetLink: async (_, { resetKey }, { redis }) => {
+    validateResetLink: async (
+      _: unknown,
+      { resetKey }: { resetKey: string },
+      { redis }: any
+    ): Promise<boolean> => {
       try {
         // Check if key is still valid
         const userId = await redis.get(`reset_password:${resetKey}`);
@@ -107,9 +133,12 @@ const usersResolvers = {
     },
   },
   Mutation: {
-    login: async (_, { email, password }) => {
+    login: async (
+      _: unknown,
+      { email, password }: { email: string; password: string }
+    ) => {
       // Get user by email
-      const user = await User.findOne({ email });
+      const user: UserDocument | null = await User.findOne({ email });
       if (!user) throw new AuthenticationError("email: User not found");
 
       // Re-hash user password if user is not migrated
@@ -118,7 +147,7 @@ const usersResolvers = {
 
         // Re-hash password with bcryptjs if password if valid
         if (isPasswordValid) {
-          const hashedPassword = await bcryptjs.hash(password, 12);
+          const hashedPassword: string = await bcryptjs.hash(password, 12);
 
           // Update user password & migration status
           user.password = hashedPassword;
@@ -139,7 +168,10 @@ const usersResolvers = {
       }
 
       // Sign accessToken & refreshToken
-      const { accessToken, refreshToken } = generateTokens(user);
+      const {
+        accessToken,
+        refreshToken,
+      }: { accessToken: string; refreshToken: string } = generateTokens(user);
 
       // Update user's last login date
       user.lastLogin = new Date();
@@ -147,7 +179,11 @@ const usersResolvers = {
 
       return { accessToken, refreshToken };
     },
-    logout: async (_, __, { user }) => {
+    logout: async (
+      _: unknown,
+      __: unknown,
+      { user }: { user: UserContext }
+    ): Promise<boolean> => {
       if (!user) return false;
 
       // Increment user's tokenVersion
@@ -161,7 +197,7 @@ const usersResolvers = {
       return true;
     },
     registerAndOrCreateCommunity: async (
-      _,
+      _: unknown,
       {
         userInput: {
           name,
@@ -175,11 +211,13 @@ const usersResolvers = {
           communityId,
         },
         communityInput,
-      }
+      }: { userInput: UserInput; communityInput: CommunityInput }
     ) => {
       try {
         // Get user and check if email exists
-        const existingUser = await User.findOne({ email }).lean();
+        const existingUser: UserDocument | null = await User.findOne({
+          email,
+        }).lean();
         if (existingUser) {
           throw new AuthenticationError("email: User exist already");
         }
@@ -198,7 +236,6 @@ const usersResolvers = {
             email,
             ...(desc && { desc }),
             ...(apartment && { apartment }),
-            // apartment,
             isNotified,
             image: imgData,
             password: hashedPassword,
@@ -213,40 +250,44 @@ const usersResolvers = {
             : Community.findById(communityId),
         ]);
 
-        // Add user as creator to community if isCreator if true,
-        // ddd community to user, and user to community members
-        if (isCreator) community.creator = user._id;
-        user.communities.push(community._id);
-        community.members.push(user._id);
+        if (community) {
+          // Add user as creator to community if isCreator if true,
+          // ddd community to user, and user to community members
+          if (isCreator) community.creator = user._id;
+          user.communities.push(community._id);
+          community.members.push(user._id);
 
-        // Save user and community
-        await Promise.all([
-          user.save(),
-          community.save(),
+          // Save user and community
+          await Promise.all([
+            user.save(),
+            community.save(),
 
-          // Sent new account mail if user is notified
-          process.env.NODE_ENV === "production" &&
-            isNotified &&
-            newAccountMail(
-              `${process.env.ORIGIN}/share`,
-              community.name,
-              user.email,
-              "Welcome to Sharinghood"
-            ),
+            // Sent new account mail if user is notified
+            process.env.NODE_ENV === "production" &&
+              isNotified &&
+              newAccountMail(
+                `${process.env.ORIGIN}/share`,
+                community.name,
+                user.email,
+                "Welcome to Sharinghood"
+              ),
 
-          // Sent new community mail if user is notified & isCreator
-          process.env.NODE_ENV === "production" &&
-            isNotified &&
-            isCreator &&
-            newCommunityMail(
-              `${process.env.ORIGIN}/community/${community.code}`,
-              user.email,
-              `Welcome tips for your new ${community.name} community`
-            ),
-        ]);
+            // Sent new community mail if user is notified & isCreator
+            process.env.NODE_ENV === "production" &&
+              isNotified &&
+              isCreator &&
+              newCommunityMail(
+                `${process.env.ORIGIN}/community/${community.code}`,
+                user.email,
+                `Welcome tips for your new ${community.name} community`
+              ),
+          ]);
+        }
 
         // Sign accessToken & refreshToken
-        const { accessToken, refreshToken } = generateTokens(user);
+        const { accessToken, refreshToken }: GeneratedTokens = generateTokens(
+          user
+        );
 
         return {
           user: {
@@ -261,38 +302,45 @@ const usersResolvers = {
       }
     },
     updateUser: async (
-      _,
-      { userInput: { name, image, desc, apartment } },
-      { user }
+      _: unknown,
+      { userInput: { name, image, desc, apartment } }: { userInput: UserInput },
+      { user }: { user: UserContext }
     ) => {
       if (!user) throw new AuthenticationError("Not Authenticated");
-      const { userId } = user;
+      const { userId }: { userId: string } = user;
 
       try {
         // Get user from database
-        const userData = await User.findById(userId);
+        const userData: UserDocument | null = await User.findById(userId);
 
         // Upload image if it exists
-        let imgData;
+        let imgData: string | undefined;
         if (image) imgData = await uploadImg(image);
 
-        // Conditionally update user
-        if (name) userData.name = name;
-        if (image && imgData) userData.image = imgData;
-        if (desc) userData.desc = desc;
-        if (apartment) userData.apartment = apartment;
+        if (userData) {
+          // Conditionally update user
+          if (name) userData.name = name;
+          if (image && imgData) userData.image = imgData;
+          if (desc) userData.desc = desc;
+          if (apartment) userData.apartment = apartment;
 
-        // Save to user
-        const updatedUser = await userData.save();
-        return updatedUser;
+          // Save to user
+          const updatedUser: UserDocument = await userData.save();
+          return updatedUser;
+        }
+
+        return null;
       } catch (err) {
         throw new Error(err);
       }
     },
-    tokenRefresh: async (_, { token }) => {
+    tokenRefresh: async (
+      _: unknown,
+      { token }: { token: string }
+    ): Promise<GeneratedTokens | null> => {
       try {
         // Validate token
-        const tokenPayload = verifyToken(token);
+        const tokenPayload: TokenPayload | null = verifyToken(token);
 
         // Throw auth error if token is invalid or userId is not included
         if (!tokenPayload || !tokenPayload.userId) {
@@ -300,27 +348,37 @@ const usersResolvers = {
         }
 
         // Find user by id
-        const user = await User.findOne({ _id: tokenPayload.userId });
+        const user: UserDocument | null = await User.findOne({
+          _id: tokenPayload.userId,
+        });
 
-        // Throw auth error if token's version is not the same as user's tokenVersion
-        if (tokenPayload.tokenVersion !== user.tokenVersion) {
-          throw new AuthenticationError("Please login again");
+        if (user) {
+          // Throw auth error if token's version is not the same as user's tokenVersion
+          if (tokenPayload.tokenVersion !== user.tokenVersion) {
+            throw new AuthenticationError("Please login again");
+          }
+
+          // Refresh accessToken & refreshToken
+          const { accessToken, refreshToken } = generateTokens(user);
+
+          // Update user's last login date
+          user.lastLogin = new Date();
+          await user.save();
+
+          return { accessToken, refreshToken };
         }
 
-        // Refresh accessToken & refreshToken
-        const { accessToken, refreshToken } = generateTokens(user);
-
-        // Update user's last login date
-        user.lastLogin = new Date();
-        await user.save();
-
-        return { accessToken, refreshToken };
+        return null;
       } catch (err) {
         handleErrors(err);
         throw err;
       }
     },
-    forgotPassword: async (_, { email }, { redis }) => {
+    forgotPassword: async (
+      _: unknown,
+      { email }: { email: string },
+      { redis }: any
+    ): Promise<boolean> => {
       try {
         // Find user by email & check if reset_key exists
         const [user, existingResetKey] = await Promise.all([
@@ -368,7 +426,11 @@ const usersResolvers = {
         throw err;
       }
     },
-    resetPassword: async (_, { resetKey, password }, { redis }) => {
+    resetPassword: async (
+      _: unknown,
+      { resetKey, password }: { resetKey: string; password: string },
+      { redis }: any
+    ): Promise<boolean> => {
       try {
         // Get userId via resetKey from redis & hash user password
         const [userId, hashedPassword] = await Promise.all([
@@ -377,23 +439,31 @@ const usersResolvers = {
         ]);
 
         // Update user's password & migration status
-        const user = await User.findById(userId);
-        user.password = hashedPassword;
-        user.isMigrated = true;
+        const user: UserDocument | null = await User.findById(userId);
+        if (user) {
+          user.password = hashedPassword;
+          user.isMigrated = true;
 
-        // Save user && delete reset_password key & reset_key in redis cache
-        await Promise.all([
-          user.save(),
-          redis.del(`reset_password:${resetKey}`),
-          redis.del(`reset_key:${user.email}`),
-        ]);
+          // Save user && delete reset_password key & reset_key in redis cache
+          await Promise.all([
+            user.save(),
+            redis.del(`reset_password:${resetKey}`),
+            redis.del(`reset_key:${user.email}`),
+          ]);
 
-        return true;
+          return true;
+        }
+
+        return false;
       } catch (err) {
         throw new Error(err);
       }
     },
-    addFcmToken: async (_, { fcmToken }, { user }) => {
+    addFcmToken: async (
+      _: unknown,
+      { fcmToken }: { fcmToken: string },
+      { user }: { user: UserContext }
+    ): Promise<boolean> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {

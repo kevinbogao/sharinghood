@@ -1,33 +1,41 @@
 import { AuthenticationError, ForbiddenError } from "apollo-server";
-import mongoose from "mongoose";
-import User from "../models/user";
-import Post from "../models/post";
-import Thread from "../models/thread";
-import Booking from "../models/booking";
+import { Types } from "mongoose";
+import User, { UserDocument } from "../models/user";
+import Post, { PostDocument } from "../models/post";
+import Thread, { ThreadDocument } from "../models/thread";
+import Booking, { BookingDocument } from "../models/booking";
 import Message from "../models/message";
-import Community from "../models/community";
-import Notification from "../models/notification";
+import Community, { CommunityDocument } from "../models/community";
+import Notification, { NotificationDocument } from "../models/notification";
 const uploadImg = require("../utils/uploadImg");
 const pushNotification = require("../utils/pushNotification");
 
-import { UserContext } from "../types/server";
-import { ICommunity, IPost, IUser } from "../types/models";
-import { PostInput } from "../types/resolvers";
+import { UserContext } from "../types";
+
+interface PostInput {
+  postId: string;
+  title: string;
+  desc: string;
+  image: string;
+  condition: number;
+  isGiveaway: boolean;
+  requesterId: string;
+}
 
 const postsResolvers = {
   Query: {
     post: async (
-      _: any,
-      { postId }: { postId: string },
+      _: unknown,
+      { postId }: { postId: any },
       { user }: { user: UserContext }
-    ) => {
+    ): Promise<PostDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get post && lookup creator & threads
-        const post: Array<IPost> = await Post.aggregate([
+        const post: Array<PostDocument> = await Post.aggregate([
           {
-            $match: { _id: mongoose.Types.ObjectId(postId) },
+            $match: { _id: Types.ObjectId(postId) },
           },
           {
             $lookup: {
@@ -59,48 +67,50 @@ const postsResolvers = {
       }
     },
     posts: async (
-      _: any,
+      _: unknown,
       { communityId }: { communityId: string },
       { user }: { user: UserContext }
-    ) => {
+    ): Promise<Array<PostDocument | Types.ObjectId>> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get all posts from given community
-        const communityPosts: Array<ICommunity> = await Community.aggregate([
-          {
-            $match: { _id: mongoose.Types.ObjectId(communityId) },
-          },
-          {
-            $lookup: {
-              from: "posts",
-              let: { posts: "$posts" },
-              pipeline: [
-                { $match: { $expr: { $in: ["$_id", "$$posts"] } } },
-                {
-                  $lookup: {
-                    from: "users",
-                    let: { creator: "$creator" },
-                    pipeline: [
-                      { $match: { $expr: { $eq: ["$_id", "$$creator"] } } },
-                    ],
-                    as: "creator",
-                  },
-                },
-                { $unwind: "$creator" },
-                {
-                  $sort: {
-                    createdAt: -1,
-                  },
-                },
-              ],
-              as: "posts",
+        const communityPosts: Array<CommunityDocument> = await Community.aggregate(
+          [
+            {
+              $match: { _id: Types.ObjectId(communityId) },
             },
-          },
-          {
-            $project: { posts: 1 }, // return posts array only
-          },
-        ]);
+            {
+              $lookup: {
+                from: "posts",
+                let: { posts: "$posts" },
+                pipeline: [
+                  { $match: { $expr: { $in: ["$_id", "$$posts"] } } },
+                  {
+                    $lookup: {
+                      from: "users",
+                      let: { creator: "$creator" },
+                      pipeline: [
+                        { $match: { $expr: { $eq: ["$_id", "$$creator"] } } },
+                      ],
+                      as: "creator",
+                    },
+                  },
+                  { $unwind: "$creator" },
+                  {
+                    $sort: {
+                      createdAt: -1,
+                    },
+                  },
+                ],
+                as: "posts",
+              },
+            },
+            {
+              $project: { posts: 1 }, // return posts array only
+            },
+          ]
+        );
 
         return communityPosts[0].posts;
       } catch (err) {
@@ -111,135 +121,129 @@ const postsResolvers = {
   },
   Mutation: {
     createPost: async (
-      _: any,
+      _: unknown,
       {
         postInput: { title, desc, image, condition, isGiveaway, requesterId },
         communityId,
       }: { postInput: PostInput; communityId: string },
-      { user, redis }: any
+      { user, redis }: { user: UserContext; redis: any }
     ) => {
       if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId, userName }: { userId: string; userName: string } = user;
 
       try {
-        // Upload image to Cloudinary
+        // Upload image
         const imgData = await uploadImg(image);
 
-        // Create & save post && get creator && find creator's community
-        // && find requester if the post is in response to a request
-        const [post, creator, community, requester] = await Promise.all<
-          IPost,
-          IUser,
-          ICommunity,
-          IUser
-        >([
-          Post.create({
-            desc,
-            title,
-            condition,
-            isGiveaway,
-            image: imgData,
-            creator: userId,
-          }),
-          // @ts-ignore
-          User.findById(userId),
-          // @ts-ignore
-          communityId &&
-            // @ts-ignore
-            Community.findById(communityId).populate({
-              // @ts-ignore
-              path: "members",
-              match: { _id: { $ne: userId } },
-              select: "fcmTokens",
-            }),
-          // @ts-ignore
-          requesterId && User.findById(requesterId),
-        ]);
+        // Get post & post creator
+        const post: PostDocument | null = await Post.create({
+          desc,
+          title,
+          condition,
+          isGiveaway,
+          image: imgData,
+          creator: userId,
+        });
+        const creator: UserDocument | null = await User.findById(userId);
 
         // Only save to community if communityId is given, i.e user is
         // uploading the post to a specific community
         if (communityId) {
-          // @ts-ignore
-          community.posts.push(post);
-
-          // Get a list of users that has FCM tokens
-          // @ts-ignore
-          const receivers = community.members
-            .filter((member: any) => member.fcmTokens.length)
-            .map((member: any) => ({
-              _id: member._id,
-              fcmTokens: member.fcmTokens,
-            }));
-
-          // Sent push notification
-          // @ts-ignore
-          pushNotification(
-            {},
-            `${userName} shared ${title} in the ${community.name} community`,
-            receivers
-          );
-        }
-
-        // Create notification if requesterId is given
-        // @ts-ignore
-        if (requesterId) {
-          // @ts-ignore
-          const notification = await Notification.create({
-            ofType: 2,
-            post: post._id,
-            participants: [requesterId, user.userId],
-            isRead: {
-              [requesterId]: false,
-              [user.userId]: false,
-            },
-            community: communityId,
+          const community: CommunityDocument | null = await Community.findById(
+            communityId
+          ).populate({
+            path: "members",
+            match: { _id: { $ne: userId } },
+            select: "fcmTokens",
           });
 
-          // @ts-ignore
-          pushNotification(
-            {},
-            `${userName} shared ${title} in the ${community.name} community for your request`,
-            [
-              {
-                // @ts-ignore
-                _id: requester._id,
-                // @ts-ignore
-                fcmTokens: requester.fcmTokens,
-              },
-            ]
-          );
+          if (community) {
+            // Add post to community
+            community.posts.push(post);
 
-          // Add notification to requester
-          // @ts-ignore
-          requester.notifications.push(notification);
+            // Get a list of users that has FCM tokens
+            const receivers = community.members
+              .filter((member: any) => member.fcmTokens.length)
+              .map((member: any) => ({
+                _id: member._id,
+                fcmTokens: member.fcmTokens,
+              }));
 
-          // Save requester & set communityId key to notifications:userId hash in redis
-          // @ts-ignore
-          await Promise.all([
-            requester.save(),
-            redis.hset(`notifications:${requesterId}`, `${communityId}`, true),
-          ]);
+            // Sent push notification
+            pushNotification(
+              {},
+              `${userName} shared ${title} in the ${community.name} community`,
+              receivers
+            );
+
+            // Create notification if requesterId is given
+            if (requesterId) {
+              const requester: UserDocument | null = await User.findById(
+                requesterId
+              );
+
+              if (requester) {
+                const notification: NotificationDocument = await Notification.create(
+                  {
+                    ofType: 2,
+                    post: post._id,
+                    participants: [requesterId, user.userId],
+                    isRead: {
+                      [requesterId]: false,
+                      [user.userId]: false,
+                    },
+                    community: communityId,
+                  }
+                );
+
+                pushNotification(
+                  {},
+                  `${userName} shared ${title} in the ${community.name} community for your request`,
+                  [
+                    {
+                      _id: requester._id,
+                      fcmTokens: requester.fcmTokens,
+                    },
+                  ]
+                );
+
+                // Add notification to requester
+                requester.notifications.push(notification);
+
+                // Save requester & set communityId key to notifications:userId hash in redis
+                await Promise.all([
+                  requester.save(),
+                  redis.hset(
+                    `notifications:${requesterId}`,
+                    `${communityId}`,
+                    true
+                  ),
+                ]);
+              }
+            }
+
+            if (creator) {
+              creator.posts.push(post);
+              await Promise.all([community.save(), creator.save()]);
+
+              return {
+                ...post,
+                creator: {
+                  _id: userId,
+                  name: userName,
+                },
+              };
+            }
+          }
         }
 
-        // @ts-ignore
-        creator.posts.push(post);
-        // @ts-ignore
-        await Promise.all([communityId && community.save(), creator.save()]);
-
-        return {
-          // @ts-ignore
-          ...post._doc,
-          creator: {
-            _id: userId,
-            name: userName,
-          },
-        };
+        return null;
       } catch (err) {
         throw new Error(err);
       }
     },
     updatePost: async (
-      _: any,
+      _: unknown,
       {
         postInput: { postId, title, desc, image, condition },
       }: { postInput: PostInput },
@@ -249,180 +253,201 @@ const postsResolvers = {
 
       try {
         // Find post by id
-        const post: IPost = await Post.findById(postId);
+        const post: PostDocument | null = await Post.findById(postId);
 
-        // Throw error if user is not creator
-        if (!post._doc.creator.equals(user.userId)) {
-          throw new ForbiddenError("Unauthorized user");
+        if (post) {
+          // Throw error if user is not creator
+          if (post.creator.toString() !== user.userId) {
+            throw new ForbiddenError("Unauthorized user");
+          }
+
+          // Upload image if it exists
+          let imgData;
+          if (image) imgData = await uploadImg(image);
+
+          // Conditionally update post
+          if (title) post.title = title;
+          if (desc) post.desc = desc;
+          if (image && imgData) post.image = imgData;
+          if (condition) post.condition = condition;
+
+          // Save & return post
+          const updatedPost = await post.save();
+          return updatedPost;
         }
 
-        // Upload image if it exists
-        let imgData;
-        if (image) imgData = await uploadImg(image);
-
-        // Conditionally update post
-        if (title) post.title = title;
-        if (desc) post.desc = desc;
-        if (image && imgData) post.image = imgData;
-        if (condition) post.condition = condition;
-
-        // Save & return post
-        const updatedPost = await post.save();
-        return updatedPost;
+        return null;
       } catch (err) {
         throw new Error(err);
       }
     },
     inactivatePost: async (
-      _: any,
+      _: unknown,
       { postId }: { postId: string },
-      { user }: any
+      { user }: { user: UserContext }
     ) => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get user & post
-        const [currentUser, post] = await Promise.all([
-          User.findById(user.userId).lean(),
-          Post.findById(postId).lean(),
-        ]);
+        const currentUser: UserDocument | null = await User.findById(
+          user.userId
+        ).lean();
+        const post: PostDocument | null = await Post.findById(postId).lean();
 
-        // Throw error if user is not post creator
-        if (!post.creator.equals(currentUser._id)) {
-          throw new ForbiddenError("Unauthorized user");
+        if (post && currentUser) {
+          // Throw error if user is not post creator
+          if (post.creator !== currentUser._id) {
+            throw new ForbiddenError("Unauthorized user");
+          }
+
+          // Find user's communities and remove post from
+          // all communities' posts array
+          await Community.updateMany(
+            {
+              _id: { $in: currentUser.communities },
+            },
+            {
+              $pull: { posts: postId },
+            }
+          );
+
+          return true;
         }
 
-        // Find user's communities and remove post from
-        // all communities' posts array
-        await Community.updateMany(
-          {
-            _id: { $in: currentUser.communities },
-          },
-          {
-            $pull: { posts: postId },
-          }
-        );
-
-        return true;
+        return false;
       } catch (err) {
         throw new Error(err);
       }
     },
     deletePost: async (
-      _: any,
-      { postId }: { postId: string },
-      { user }: any
+      _: unknown,
+      { postId }: { postId: any },
+      { user }: { user: UserContext }
     ) => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Find post & currentUser
-        const [post, currentUser] = await Promise.all([
-          Post.findById(postId),
-          User.findById(user.userId),
-        ]);
-
-        // Throw error if user is not post creator
-        if (!post.creator.equals(user.userId)) {
-          throw new ForbiddenError("Unauthorized user");
-        }
-
-        // Save thread ids array
-        const { threads, bookings } = post;
-
-        // Get all notifications that is related to post's bookings or
-        // the post itself
-        const notifications = await Notification.find({
-          $or: [{ booking: { $in: bookings } }, { post: postId }],
-        });
-
-        // Get a list to notifications' messages ids
-        const messages = notifications
-          .map((notification: any) => notification.messages)
-          .flat(1);
-
-        // Get a list of notifications ids
-        const notificationsIds = notifications.map(
-          (notification: any) => notification._id
+        const post: PostDocument | null = await Post.findById(postId);
+        const currentUser: UserDocument | null = await User.findById(
+          user.userId
         );
 
-        // Create an object of invalid notifications with user id as key
-        let invalidUserNotifications = {};
-        notifications.forEach((notification: any) => {
-          notification.participants.forEach((participant: any) => {
-            if (participant in invalidUserNotifications) {
-              // @ts-ignore
-              invalidUserNotifications[participant].push(notification._id);
-            } else {
-              invalidUserNotifications = {
-                ...invalidUserNotifications,
-                [participant]: [notification._id],
-              };
+        if (post && currentUser) {
+          // Throw error if user is not post creator
+          if (post.creator.toString() !== user.userId) {
+            throw new ForbiddenError("Unauthorized user");
+          }
+
+          // Save thread ids array
+          const {
+            threads,
+            bookings,
+          }: {
+            threads: Array<Types.ObjectId | ThreadDocument>;
+            bookings: Array<Types.ObjectId | BookingDocument>;
+          } = post;
+
+          // Get all notifications that is related to post's bookings or
+          // the post itself
+          const notifications: Array<NotificationDocument> = await Notification.find(
+            {
+              $or: [{ booking: { $in: bookings } }, { post: postId }],
             }
+          );
+          // Get a list to notifications' messages ids
+          const messages = notifications
+            .map((notification) => notification.messages)
+            .flat(1);
+
+          // Get a list of notifications ids
+          const notificationsIds = notifications.map(
+            (notification) => notification._id
+          );
+
+          // Create an object of invalid notifications with user id as key
+          let invalidUserNotifications = {};
+          notifications.forEach((notification: any) => {
+            notification.participants.forEach((participant: any) => {
+              if (participant in invalidUserNotifications) {
+                // @ts-ignore
+                invalidUserNotifications[participant].push(notification._id);
+              } else {
+                invalidUserNotifications = {
+                  ...invalidUserNotifications,
+                  [participant]: [notification._id],
+                };
+              }
+            });
           });
-        });
 
-        // Delete post, postId from community && delete post threads,
-        // delete bookings & post related notifications & subsequent messages
-        // && delete all notifications' ids from users
-        await Promise.all([
-          post.remove(),
-          Community.updateMany(
-            { _id: { $in: currentUser.communities } },
-            { $pull: { posts: postId } }
-          ),
-          User.updateOne({ _id: user.userId }, { $pull: { posts: postId } }),
-          Thread.deleteMany({ _id: { $in: threads } }),
-          Booking.deleteMany({ _id: { $in: bookings } }),
-          Message.deleteMany({ _id: { $in: messages } }),
-          Notification.deleteMany({ _id: { $in: notificationsIds } }),
-          Object.keys(invalidUserNotifications).map((userId) =>
-            Promise.resolve(
-              User.updateOne(
-                { _id: userId },
-                {
-                  $pull: {
-                    // @ts-ignore
-                    notifications: { $in: invalidUserNotifications[userId] },
-                  },
-                }
+          // Delete post, postId from community && delete post threads,
+          // delete bookings & post related notifications & subsequent messages
+          // && delete all notifications' ids from users
+          await Promise.all([
+            post.remove(),
+            Community.updateMany(
+              { _id: { $in: currentUser.communities } },
+              { $pull: { posts: postId } }
+            ),
+            User.updateOne({ _id: user.userId }, { $pull: { posts: postId } }),
+            Thread.deleteMany({ _id: { $in: threads } }),
+            Booking.deleteMany({ _id: { $in: bookings } }),
+            Message.deleteMany({ _id: { $in: messages } }),
+            Notification.deleteMany({ _id: { $in: notificationsIds } }),
+            Object.keys(invalidUserNotifications).map((userId) =>
+              Promise.resolve(
+                User.updateOne(
+                  { _id: userId },
+                  {
+                    $pull: {
+                      // @ts-ignore
+                      notifications: { $in: invalidUserNotifications[userId] },
+                    },
+                  }
+                )
               )
-            )
-          ),
-        ]);
+            ),
+          ]);
 
-        return post;
+          return post;
+        }
+
+        return null;
       } catch (err) {
         throw new Error(err);
       }
     },
     addPostToCommunity: async (
-      _: any,
-      { postId, communityId }: { postId: string; communityId: any },
-      { user }: any
+      _: unknown,
+      { postId, communityId }: { postId: Types.ObjectId; communityId: any },
+      { user }: { user: UserContext }
     ) => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get community by id and add post if to the community's
         // posts array; return community
-        const [community, post] = await Promise.all([
-          Community.findById(communityId),
-          Post.findById(postId),
-        ]);
+        const post: PostDocument | null = await Post.findById(postId);
+        const community: CommunityDocument | null = await Community.findById(
+          communityId
+        );
 
         // Throw error if user is not post creator
-        if (!post.creator.equals(user.userId)) {
-          throw new ForbiddenError("Unauthorized user");
+        if (post && community) {
+          if (post.creator.toString() !== user.userId) {
+            throw new ForbiddenError("Unauthorized user");
+          }
+
+          // Add post to community & save community
+          community.posts.push(postId);
+          await community.save();
+
+          return community;
         }
 
-        // Add post to community & save community
-        // @ts-ignore
-        community.posts.push(postId);
-        // @ts-ignore
-        await community.save();
-
-        return community;
+        return null;
       } catch (err) {
         throw new Error(err);
       }

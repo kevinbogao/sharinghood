@@ -1,65 +1,71 @@
-// @ts-nocheck
 import { AuthenticationError } from "apollo-server";
-import mongoose from "mongoose";
-import Community from "../models/community";
+import { Types } from "mongoose";
 import User from "../models/user";
 import Post from "../models/post";
 import Request from "../models/request";
-import Booking from "../models/booking";
+import Booking, { BookingDocument } from "../models/booking";
+import Community, { CommunityDocument } from "../models/community";
+import { UserContext } from "../types";
+
+interface CommunitiesActivities {
+  totalCommunities: number;
+  totalUsers: number;
+  totalPosts: number;
+  totalRequests: number;
+  totalBookings: number;
+  communitiesActivities: Array<CommunityDocument>;
+}
 
 const activitiesResolvers = {
   Query: {
-    totalActivities: async (_, __, { user }) => {
+    totalActivities: async (
+      _: unknown,
+      __: unknown,
+      { user }: { user: UserContext }
+    ): Promise<CommunitiesActivities> => {
       try {
         // Throw auth error is user is not admin
         if (!user || !user.isAdmin) {
           throw new AuthenticationError("Not permitted");
         }
 
-        // Get all communities, users, posts, requests & bookings
-        const [
-          totalCommunities,
-          totalUsers,
-          totalPosts,
-          totalRequests,
-          totalBookings,
-        ] = await Promise.all([
-          Community.countDocuments(),
-          User.countDocuments(),
-          Post.countDocuments(),
-          Request.countDocuments(),
-          Booking.countDocuments(),
-        ]);
+        const totalCommunities: number = await Community.countDocuments();
+        const totalUsers: number = await User.countDocuments();
+        const totalPosts: number = await Post.countDocuments();
+        const totalRequests: number = await Request.countDocuments();
+        const totalBookings: number = await Booking.countDocuments();
 
         // Get all communities stats
-        const communitiesActivities = await Community.aggregate([
-          {
-            $match: { _id: { $exists: true } },
-          },
-          {
-            $lookup: {
-              from: "posts",
-              localField: "posts",
-              foreignField: "_id",
-              as: "posts",
+        const communitiesActivities: Array<CommunityDocument> = await Community.aggregate(
+          [
+            {
+              $match: { _id: { $exists: true } },
             },
-          },
-          {
-            $project: {
-              _id: 1,
-              name: 1,
-              code: 1,
-              numUsers: { $size: "$members" },
-              numPosts: { $size: "$posts" },
-              numRequests: { $size: "$requests" },
-              numBookings: {
-                $sum: {
-                  $map: { input: "$posts", in: { $size: "$$this.bookings" } }, // TODO: need better filter
+            {
+              $lookup: {
+                from: "posts",
+                localField: "posts",
+                foreignField: "_id",
+                as: "posts",
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                code: 1,
+                numUsers: { $size: "$members" },
+                numPosts: { $size: "$posts" },
+                numRequests: { $size: "$requests" },
+                numBookings: {
+                  $sum: {
+                    $map: { input: "$posts", in: { $size: "$$this.bookings" } }, // TODO: need better filter
+                  },
                 },
               },
             },
-          },
-        ]);
+          ]
+        );
 
         return {
           totalCommunities,
@@ -73,81 +79,89 @@ const activitiesResolvers = {
         throw new Error(err);
       }
     },
-    communityActivities: async (_, { communityId }, { user }) => {
+    communityActivities: async (
+      _: unknown,
+      { communityId }: { communityId: string },
+      { user }: { user: UserContext }
+    ) => {
       if (!user || !user.isAdmin) {
         throw new AuthenticationError("Not permitted");
       }
 
       try {
-        const communityActivities = await Community.aggregate([
-          { $match: { _id: mongoose.Types.ObjectId(communityId) } },
-          {
-            $lookup: {
-              from: "users",
-              localField: "members",
-              foreignField: "_id",
-              as: "members",
+        const communityActivities: Array<CommunityDocument> = await Community.aggregate(
+          [
+            { $match: { _id: Types.ObjectId(communityId) } },
+            {
+              $lookup: {
+                from: "users",
+                localField: "members",
+                foreignField: "_id",
+                as: "members",
+              },
             },
-          },
-          {
-            $lookup: {
-              from: "posts",
-              localField: "posts",
-              foreignField: "_id",
-              as: "posts",
+            {
+              $lookup: {
+                from: "posts",
+                localField: "posts",
+                foreignField: "_id",
+                as: "posts",
+              },
             },
-          },
-          {
-            $lookup: {
-              from: "requests",
-              localField: "requests",
-              foreignField: "_id",
-              as: "requests",
+            {
+              $lookup: {
+                from: "requests",
+                localField: "requests",
+                foreignField: "_id",
+                as: "requests",
+              },
             },
-          },
-          {
-            $project: {
-              _id: 1,
-              name: 1,
-              code: 1,
-              zipCode: 1,
-              creator: 1,
-              members: {
+            {
+              $project: {
                 _id: 1,
                 name: 1,
-                email: 1,
-                image: 1,
-                isNotified: 1,
-                createdAt: 1,
-                lastLogin: 1,
-              },
-              posts: {
-                _id: 1,
-                title: 1,
-                desc: 1,
-                condition: 1,
-                image: 1,
+                code: 1,
+                zipCode: 1,
                 creator: 1,
-                isGiveaway: 1,
-                createdAt: 1,
-              },
-              requests: {
-                _id: 1,
-                title: 1,
-                desc: 1,
-                dateType: 1,
-                dateNeed: 1,
-                dateReturn: 1,
-                image: 1,
-                creator: 1,
-                createdAt: 1,
+                members: {
+                  _id: 1,
+                  name: 1,
+                  email: 1,
+                  image: 1,
+                  isNotified: 1,
+                  createdAt: 1,
+                  lastLogin: 1,
+                },
+                posts: {
+                  _id: 1,
+                  title: 1,
+                  desc: 1,
+                  condition: 1,
+                  image: 1,
+                  creator: 1,
+                  isGiveaway: 1,
+                  createdAt: 1,
+                },
+                requests: {
+                  _id: 1,
+                  title: 1,
+                  desc: 1,
+                  dateType: 1,
+                  dateNeed: 1,
+                  dateReturn: 1,
+                  image: 1,
+                  creator: 1,
+                  createdAt: 1,
+                },
               },
             },
-          },
-        ]);
+          ]
+        );
 
         // Get bookings from community
-        const bookings = await Booking.find({ community: communityId });
+        const bookings: Array<BookingDocument> | null = await Booking.find({
+          community: communityId,
+        });
 
         return {
           ...communityActivities[0],

@@ -1,51 +1,68 @@
-// @ts-nocheck
 import { AuthenticationError } from "apollo-server";
-import User from "../models/user";
-import Post from "../models/post";
-import Thread from "../models/thread";
-import Request from "../models/request";
+import User, { UserDocument } from "../models/user";
+import Post, { PostDocument } from "../models/post";
+import Thread, { ThreadDocument } from "../models/thread";
+import Request, { RequestDocument } from "../models/request";
+import { UserContext } from "../types";
 const pushNotification = require("../utils/pushNotification");
+
+interface ThreadInput {
+  content: string;
+  isPost: boolean;
+  parentId: string;
+  communityId: string;
+  recipientId?: string;
+}
 
 const threadsResolvers = {
   Mutation: {
     createThread: async (
-      _,
-      { threadInput: { content, isPost, parentId, communityId, recipientId } },
-      { user }
-    ) => {
+      _: unknown,
+      {
+        threadInput: { content, isPost, parentId, communityId, recipientId },
+      }: { threadInput: ThreadInput },
+      { user }: { user: UserContext }
+    ): Promise<ThreadDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId } = user;
 
       try {
+        let parent:
+          | (PostDocument | null | undefined)
+          | (RequestDocument | null | undefined);
+        let recipient: UserDocument | null | undefined;
+
         // Create & save thread && get parent (post or request)
-        const [thread, parent, recipient] = await Promise.all([
-          Thread.create({
-            content,
-            poster: userId,
-            community: communityId,
-          }),
-          isPost ? Post.findById(parentId) : Request.findById(parentId),
-          userId !== recipientId && User.findById(recipientId),
-        ]);
+        const thread: ThreadDocument | null = await Thread.create({
+          content,
+          poster: userId,
+          community: communityId,
+        });
 
-        // Add threadId to post/request
-        parent.threads.push(thread);
-        await parent.save();
+        if (isPost) parent = await Post.findById(parentId);
+        else parent = await Request.findById(parentId);
+        if (recipientId) recipient = await User.findById(recipientId);
 
-        // Send push notification to recipient if current user is not the owner
-        if (recipient) {
-          pushNotification(
-            {},
-            `${user.userName} commented your ${
-              isPost ? "post" : "request"
-            } of ${parent.title}`,
-            [
-              {
-                _id: recipient._id,
-                fcmTokens: recipient.fcmTokens,
-              },
-            ]
-          );
+        if (parent) {
+          // Add threadId to post/request
+          parent.threads.push(thread);
+          await parent.save();
+
+          // Send push notification to recipient if current user is not the owner
+          if (recipient) {
+            pushNotification(
+              {},
+              `${user.userName} commented your ${
+                isPost ? "post" : "request"
+              } of ${parent.title}`,
+              [
+                {
+                  _id: recipient._id,
+                  fcmTokens: recipient.fcmTokens,
+                },
+              ]
+            );
+          }
         }
 
         return thread;

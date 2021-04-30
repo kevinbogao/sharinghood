@@ -1,26 +1,37 @@
-// @ts-nocheck
 import { AuthenticationError } from "apollo-server";
-import mongoose from "mongoose";
-import User from "../models/user";
-import Post from "../models/post";
-import Booking from "../models/booking";
-import Notification from "../models/notification";
+import { Types } from "mongoose";
+import User, { UserDocument } from "../models/user";
+import Post, { PostDocument } from "../models/post";
+import Booking, { BookingDocument } from "../models/booking";
+import Notification, { NotificationDocument } from "../models/notification";
+import { UserContext } from "../types";
+import { BookingInput } from "./bookings";
 
 const updateBookingMail = require("../utils/sendMail/updateBookingMail");
 const pushNotification = require("../utils/pushNotification");
 
+interface NotificationInput {
+  ofType: number;
+  recipientId: string;
+  bookingInput?: BookingInput;
+  communityId: string;
+}
+
 const notificationsResolvers = {
   Query: {
-    notification: async (_, { notificationId }, { user }) => {
+    notification: async (
+      _: unknown,
+      { notificationId }: { notificationId: string },
+      { user }: { user: UserContext }
+    ): Promise<NotificationDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Get notification & populate data && get notification mongoose instance
-        // eslint-disable-next-line
-        const [notification, updateNotification] = await Promise.all([
-          Notification.aggregate([
+        const notification: Array<NotificationDocument> = await Notification.aggregate(
+          [
             {
-              $match: { _id: mongoose.Types.ObjectId(notificationId) },
+              $match: { _id: Types.ObjectId(notificationId) },
             },
             {
               $lookup: {
@@ -60,7 +71,7 @@ const notificationsResolvers = {
                             $in: ["$_id", "$$participants"],
                           },
                           {
-                            $ne: ["$_id", mongoose.Types.ObjectId(user.userId)],
+                            $ne: ["$_id", Types.ObjectId(user.userId)],
                           },
                         ],
                       },
@@ -78,27 +89,32 @@ const notificationsResolvers = {
                 as: "messages",
               },
             },
-          ]),
-          // Update isRead of current user to true via MongoDB API to
-          // avoid mongoose's auto timestamp
-          Notification.collection.findOneAndUpdate(
-            { _id: mongoose.Types.ObjectId(notificationId) },
-            { $set: { [`isRead.${user.userId}`]: true } }
-          ),
-        ]);
+          ]
+        );
+
+        // Update isRead of current user to true via MongoDB API to
+        // avoid mongoose's auto timestamp
+        await Notification.collection.findOneAndUpdate(
+          { _id: Types.ObjectId(notificationId) },
+          { $set: { [`isRead.${user.userId}`]: true } }
+        );
 
         return notification[0];
       } catch (err) {
         throw new Error(err);
       }
     },
-    notifications: async (_, { communityId }, { user, redis }) => {
+    notifications: async (
+      _: unknown,
+      { communityId }: { communityId: string },
+      { user, redis }: { user: UserContext; redis: any }
+    ): Promise<Array<Types.ObjectId | NotificationDocument>> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
-        const userNotifications = await User.aggregate([
+        const userNotifications: Array<UserDocument> = await User.aggregate([
           {
-            $match: { _id: mongoose.Types.ObjectId(user.userId) },
+            $match: { _id: Types.ObjectId(user.userId) },
           },
           {
             $lookup: {
@@ -108,7 +124,7 @@ const notificationsResolvers = {
                 {
                   $match: {
                     // Filter notification by community id
-                    community: mongoose.Types.ObjectId(communityId),
+                    community: Types.ObjectId(communityId),
                     $expr: { $in: ["$_id", "$$notifications"] },
                   },
                 },
@@ -180,10 +196,7 @@ const notificationsResolvers = {
                                 $in: ["$_id", "$$participants"],
                               },
                               {
-                                $ne: [
-                                  "$_id",
-                                  mongoose.Types.ObjectId(user.userId),
-                                ],
+                                $ne: ["$_id", Types.ObjectId(user.userId)],
                               },
                             ],
                           },
@@ -226,17 +239,26 @@ const notificationsResolvers = {
         throw new Error(err);
       }
     },
-    findNotification: async (_, { recipientId, communityId }, { user }) => {
+    findNotification: async (
+      _: unknown,
+      {
+        recipientId,
+        communityId,
+      }: { recipientId: string; communityId: string },
+      { user }: { user: UserContext }
+    ): Promise<NotificationDocument | null> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Find a notification where both of users participates in and of
         // type 0 and in the given community
-        const notification = await Notification.findOne({
-          ofType: 0,
-          participants: { $all: [recipientId, user.userId] },
-          community: communityId,
-        });
+        const notification: NotificationDocument | null = await Notification.findOne(
+          {
+            ofType: 0,
+            participants: { $all: [recipientId, user.userId] },
+            community: communityId,
+          }
+        );
 
         // Return chat/notification object if it is found
         return notification;
@@ -247,18 +269,20 @@ const notificationsResolvers = {
   },
   Mutation: {
     createNotification: async (
-      _,
-      { notificationInput: { ofType, recipientId, communityId, bookingInput } },
-      { user, redis }
+      _: unknown,
+      {
+        notificationInput: { ofType, recipientId, communityId, bookingInput },
+      }: { notificationInput: NotificationInput },
+      { user, redis }: { user: UserContext; redis: any }
     ) => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
         // Declare top level variables
-        let booking;
-        let post;
-        let recipient;
-        let existingChat;
+        let booking: BookingDocument | undefined;
+        let post: PostDocument | null | undefined;
+        let recipient: UserDocument | null | undefined;
+        let existingChat: NotificationDocument | null;
 
         // If type is 0 (i.e chat), create chat notification
         if (ofType === 0) {
@@ -273,7 +297,7 @@ const notificationsResolvers = {
           if (existingChat) return existingChat;
 
           // If type is 1 (i.e booking), create booking
-        } else if (ofType === 1) {
+        } else if (ofType === 1 && bookingInput) {
           // Destruct variables from bookingInput
           const {
             postId,
@@ -297,83 +321,86 @@ const notificationsResolvers = {
             User.findById(recipientId),
           ]);
 
-          // Add booking to post bookings
-          post.bookings.push(booking);
+          if (booking && post && recipient) {
+            // Add booking to post bookings
+            post.bookings.push(booking);
 
-          // Save post & sent booking email to recipient if recipient is subscribed to email
-          await Promise.all([
-            post.save(),
-            process.env.NODE_ENV === "production" &&
-              recipient.isNotified &&
-              updateBookingMail(
-                `${process.env.ORIGIN}/notifications`,
-                recipient.email,
-                `${user.userName} has requested to book your ${post.title}`
-              ),
-          ]);
+            // Save post & sent booking email to recipient if recipient is subscribed to email
+            await Promise.all([
+              post.save(),
+              process.env.NODE_ENV === "production" &&
+                recipient.isNotified &&
+                updateBookingMail(
+                  `${process.env.ORIGIN}/notifications`,
+                  recipient.email,
+                  `${user.userName} has requested to book your ${post.title}`
+                ),
+            ]);
+          }
         }
 
-        // Create & save notification, add booking to notification if it is type 1
-        const notification = await Notification.create({
-          ...(ofType === 1 && { booking: booking._id }),
-          ofType,
-          participants: [recipientId, user.userId],
-          // Notification read status for participants
-          isRead: {
-            [recipientId]: false,
-            [user.userId]: false,
-          },
-          community: communityId,
-        });
-
-        // Save notification to recipient & current user && save notification:recipientId to redis
-        await Promise.all([
-          User.updateMany(
-            { _id: { $in: [recipientId, user.userId] } },
+        if (recipient) {
+          // Create & save notification, add booking to notification if it is type 1
+          const notification: NotificationDocument | null = await Notification.create(
             {
-              $push: {
-                notifications: notification,
+              ...(ofType === 1 && booking && { booking: booking._id }),
+              ofType,
+              participants: [recipientId, user.userId],
+              // Notification read status for participants
+              isRead: {
+                [recipientId]: false,
+                [user.userId]: false,
               },
+              community: communityId,
             }
-          ),
-          // Set communityId key to notifications:userId hash in redis
-          redis.hset(`notifications:${recipientId}`, `${communityId}`, true),
-        ]);
-
-        // Get participants and add to return value
-        const participants = await User.find({
-          _id: { $in: [recipientId, user.userId] },
-        });
-
-        // Send push notification if created notification is not chat
-        if (ofType !== 0) {
-          // Send push notification to item owner
-          pushNotification(
-            {
-              communityId,
-              recipientId,
-            },
-            `${user.userName} has requested to book your ${post.title}`,
-            [
-              {
-                _id: recipient._id,
-                fcmTokens: recipient.fcmTokens,
-              },
-            ]
           );
+
+          // Save notification to recipient & current user && save notification:recipientId to redis
+          await Promise.all([
+            User.updateMany(
+              { _id: { $in: [recipientId, user.userId] } },
+              {
+                $push: {
+                  notifications: notification,
+                },
+              }
+            ),
+            // Set communityId key to notifications:userId hash in redis
+            redis.hset(`notifications:${recipientId}`, `${communityId}`, true),
+          ]);
+
+          // Get participants and add to return value
+          const participants = await User.find({
+            _id: { $in: [recipientId, user.userId] },
+          });
+
+          // Send push notification if created notification is not chat
+          if (ofType !== 0 && post) {
+            // Send push notification to item owner
+            pushNotification(
+              {
+                communityId,
+                recipientId,
+              },
+              `${user.userName} has requested to book your ${post.title}`,
+              [
+                {
+                  _id: recipient._id,
+                  fcmTokens: recipient.fcmTokens,
+                },
+              ]
+            );
+          }
+
+          // Return notification object with participants & booking if it is type 1
+          return {
+            ...notification,
+            participants,
+            ...(ofType === 1 && { booking: { ...booking, post: post } }),
+          };
         }
 
-        // Return notification object with participants & booking if it is type 1
-        return {
-          ...notification._doc,
-          participants,
-          ...(ofType === 1 && {
-            booking: {
-              ...booking._doc,
-              post: post._doc,
-            },
-          }),
-        };
+        return null;
       } catch (err) {
         throw new Error(err);
       }

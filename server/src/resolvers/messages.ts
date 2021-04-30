@@ -1,8 +1,15 @@
-// @ts-nocheck
 import { withFilter, AuthenticationError } from "apollo-server";
-import User from "../models/user";
-import Message from "../models/message";
-import Notification from "../models/notification";
+import User, { UserDocument } from "../models/user";
+import Message, { MessageDocument } from "../models/message";
+import Notification, { NotificationDocument } from "../models/notification";
+import { UserContext } from "../types";
+
+interface MessageInput {
+  text: string;
+  recipientId: string;
+  communityId: string;
+  notificationId: string;
+}
 
 const pubsub = require("../utils/pubsub");
 const pushNotification = require("../utils/pushNotification");
@@ -20,69 +27,78 @@ const messagesResolvers = {
   },
   Mutation: {
     createMessage: async (
-      _,
-      { messageInput: { text, communityId, recipientId, notificationId } },
-      { user, redis }
+      _: unknown,
+      {
+        messageInput: { text, communityId, recipientId, notificationId },
+      }: { messageInput: MessageInput },
+      { user, redis }: { user: UserContext; redis: any }
     ) => {
       if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId } = user;
 
       try {
         // Create and save message && get notification & recipient
-        const [message, notification, recipient] = await Promise.all([
-          Message.create({
-            text,
-            sender: userId,
-            notification: notificationId,
-          }),
-          Notification.findById(notificationId),
-          User.findById(recipientId).lean(),
-        ]);
-
-        // Add message id to notification & update recipient's isRead status to false
-        notification.messages.push(message);
-        notification.isRead[recipientId] = false;
-        notification.markModified("isRead");
-
-        // Save notification & set communityId key to recipient's notifications:userId hash in redis
-        await Promise.all([
-          notification.save(),
-          redis.hset(
-            `notifications:${recipientId}`,
-            `${notification.community}`,
-            true
-          ),
-        ]);
-
-        // Publish new message
-        pubsub.publish(NEW_NOTIFICATION_MESSAGE, {
-          notificationId,
-          newNotificationMessage: {
-            _id: message._id,
-            text: message.text,
-            sender: {
-              _id: userId,
-            },
-            createdAt: message.createdAt,
-          },
+        const message: MessageDocument = await Message.create({
+          text,
+          sender: userId,
+          notification: notificationId,
         });
-
-        // Sent push notification
-        pushNotification(
-          {
-            communityId,
-            recipientId,
-          },
-          `${user.userName}: ${text}`,
-          [
-            {
-              _id: recipient._id,
-              fcmTokens: recipient.fcmTokens,
-            },
-          ]
+        const notification: NotificationDocument | null = await Notification.findById(
+          notificationId
         );
+        const recipient: UserDocument | null = await User.findById(
+          recipientId
+        ).lean();
 
-        return message;
+        if (notification && recipient) {
+          // Add message id to notification & update recipient's isRead status to false
+          notification.messages.push(message);
+          notification.isRead[recipientId.toString()] = false;
+          notification.markModified("isRead");
+
+          // Save notification & set communityId key to recipient's notifications:userId hash in redis
+          await Promise.all([
+            notification.save(),
+            redis.hset(
+              `notifications:${recipientId}`,
+              `${notification.community}`,
+              true
+            ),
+          ]);
+
+          // Publish new message
+          pubsub.publish(NEW_NOTIFICATION_MESSAGE, {
+            notificationId,
+            newNotificationMessage: {
+              _id: message._id,
+              text: message.text,
+              sender: {
+                _id: userId,
+              },
+              // @ts-ignore
+              createdAt: message.createdAt,
+            },
+          });
+
+          // Sent push notification
+          pushNotification(
+            {
+              communityId,
+              recipientId,
+            },
+            `${user.userName}: ${text}`,
+            [
+              {
+                _id: recipient._id,
+                fcmTokens: recipient.fcmTokens,
+              },
+            ]
+          );
+
+          return message;
+        }
+
+        return null;
       } catch (err) {
         throw new Error(err);
       }

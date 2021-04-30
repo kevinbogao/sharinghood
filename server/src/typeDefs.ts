@@ -1,5 +1,6 @@
-const { gql } = require("apollo-server");
-const GraphQLJSON = require("graphql-type-json");
+import { gql } from "apollo-server";
+// @ts-ignore
+import GraphQLJSON from "graphql-type-json";
 
 const typeDefs = gql`
   ### JSON scalar
@@ -265,7 +266,7 @@ const typeDefs = gql`
 
     # Post
     createPost(postInput: PostInput!, communityId: ID): Post!
-    updatePost(postInput: PostInput!): Post!
+    updatePost(postInput: PostInput!): Post
     inactivatePost(postId: ID): Boolean
     deletePost(postId: ID!, communityId: ID): Post
     addPostToCommunity(postId: ID, communityId: ID): Community
@@ -293,4 +294,4 @@ const typeDefs = gql`
   }
 `;
 
-module.exports = typeDefs;
+export default typeDefs;

@@ -58,21 +58,24 @@ const server = new ApolloServer({
   context: async ({ req, connection }: { req: any; connection: any }) => {
     // Subscription context
     if (connection) {
-      const user = verifyToken(connection.context.authToken);
-      return { user };
+      const user: TokenPayload | null = verifyToken(
+        connection.context.authToken
+      );
+      if (user) return { user };
     }
 
     // Query & Mutation context
     const tokenWithBearer = req.headers.authorization || "";
     const token = tokenWithBearer.split(" ")[1];
-    const user = verifyToken(token);
-    return { user, redis };
+    const user: TokenPayload | null = verifyToken(token);
+    return { ...(user && { user }), redis };
   },
   subscriptions: {
+    // @ts-ignore
     onConnect: async ({ authToken }: { authToken: any }) => {
       // Validate user token & throw err if not valid
       if (authToken) {
-        const user = verifyToken(authToken);
+        const user: TokenPayload | null = verifyToken(authToken);
         if (!user) throw new AuthenticationError("Not Authenticated");
         return { user };
       }

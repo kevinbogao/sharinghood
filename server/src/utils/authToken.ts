@@ -1,14 +1,20 @@
 import { sign, verify } from "jsonwebtoken";
 
-interface User {
-  _id: string;
+type User = {
+  _id?: string;
   name: string;
   email: string;
   isAdmin: boolean;
   tokenVersion: number;
+};
+
+export interface TokenPayload extends User {
+  userId: string;
 }
 
-interface GeneratedTokens {
+export interface UserContext extends TokenPayload {}
+
+export interface GeneratedTokens {
   accessToken: string;
   refreshToken: string;
 }
@@ -37,10 +43,12 @@ export function generateTokens(user: User): GeneratedTokens {
   return { accessToken, refreshToken };
 }
 
-export function verifyToken(token: string): User | null {
+export function verifyToken(token: string): TokenPayload | null {
   try {
-    if (token) return verify(token, process.env.JWT_SECRET as string) as User;
-    return null;
+    return verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as TokenPayload | null;
   } catch (err) {
     return null;
   }

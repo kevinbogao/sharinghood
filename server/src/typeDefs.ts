@@ -69,7 +69,7 @@ const typeDefs = gql`
 
   ### Post
   type Post {
-    _id: ID!
+    _id: ID
     title: String
     desc: String
     image: String
@@ -265,7 +265,7 @@ const typeDefs = gql`
     joinCommunity(communityId: ID!): Community
 
     # Post
-    createPost(postInput: PostInput!, communityId: ID): Post!
+    createPost(postInput: PostInput!, communityId: ID): Post
     updatePost(postInput: PostInput!): Post
     inactivatePost(postId: ID): Boolean
     deletePost(postId: ID!, communityId: ID): Post

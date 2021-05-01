@@ -4,7 +4,7 @@ function capitalise(key: string): string {
   return key.charAt(0).toUpperCase() + key.slice(1);
 }
 
-function handleErrors(err: any) {
+export default function handleErrors(err: any): any {
   if (err.name === "MongoError") {
     if (err.code === 11000) {
       Object.keys(err.keyValue).map((key) => {
@@ -14,5 +14,3 @@ function handleErrors(err: any) {
     }
   }
 }
-
-module.exports = handleErrors;

@@ -1,7 +1,7 @@
-const crypto = require("crypto");
+import crypto from "crypto";
 
 // Returns a boolean value on password validity
-function pbkdf2Verify(password, hash) {
+export default function pbkdf2Verify(password: string, hash: string): any {
   return new Promise((resolve, reject) => {
     // Get digest, iterations, salt and key from hash
     const hashArr = hash.split("$");
@@ -17,5 +17,3 @@ function pbkdf2Verify(password, hash) {
     });
   });
 }
-
-module.exports = pbkdf2Verify;

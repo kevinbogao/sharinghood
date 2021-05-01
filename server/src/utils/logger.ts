@@ -1,13 +1,14 @@
-const { createLogger, transports, format } = require("winston");
+import { createLogger, transports, format, Logger } from "winston";
 require("winston-mongodb");
 
-const logger = createLogger({
+const logger: Logger = createLogger({
   format: format.combine(
     format.timestamp(),
     format.json(),
     format.metadata({ fillExcept: ["message", "level", "timestamp"] })
   ),
   transports: [
+    // @ts-ignore
     new transports.MongoDB({
       db: process.env.MONGO_PATH,
       options: {
@@ -18,4 +19,4 @@ const logger = createLogger({
   ],
 });
 
-module.exports = logger;
+export default logger;

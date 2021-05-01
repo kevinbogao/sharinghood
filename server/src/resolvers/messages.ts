@@ -1,8 +1,10 @@
 import { withFilter, AuthenticationError } from "apollo-server";
+import pubsub from "../utils/pubsub";
 import User, { UserDocument } from "../models/user";
 import Message, { MessageDocument } from "../models/message";
 import Notification, { NotificationDocument } from "../models/notification";
 import { UserContext } from "../types";
+import pushNotification from "../utils/pushNotification";
 
 interface MessageInput {
   text: string;
@@ -10,9 +12,6 @@ interface MessageInput {
   communityId: string;
   notificationId: string;
 }
-
-const pubsub = require("../utils/pubsub");
-const pushNotification = require("../utils/pushNotification");
 
 const NEW_NOTIFICATION_MESSAGE = "NEW_NOTIFICATION_MESSAGE";
 

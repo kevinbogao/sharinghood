@@ -7,10 +7,9 @@ import Booking, { BookingDocument } from "../models/booking";
 import Message from "../models/message";
 import Community, { CommunityDocument } from "../models/community";
 import Notification, { NotificationDocument } from "../models/notification";
-const uploadImg = require("../utils/uploadImg");
-const pushNotification = require("../utils/pushNotification");
-
 import { UserContext } from "../types";
+import uploadImg from "../utils/uploadImg";
+import pushNotification from "../utils/pushNotification";
 
 interface PostInput {
   postId: string;
@@ -133,7 +132,7 @@ const postsResolvers = {
 
       try {
         // Upload image
-        const imgData = await uploadImg(image);
+        const imgData: string = await uploadImg(image);
 
         // Get post & post creator
         const post: PostDocument | null = await Post.create({
@@ -262,7 +261,7 @@ const postsResolvers = {
           }
 
           // Upload image if it exists
-          let imgData;
+          let imgData: string | undefined;
           if (image) imgData = await uploadImg(image);
 
           // Conditionally update post

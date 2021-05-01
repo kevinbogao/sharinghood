@@ -4,9 +4,8 @@ import Post, { PostDocument } from "../models/post";
 import Booking, { BookingDocument } from "../models/booking";
 import Notification, { NotificationDocument } from "../models/notification";
 import { UserContext } from "../types";
-
-const updateBookingMail = require("../utils/sendMail/updateBookingMail");
-const pushNotification = require("../utils/pushNotification");
+import pushNotification from "../utils/pushNotification";
+import updateBookingMail from "../utils/sendMail/updateBookingMail";
 
 export interface BookingInput {
   postId: string;
@@ -36,7 +35,7 @@ const bookingsResolvers = {
         },
       }: { bookingInput: BookingInput },
       { user, redis }: { user: UserContext; redis: any }
-    ) => {
+    ): Promise<BookingDocument | null> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {

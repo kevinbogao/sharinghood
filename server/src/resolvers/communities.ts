@@ -1,9 +1,9 @@
 import { AuthenticationError } from "apollo-server";
 import { Types } from "mongoose";
+import { UserContext } from "../types";
+import handleErrors from "../utils/handleErrors";
 import User, { UserDocument } from "../models/user";
 import Community, { CommunityDocument } from "../models/community";
-import { UserContext } from "../types";
-const handleErrors = require("../utils/handleErrors");
 
 export interface CommunityInput {
   name: string;

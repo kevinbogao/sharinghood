@@ -1,10 +1,10 @@
-import { AuthenticationError } from "apollo-server";
+import { AuthenticationError, SchemaError } from "apollo-server";
 import crypto from "crypto";
 import bcryptjs from "bcryptjs";
 import { Types } from "mongoose";
 import User, { UserDocument } from "../models/user";
 import { PostDocument } from "../models/post";
-import Community from "../models/community";
+import Community, { CommunityDocument } from "../models/community";
 import { UserContext } from "../types";
 import { CommunityInput } from "./communities";
 import {
@@ -13,13 +13,12 @@ import {
   TokenPayload,
   GeneratedTokens,
 } from "../utils/authToken";
-
-const uploadImg = require("../utils/uploadImg");
-const sendMail = require("../utils/sendMail/index");
-const pbkdf2Verify = require("../utils/pbkdf2Verify");
-const newAccountMail = require("../utils/sendMail/newAccountMail");
-const newCommunityMail = require("../utils/sendMail/newCommunityMail");
-const handleErrors = require("../utils/handleErrors");
+import uploadImg from "../utils/uploadImg";
+import handleErrors from "../utils/handleErrors";
+import pbkdf2Verify from "../utils/pbkdf2Verify";
+import sendMail from "../utils/sendMail/index";
+import newAccountMail from "../utils/sendMail/newAccountMail";
+import newCommunityMail from "../utils/sendMail/newCommunityMail";
 
 interface UserInput {
   name: string;
@@ -212,7 +211,10 @@ const usersResolvers = {
         },
         communityInput,
       }: { userInput: UserInput; communityInput: CommunityInput }
-    ) => {
+    ): Promise<{
+      user: GeneratedTokens;
+      community?: CommunityDocument | null | undefined;
+    }> => {
       try {
         // Get user and check if email exists
         const existingUser: UserDocument | null = await User.findOne({
@@ -230,59 +232,66 @@ const usersResolvers = {
 
         // Create and save user, create community if user is create
         // else get community by id
-        const [user, community] = await Promise.all([
-          User.create({
-            name,
-            email,
-            ...(desc && { desc }),
-            ...(apartment && { apartment }),
-            isNotified,
-            image: imgData,
-            password: hashedPassword,
-            lastLogin: new Date(),
-          }),
-          isCreator
-            ? Community.create({
-                name: communityInput.name,
-                code: communityInput.code,
-                zipCode: communityInput.zipCode,
-              })
-            : Community.findById(communityId),
-        ]);
+        let community: CommunityDocument | null;
+        const user: UserDocument = await User.create({
+          name,
+          email,
+          ...(desc && { desc }),
+          ...(apartment && { apartment }),
+          isNotified,
+          image: imgData,
+          password: hashedPassword,
+          lastLogin: new Date(),
+        });
 
-        if (community) {
-          // Add user as creator to community if isCreator if true,
-          // ddd community to user, and user to community members
-          if (isCreator) community.creator = user._id;
-          user.communities.push(community._id);
-          community.members.push(user._id);
+        if (isCreator) {
+          community = await Community.create({
+            name: communityInput.name,
+            code: communityInput.code,
+            zipCode: communityInput.zipCode,
+            creator: user._id,
+          });
+        } else community = await Community.findById(communityId);
 
-          // Save user and community
-          await Promise.all([
-            user.save(),
-            community.save(),
-
-            // Sent new account mail if user is notified
-            process.env.NODE_ENV === "production" &&
-              isNotified &&
-              newAccountMail(
-                `${process.env.ORIGIN}/share`,
-                community.name,
-                user.email,
-                "Welcome to Sharinghood"
-              ),
-
-            // Sent new community mail if user is notified & isCreator
-            process.env.NODE_ENV === "production" &&
-              isNotified &&
-              isCreator &&
-              newCommunityMail(
-                `${process.env.ORIGIN}/community/${community.code}`,
-                user.email,
-                `Welcome tips for your new ${community.name} community`
-              ),
-          ]);
+        // Delete user and return error if community is not found
+        if (!community) {
+          User.deleteOne({ _id: user._id });
+          throw new SchemaError(
+            "Could not find community, user cannot be created"
+          );
         }
+
+        // Add user as creator to community if isCreator if true,
+        // ddd community to user, and user to community members
+        user.communities.push(community._id);
+        community.members.push(user._id);
+
+        // Save user and community
+        await Promise.all([
+          user.save(),
+          community.save(),
+
+          // Sent new account mail if user is notified
+          process.env.NODE_ENV === "production" &&
+            isNotified &&
+            newAccountMail(
+              `${process.env.ORIGIN}/share`,
+              community.name,
+              user.email,
+              "Welcome to Sharinghood"
+            ),
+
+          // Sent new community mail if user is notified & isCreator
+          process.env.NODE_ENV === "production" &&
+            isNotified &&
+            isCreator &&
+            newCommunityMail(
+              `${process.env.ORIGIN}/community/${community.code}`,
+              user.email,
+              `Welcome tips for your new ${community.name} community`
+            ),
+        ]);
+        // }
 
         // Sign accessToken & refreshToken
         const { accessToken, refreshToken }: GeneratedTokens = generateTokens(
@@ -305,7 +314,7 @@ const usersResolvers = {
       _: unknown,
       { userInput: { name, image, desc, apartment } }: { userInput: UserInput },
       { user }: { user: UserContext }
-    ) => {
+    ): Promise<UserDocument | null> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId }: { userId: string } = user;
 
@@ -413,7 +422,7 @@ const usersResolvers = {
           return true;
         }
 
-        // Re-send reset link if existing resetkey is found
+        // Re-send reset link if existing reset-key is found
         await sendMail(
           email,
           "Reset your Sharinghood password",

@@ -4,7 +4,7 @@ import Post, { PostDocument } from "../models/post";
 import Thread, { ThreadDocument } from "../models/thread";
 import Request, { RequestDocument } from "../models/request";
 import { UserContext } from "../types";
-const pushNotification = require("../utils/pushNotification");
+import pushNotification from "../utils/pushNotification";
 
 interface ThreadInput {
   content: string;

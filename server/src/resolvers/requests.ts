@@ -5,10 +5,9 @@ import Thread from "../models/thread";
 import Request, { RequestDocument } from "../models/request";
 import Community, { CommunityDocument } from "../models/community";
 import { UserContext } from "../types";
-
-const uploadImg = require("../utils/uploadImg");
-const newRequestMail = require("../utils/sendMail/newRequestMail");
-const pushNotification = require("../utils/pushNotification");
+import uploadImg from "../utils/uploadImg";
+import pushNotification from "../utils/pushNotification";
+import newRequestMail from "../utils/sendMail/newRequestMail";
 
 interface RequestInput {
   title: string;
@@ -124,7 +123,7 @@ const requestsResolvers = {
 
       try {
         // Upload image to Cloudinary
-        const imgData = await uploadImg(image);
+        const imgData: string = await uploadImg(image);
 
         // Create and save request && get creator
         const [request, creator, community] = await Promise.all([
@@ -152,7 +151,7 @@ const requestsResolvers = {
           creator.requests.push(request);
 
           // Parse array of members object into array of emails if member is notified
-          const emails = community.members
+          const emails: Array<string> = community.members
             // @ts-ignore
             .filter((member) => member.isNotified === true)
             // @ts-ignore
@@ -164,12 +163,15 @@ const requestsResolvers = {
             creator.save(),
             process.env.NODE_ENV === "production" &&
               emails.length &&
+              dateNeed &&
               newRequestMail(
                 userName,
                 title,
                 JSON.parse(imgData).secure_url,
                 `${process.env.ORIGIN}/requests/${request._id}`,
                 dateNeed,
+                // TODO: Check if (string | Array<string>)???
+                // @ts-ignore
                 emails,
                 `${userName} requested ${title} in your community.`
               ),

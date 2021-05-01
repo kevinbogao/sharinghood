@@ -1,5 +1,6 @@
+// @ts-nocheck
 // Parse cookie from string to object
-function parseCookie(cookies) {
+export default function parseCookie(cookies) {
   return cookies
     .split(";")
     .map((cookie) => cookie.split("="))
@@ -10,5 +11,3 @@ function parseCookie(cookies) {
       return acc;
     }, {});
 }
-
-module.exports = parseCookie;

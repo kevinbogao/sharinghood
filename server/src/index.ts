@@ -1,11 +1,15 @@
-require("dotenv").config();
-const { ApolloServer, AuthenticationError } = require("apollo-server");
+// require("dotenv").config();
+import * as dotenv from "dotenv";
+import { ApolloServer, AuthenticationError } from "apollo-server";
 import Redis from "ioredis";
-const mongoose = require("mongoose");
-const typeDefs = require("./typeDefs");
-const resolvers = require("./resolvers");
-const logger = require("./utils/loggger");
-const { verifyToken } = require("./utils/authToken");
+import mongoose from "mongoose";
+import typeDefs from "./typeDefs";
+import resolvers from "./resolvers";
+import logger from "./utils/logger";
+import { verifyToken, TokenPayload } from "./utils/authToken";
+
+// Dotenv
+dotenv.config();
 
 // Create redis instance
 const redis = new Redis(process.env.REDIS_URL);

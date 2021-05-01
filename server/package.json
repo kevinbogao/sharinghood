@@ -96,6 +96,8 @@
     "@types/ioredis": "^4.26.0",
     "@types/jsonwebtoken": "^8.5.1",
     "@types/lodash": "^4.14.168",
+    "@types/node-gcm": "^1.0.0",
+    "@types/nodemailer": "^6.4.1",
     "concurrently": "^6.0.2",
     "eslint": "^7.24.0",
     "eslint-config-airbnb-base": "^14.2.0",

@@ -39,6 +39,8 @@ export default function Register({
     { loading: mutationLoading },
   ] = useMutation(mutations.REGISTER_AND_OR_CREATE_COMMUNITY, {
     onCompleted: async ({ registerAndOrCreateCommunity }) => {
+      console.log(registerAndOrCreateCommunity);
+
       const tokenPayload = await jwtDecode(
         registerAndOrCreateCommunity.user.accessToken
       );
@@ -50,8 +52,8 @@ export default function Register({
         "@sharinghood:refreshToken",
         registerAndOrCreateCommunity.user.refreshToken
       );
-      accessTokenVar(registerAndOrCreateCommunity.accessToken);
-      refreshTokenVar(registerAndOrCreateCommunity.refreshTokenVar);
+      accessTokenVar(registerAndOrCreateCommunity.user.accessToken);
+      refreshTokenVar(registerAndOrCreateCommunity.user.refreshTokenVar);
       tokenPayloadVar(tokenPayload);
 
       // Redirect user to community invite link if user is creator
@@ -75,10 +77,14 @@ export default function Register({
         });
       }
     },
-    onError: ({ message }) => {
-      const errMsgArr = message.split(": ");
-      setError({ [errMsgArr[0]]: errMsgArr[1] });
+
+    onError: (err) => {
+      console.log(err);
     },
+    // onError: ({ message }) => {
+    //   const errMsgArr = message.split(": ");
+    //   setError({ [errMsgArr[0]]: errMsgArr[1] });
+    // },
   });
 
   return (

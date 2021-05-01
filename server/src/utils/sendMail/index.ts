@@ -1,6 +1,13 @@
-const nodemailer = require("nodemailer");
+import nodemailer from "nodemailer";
 
-async function sendMail(to, subject, text, html) {
+// TODO: Check type of to (string | Array<string>)???
+
+export default async function sendMail(
+  to: string,
+  subject: string,
+  text: string,
+  html?: string
+) {
   const transport = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -19,5 +26,3 @@ async function sendMail(to, subject, text, html) {
 
   return info;
 }
-
-module.exports = sendMail;

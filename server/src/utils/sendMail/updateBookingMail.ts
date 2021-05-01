@@ -1,6 +1,11 @@
-const sendMail = require("./index");
+import sendMail from "./index";
 
-async function updateBookingMail(bookingsUrl, to, subject, text = "") {
+export default async function updateBookingMail(
+  bookingsUrl: string,
+  to: string,
+  subject: string,
+  text: string = ""
+) {
   const html = `
     <!DOCTYPE html>
     <html style="margin: 0; padding: 0;">
@@ -133,5 +138,3 @@ async function updateBookingMail(bookingsUrl, to, subject, text = "") {
   const info = await sendMail(to, subject, text, html);
   return info;
 }
-
-module.exports = updateBookingMail;

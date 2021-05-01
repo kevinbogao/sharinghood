@@ -1,6 +1,11 @@
-const sendMail = require("./index");
+import sendMail from "./index";
 
-async function newCommunityMail(communityUrl, to, subject, text = "") {
+export default async function newCommunityMail(
+  communityUrl: string,
+  to: string,
+  subject: string,
+  text: string = ""
+) {
   const html = `
     <!DOCTYPE html>
     <html style="margin: 0; padding: 0;">
@@ -346,5 +351,3 @@ async function newCommunityMail(communityUrl, to, subject, text = "") {
   const info = await sendMail(to, subject, text, html);
   return info;
 }
-
-module.exports = newCommunityMail;

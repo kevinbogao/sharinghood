@@ -43,11 +43,11 @@ const typeDefs = gql`
   ### Community
   type Community {
     _id: ID!
-    name: String
-    code: String
-    zipCode: String
+    name: String!
+    code: String!
+    zipCode: String!
     password: String
-    creator: User
+    creator: User!
     members: [User]
     posts: [Post]
     requests: [Request]
@@ -286,7 +286,6 @@ const typeDefs = gql`
 
     # Notification
     createNotification(notificationInput: NotificationInput): Notification
-    # createNotificationBak(notificationInput: NotificationInput): Notification
   }
 
   type Subscription {

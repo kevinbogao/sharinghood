@@ -22,7 +22,8 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/__utils",
-      "/__mocks__/"
+      "/__mocks__/",
+      "/dist/"
     ],
     "transform": {
       "^.+\\.(ts|tsx)$": "ts-jest"

@@ -5,7 +5,7 @@ type InvalidTokens = {
   [userId: string]: Array<string>;
 };
 
-type Receiver = {
+export type Receiver = {
   _id: string;
   fcmTokens: Array<string>;
 };

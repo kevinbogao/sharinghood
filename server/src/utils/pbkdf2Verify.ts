@@ -1,7 +1,10 @@
 import crypto from "crypto";
 
 // Returns a boolean value on password validity
-export default function pbkdf2Verify(password: string, hash: string): any {
+export default function pbkdf2Verify(
+  password: string,
+  hash: string
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
     // Get digest, iterations, salt and key from hash
     const hashArr = hash.split("$");

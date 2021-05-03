@@ -4,8 +4,7 @@ import { RequestDocument } from "./request";
 import { CommunityDocument } from "./community";
 import { NotificationDocument } from "./notification";
 
-export interface User {
-  _id: Types.ObjectId;
+interface UserBaseDocument {
   name: string;
   email: string;
   password: string;
@@ -24,7 +23,7 @@ export interface User {
   notifications: Array<Types.ObjectId | NotificationDocument>;
 }
 
-export interface UserDocument extends Omit<User, "_id">, Document {}
+export interface UserDocument extends UserBaseDocument, Document {}
 
 // Limit number of communities a user can be in to 5
 function communitiesLimit(communities: any): boolean {

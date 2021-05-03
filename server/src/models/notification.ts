@@ -5,10 +5,10 @@ import { BookingDocument } from "./booking";
 import { MessageDocument } from "./message";
 import { CommunityDocument } from "./community";
 
-interface Notification {
+interface NotificationBaseDocument {
   ofType: number;
-  post: Types.ObjectId | PostDocument;
-  booking: Types.ObjectId | BookingDocument;
+  post?: Types.ObjectId | PostDocument;
+  booking?: Types.ObjectId | BookingDocument;
   community: Types.ObjectId | CommunityDocument;
   messages: Array<Types.ObjectId | MessageDocument>;
   participants: Array<Types.ObjectId | UserDocument>;
@@ -17,7 +17,9 @@ interface Notification {
   };
 }
 
-export interface NotificationDocument extends Notification, Document {}
+export interface NotificationDocument
+  extends NotificationBaseDocument,
+    Document {}
 
 const notificationSchema: Schema = new Schema(
   {

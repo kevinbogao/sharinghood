@@ -3,8 +3,7 @@ import { PostDocument } from "./post";
 import { UserDocument } from "./user";
 import { CommunityDocument } from "./community";
 
-interface Booking {
-  _id: Types.ObjectId;
+interface BookingBaseDocument {
   status: number;
   dateType: number;
   dateNeed: Date;
@@ -14,7 +13,7 @@ interface Booking {
   community: Types.ObjectId | CommunityDocument;
 }
 
-export interface BookingDocument extends Omit<Booking, "_id">, Document {}
+export interface BookingDocument extends BookingBaseDocument, Document {}
 
 const bookingSchema: Schema = new Schema(
   {

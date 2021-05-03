@@ -3,7 +3,7 @@ import { PostDocument } from "./post";
 import { UserDocument } from "./user";
 import { RequestDocument } from "./request";
 
-interface Community {
+export interface CommunityBaseDocument {
   name: string;
   code: string;
   zipCode: string;
@@ -14,7 +14,7 @@ interface Community {
   requests: Array<Types.ObjectId | RequestDocument>;
 }
 
-export interface CommunityDocument extends Community, Document {}
+export interface CommunityDocument extends CommunityBaseDocument, Document {}
 
 const communitySchema: Schema = new Schema(
   {

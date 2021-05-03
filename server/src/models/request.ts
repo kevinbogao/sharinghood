@@ -2,7 +2,7 @@ import { Document, Schema, Types, model } from "mongoose";
 import { UserDocument } from "./user";
 import { ThreadDocument } from "./thread";
 
-interface Request {
+interface RequestBaseDocument {
   title: string;
   desc: string;
   image: string;
@@ -13,7 +13,7 @@ interface Request {
   threads: Array<Types.ObjectId | ThreadDocument>;
 }
 
-export interface RequestDocument extends Request, Document {}
+export interface RequestDocument extends RequestBaseDocument, Document {}
 
 const requestSchema: Schema = new Schema(
   {

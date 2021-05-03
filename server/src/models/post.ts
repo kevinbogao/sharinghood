@@ -3,7 +3,7 @@ import { UserDocument } from "./user";
 import { ThreadDocument } from "./thread";
 import { BookingDocument } from "./booking";
 
-interface Post {
+interface PostBaseDocument {
   title: string;
   desc: string;
   condition: number;
@@ -14,7 +14,7 @@ interface Post {
   bookings: Array<Types.ObjectId | BookingDocument>;
 }
 
-export interface PostDocument extends Post, Document {}
+export interface PostDocument extends PostBaseDocument, Document {}
 
 const postSchema: Schema = new Schema(
   {

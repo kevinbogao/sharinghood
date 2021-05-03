@@ -1,12 +1,12 @@
 import { Document, Schema, Types, model } from "mongoose";
 import { UserDocument } from "./user";
 
-interface Thread {
+interface ThreadBaseDocument {
   content: string;
   poster: Types.ObjectId | UserDocument;
   community: Types.ObjectId | UserDocument;
 }
-export interface ThreadDocument extends Thread, Document {}
+export interface ThreadDocument extends ThreadBaseDocument, Document {}
 
 const threadSchema: Schema = new Schema(
   {

@@ -143,6 +143,9 @@ export default function Navbar() {
                   // Clear localStorage
                   clearLocalStorageAndCache();
 
+                  // Clear local cache
+                  client.clearStore();
+
                   // Return to login page
                   history.push("/login");
                 }}

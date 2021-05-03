@@ -5,7 +5,7 @@ import Post from "../models/post";
 import Request from "../models/request";
 import Booking, { BookingDocument } from "../models/booking";
 import Community, { CommunityDocument } from "../models/community";
-import { UserContext } from "../types";
+import { UserTokenContext } from "../utils/authToken";
 
 interface CommunitiesActivities {
   totalCommunities: number;
@@ -16,12 +16,21 @@ interface CommunitiesActivities {
   communitiesActivities: Array<CommunityDocument>;
 }
 
+// interface CommunityActivitiesRes extends CommunityDocument {
+//   // _id: Types.ObjectId;
+//   numUsers: number;
+//   numPosts: number;
+//   numRequests: number;
+//   numBookings: number;
+//   bookings: Array<BookingDocument>;
+// }
+
 const activitiesResolvers = {
   Query: {
     totalActivities: async (
       _: unknown,
       __: unknown,
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ): Promise<CommunitiesActivities> => {
       try {
         // Throw auth error is user is not admin
@@ -82,7 +91,7 @@ const activitiesResolvers = {
     communityActivities: async (
       _: unknown,
       { communityId }: { communityId: string },
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ) => {
       if (!user || !user.isAdmin) {
         throw new AuthenticationError("Not permitted");

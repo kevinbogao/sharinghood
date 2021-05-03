@@ -3,7 +3,7 @@ import pubsub from "../utils/pubsub";
 import User, { UserDocument } from "../models/user";
 import Message, { MessageDocument } from "../models/message";
 import Notification, { NotificationDocument } from "../models/notification";
-import { UserContext } from "../types";
+import { UserTokenContext } from "../utils/authToken";
 import pushNotification from "../utils/pushNotification";
 
 interface MessageInput {
@@ -30,7 +30,7 @@ const messagesResolvers = {
       {
         messageInput: { text, communityId, recipientId, notificationId },
       }: { messageInput: MessageInput },
-      { user, redis }: { user: UserContext; redis: any }
+      { user, redis }: { user: UserTokenContext; redis: any }
     ) => {
       if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId } = user;

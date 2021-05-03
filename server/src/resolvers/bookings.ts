@@ -3,7 +3,7 @@ import User, { UserDocument } from "../models/user";
 import Post, { PostDocument } from "../models/post";
 import Booking, { BookingDocument } from "../models/booking";
 import Notification, { NotificationDocument } from "../models/notification";
-import { UserContext } from "../types";
+import { UserTokenContext } from "../utils/authToken";
 import pushNotification from "../utils/pushNotification";
 import updateBookingMail from "../utils/sendMail/updateBookingMail";
 
@@ -34,7 +34,7 @@ const bookingsResolvers = {
           notifyRecipientId,
         },
       }: { bookingInput: BookingInput },
-      { user, redis }: { user: UserContext; redis: any }
+      { user, redis }: { user: UserTokenContext; redis: any }
     ): Promise<BookingDocument | null> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 

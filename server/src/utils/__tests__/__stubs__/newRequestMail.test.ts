@@ -1,6 +1,7 @@
-const nodemailer = require("nodemailer");
-const { stubTransport } = require("nodemailer-stub");
-const newRequestMail = require("../../sendMail/newRequestMail");
+import nodemailer from "nodemailer";
+// @ts-ignore
+import { stubTransport } from "nodemailer-stub";
+import newRequestMail from "../../sendMail/newRequestMail";
 
 describe("Test newRequestMail function", () => {
   it("Should send new community mail", async () => {

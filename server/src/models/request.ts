@@ -2,7 +2,7 @@ import { Document, Schema, Types, model } from "mongoose";
 import { UserDocument } from "./user";
 import { ThreadDocument } from "./thread";
 
-export interface Request {
+interface Request {
   title: string;
   desc: string;
   image: string;

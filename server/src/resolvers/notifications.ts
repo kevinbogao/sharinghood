@@ -1,11 +1,11 @@
-import { AuthenticationError } from "apollo-server";
+import { ApolloError, AuthenticationError } from "apollo-server";
 import { Types } from "mongoose";
 import User, { UserDocument } from "../models/user";
 import Post, { PostDocument } from "../models/post";
 import Booking, { BookingDocument } from "../models/booking";
 import Notification, { NotificationDocument } from "../models/notification";
-import { UserContext } from "../types";
 import { BookingInput } from "./bookings";
+import { UserTokenContext } from "../utils/authToken";
 import pushNotification from "../utils/pushNotification";
 import updateBookingMail from "../utils/sendMail/updateBookingMail";
 
@@ -21,7 +21,7 @@ const notificationsResolvers = {
     notification: async (
       _: unknown,
       { notificationId }: { notificationId: string },
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ): Promise<NotificationDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
@@ -106,7 +106,7 @@ const notificationsResolvers = {
     notifications: async (
       _: unknown,
       { communityId }: { communityId: string },
-      { user, redis }: { user: UserContext; redis: any }
+      { user, redis }: { user: UserTokenContext; redis: any }
     ): Promise<Array<Types.ObjectId | NotificationDocument>> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
@@ -244,7 +244,7 @@ const notificationsResolvers = {
         recipientId,
         communityId,
       }: { recipientId: string; communityId: string },
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ): Promise<NotificationDocument | null> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
@@ -272,7 +272,7 @@ const notificationsResolvers = {
       {
         notificationInput: { ofType, recipientId, communityId, bookingInput },
       }: { notificationInput: NotificationInput },
-      { user, redis }: { user: UserContext; redis: any }
+      { user, redis }: { user: UserTokenContext; redis: any }
     ) => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
@@ -320,86 +320,84 @@ const notificationsResolvers = {
             User.findById(recipientId),
           ]);
 
-          if (booking && post && recipient) {
-            // Add booking to post bookings
-            post.bookings.push(booking);
+          if (!post) throw new ApolloError("Post not found");
+          if (!recipient) throw new ApolloError("User not found");
 
-            // Save post & sent booking email to recipient if recipient is subscribed to email
-            await Promise.all([
-              post.save(),
-              process.env.NODE_ENV === "production" &&
-                recipient.isNotified &&
-                updateBookingMail(
-                  `${process.env.ORIGIN}/notifications`,
-                  recipient.email,
-                  `${user.userName} has requested to book your ${post.title}`
-                ),
-            ]);
-          }
-        }
+          // Add booking to post bookings
+          post.bookings.push(booking);
 
-        if (recipient) {
-          // Create & save notification, add booking to notification if it is type 1
-          const notification: NotificationDocument | null = await Notification.create(
-            {
-              ...(ofType === 1 && booking && { booking: booking._id }),
-              ofType,
-              participants: [recipientId, user.userId],
-              // Notification read status for participants
-              isRead: {
-                [recipientId]: false,
-                [user.userId]: false,
-              },
-              community: communityId,
-            }
-          );
-
-          // Save notification to recipient & current user && save notification:recipientId to redis
+          // Save post & sent booking email to recipient if recipient is subscribed to email
           await Promise.all([
-            User.updateMany(
-              { _id: { $in: [recipientId, user.userId] } },
-              {
-                $push: {
-                  notifications: notification,
-                },
-              }
-            ),
-            // Set communityId key to notifications:userId hash in redis
-            redis.hset(`notifications:${recipientId}`, `${communityId}`, true),
+            post.save(),
+            process.env.NODE_ENV === "production" &&
+              recipient.isNotified &&
+              updateBookingMail(
+                `${process.env.ORIGIN}/notifications`,
+                recipient.email,
+                `${user.userName} has requested to book your ${post.title}`
+              ),
           ]);
+        }
+        // Create & save notification, add booking to notification if it is type 1
+        const notification = await Notification.create({
+          ...(ofType === 1 && booking && { booking: booking._id }),
+          ofType,
+          participants: [recipientId, user.userId],
+          // Notification read status for participants
+          isRead: {
+            [recipientId]: false,
+            [user.userId]: false,
+          },
+          community: communityId,
+        });
 
-          // Get participants and add to return value
-          const participants = await User.find({
-            _id: { $in: [recipientId, user.userId] },
-          });
-
-          // Send push notification if created notification is not chat
-          if (ofType !== 0 && post) {
-            // Send push notification to item owner
-            pushNotification(
-              {
-                communityId,
-                recipientId,
+        // Save notification to recipient & current user && save notification:recipientId to redis
+        await Promise.all([
+          User.updateMany(
+            { _id: { $in: [recipientId, user.userId] } },
+            {
+              $push: {
+                notifications: notification,
               },
-              `${user.userName} has requested to book your ${post.title}`,
-              [
-                {
-                  _id: recipient._id,
-                  fcmTokens: recipient.fcmTokens,
-                },
-              ]
-            );
-          }
+            }
+          ),
+          // Set communityId key to notifications:userId hash in redis
+          redis.hset(`notifications:${recipientId}`, `${communityId}`, true),
+        ]);
 
-          // Return notification object with participants & booking if it is type 1
-          return {
-            ...notification,
-            participants,
-            ...(ofType === 1 && { booking: { ...booking, post: post } }),
-          };
+        // Get participants and add to return value
+        const participants = await User.find({
+          _id: { $in: [recipientId, user.userId] },
+        });
+
+        // Send push notification if created notification is not chat
+        if (ofType !== 0 && post && recipient) {
+          // Send push notification to item owner
+          pushNotification(
+            {
+              communityId,
+              recipientId,
+            },
+            `${user.userName} has requested to book your ${post.title}`,
+            [
+              {
+                _id: recipient._id,
+                fcmTokens: recipient.fcmTokens,
+              },
+            ]
+          );
         }
 
-        return null;
+        // Return notification object with participants & booking if it is type 1
+        return {
+          // @ts-ignore
+          ...notification._doc,
+          participants,
+          ...(ofType === 1 && {
+            // @ts-ignore
+            booking: { ...booking._doc, post: post._doc },
+          }),
+        };
       } catch (err) {
         throw new Error(err);
       }

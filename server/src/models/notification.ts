@@ -5,7 +5,7 @@ import { BookingDocument } from "./booking";
 import { MessageDocument } from "./message";
 import { CommunityDocument } from "./community";
 
-export interface Notification {
+interface Notification {
   ofType: number;
   post: Types.ObjectId | PostDocument;
   booking: Types.ObjectId | BookingDocument;

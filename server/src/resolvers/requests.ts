@@ -1,11 +1,15 @@
-import { AuthenticationError, ForbiddenError } from "apollo-server";
+import {
+  ApolloError,
+  AuthenticationError,
+  ForbiddenError,
+} from "apollo-server";
 import { Types } from "mongoose";
-import User from "../models/user";
+import User, { UserDocument } from "../models/user";
 import Thread from "../models/thread";
 import Request, { RequestDocument } from "../models/request";
 import Community, { CommunityDocument } from "../models/community";
-import { UserContext } from "../types";
 import uploadImg from "../utils/uploadImg";
+import { UserTokenContext } from "../utils/authToken";
 import pushNotification from "../utils/pushNotification";
 import newRequestMail from "../utils/sendMail/newRequestMail";
 
@@ -18,12 +22,19 @@ interface RequestInput {
   dateReturn?: Date;
 }
 
+interface CreateRequestRes extends Omit<RequestDocument, "creator"> {
+  creator: {
+    _id: Types.ObjectId;
+    name: string;
+  };
+}
+
 const requestsResolvers = {
   Query: {
     request: async (
       _: unknown,
       { requestId }: { requestId: string },
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ): Promise<RequestDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
@@ -60,7 +71,7 @@ const requestsResolvers = {
     requests: async (
       _: unknown,
       { communityId }: { communityId: string },
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ): Promise<Array<RequestDocument | Types.ObjectId>> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
@@ -116,8 +127,8 @@ const requestsResolvers = {
         requestInput: { title, desc, image, dateType, dateNeed, dateReturn },
         communityId,
       }: { requestInput: RequestInput; communityId: string },
-      { user }: { user: UserContext }
-    ) => {
+      { user }: { user: UserTokenContext }
+    ): Promise<CreateRequestRes> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId, userName }: { userId: string; userName: string } = user;
 
@@ -125,86 +136,80 @@ const requestsResolvers = {
         // Upload image to Cloudinary
         const imgData: string = await uploadImg(image);
 
-        // Create and save request && get creator
-        const [request, creator, community] = await Promise.all([
-          Request.create({
-            title,
-            desc,
-            dateType,
-            ...(dateType === 2 && { dateNeed, dateReturn }),
-            image: imgData,
-            creator: userId,
-          }),
-          User.findById(userId),
-          // Populate community members, exclude current user & unsubscribe user
-          // & only return email
-          Community.findById(communityId).populate({
-            path: "members",
-            match: { _id: { $ne: userId } },
-            select: "email isNotified fcmTokens",
-          }),
+        // Find current user
+        const creator: UserDocument | null = await User.findById(userId);
+        if (!creator) throw new ApolloError("Creator not found");
+
+        // Find target community;
+        const community: CommunityDocument | null = await Community.findById(
+          communityId
+        ).populate({
+          path: "members",
+          match: { _id: { $ne: userId } },
+          select: "email isNotified fcmTokens",
+        });
+        if (!community) throw new ApolloError("Community not found");
+
+        const request: RequestDocument = await Request.create({
+          title,
+          desc,
+          dateType,
+          ...(dateType === 2 && { dateNeed, dateReturn }),
+          image: imgData,
+          creator: userId,
+        });
+
+        // Save requestId & notificationId to community && requestId to creator
+        community.requests.push(request);
+        creator.requests.push(request);
+
+        // Parse array of members object into array of emails if member is notified
+        const emails: Array<string> = community.members
+          .filter((member: any) => member.isNotified === true)
+          .map((member: any) => member.email);
+
+        // Save community & sent email to subscribed users
+        await Promise.all([
+          community.save(),
+          creator.save(),
+          process.env.NODE_ENV === "production" &&
+            emails.length &&
+            dateNeed &&
+            newRequestMail(
+              userName,
+              title,
+              JSON.parse(imgData).secure_url,
+              `${process.env.ORIGIN}/requests/${request._id}`,
+              dateNeed,
+              // @ts-ignore
+              emails,
+              `${userName} requested ${title} in your community.`
+            ),
         ]);
 
-        if (creator && community) {
-          // Save requestId & notificationId to community && requestId to creator
-          community.requests.push(request);
-          creator.requests.push(request);
+        // Get a list of users that has FCM tokens
+        const receivers = community.members
+          .filter((member: any) => member.fcmTokens.length)
+          .map((member: any) => ({
+            _id: member._id,
+            fcmTokens: member.fcmTokens,
+          }));
 
-          // Parse array of members object into array of emails if member is notified
-          const emails: Array<string> = community.members
-            // @ts-ignore
-            .filter((member) => member.isNotified === true)
-            // @ts-ignore
-            .map((member) => member.email);
+        // Sent push notification
+        pushNotification(
+          {},
+          `${userName} requested ${title} in the ${community.name} community`,
+          receivers
+        );
 
-          // Save community & sent email to subscribed users
-          await Promise.all([
-            community.save(),
-            creator.save(),
-            process.env.NODE_ENV === "production" &&
-              emails.length &&
-              dateNeed &&
-              newRequestMail(
-                userName,
-                title,
-                JSON.parse(imgData).secure_url,
-                `${process.env.ORIGIN}/requests/${request._id}`,
-                dateNeed,
-                // TODO: Check if (string | Array<string>)???
-                // @ts-ignore
-                emails,
-                `${userName} requested ${title} in your community.`
-              ),
-          ]);
-
-          // Get a list of users that has FCM tokens
-          const receivers = community.members
-            // @ts-ignore
-            .filter((member) => member.fcmTokens.length)
-            .map((member) => ({
-              // @ts-ignore
-              _id: member._id,
-              // @ts-ignore
-              fcmTokens: member.fcmTokens,
-            }));
-
-          // Sent push notification
-          pushNotification(
-            {},
-            `${userName} requested ${title} in the ${community.name} community`,
-            receivers
-          );
-
-          return {
-            ...request,
-            creator: {
-              _id: userId,
-              name: userName,
-            },
-          };
-        }
-
-        return null;
+        return {
+          // @ts-ignore
+          ...request._doc,
+          creator: {
+            _id: userId,
+            name: userName,
+          },
+        };
       } catch (err) {
         throw new Error(err);
       }
@@ -212,46 +217,51 @@ const requestsResolvers = {
     deleteRequest: async (
       _: unknown,
       { requestId }: { requestId: string },
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ): Promise<RequestDocument | null> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
-        // Find request & currentUser
-        const [request, currentUser] = await Promise.all([
-          Request.findById(requestId),
-          User.findById(user.userId),
-        ]);
+        // Find request
+        const request: RequestDocument | null = await Request.findById(
+          requestId
+        );
+        if (!request) throw new ApolloError("Request not found");
 
-        if (request && currentUser) {
-          // Throw error if user is not post creator
-          if (request.creator.toString() !== user.userId) {
-            throw new ForbiddenError("Unauthorized user");
-          }
+        // Find currentUser
+        const currentUser: UserDocument | null = await User.findById(
+          user.userId
+        );
+        if (!currentUser) throw new ForbiddenError("Unauthorized user");
 
-          // Destruct threads from request
-          const { threads } = request;
-
-          // Delete request, requestId from community & delete request threads
-          await Promise.all([
-            request.remove(),
-            User.updateOne(
-              { _id: user.userId },
-              { $pull: { requests: requestId } }
-            ),
-            Community.updateMany(
-              { _id: { $in: currentUser.communities } },
-              {
-                $pull: { requests: requestId },
-              }
-            ),
-            Thread.deleteMany({ _id: { $in: threads } }),
-          ]);
-
-          return request;
+        // Throw error if user is not post creator
+        if (request.creator.toString() !== user.userId.toString()) {
+          throw new ForbiddenError("Unauthorized user");
         }
 
-        return null;
+        // Destruct threads from request
+        const { threads } = request;
+
+        // Delete request, requestId from community & delete request threads
+        await Promise.all([
+          request.remove(),
+          User.updateOne(
+            { _id: user.userId },
+            { $pull: { requests: requestId } }
+          ),
+          Community.updateMany(
+            { _id: { $in: currentUser.communities } },
+            {
+              $pull: { requests: requestId },
+            }
+          ),
+          Thread.deleteMany({ _id: { $in: threads } }),
+        ]);
+
+        return request;
+        // }
+
+        // return null;
       } catch (err) {
         throw new Error(err);
       }

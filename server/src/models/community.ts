@@ -3,7 +3,7 @@ import { PostDocument } from "./post";
 import { UserDocument } from "./user";
 import { RequestDocument } from "./request";
 
-export interface Community {
+interface Community {
   name: string;
   code: string;
   zipCode: string;

@@ -1,4 +1,3 @@
-// require("dotenv").config();
 import * as dotenv from "dotenv";
 import { ApolloServer, AuthenticationError } from "apollo-server";
 import Redis from "ioredis";
@@ -6,7 +5,7 @@ import mongoose from "mongoose";
 import typeDefs from "./typeDefs";
 import resolvers from "./resolvers";
 import logger from "./utils/logger";
-import { verifyToken, TokenPayload } from "./utils/authToken";
+import { verifyToken } from "./utils/authToken";
 
 // Dotenv
 dotenv.config();
@@ -55,27 +54,25 @@ const server = new ApolloServer({
       },
     },
   ],
-  context: async ({ req, connection }: { req: any; connection: any }) => {
+  context: async ({ req, connection }) => {
     // Subscription context
     if (connection) {
-      const user: TokenPayload | null = verifyToken(
-        connection.context.authToken
-      );
-      if (user) return { user };
+      const user = verifyToken(connection.context.authToken);
+      return { user };
     }
 
     // Query & Mutation context
     const tokenWithBearer = req.headers.authorization || "";
     const token = tokenWithBearer.split(" ")[1];
-    const user: TokenPayload | null = verifyToken(token);
-    return { ...(user && { user }), redis };
+    const user = verifyToken(token);
+    return { user, redis };
   },
   subscriptions: {
     // @ts-ignore
-    onConnect: async ({ authToken }: { authToken: any }) => {
+    onConnect: async ({ authToken }: { authToken: string }) => {
       // Validate user token & throw err if not valid
       if (authToken) {
-        const user: TokenPayload | null = verifyToken(authToken);
+        const user = verifyToken(authToken);
         if (!user) throw new AuthenticationError("Not Authenticated");
         return { user };
       }

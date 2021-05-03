@@ -1,4 +1,4 @@
-const pbkdf2Verify = require("../pbkdf2Verify");
+import pbkdf2Verify from "../pbkdf2Verify";
 
 describe("[Utils.pbkdf2Verify]", () => {
   it("Should return true if password is valid", async () => {

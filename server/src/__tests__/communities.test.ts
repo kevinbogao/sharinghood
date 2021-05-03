@@ -1,19 +1,19 @@
-const { createTestClient } = require("apollo-server-testing");
-const { gql } = require("apollo-server");
-const Redis = require("ioredis-mock");
-const { constructTestServer } = require("./__utils");
-const inMemoryDb = require("./__mocks__/inMemoryDb");
-const {
-  createInitData,
+import { createTestClient } from "apollo-server-testing";
+import { gql } from "apollo-server";
+// @ts-ignore
+import Redis from "ioredis-mock";
+import { constructTestServer } from "./__utils";
+import { connect, close, cleanup } from "./__mocks__/inMemoryDb";
+import createInitData, {
   mockUser01,
   mockUser02,
   mockCommunity01,
   mockCommunity02,
-} = require("./__mocks__/createInitData");
+} from "./__mocks__/createInitData";
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {
-  await inMemoryDb.connect();
+  await connect();
 });
 
 beforeEach(async () => {
@@ -22,12 +22,12 @@ beforeEach(async () => {
 
 // Clear all test data after every test.
 afterEach(async () => {
-  await inMemoryDb.cleanup();
+  await cleanup();
 });
 
 // Remove and close the db and server
 afterAll(async () => {
-  await inMemoryDb.close();
+  await close();
 });
 
 // Community query

@@ -1,6 +1,7 @@
-const nodemailer = require("nodemailer");
-const { stubTransport } = require("nodemailer-stub");
-const sendMail = require("../../sendMail/index");
+import nodemailer from "nodemailer";
+// @ts-ignore
+import { stubTransport } from "nodemailer-stub";
+import sendMail from "../../sendMail/index";
 
 describe("Test sendMail function", () => {
   it("Should send mail", async () => {

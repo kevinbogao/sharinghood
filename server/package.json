@@ -23,7 +23,10 @@
       "/node_modules/",
       "/__utils",
       "/__mocks__/"
-    ]
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    }
   },
   "eslintConfig": {
     "extends": [
@@ -94,6 +97,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/ioredis": "^4.26.0",
+    "@types/jest": "^26.0.23",
     "@types/jsonwebtoken": "^8.5.1",
     "@types/lodash": "^4.14.168",
     "@types/node-gcm": "^1.0.0",
@@ -111,6 +115,7 @@
     "nodemailer-stub": "^1.2.2",
     "nodemon": "^2.0.7",
     "prettier": "^2.2.1",
+    "ts-jest": "^26.5.5",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.4"
   }

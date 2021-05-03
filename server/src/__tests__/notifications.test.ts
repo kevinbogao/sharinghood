@@ -1,10 +1,10 @@
-const { createTestClient } = require("apollo-server-testing");
-const { gql } = require("apollo-server");
-const Redis = require("ioredis-mock");
-const { constructTestServer } = require("./__utils");
-const inMemoryDb = require("./__mocks__/inMemoryDb");
-const {
-  createInitData,
+import { createTestClient } from "apollo-server-testing";
+import { gql } from "apollo-server";
+// @ts-ignore
+import Redis from "ioredis-mock";
+import { constructTestServer } from "./__utils";
+import { connect, close, cleanup } from "./__mocks__/inMemoryDb";
+import createInitData, {
   mockUser01,
   mockUser02,
   mockUser03,
@@ -20,14 +20,15 @@ const {
   mockNotification02,
   mockNotification03,
   mockUploadResponse,
-} = require("./__mocks__/createInitData");
+} from "./__mocks__/createInitData";
+import pushNotification from "../utils/pushNotification";
 
 jest.mock("../utils/pushNotification");
-const pushNotification = require("../utils/pushNotification");
+const mockedPushNotification = pushNotification as jest.Mock<any>;
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {
-  await inMemoryDb.connect();
+  await connect();
 });
 
 beforeEach(async () => {
@@ -36,12 +37,12 @@ beforeEach(async () => {
 
 // Clear all test data after every test.
 afterEach(async () => {
-  await inMemoryDb.cleanup();
+  await cleanup();
 });
 
 // Remove and close the db and server
 afterAll(async () => {
-  await inMemoryDb.close();
+  await close();
 });
 
 const FIND_NOTIFICATION = gql`
@@ -418,7 +419,7 @@ describe("[Mutation.notifications]", () => {
       context: () => ({ user: { userId: mockUser02._id.toString() }, redis }),
     });
 
-    pushNotification.mockImplementation(() => {});
+    mockedPushNotification.mockImplementation(() => {});
 
     const notificationInput = {
       ofType: 0,
@@ -467,7 +468,7 @@ describe("[Mutation.notifications]", () => {
       context: () => ({ user: { userId: mockUser03._id.toString() }, redis }),
     });
 
-    pushNotification.mockImplementation(() => {});
+    mockedPushNotification.mockImplementation(() => {});
 
     const notificationInput = {
       bookingInput: {

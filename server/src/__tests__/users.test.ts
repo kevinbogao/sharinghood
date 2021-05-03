@@ -1,13 +1,13 @@
-const { createTestClient } = require("apollo-server-testing");
-const { gql } = require("apollo-server");
-const { sign, verify } = require("jsonwebtoken");
-const Redis = require("ioredis-mock");
-const crypto = require("crypto");
-const bcryptjs = require("bcryptjs");
-const { constructTestServer } = require("./__utils");
-const inMemoryDb = require("./__mocks__/inMemoryDb");
-const {
-  createInitData,
+import { createTestClient } from "apollo-server-testing";
+import { gql } from "apollo-server";
+import { sign, verify } from "jsonwebtoken";
+// @ts-ignore
+import Redis from "ioredis-mock";
+import crypto from "crypto";
+import bcryptjs from "bcryptjs";
+import { constructTestServer } from "./__utils";
+import { connect, close, cleanup } from "./__mocks__/inMemoryDb";
+import createInitData, {
   fcmToken,
   mockUser01,
   mockUser03,
@@ -15,21 +15,23 @@ const {
   mockCommunity02,
   mockUploadResponse,
   updatedMockUploadResponse,
-} = require("./__mocks__/createInitData");
-const User = require("../models/user");
-const Community = require("../models/community");
+} from "./__mocks__/createInitData";
+import User from "../models/user";
+import Community from "../models/community";
+import uploadImg from "../utils/uploadImg";
+import sendMail from "../utils/sendMail/index";
 
 // Mocking dependencies
 jest.mock("../utils/uploadImg");
-const uploadImg = require("../utils/uploadImg");
+const mockedUploadImg = uploadImg as jest.Mock<any>;
 
 jest.mock("../utils/sendMail/index");
-const sendMail = require("../utils/sendMail/index");
+const mockedSendMail = sendMail as jest.Mock<any>;
 
 // Connect to a new in-memory database before running any tests
-// & set enviorment variables
+// & set environment variables
 beforeAll(async () => {
-  await inMemoryDb.connect();
+  await connect();
   process.env = Object.assign(process.env, { JWT_SECRET: "secret" });
 });
 
@@ -40,12 +42,12 @@ beforeEach(async () => {
 
 // Clear all test data after every test
 afterEach(async () => {
-  await inMemoryDb.cleanup();
+  await cleanup();
 });
 
 // Remove and close the db and server
 afterAll(async () => {
-  await inMemoryDb.close();
+  await close();
 });
 
 const VALIDATE_RESET_LINK = gql`
@@ -242,11 +244,11 @@ describe("[Mutation.users]", () => {
     // Register user response should return accessToken & refreshToken strings
     const accessTokenPayload = verify(
       res.data.login.accessToken,
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET as string
     );
     const refreshTokenPayload = verify(
       res.data.login.refreshToken,
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET as string
     );
 
     expect(accessTokenPayload).toMatchObject({
@@ -289,11 +291,11 @@ describe("[Mutation.users]", () => {
     // Register user response should return accessToken & refreshToken strings
     const accessTokenPayload = verify(
       res.data.login.accessToken,
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET as string
     );
     const refreshTokenPayload = verify(
       res.data.login.refreshToken,
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET as string
     );
 
     expect(accessTokenPayload).toMatchObject({
@@ -306,15 +308,17 @@ describe("[Mutation.users]", () => {
     });
 
     const user = await User.findById(mockUser03._id.toString());
-    const userHashArr = user.password.split("$");
+    if (user) {
+      const userHashArr = user.password.split("$");
 
-    // User's migration status should be changed to true
-    expect(user).toMatchObject({
-      isMigrated: true,
-    });
+      // User's migration status should be changed to true
+      expect(user).toMatchObject({
+        isMigrated: true,
+      });
 
-    // User's password hash should not start with 'pbkdf2_sha256'
-    expect(userHashArr[0]).not.toEqual("pbkdf2_sha256");
+      // User's password hash should not start with 'pbkdf2_sha256'
+      expect(userHashArr[0]).not.toEqual("pbkdf2_sha256");
+    }
   });
 
   // LOGIN MUTATION WITH WRONG EMAIL
@@ -344,7 +348,10 @@ describe("[Mutation.users]", () => {
     });
 
     // Expected error comparison
-    expect(res.errors[0].message).toEqual("email: User not found");
+    expect(res.errors).toBeDefined();
+    if (res.errors) {
+      expect(res.errors[0].message).toEqual("email: User not found");
+    }
   });
 
   // LOGIN MUTATION WITH WRONG PASSWORD
@@ -374,7 +381,10 @@ describe("[Mutation.users]", () => {
     });
 
     // Expected error comparison
-    expect(res.errors[0].message).toEqual("password: Invalid credentials");
+    expect(res.errors).toBeDefined();
+    if (res.errors) {
+      expect(res.errors[0].message).toEqual("password: Invalid credentials");
+    }
   });
 
   // LOGOUT MUTATION
@@ -402,7 +412,10 @@ describe("[Mutation.users]", () => {
     const user = await User.findById(mockUser01._id.toString());
 
     // User's token version should be incremented
-    expect(user.tokenVersion).toEqual(mockUser01.tokenVersion + 1);
+    expect(user).not.toBeNull();
+    if (user) {
+      expect(user.tokenVersion).toEqual(mockUser01.tokenVersion + 1);
+    }
   });
 
   // REGISTER_AND_OR_CREATE_COMMUNITY MUTATION FOR USER & COMMUNITY
@@ -412,8 +425,10 @@ describe("[Mutation.users]", () => {
       context: () => {},
     });
 
-    // Mock uploadImg function
-    uploadImg.mockImplementation(() => JSON.stringify(mockUploadResponse));
+    // Mock mockedUploadImg function
+    mockedUploadImg.mockImplementation(() =>
+      JSON.stringify(mockUploadResponse)
+    );
 
     // userInput & communityInput
     const userInput = {
@@ -423,7 +438,7 @@ describe("[Mutation.users]", () => {
       apartment: "101",
       isNotified: true,
       isCreator: true,
-      image: uploadImg(),
+      image: mockedUploadImg(),
     };
     const communityInput = {
       name: "TestCommunity01",
@@ -444,50 +459,55 @@ describe("[Mutation.users]", () => {
       Community.findOne({ code: communityInput.code }),
     ]);
 
-    // Create community response should match input
-    expect(res.data.registerAndOrCreateCommunity.community).toMatchObject(
-      communityInput
-    );
+    expect(user).not.toBeNull();
+    expect(community).not.toBeNull();
 
-    // Created user should match to userInput
-    // && user's communities array should include created community's id
-    expect(user).toMatchObject({
-      name: userInput.name,
-      email: userInput.email,
-      communities: expect.arrayContaining([community._id]),
-      isAdmin: false,
-      isMigrated: true,
-      isNotified: true,
-    });
+    if (user && community) {
+      // Create community response should match input
+      expect(res.data.registerAndOrCreateCommunity.community).toMatchObject(
+        communityInput
+      );
 
-    // Created community should match to communityInput
-    // && createdCommunity's members array should include created user's id
-    // && the created community's creator should be created user's id
-    expect(community).toMatchObject({
-      ...communityInput,
-      members: expect.arrayContaining([user._id]),
-      creator: user._id,
-    });
+      // Created user should match to userInput
+      // && user's communities array should include created community's id
+      expect(user).toMatchObject({
+        name: userInput.name,
+        email: userInput.email,
+        communities: expect.arrayContaining([community._id]),
+        isAdmin: false,
+        isMigrated: true,
+        isNotified: true,
+      });
 
-    // Register user response should return accessToken & refreshToken strings
-    const accessTokenPayload = verify(
-      res.data.registerAndOrCreateCommunity.user.accessToken,
-      process.env.JWT_SECRET
-    );
-    const refreshTokenPayload = verify(
-      res.data.registerAndOrCreateCommunity.user.refreshToken,
-      process.env.JWT_SECRET
-    );
+      // Created community should match to communityInput
+      // && createdCommunity's members array should include created user's id
+      // && the created community's creator should be created user's id
+      expect(community).toMatchObject({
+        ...communityInput,
+        members: expect.arrayContaining([user._id]),
+        creator: user._id,
+      });
 
-    // The returned should contain info related to userInput
-    expect(accessTokenPayload).toMatchObject({
-      userId: user._id.toString(),
-      userName: userInput.name,
-      email: userInput.email,
-    });
-    expect(refreshTokenPayload).toMatchObject({
-      userId: user._id.toString(),
-    });
+      // Register user response should return accessToken & refreshToken strings
+      const accessTokenPayload = verify(
+        res.data.registerAndOrCreateCommunity.user.accessToken,
+        process.env.JWT_SECRET as string
+      );
+      const refreshTokenPayload = verify(
+        res.data.registerAndOrCreateCommunity.user.refreshToken,
+        process.env.JWT_SECRET as string
+      );
+
+      // The returned should contain info related to userInput
+      expect(accessTokenPayload).toMatchObject({
+        userId: user._id.toString(),
+        userName: userInput.name,
+        email: userInput.email,
+      });
+      expect(refreshTokenPayload).toMatchObject({
+        userId: user._id.toString(),
+      });
+    }
   });
 
   // REGISTER_AND_OR_CREATE_COMMUNITY MUTATION
@@ -497,8 +517,10 @@ describe("[Mutation.users]", () => {
       context: () => {},
     });
 
-    // Mock uploadImg function
-    uploadImg.mockImplementation(() => JSON.stringify(mockUploadResponse));
+    // Mock mockedUploadImg function
+    mockedUploadImg.mockImplementation(() =>
+      JSON.stringify(mockUploadResponse)
+    );
 
     const userInput = {
       name: "TestUser02",
@@ -507,7 +529,7 @@ describe("[Mutation.users]", () => {
       apartment: "102",
       isNotified: true,
       communityId: mockCommunity01._id.toString(),
-      image: uploadImg(),
+      image: mockedUploadImg(),
     };
 
     // Create test interface
@@ -523,41 +545,46 @@ describe("[Mutation.users]", () => {
       Community.findById(mockCommunity01._id.toString()),
     ]);
 
-    // Created user should match to userInput
-    // && user's communities array should include created community's id
-    expect(user).toMatchObject({
-      name: userInput.name,
-      email: userInput.email,
-      communities: expect.arrayContaining([community._id]),
-      isAdmin: false,
-      isMigrated: true,
-      isNotified: true,
-    });
+    expect(user).not.toBeNull();
+    expect(community).not.toBeNull();
 
-    // Target community's members array should include created user's id
-    expect(community).toMatchObject({
-      members: expect.arrayContaining([user._id]),
-    });
+    if (user && community) {
+      // Created user should match to userInput
+      // && user's communities array should include created community's id
+      expect(user).toMatchObject({
+        name: userInput.name,
+        email: userInput.email,
+        communities: expect.arrayContaining([community._id]),
+        isAdmin: false,
+        isMigrated: true,
+        isNotified: true,
+      });
 
-    // Register user response should return accessToken & refreshToken strings
-    const accessTokenPayload = verify(
-      res.data.registerAndOrCreateCommunity.user.accessToken,
-      process.env.JWT_SECRET
-    );
-    const refreshTokenPayload = verify(
-      res.data.registerAndOrCreateCommunity.user.refreshToken,
-      process.env.JWT_SECRET
-    );
+      // Target community's members array should include created user's id
+      expect(community).toMatchObject({
+        members: expect.arrayContaining([user._id]),
+      });
 
-    // The returned should contain info related to userInput
-    expect(accessTokenPayload).toMatchObject({
-      userId: user._id.toString(),
-      userName: userInput.name,
-      email: userInput.email,
-    });
-    expect(refreshTokenPayload).toMatchObject({
-      userId: user._id.toString(),
-    });
+      // Register user response should return accessToken & refreshToken strings
+      const accessTokenPayload = verify(
+        res.data.registerAndOrCreateCommunity.user.accessToken,
+        process.env.JWT_SECRET as string
+      );
+      const refreshTokenPayload = verify(
+        res.data.registerAndOrCreateCommunity.user.refreshToken,
+        process.env.JWT_SECRET as string
+      );
+
+      // The returned should contain info related to userInput
+      expect(accessTokenPayload).toMatchObject({
+        userId: user._id.toString(),
+        userName: userInput.name,
+        email: userInput.email,
+      });
+      expect(refreshTokenPayload).toMatchObject({
+        userId: user._id.toString(),
+      });
+    }
   });
 
   // UPDATE_USER MUTATION
@@ -580,8 +607,8 @@ describe("[Mutation.users]", () => {
       context: () => ({ user: { userId: mockUser01._id } }),
     });
 
-    // Mock uploadImg function
-    uploadImg.mockImplementation(() =>
+    // Mock mockedUploadImg function
+    mockedUploadImg.mockImplementation(() =>
       JSON.stringify(updatedMockUploadResponse)
     );
 
@@ -589,7 +616,7 @@ describe("[Mutation.users]", () => {
     const mutationInput = {
       name: "MockUser01+",
       apartment: "001+",
-      image: uploadImg(),
+      image: mockedUploadImg(),
     };
 
     // Update mockUser01's name, image, apartment
@@ -614,7 +641,7 @@ describe("[Mutation.users]", () => {
         userId: mockUser01._id.toString(),
         tokenVersion: mockUser01.tokenVersion,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET as string,
       {
         expiresIn: "7d",
       }
@@ -634,11 +661,11 @@ describe("[Mutation.users]", () => {
 
     const accessTokenPayload = verify(
       res.data.tokenRefresh.accessToken,
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET as string
     );
     const refreshTokenPayload = verify(
       res.data.tokenRefresh.refreshToken,
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET as string
     );
 
     expect(accessTokenPayload).toMatchObject({
@@ -659,7 +686,7 @@ describe("[Mutation.users]", () => {
         userId: mockUser01._id.toString(),
         tokenVersion: mockUser01.tokenVersion - 1,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET as string,
       {
         expiresIn: "7d",
       }
@@ -677,14 +704,17 @@ describe("[Mutation.users]", () => {
       variables: { token: refreshToken },
     });
 
-    expect(res.errors[0].message).toEqual("Please login again");
+    expect(res.errors).toBeDefined();
+    if (res.errors) {
+      expect(res.errors[0].message).toEqual("Please login again");
+    }
   });
 
   // TOKEN_REFRESH MUTATION { token }
   it("Refresh user's accessToken with expired refreshToken", async () => {
     const refreshToken = sign(
       { userId: mockUser01._id.toString() },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET as string,
       {
         expiresIn: "0s",
       }
@@ -702,7 +732,10 @@ describe("[Mutation.users]", () => {
       variables: { token: refreshToken },
     });
 
-    expect(res.errors[0].message).toEqual("Please login again");
+    expect(res.errors).toBeDefined();
+    if (res.errors) {
+      expect(res.errors[0].message).toEqual("Please login again");
+    }
   });
 
   // FORGOT_PASSWORD MUTATION
@@ -713,7 +746,7 @@ describe("[Mutation.users]", () => {
       context: () => ({ redis }),
     });
 
-    sendMail.mockImplementation(() => {});
+    mockedSendMail.mockImplementation(() => {});
 
     const { mutate } = createTestClient(server);
     const res = await mutate({
@@ -743,7 +776,7 @@ describe("[Mutation.users]", () => {
       context: () => ({ redis }),
     });
 
-    sendMail.mockImplementation(() => {});
+    mockedSendMail.mockImplementation(() => {});
 
     const { mutate } = createTestClient(server);
     const res = await mutate({
@@ -765,7 +798,7 @@ describe("[Mutation.users]", () => {
       context: () => ({ redis }),
     });
 
-    sendMail.mockImplementation(() => {});
+    mockedSendMail.mockImplementation(() => {});
 
     const { mutate } = createTestClient(server);
     const res = await mutate({
@@ -773,7 +806,10 @@ describe("[Mutation.users]", () => {
       variables: { email: "non.existent@email.com" },
     });
 
-    expect(res.errors[0].message).toEqual("email: User not found");
+    expect(res.errors).toBeDefined();
+    if (res.errors) {
+      expect(res.errors[0].message).toEqual("email: User not found");
+    }
   });
 
   // RESET_PASSWORD MUTATION { resetKey, password }
@@ -810,14 +846,17 @@ describe("[Mutation.users]", () => {
       User.findById(mockUser01._id.toString()),
     ]);
 
-    const isPasswordValid = await bcryptjs.compare(
-      resetPasswordInput.password,
-      user.password
-    );
-
+    expect(user).not.toBeNull();
     expect(userIdKey).toBeNull();
     expect(existingResetKey).toBeNull();
-    expect(isPasswordValid).toBeTruthy();
+
+    if (user) {
+      const isPasswordValid = await bcryptjs.compare(
+        resetPasswordInput.password,
+        user.password
+      );
+      expect(isPasswordValid).toBeTruthy();
+    }
   });
 
   // RESET_PASSWORD MUTATION { resetKey, password }
@@ -854,15 +893,18 @@ describe("[Mutation.users]", () => {
       User.findById(mockUser03._id.toString()),
     ]);
 
-    const isPasswordValid = await bcryptjs.compare(
-      resetPasswordInput.password,
-      user.password
-    );
-
+    expect(user).not.toBeNull();
     expect(userIdKey).toBeNull();
     expect(existingResetKey).toBeNull();
-    expect(isPasswordValid).toBeTruthy();
-    expect(user.isMigrated).toBeTruthy();
+
+    if (user) {
+      const isPasswordValid = await bcryptjs.compare(
+        resetPasswordInput.password,
+        user.password
+      );
+      expect(isPasswordValid).toBeTruthy();
+      expect(user.isMigrated).toBeTruthy();
+    }
   });
 
   // ADD_FCM_TOKEN_TO_USER FOR NEW TOKEN
@@ -911,6 +953,10 @@ describe("[Mutation.users]", () => {
     });
 
     // The user's fcmTokens should only contain the existing fcmToken
-    expect(user.fcmTokens).toHaveLength(2);
+
+    expect(user).not.toBeNull();
+    if (user) {
+      expect(user.fcmTokens).toHaveLength(2);
+    }
   });
 });

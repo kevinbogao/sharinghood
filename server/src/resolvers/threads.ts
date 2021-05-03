@@ -1,9 +1,9 @@
-import { AuthenticationError } from "apollo-server";
+import { ApolloError, AuthenticationError } from "apollo-server";
 import User, { UserDocument } from "../models/user";
 import Post, { PostDocument } from "../models/post";
 import Thread, { ThreadDocument } from "../models/thread";
 import Request, { RequestDocument } from "../models/request";
-import { UserContext } from "../types";
+import { UserTokenContext } from "../utils/authToken";
 import pushNotification from "../utils/pushNotification";
 
 interface ThreadInput {
@@ -21,16 +21,14 @@ const threadsResolvers = {
       {
         threadInput: { content, isPost, parentId, communityId, recipientId },
       }: { threadInput: ThreadInput },
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ): Promise<ThreadDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId } = user;
 
       try {
-        let parent:
-          | (PostDocument | null | undefined)
-          | (RequestDocument | null | undefined);
-        let recipient: UserDocument | null | undefined;
+        // Declare top-level parent variable which could be post or request
+        let parent: PostDocument | RequestDocument | null;
 
         // Create & save thread && get parent (post or request)
         const thread: ThreadDocument | null = await Thread.create({
@@ -39,30 +37,47 @@ const threadsResolvers = {
           community: communityId,
         });
 
-        if (isPost) parent = await Post.findById(parentId);
-        else parent = await Request.findById(parentId);
-        if (recipientId) recipient = await User.findById(recipientId);
+        // Find post if parent type is post
+        if (isPost) {
+          parent = await Post.findById(parentId);
+          if (!parent) throw new ApolloError("Post not found");
 
-        if (parent) {
-          // Add threadId to post/request
-          parent.threads.push(thread);
-          await parent.save();
+          // Find request if parent type is not post
+        } else {
+          parent = await Request.findById(parentId);
+          if (!parent) throw new ApolloError("Request not found");
+        }
 
-          // Send push notification to recipient if current user is not the owner
-          if (recipient) {
-            pushNotification(
-              {},
-              `${user.userName} commented your ${
-                isPost ? "post" : "request"
-              } of ${parent.title}`,
-              [
-                {
-                  _id: recipient._id,
-                  fcmTokens: recipient.fcmTokens,
-                },
-              ]
+        // Add thread to parent's threads & save parent
+        parent.threads.push(thread);
+        await parent.save();
+
+        // Find recipient if recipientId is given
+        if (recipientId) {
+          const recipient: UserDocument | null = await User.findById(
+            recipientId
+          );
+
+          // Throw error if recipient is not found
+          if (!recipient) {
+            throw new ApolloError(
+              "Could not find recipient, notification will not be send"
             );
           }
+
+          // Sent push notification if recipient is found
+          pushNotification(
+            {},
+            `${user.userName} commented your ${
+              isPost ? "post" : "request"
+            } of ${parent.title}`,
+            [
+              {
+                _id: recipient._id,
+                fcmTokens: recipient.fcmTokens,
+              },
+            ]
+          );
         }
 
         return thread;

@@ -2,7 +2,7 @@ import { Document, Schema, Types, model } from "mongoose";
 import { UserDocument } from "./user";
 import { NotificationDocument } from "./notification";
 
-export interface Message {
+interface Message {
   text: string;
   sender: Types.ObjectId | UserDocument;
   notification: Types.ObjectId | NotificationDocument;

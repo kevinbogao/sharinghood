@@ -5,13 +5,13 @@ import { Types } from "mongoose";
 import User, { UserDocument } from "../models/user";
 import { PostDocument } from "../models/post";
 import Community, { CommunityDocument } from "../models/community";
-import { UserContext } from "../types";
 import { CommunityInput } from "./communities";
 import {
   generateTokens,
   verifyToken,
-  TokenPayload,
   GeneratedTokens,
+  UserTokenContext,
+  RefreshTokenPayload,
 } from "../utils/authToken";
 import uploadImg from "../utils/uploadImg";
 import handleErrors from "../utils/handleErrors";
@@ -37,7 +37,7 @@ const usersResolvers = {
     user: async (
       _: unknown,
       { userId, communityId }: { userId: string; communityId: string },
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ): Promise<UserDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
@@ -181,7 +181,7 @@ const usersResolvers = {
     logout: async (
       _: unknown,
       __: unknown,
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ): Promise<boolean> => {
       if (!user) return false;
 
@@ -313,7 +313,7 @@ const usersResolvers = {
     updateUser: async (
       _: unknown,
       { userInput: { name, image, desc, apartment } }: { userInput: UserInput },
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ): Promise<UserDocument | null> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId }: { userId: string } = user;
@@ -349,7 +349,7 @@ const usersResolvers = {
     ): Promise<GeneratedTokens | null> => {
       try {
         // Validate token
-        const tokenPayload: TokenPayload | null = verifyToken(token);
+        const tokenPayload = verifyToken(token) as RefreshTokenPayload | null;
 
         // Throw auth error if token is invalid or userId is not included
         if (!tokenPayload || !tokenPayload.userId) {
@@ -471,7 +471,7 @@ const usersResolvers = {
     addFcmToken: async (
       _: unknown,
       { fcmToken }: { fcmToken: string },
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ): Promise<boolean> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 

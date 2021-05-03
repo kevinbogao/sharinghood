@@ -1,9 +1,9 @@
 import { AuthenticationError } from "apollo-server";
 import { Types } from "mongoose";
-import { UserContext } from "../types";
-import handleErrors from "../utils/handleErrors";
 import User, { UserDocument } from "../models/user";
 import Community, { CommunityDocument } from "../models/community";
+import handleErrors from "../utils/handleErrors";
+import { UserTokenContext } from "../utils/authToken";
 
 export interface CommunityInput {
   name: string;
@@ -54,7 +54,7 @@ const communitiesResolvers = {
     communities: async (
       _: unknown,
       __: unknown,
-      { user, redis }: { user: UserContext; redis: any }
+      { user, redis }: { user: UserTokenContext; redis: any }
     ): Promise<Array<CommunityDocument> | number> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
@@ -102,7 +102,7 @@ const communitiesResolvers = {
       {
         communityInput: { name, code, zipCode },
       }: { communityInput: CommunityInput },
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ): Promise<CommunityDocument | null> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
@@ -136,7 +136,7 @@ const communitiesResolvers = {
     joinCommunity: async (
       _: unknown,
       { communityId }: { communityId: string },
-      { user }: { user: UserContext }
+      { user }: { user: UserTokenContext }
     ) => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 

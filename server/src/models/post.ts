@@ -3,7 +3,7 @@ import { UserDocument } from "./user";
 import { ThreadDocument } from "./thread";
 import { BookingDocument } from "./booking";
 
-export interface Post {
+interface Post {
   title: string;
   desc: string;
   condition: number;

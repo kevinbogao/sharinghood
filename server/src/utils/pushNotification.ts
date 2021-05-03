@@ -1,15 +1,13 @@
 import gcm, { IResponseBody } from "node-gcm";
 import User from "../models/user";
 
-type Token = string;
-
 type InvalidTokens = {
-  [userId: string]: Array<Token>;
+  [userId: string]: Array<string>;
 };
 
 type Receiver = {
   _id: string;
-  fcmTokens: Array<Token>;
+  fcmTokens: Array<string>;
 };
 
 async function removeInvalidTokens(

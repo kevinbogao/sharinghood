@@ -1,7 +1,7 @@
 import { Document, Schema, Types, model } from "mongoose";
 import { UserDocument } from "./user";
 
-export interface Thread {
+interface Thread {
   content: string;
   poster: Types.ObjectId | UserDocument;
   community: Types.ObjectId | UserDocument;

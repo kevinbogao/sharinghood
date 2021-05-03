@@ -1,25 +1,26 @@
 import { sign, verify } from "jsonwebtoken";
+import { UserDocument } from "../models/user";
 
-type User = {
-  _id?: string;
-  name: string;
-  email: string;
-  isAdmin: boolean;
-  tokenVersion: number;
-};
-
-export interface TokenPayload extends User {
+export interface RefreshTokenPayload {
   userId: string;
+  tokenVersion: number;
+  iat: number;
+  exp: number;
 }
 
-export interface UserContext extends TokenPayload {}
+export interface UserTokenContext
+  extends Omit<RefreshTokenPayload, "tokenVersion"> {
+  userName: string;
+  email: string;
+  isAdmin?: boolean;
+}
 
 export interface GeneratedTokens {
   accessToken: string;
   refreshToken: string;
 }
 
-export function generateTokens(user: User): GeneratedTokens {
+export function generateTokens(user: UserDocument): GeneratedTokens {
   const refreshToken = sign(
     { userId: user._id, tokenVersion: user.tokenVersion },
     process.env.JWT_SECRET as string,
@@ -43,12 +44,13 @@ export function generateTokens(user: User): GeneratedTokens {
   return { accessToken, refreshToken };
 }
 
-export function verifyToken(token: string): TokenPayload | null {
+export function verifyToken(
+  token: string
+): RefreshTokenPayload | UserTokenContext | null {
   try {
-    return verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as TokenPayload | null;
+    return verify(token, process.env.JWT_SECRET as string) as
+      | (RefreshTokenPayload | UserTokenContext)
+      | null;
   } catch (err) {
     return null;
   }

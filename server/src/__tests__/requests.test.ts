@@ -1,9 +1,8 @@
-const { createTestClient } = require("apollo-server-testing");
-const { gql } = require("apollo-server");
-const { constructTestServer } = require("./__utils");
-const inMemoryDb = require("./__mocks__/inMemoryDb");
-const {
-  createInitData,
+import { createTestClient } from "apollo-server-testing";
+import { gql } from "apollo-server";
+import { constructTestServer } from "./__utils";
+import { connect, close, cleanup } from "./__mocks__/inMemoryDb";
+import createInitData, {
   mockUser01,
   mockUser03,
   mockThread02,
@@ -11,22 +10,24 @@ const {
   mockRequest02,
   mockCommunity01,
   mockUploadResponse,
-} = require("./__mocks__/createInitData");
-const User = require("../models/user");
-const Thread = require("../models/thread");
-const Request = require("../models/request");
-const Community = require("../models/community");
+} from "./__mocks__/createInitData";
+import User from "../models/user";
+import Thread from "../models/thread";
+import Request from "../models/request";
+import Community from "../models/community";
+import uploadImg from "../utils/uploadImg";
+import pushNotification from "../utils/pushNotification";
 
 // Mocking dependencies
 jest.mock("../utils/uploadImg");
-const uploadImg = require("../utils/uploadImg");
+const mockedUploadImg = uploadImg as jest.Mock<any>;
 
 jest.mock("../utils/pushNotification");
-const pushNotification = require("../utils/pushNotification");
+const mockedPushNotification = pushNotification as jest.Mock<any>;
 
 // Connect to a new in-memory database before running any tests.
 beforeAll(async () => {
-  await inMemoryDb.connect();
+  await connect();
 });
 
 beforeEach(async () => {
@@ -35,12 +36,12 @@ beforeEach(async () => {
 
 // Clear all test data after every test.
 afterEach(async () => {
-  await inMemoryDb.cleanup();
+  await cleanup();
 });
 
 // Remove and close the db and server
 afterAll(async () => {
-  await inMemoryDb.close();
+  await close();
 });
 
 /* REQUESTS QUERIES */
@@ -198,13 +199,15 @@ describe("[Mutation.requests]", () => {
       }),
     });
 
-    uploadImg.mockImplementation(() => JSON.stringify(mockUploadResponse));
-    pushNotification.mockImplementation(() => {});
+    mockedUploadImg.mockImplementation(() =>
+      JSON.stringify(mockUploadResponse)
+    );
+    mockedPushNotification.mockImplementation(() => {});
 
     const requestInput = {
       title: "Test Request 01",
       desc: "testRequest01",
-      image: uploadImg(),
+      image: mockedUploadImg(),
       dateType: 2,
       dateNeed: `${new Date()}`,
       dateReturn: `${new Date()}`,
@@ -246,7 +249,7 @@ describe("[Mutation.requests]", () => {
 
     const { mutate } = createTestClient(server);
     const res = await mutate({
-      query: DELETE_REQUEST,
+      mutation: DELETE_REQUEST,
       variables: { requestId: mockRequest01._id.toString() },
     });
 
@@ -263,9 +266,12 @@ describe("[Mutation.requests]", () => {
     ]);
 
     expect(request).toBeNull();
-    expect(user.requests).not.toEqual(
-      expect.arrayContaining([mockRequest01._id])
-    );
+    expect(user).not.toBeNull();
+    if (user) {
+      expect(user.requests).not.toEqual(
+        expect.arrayContaining([mockRequest01._id])
+      );
+    }
     expect(threads).toHaveLength(0);
     communities.map((community) =>
       expect(community.requests).not.toEqual(
@@ -290,10 +296,15 @@ describe("[Mutation.requests]", () => {
 
     const { mutate } = createTestClient(server);
     const res = await mutate({
-      query: DELETE_REQUEST,
+      mutation: DELETE_REQUEST,
       variables: { requestId: mockRequest01._id.toString() },
     });
 
-    expect(res.errors[0].message).toEqual("ForbiddenError: Unauthorized user");
+    expect(res.errors).toBeDefined();
+    if (res.errors) {
+      expect(res.errors[0].message).toEqual(
+        "ForbiddenError: Unauthorized user"
+      );
+    }
   });
 });

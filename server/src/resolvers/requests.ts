@@ -164,9 +164,9 @@ const requestsResolvers = {
         creator.requests.push(request);
 
         // Parse array of members object into array of emails if member is notified
-        const emails: Array<string> = community.members
-          .filter((member: any) => member.isNotified === true)
-          .map((member: any) => member.email);
+        const emails: Array<string> = (community.members as Array<UserDocument>)
+          .filter((member: UserDocument) => member.isNotified === true)
+          .map((member: UserDocument) => member.email);
 
         // Save community & sent email to subscribed users
         await Promise.all([
@@ -181,16 +181,15 @@ const requestsResolvers = {
               JSON.parse(imgData).secure_url,
               `${process.env.ORIGIN}/requests/${request._id}`,
               dateNeed,
-              // @ts-ignore
               emails,
               `${userName} requested ${title} in your community.`
             ),
         ]);
 
         // Get a list of users that has FCM tokens
-        const receivers = community.members
-          .filter((member: any) => member.fcmTokens.length)
-          .map((member: any) => ({
+        const receivers = (community.members as Array<UserDocument>)
+          .filter((member: UserDocument) => member.fcmTokens.length)
+          .map((member: UserDocument) => ({
             _id: member._id,
             fcmTokens: member.fcmTokens,
           }));
@@ -218,7 +217,7 @@ const requestsResolvers = {
       _: unknown,
       { requestId }: { requestId: string },
       { user }: { user: UserTokenContext }
-    ): Promise<RequestDocument | null> => {
+    ): Promise<RequestDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
@@ -259,9 +258,6 @@ const requestsResolvers = {
         ]);
 
         return request;
-        // }
-
-        // return null;
       } catch (err) {
         throw new Error(err);
       }

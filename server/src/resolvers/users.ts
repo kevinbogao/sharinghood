@@ -1,6 +1,7 @@
-import { AuthenticationError, SchemaError } from "apollo-server";
+import { ApolloError, AuthenticationError } from "apollo-server";
 import crypto from "crypto";
 import bcryptjs from "bcryptjs";
+import { Redis } from "ioredis";
 import { Types } from "mongoose";
 import User, { UserDocument } from "../models/user";
 import { PostDocument } from "../models/post";
@@ -117,7 +118,7 @@ const usersResolvers = {
     validateResetLink: async (
       _: unknown,
       { resetKey }: { resetKey: string },
-      { redis }: any
+      { redis }: { redis: Redis }
     ): Promise<boolean> => {
       try {
         // Check if key is still valid
@@ -256,7 +257,7 @@ const usersResolvers = {
         // Delete user and return error if community is not found
         if (!community) {
           User.deleteOne({ _id: user._id });
-          throw new SchemaError(
+          throw new ApolloError(
             "Could not find community, user cannot be created"
           );
         }
@@ -314,31 +315,28 @@ const usersResolvers = {
       _: unknown,
       { userInput: { name, image, desc, apartment } }: { userInput: UserInput },
       { user }: { user: UserTokenContext }
-    ): Promise<UserDocument | null> => {
+    ): Promise<UserDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId }: { userId: string } = user;
 
       try {
         // Get user from database
         const userData: UserDocument | null = await User.findById(userId);
+        if (!userData) throw new ApolloError("User not found");
 
         // Upload image if it exists
         let imgData: string | undefined;
         if (image) imgData = await uploadImg(image);
 
-        if (userData) {
-          // Conditionally update user
-          if (name) userData.name = name;
-          if (image && imgData) userData.image = imgData;
-          if (desc) userData.desc = desc;
-          if (apartment) userData.apartment = apartment;
+        // Conditionally update user
+        if (name) userData.name = name;
+        if (image && imgData) userData.image = imgData;
+        if (desc) userData.desc = desc;
+        if (apartment) userData.apartment = apartment;
 
-          // Save to user
-          const updatedUser: UserDocument = await userData.save();
-          return updatedUser;
-        }
-
-        return null;
+        // Save to user
+        const updatedUser: UserDocument = await userData.save();
+        return updatedUser;
       } catch (err) {
         throw new Error(err);
       }
@@ -346,9 +344,10 @@ const usersResolvers = {
     tokenRefresh: async (
       _: unknown,
       { token }: { token: string }
-    ): Promise<GeneratedTokens | null> => {
+    ): Promise<GeneratedTokens> => {
       try {
         // Validate token
+        // const tokenPayload = verifyToken(token) as RefreshTokenPayload | null;
         const tokenPayload = verifyToken(token) as RefreshTokenPayload | null;
 
         // Throw auth error if token is invalid or userId is not included
@@ -360,24 +359,21 @@ const usersResolvers = {
         const user: UserDocument | null = await User.findOne({
           _id: tokenPayload.userId,
         });
+        if (!user) throw new ApolloError("User not found");
 
-        if (user) {
-          // Throw auth error if token's version is not the same as user's tokenVersion
-          if (tokenPayload.tokenVersion !== user.tokenVersion) {
-            throw new AuthenticationError("Please login again");
-          }
-
-          // Refresh accessToken & refreshToken
-          const { accessToken, refreshToken } = generateTokens(user);
-
-          // Update user's last login date
-          user.lastLogin = new Date();
-          await user.save();
-
-          return { accessToken, refreshToken };
+        // Throw auth error if token's version is not the same as user's tokenVersion
+        if (tokenPayload.tokenVersion !== user.tokenVersion) {
+          throw new AuthenticationError("Please login again");
         }
 
-        return null;
+        // Refresh accessToken & refreshToken
+        const { accessToken, refreshToken } = generateTokens(user);
+
+        // Update user's last login date
+        user.lastLogin = new Date();
+        await user.save();
+
+        return { accessToken, refreshToken };
       } catch (err) {
         handleErrors(err);
         throw err;
@@ -386,7 +382,7 @@ const usersResolvers = {
     forgotPassword: async (
       _: unknown,
       { email }: { email: string },
-      { redis }: any
+      { redis }: { redis: Redis }
     ): Promise<boolean> => {
       try {
         // Find user by email & check if reset_key exists
@@ -398,12 +394,14 @@ const usersResolvers = {
         // Throw error if user is not found
         if (!user) throw new AuthenticationError("email: User not found");
 
-        // Create and send reset password link to email if existing resetkey is not found
+        // Create and send reset password link to email if existing reset-key
+        // is not found
         if (!existingResetKey) {
           // Generate random reset key
           const resetKey = crypto.randomBytes(16).toString("hex");
 
-          // Save reset_password key & reset_key in redis cache && send reset link to user
+          // Save reset_password key & reset_key in redis cache && send
+          // reset link to user
           await Promise.all([
             redis.set(
               `reset_password:${resetKey}`,
@@ -438,7 +436,7 @@ const usersResolvers = {
     resetPassword: async (
       _: unknown,
       { resetKey, password }: { resetKey: string; password: string },
-      { redis }: any
+      { redis }: { redis: Redis }
     ): Promise<boolean> => {
       try {
         // Get userId via resetKey from redis & hash user password
@@ -449,21 +447,19 @@ const usersResolvers = {
 
         // Update user's password & migration status
         const user: UserDocument | null = await User.findById(userId);
-        if (user) {
-          user.password = hashedPassword;
-          user.isMigrated = true;
+        if (!user) throw new ApolloError("User not found");
 
-          // Save user && delete reset_password key & reset_key in redis cache
-          await Promise.all([
-            user.save(),
-            redis.del(`reset_password:${resetKey}`),
-            redis.del(`reset_key:${user.email}`),
-          ]);
+        user.password = hashedPassword;
+        user.isMigrated = true;
 
-          return true;
-        }
+        // Save user && delete reset_password key & reset_key in redis cache
+        await Promise.all([
+          user.save(),
+          redis.del(`reset_password:${resetKey}`),
+          redis.del(`reset_key:${user.email}`),
+        ]);
 
-        return false;
+        return true;
       } catch (err) {
         throw new Error(err);
       }

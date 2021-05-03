@@ -1,4 +1,5 @@
 import { ApolloError, AuthenticationError } from "apollo-server";
+import { Redis } from "ioredis";
 import { Types } from "mongoose";
 import User, { UserDocument } from "../models/user";
 import Post, { PostDocument } from "../models/post";
@@ -12,8 +13,8 @@ import updateBookingMail from "../utils/sendMail/updateBookingMail";
 interface NotificationInput {
   ofType: number;
   recipientId: string;
-  bookingInput?: BookingInput;
   communityId: string;
+  bookingInput?: BookingInput;
 }
 
 const notificationsResolvers = {
@@ -106,7 +107,7 @@ const notificationsResolvers = {
     notifications: async (
       _: unknown,
       { communityId }: { communityId: string },
-      { user, redis }: { user: UserTokenContext; redis: any }
+      { user, redis }: { user: UserTokenContext; redis: Redis }
     ): Promise<Array<Types.ObjectId | NotificationDocument>> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
@@ -272,8 +273,8 @@ const notificationsResolvers = {
       {
         notificationInput: { ofType, recipientId, communityId, bookingInput },
       }: { notificationInput: NotificationInput },
-      { user, redis }: { user: UserTokenContext; redis: any }
-    ) => {
+      { user, redis }: { user: UserTokenContext; redis: Redis }
+    ): Promise<NotificationDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
@@ -362,7 +363,10 @@ const notificationsResolvers = {
             }
           ),
           // Set communityId key to notifications:userId hash in redis
-          redis.hset(`notifications:${recipientId}`, `${communityId}`, true),
+          redis.hset(
+            `notifications:${recipientId}`,
+            new Map([[`${communityId}`, "true"]])
+          ),
         ]);
 
         // Get participants and add to return value

@@ -35,7 +35,7 @@ const bookingsResolvers = {
         },
       }: { bookingInput: BookingInput },
       { user, redis }: { user: UserTokenContext; redis: any }
-    ): Promise<BookingDocument | null> => {
+    ): Promise<BookingDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
       try {
@@ -43,71 +43,70 @@ const bookingsResolvers = {
         const booking: BookingDocument | null = await Booking.findById(
           bookingId
         ).populate("post");
+        if (!booking) throw new Error("Booking not found");
+
         const notification: NotificationDocument | null = await Notification.findById(
           notificationId
         );
+        if (!notification) throw new Error("Notification not found");
+
         const recipient: UserDocument | null = await User.findById(
           notifyRecipientId
         ).lean();
+        if (!recipient) throw new Error("Recipient not found");
 
-        if (booking && notification && recipient) {
-          // Get post & check if current user is post creator
-          // && throw error if not
+        // Get post & check if current user is post creator
+        // && throw error if not
+        const post: PostDocument | null = await Post.findById(
+          booking.post
+        ).lean();
+        if (!post) throw new Error("Post not found");
 
-          const post: PostDocument | null = await Post.findById(
-            booking.post
-          ).lean();
-
-          if (post) {
-            if (post.creator.toString() !== user.userId) {
-              throw new Error("Unauthorized user");
-            }
-
-            // Update booking status
-            booking.status = status;
-
-            // Set recipient's notification isRead status to false
-            notification.isRead[notifyRecipientId] = false;
-            notification.markModified("isRead");
-
-            // Save booking & send booking notification email if user is notified
-            await Promise.all([
-              booking.save(),
-              notification.save(),
-              process.env.NODE_ENV === "production" &&
-                recipient.isNotified &&
-                updateBookingMail(
-                  `${process.env.ORIGIN}/notifications`,
-                  recipient.email,
-                  notifyContent
-                ),
-              // Set communityId key to notifications:userId hash in redis
-              redis.hset(
-                `notifications:${notifyRecipientId}`,
-                `${communityId}`,
-                true
-              ),
-            ]);
-
-            // Send push notification to requester
-            pushNotification(
-              { communityId },
-              `${user.userName} ${
-                status === 1 ? "accepted" : "denied"
-              } your booking on ${post.title}`,
-              [
-                {
-                  _id: recipient._id,
-                  fcmTokens: recipient.fcmTokens,
-                },
-              ]
-            );
-
-            return booking;
-          }
+        if (post.creator.toString() !== user.userId.toString()) {
+          throw new Error("Unauthorized user");
         }
 
-        return null;
+        // Update booking status
+        booking.status = status;
+
+        // Set recipient's notification isRead status to false
+        notification.isRead[notifyRecipientId] = false;
+        notification.markModified("isRead");
+
+        // Save booking & send booking notification email if user is notified
+        await Promise.all([
+          booking.save(),
+          notification.save(),
+          process.env.NODE_ENV === "production" &&
+            recipient.isNotified &&
+            updateBookingMail(
+              `${process.env.ORIGIN}/notifications`,
+              recipient.email,
+              notifyContent
+            ),
+          // Set communityId key to notifications:userId hash in redis
+          redis.hset(
+            `notifications:${notifyRecipientId}`,
+            `${communityId}`,
+            true
+          ),
+        ]);
+
+        // Send push notification to requester
+        pushNotification(
+          { communityId },
+          `${user.userName} ${
+            status === 1 ? "accepted" : "denied"
+          } your booking on ${post.title}`,
+          [
+            {
+              _id: recipient._id,
+              fcmTokens: recipient.fcmTokens,
+            },
+          ]
+        );
+
+        return booking;
       } catch (err) {
         throw new Error(err);
       }

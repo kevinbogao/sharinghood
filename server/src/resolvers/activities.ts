@@ -4,7 +4,10 @@ import User from "../models/user";
 import Post from "../models/post";
 import Request from "../models/request";
 import Booking, { BookingDocument } from "../models/booking";
-import Community, { CommunityDocument } from "../models/community";
+import Community, {
+  CommunityDocument,
+  CommunityBaseDocument,
+} from "../models/community";
 import { UserTokenContext } from "../utils/authToken";
 
 interface CommunitiesActivities {
@@ -16,14 +19,10 @@ interface CommunitiesActivities {
   communitiesActivities: Array<CommunityDocument>;
 }
 
-// interface CommunityActivitiesRes extends CommunityDocument {
-//   // _id: Types.ObjectId;
-//   numUsers: number;
-//   numPosts: number;
-//   numRequests: number;
-//   numBookings: number;
-//   bookings: Array<BookingDocument>;
-// }
+interface CommunityActivitiesRes extends CommunityBaseDocument {
+  _id?: Types.ObjectId;
+  bookings: Array<BookingDocument>;
+}
 
 const activitiesResolvers = {
   Query: {
@@ -92,7 +91,7 @@ const activitiesResolvers = {
       _: unknown,
       { communityId }: { communityId: string },
       { user }: { user: UserTokenContext }
-    ) => {
+    ): Promise<CommunityActivitiesRes> => {
       if (!user || !user.isAdmin) {
         throw new AuthenticationError("Not permitted");
       }

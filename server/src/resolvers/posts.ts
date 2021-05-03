@@ -3,6 +3,7 @@ import {
   AuthenticationError,
   ForbiddenError,
 } from "apollo-server";
+import { Redis } from "ioredis";
 import { Types } from "mongoose";
 import User, { UserDocument } from "../models/user";
 import Post, { PostDocument } from "../models/post";
@@ -13,7 +14,11 @@ import Community, { CommunityDocument } from "../models/community";
 import Notification, { NotificationDocument } from "../models/notification";
 import uploadImg from "../utils/uploadImg";
 import { UserTokenContext } from "../utils/authToken";
-import pushNotification from "../utils/pushNotification";
+import pushNotification, { Receiver } from "../utils/pushNotification";
+
+interface InvalidUserNotifications {
+  [participant: string]: Array<Types.ObjectId>;
+}
 
 interface PostInput {
   postId: string;
@@ -36,7 +41,7 @@ const postsResolvers = {
   Query: {
     post: async (
       _: unknown,
-      { postId }: { postId: any },
+      { postId }: { postId: string },
       { user }: { user: UserTokenContext }
     ): Promise<PostDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
@@ -136,7 +141,7 @@ const postsResolvers = {
         postInput: { title, desc, image, condition, isGiveaway, requesterId },
         communityId,
       }: { postInput: PostInput; communityId: Types.ObjectId },
-      { user, redis }: { user: UserTokenContext; redis: any }
+      { user, redis }: { user: UserTokenContext; redis: Redis }
     ): Promise<CreatePostRes> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
       const { userId, userName }: { userId: string; userName: string } = user;
@@ -178,9 +183,9 @@ const postsResolvers = {
           await community.save();
 
           // Get a list of users that has FCM tokens
-          const receivers = community.members
-            .filter((member: any) => member.fcmTokens.length)
-            .map((member: any) => ({
+          const receivers: Array<Receiver> = (community.members as Array<UserDocument>)
+            .filter((member) => member.fcmTokens.length)
+            .map((member) => ({
               _id: member._id,
               fcmTokens: member.fcmTokens,
             }));
@@ -232,8 +237,7 @@ const postsResolvers = {
               requester.save(),
               redis.hset(
                 `notifications:${requesterId}`,
-                `${communityId}`,
-                true
+                new Map([[`${communityId}`, "true"]])
               ),
             ]);
           }
@@ -331,109 +335,9 @@ const postsResolvers = {
         throw new Error(err);
       }
     },
-
-    // deletePost: async (
-    //   _: unknown,
-    //   { postId }: { postId: any },
-    //   { user }: { user: UserTokenContext }
-    // ) => {
-    //   if (!user) throw new AuthenticationError("Not Authenticated");
-
-    //   try {
-    //     // Find post & currentUser
-    //     const post: PostDocument | null = await Post.findById(postId);
-    //     const currentUser: UserDocument | null = await User.findById(
-    //       user.userId
-    //     );
-
-    //     if (post && currentUser) {
-    //       // Throw error if user is not post creator
-    //       if (post.creator.toString() !== user.userId) {
-    //         throw new ForbiddenError("Unauthorized user");
-    //       }
-
-    //       // Save thread ids array
-    //       const {
-    //         threads,
-    //         bookings,
-    //       }: {
-    //         threads: Array<Types.ObjectId | ThreadDocument>;
-    //         bookings: Array<Types.ObjectId | BookingDocument>;
-    //       } = post;
-
-    //       // Get all notifications that is related to post's bookings or
-    //       // the post itself
-    //       const notifications: Array<NotificationDocument> = await Notification.find(
-    //         {
-    //           $or: [{ booking: { $in: bookings } }, { post: postId }],
-    //         }
-    //       );
-    //       // Get a list to notifications' messages ids
-    //       const messages = notifications
-    //         .map((notification) => notification.messages)
-    //         .flat(1);
-
-    //       // Get a list of notifications ids
-    //       const notificationsIds = notifications.map(
-    //         (notification) => notification._id
-    //       );
-
-    //       // Create an object of invalid notifications with user id as key
-    //       let invalidUserNotifications = {};
-    //       notifications.forEach((notification: any) => {
-    //         notification.participants.forEach((participant: any) => {
-    //           if (participant in invalidUserNotifications) {
-    //             // @ts-ignore
-    //             invalidUserNotifications[participant].push(notification._id);
-    //           } else {
-    //             invalidUserNotifications = {
-    //               ...invalidUserNotifications,
-    //               [participant]: [notification._id],
-    //             };
-    //           }
-    //         });
-    //       });
-
-    //       // Delete post, postId from community && delete post threads,
-    //       // delete bookings & post related notifications & subsequent messages
-    //       // && delete all notifications' ids from users
-    //       await Promise.all([
-    //         post.remove(),
-    //         Community.updateMany(
-    //           { _id: { $in: currentUser.communities } },
-    //           { $pull: { posts: postId } }
-    //         ),
-    //         User.updateOne({ _id: user.userId }, { $pull: { posts: postId } }),
-    //         Thread.deleteMany({ _id: { $in: threads } }),
-    //         Booking.deleteMany({ _id: { $in: bookings } }),
-    //         Message.deleteMany({ _id: { $in: messages } }),
-    //         Notification.deleteMany({ _id: { $in: notificationsIds } }),
-    //         Object.keys(invalidUserNotifications).map((userId) =>
-    //           Promise.resolve(
-    //             User.updateOne(
-    //               { _id: userId },
-    //               {
-    //                 $pull: {
-    //                   // @ts-ignore
-    //                   notifications: { $in: invalidUserNotifications[userId] },
-    //                 },
-    //               }
-    //             )
-    //           )
-    //         ),
-    //       ]);
-
-    //       return post;
-    //     }
-
-    //     return null;
-    //   } catch (err) {
-    //     throw new Error(err);
-    //   }
-    // },
     deletePost: async (
       _: unknown,
-      { postId }: { postId: any },
+      { postId }: { postId: string },
       { user }: { user: UserTokenContext }
     ): Promise<PostDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
@@ -441,11 +345,11 @@ const postsResolvers = {
       try {
         // Find post & currentUser
         const post: PostDocument | null = await Post.findById(postId);
+        if (!post) throw new ApolloError("Post not found");
+
         const currentUser: UserDocument | null = await User.findById(
           user.userId
         );
-
-        if (!post) throw new ApolloError("Post not found");
         if (!currentUser) throw new ApolloError("User not found");
 
         // Throw error if user is not post creator
@@ -481,16 +385,17 @@ const postsResolvers = {
         );
 
         // Create an object of invalid notifications with user id as key
-        let invalidUserNotifications = {};
-        notifications.forEach((notification: any) => {
-          notification.participants.forEach((participant: any) => {
-            if (participant in invalidUserNotifications) {
-              // @ts-ignore
-              invalidUserNotifications[participant].push(notification._id);
+        let invalidUserNotifications: InvalidUserNotifications = {};
+        notifications.forEach((notification) => {
+          notification.participants.forEach((participant) => {
+            if (participant.toString() in invalidUserNotifications) {
+              invalidUserNotifications[participant.toString()].push(
+                notification._id
+              );
             } else {
               invalidUserNotifications = {
                 ...invalidUserNotifications,
-                [participant]: [notification._id],
+                [participant.toString()]: [notification._id],
               };
             }
           });
@@ -510,13 +415,12 @@ const postsResolvers = {
           Booking.deleteMany({ _id: { $in: bookings } }),
           Message.deleteMany({ _id: { $in: messages } }),
           Notification.deleteMany({ _id: { $in: notificationsIds } }),
-          Object.keys(invalidUserNotifications).map((userId) =>
+          Object.keys(invalidUserNotifications).map((userId: string) =>
             Promise.resolve(
               User.updateOne(
                 { _id: userId },
                 {
                   $pull: {
-                    // @ts-ignore
                     notifications: { $in: invalidUserNotifications[userId] },
                   },
                 }

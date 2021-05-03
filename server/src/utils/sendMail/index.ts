@@ -1,9 +1,7 @@
 import nodemailer from "nodemailer";
 
-// TODO: Check type of to (string | Array<string>)???
-
 export default async function sendMail(
-  to: string,
+  to: string | Array<string>,
   subject: string,
   text: string,
   html?: string

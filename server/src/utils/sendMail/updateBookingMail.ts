@@ -2,7 +2,7 @@ import sendMail from "./index";
 
 export default async function updateBookingMail(
   bookingsUrl: string,
-  to: string,
+  to: string | Array<string>,
   subject: string,
   text: string = ""
 ) {

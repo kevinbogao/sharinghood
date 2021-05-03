@@ -3,7 +3,7 @@ import sendMail from "./index";
 export default async function newAccountMail(
   confirmationUrl: string,
   communityName: string,
-  to: string,
+  to: string | Array<string>,
   subject: string,
   text: string = ""
 ) {

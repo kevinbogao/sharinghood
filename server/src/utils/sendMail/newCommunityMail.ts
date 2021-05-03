@@ -2,7 +2,7 @@ import sendMail from "./index";
 
 export default async function newCommunityMail(
   communityUrl: string,
-  to: string,
+  to: string | Array<string>,
   subject: string,
   text: string = ""
 ) {

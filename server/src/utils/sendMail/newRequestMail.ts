@@ -6,7 +6,7 @@ export default async function newRequestMail(
   itemImageUrl: string,
   itemUrl: string,
   dateNeed: Date,
-  to: string,
+  to: string | Array<string>,
   subject: string,
   text: string = ""
 ) {

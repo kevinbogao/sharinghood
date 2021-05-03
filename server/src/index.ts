@@ -1,4 +1,4 @@
-import * as dotenv from "dotenv";
+require("dotenv").config();
 import { ApolloServer, AuthenticationError } from "apollo-server";
 import Redis from "ioredis";
 import mongoose from "mongoose";
@@ -7,14 +7,11 @@ import resolvers from "./resolvers";
 import logger from "./utils/logger";
 import { verifyToken } from "./utils/authToken";
 
-// Dotenv
-dotenv.config();
-
 // Create redis instance
-const redis = new Redis(process.env.REDIS_URL);
+const redis: Redis.Redis = new Redis(process.env.REDIS_URL);
 
 // Create Apollo server
-const server = new ApolloServer({
+const server: ApolloServer = new ApolloServer({
   typeDefs,
   resolvers,
   engine: {
@@ -68,8 +65,7 @@ const server = new ApolloServer({
     return { user, redis };
   },
   subscriptions: {
-    // @ts-ignore
-    onConnect: async ({ authToken }: { authToken: string }) => {
+    onConnect: async ({ authToken }: any) => {
       // Validate user token & throw err if not valid
       if (authToken) {
         const user = verifyToken(authToken);
@@ -81,7 +77,7 @@ const server = new ApolloServer({
   },
   cors: {
     credentials: true,
-    origin: (origin: any, callback: any) => {
+    origin: (origin, callback) => {
       if (origin) {
         const whitelist = [
           process.env.ORIGIN,
@@ -123,11 +119,3 @@ const server = new ApolloServer({
     console.log(err);
   }
 })();
-
-// export all the important pieces for tests
-module.exports = {
-  typeDefs,
-  resolvers,
-  ApolloServer,
-  server,
-};

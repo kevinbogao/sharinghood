@@ -1,4 +1,4 @@
-import { transformImgUrl, _isValidEmail } from "../helpers";
+import { transformImgUrl, isValidEmail } from "../helpers";
 
 describe("[helpers._isValidEmail] ", () => {
   it("Should return true for valid Email address", () => {
@@ -13,7 +13,7 @@ describe("[helpers._isValidEmail] ", () => {
       "abc.def@mail.com",
     ];
     validEmails.forEach((email) => {
-      expect(_isValidEmail(email)).toBeTruthy();
+      expect(isValidEmail(email)).toBeTruthy();
     });
   });
 
@@ -26,7 +26,7 @@ describe("[helpers._isValidEmail] ", () => {
       "abc.def@mail..com",
     ];
     invalidEmails.forEach((email) => {
-      expect(_isValidEmail(email)).toBeFalsy();
+      expect(isValidEmail(email)).toBeFalsy();
     });
   });
 

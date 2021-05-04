@@ -1,14 +1,16 @@
-import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import ItemsGrid from "../../components/ItemsGrid";
 import Spinner from "../../components/Spinner";
 import ServerError from "../../components/ServerError";
 import { transformImgUrl } from "../../utils/helpers";
-import { queries } from "../../utils/gql";
+import { queries, Post } from "../../utils/gql";
 
-export default function Posts({ communityId }) {
-  const { loading, error, data, client } = useQuery(queries.GET_POSTS, {
+export default function Posts({ communityId }: { communityId: string }) {
+  const { loading, error, data, client } = useQuery<
+    { posts: Array<Post> },
+    { communityId: string }
+  >(queries.GET_POSTS, {
     skip: !communityId,
     variables: { communityId },
     onError: ({ message }) => {
@@ -22,6 +24,7 @@ export default function Posts({ communityId }) {
     <ServerError />
   ) : (
     <ItemsGrid isPost communityId={communityId}>
+      {/* @ts-ignore */}
       {data?.posts?.map((post) => (
         <div key={post._id} className="item-card">
           <Link
@@ -100,7 +103,3 @@ export default function Posts({ communityId }) {
     </ItemsGrid>
   );
 }
-
-Posts.propTypes = {
-  communityId: PropTypes.string.isRequired,
-};

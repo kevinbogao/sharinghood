@@ -1,45 +1,63 @@
+// @ts-nocheck
+
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import uploadImg from "../../assets/images/upload.png";
 import Spinner from "../../components/Spinner";
-import { queries, mutations } from "../../utils/gql";
-import { validateForm } from "../../utils/helpers";
+import { queries, mutations, Post } from "../../utils/gql";
+import { validateForm, FormError } from "../../utils/helpers";
 
-export default function CreatePost({ communityId, history, location }) {
-  let title, desc, isGiveaway;
+interface PostInput {
+  postId: string;
+  title: string;
+  desc: string;
+  image: string;
+  condition: number;
+  isGiveaway: boolean;
+  requesterId: string;
+}
+
+export default function CreatePost({ communityId, history, location }: any) {
+  let title: HTMLInputElement | null;
+  let desc: any;
+  let isGiveaway: any;
   const [image, setImage] = useState(null);
-  const [condition, setCondition] = useState(0);
-  const [error, setError] = useState({});
-  const [createPost, { loading: mutationLoading }] = useMutation(
-    mutations.CREATE_POST,
-    {
-      update(cache, { data: { createPost } }) {
-        // Fetch posts from cache
-        const data = cache.readQuery({
+  const [condition, setCondition] = useState<number>(0);
+  const [error, setError] = useState<FormError>({});
+  const [createPost, { loading: mutationLoading }] = useMutation<
+    { createPost: Post },
+    { postInput: PostInput; communityId: string }
+  >(mutations.CREATE_POST, {
+    // @ts-ignore
+    update(cache, { data: { createPost } }) {
+      // Fetch posts from cache
+      const data = cache.readQuery<
+        { posts: Array<Post> },
+        { communityId: string }
+      >({
+        query: queries.GET_POSTS,
+        variables: { communityId },
+      });
+
+      // Update cached posts if it exists
+      if (data) {
+        cache.writeQuery({
           query: queries.GET_POSTS,
           variables: { communityId },
+          data: { posts: [createPost, ...data.posts] },
         });
-
-        // Update cached posts if it exists
-        if (data) {
-          cache.writeQuery({
-            query: queries.GET_POSTS,
-            variables: { communityId },
-            data: { posts: [createPost, ...data.posts] },
-          });
-        }
-        history.push("/find");
-      },
-      onError: () => {
-        setError({
-          res:
-            "We are experiencing difficulties right now :( Please try again later",
-        });
-      },
-    }
-  );
+      }
+      history.push("/find");
+    },
+    onError: () => {
+      setError({
+        res:
+          "We are experiencing difficulties right now :( Please try again later",
+      });
+    },
+  });
 
   return (
     <div className="share-control">
@@ -47,7 +65,7 @@ export default function CreatePost({ communityId, history, location }) {
         onSubmit={(e) => {
           e.preventDefault();
           const errors = validateForm({ title, desc, image }, setError);
-          if (Object.keys(errors).length === 0) {
+          if (Object.keys(errors).length === 0 && title && desc && image) {
             createPost({
               variables: {
                 postInput: {

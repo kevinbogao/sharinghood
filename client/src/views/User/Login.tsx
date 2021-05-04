@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
+import { History } from "history";
 import { useMutation } from "@apollo/client";
 import jwtDecode from "jwt-decode";
 import InlineError from "../../components/InlineError";
@@ -10,22 +11,38 @@ import {
   accessTokenVar,
   refreshTokenVar,
   tokenPayloadVar,
+  TokenPayload,
 } from "../../utils/cache";
-import { validateForm } from "../../utils/helpers";
+import { validateForm, setErrorMsg, FormError } from "../../utils/helpers";
 
-export default function Login({ history, location }) {
+interface LoginData {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export default function Login({
+  history,
+  location,
+}: {
+  history: History;
+  location: any;
+}) {
   // Get communityCode from props if user is directed from CommunityExists
   // else set it as null
-  let email, password;
+  let email: HTMLInputElement | null;
+  let password: HTMLInputElement | null;
   const { communityCode } = location.state || { communityCode: null };
-  const [error, setError] = useState({});
-  const [login, { loading: mutationLoading }] = useMutation(mutations.LOGIN, {
+  const [error, setError] = useState<FormError>({});
+  const [login, { loading: mutationLoading }] = useMutation<
+    { login: LoginData },
+    { email: string; password: string }
+  >(mutations.LOGIN, {
     onCompleted: async ({ login }) => {
-      const tokenPayload = await jwtDecode(login.accessToken);
+      const tokenPayload: TokenPayload = await jwtDecode(login.accessToken);
       localStorage.setItem("@sharinghood:accessToken", login.accessToken);
       localStorage.setItem("@sharinghood:refreshToken", login.refreshToken);
       accessTokenVar(login.accessToken);
-      refreshTokenVar(login.refreshTokenVar);
+      refreshTokenVar(login.refreshToken);
       tokenPayloadVar(tokenPayload);
       history.push({
         pathname: "/communities",
@@ -35,9 +52,8 @@ export default function Login({ history, location }) {
         },
       });
     },
-    onError: ({ message }) => {
-      const errMsgArr = message.split(": ");
-      setError({ [errMsgArr[0]]: errMsgArr[1] });
+    onError: ({ message }: { message: string }) => {
+      setErrorMsg(message, setError);
     },
   });
 
@@ -48,7 +64,7 @@ export default function Login({ history, location }) {
         onSubmit={(e) => {
           e.preventDefault();
           const errors = validateForm({ email, password }, setError);
-          if (Object.keys(errors).length === 0) {
+          if (Object.keys(errors).length === 0 && email && password) {
             login({
               variables: {
                 email: email.value.toLowerCase(),

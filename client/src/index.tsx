@@ -46,7 +46,7 @@ const authLink = setContext(async (_, { headers }) => {
 
 // Create an WebSocket link
 const wsLink = new WebSocketLink({
-  uri: process.env.REACT_APP_GRAPHQL_ENDPOINT_WS,
+  uri: process.env.REACT_APP_GRAPHQL_ENDPOINT_WS as string,
   options: {
     reconnect: true,
     connectionParams: () => ({
@@ -118,26 +118,29 @@ const cache = new InMemoryCache({
 // Init apollo client
 const client = new ApolloClient({
   link: ApolloLink.from([
-    new TokenRefreshLink({
+    new TokenRefreshLink<any>({
       accessTokenField: "accessToken",
-      isTokenValidOrUndefined: () => {
+      isTokenValidOrUndefined: (): boolean => {
         const accessToken = localStorage.getItem("@sharinghood:accessToken");
 
         // Return false if accessToken is not expired
         if (accessToken) {
-          const { exp } = jwtDecode(accessToken);
+          const { exp }: { exp: number } = jwtDecode(accessToken);
           if (Date.now() >= exp * 1000) return false;
         }
 
         return true;
       },
+      handleFetch: () => {},
       fetchAccessToken: async () => {
-        const res = await fetch(process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP, {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            query: `
+        const res = await fetch(
+          process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP as string,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              query: `
               mutation TokenRefresh($token: String!) {
                 tokenRefresh(token: $token) {
                   accessToken
@@ -145,15 +148,16 @@ const client = new ApolloClient({
                 }
               }
             `,
-            variables: {
-              token: localStorage.getItem("@sharinghood:refreshToken"),
-            },
-          }),
-        });
+              variables: {
+                token: localStorage.getItem("@sharinghood:refreshToken"),
+              },
+            }),
+          }
+        );
 
         return res.json();
       },
-      handleResponse: () => (res) => {
+      handleResponse: () => (res: any) => {
         if (res.data.tokenRefresh) {
           localStorage.setItem(
             "@sharinghood:accessToken",
@@ -174,7 +178,7 @@ const client = new ApolloClient({
     }),
     onError(({ graphQLErrors, networkError, operation, forward }) => {
       if (graphQLErrors) {
-        graphQLErrors.forEach((err) => {
+        graphQLErrors.forEach((err: any) => {
           if (err.extensions.code === "UNAUTHENTICATED") {
             clearLocalStorageAndCache();
             return forward(operation);

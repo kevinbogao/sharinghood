@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, LegacyRef } from "react";
 import { useHistory, Link, NavLink } from "react-router-dom";
 import {
   useQuery,
@@ -14,34 +14,46 @@ import {
   faCaretDown,
   faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { queries, mutations } from "../utils/gql";
+import { queries, mutations, Community } from "../utils/gql";
 import {
   accessTokenVar,
   tokenPayloadVar,
   selCommunityIdVar,
   clearLocalStorageAndCache,
+  TokenPayload,
 } from "../utils/cache";
 
+interface CurrentCommunityAndCommunitiesData {
+  community: Community;
+  communities: Array<Community>;
+}
+
 export default function Navbar() {
-  const node = useRef();
+  const node: LegacyRef<HTMLDivElement> | undefined = useRef(null);
   const history = useHistory();
   const client = useApolloClient();
-  const [isMenuActive, setIsMenuActive] = useState(false);
-  const accessToken = useReactiveVar(accessTokenVar);
-  const tokenPayload = useReactiveVar(tokenPayloadVar);
-  const selCommunityId = useReactiveVar(selCommunityIdVar);
+  const [isMenuActive, setIsMenuActive] = useState<boolean>(false);
+  const accessToken: string | null = useReactiveVar(accessTokenVar);
+  const tokenPayload: TokenPayload | null = useReactiveVar(tokenPayloadVar);
+  const selCommunityId: string | null = useReactiveVar(selCommunityIdVar);
 
   // Get current community & user's communities
-  const { data } = useQuery(queries.GET_CURRENT_COMMUNITY_AND_COMMUNITIES, {
+  const { data } = useQuery<
+    CurrentCommunityAndCommunitiesData,
+    { communityId: string | null }
+  >(queries.GET_CURRENT_COMMUNITY_AND_COMMUNITIES, {
     skip: !accessToken || !selCommunityId,
     variables: { communityId: selCommunityId },
-    onError: () => {},
+    onError: ({ message }) => {
+      console.warn(message);
+    },
   });
 
   // Revoke user's refreshToken
-  const [logout] = useMutation(mutations.LOGOUT);
+  const [logout] = useMutation<{ logout: void }>(mutations.LOGOUT);
 
-  function handleClickOutside(e) {
+  function handleClickOutside(e: any) {
+    // @ts-ignore
     if (node.current.contains(e.target)) {
       return;
     }
@@ -80,7 +92,7 @@ export default function Navbar() {
           (community) =>
             community._id !== selCommunityId && community.hasNotifications
         ) && <span className="communities-unread" />}
-        <h1 className={selCommunityId && "select"}>
+        <h1 className={selCommunityId ? "select" : undefined}>
           <Link
             to={
               tokenPayload && selCommunityId
@@ -127,7 +139,7 @@ export default function Navbar() {
                     onClick={() => history.push("/notifications")}
                   />
                   {data?.communities.filter(
-                    (community) => community._id === selCommunityId
+                    (community: any) => community._id === selCommunityId
                   )[0]?.hasNotifications && (
                     <span className="notifications-unread" />
                   )}

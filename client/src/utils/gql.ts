@@ -770,3 +770,98 @@ export const subscriptions = {
     }
   `,
 };
+
+export interface Booking {
+  _id: string;
+  status: number;
+  dateType: number;
+  dateNeed: Date;
+  dateReturn: Date;
+  post: Post;
+  booker: User;
+  community: Community;
+}
+
+export interface Community {
+  _id: string;
+  name: string;
+  code: string;
+  zipCode: string;
+  password?: string;
+  creator: User;
+  members: Array<User>;
+  posts: Array<Post>;
+  requests: Array<Request>;
+  hasNotifications?: boolean;
+}
+
+export interface Message {
+  _id: string;
+  text: string;
+  sender: User;
+  notification: Notification;
+}
+
+export interface Notification {
+  _id: string;
+  ofType: number;
+  post?: Post;
+  booking?: Booking;
+  community: Community;
+  messages: Array<Message>;
+  participants: Array<User>;
+  isRead: {
+    [userId: string]: boolean;
+  };
+}
+
+export interface Post {
+  _id: string;
+  title: string;
+  desc: string;
+  condition: number;
+  image: string;
+  isGiveaway: boolean;
+  creator: User;
+  threads: Array<Thread>;
+  bookings: Array<Booking>;
+}
+
+export interface Request {
+  _id: string;
+  title: string;
+  desc: string;
+  image: string;
+  dateType: number;
+  dateNeed: Date;
+  dateReturn: Date;
+  creator: User;
+  threads: Array<Thread>;
+}
+
+export interface Thread {
+  _id: string;
+  content: string;
+  poster: User;
+  community: Community;
+}
+
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  password: string;
+  image: string;
+  desc?: string;
+  apartment?: string;
+  lastLogin?: Date;
+  isNotified: boolean;
+  isAdmin: boolean;
+  isMigrated: boolean;
+  tokenVersion: number;
+  fcmTokens: Array<string>;
+  posts: Array<Post>;
+  requests: Array<Request>;
+  communities: Array<Community>;
+  notifications: Array<Notification>;
+}

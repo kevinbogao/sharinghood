@@ -1,8 +1,18 @@
 import { Fragment } from "react";
-import PropTypes from "prop-types";
 import { transformImgUrl } from "../utils/helpers";
+import { Thread, User } from "../utils/gql";
 
-export default function Threads({ threads, members, communityId }) {
+export default function Threads({
+  threads,
+  members,
+  communityId,
+}: {
+  threads: Array<Thread>;
+  members: Array<User>;
+  communityId: string;
+}) {
+  console.log(threads);
+
   return (
     <div className="threads-container">
       {threads
@@ -86,23 +96,3 @@ export default function Threads({ threads, members, communityId }) {
     </div>
   );
 }
-
-Threads.propTypes = {
-  communityId: PropTypes.string.isRequired,
-  threads: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      content: PropTypes.string.isRequired,
-      poster: PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-      }).isRequired,
-    })
-  ).isRequired,
-  members: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      image: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-};

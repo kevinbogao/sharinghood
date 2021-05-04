@@ -1,6 +1,4 @@
-import PropTypes from "prop-types";
-
-export default function InlineError({ text }) {
+export default function InlineError({ text }: { text: string }) {
   return (
     <span className="inline-error">
       {text}
@@ -18,7 +16,3 @@ export default function InlineError({ text }) {
     </span>
   );
 }
-
-InlineError.propTypes = {
-  text: PropTypes.string.isRequired,
-};

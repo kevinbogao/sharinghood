@@ -1,6 +1,3 @@
-// @ts-nocheck
-
-import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,15 +6,18 @@ import moment from "moment";
 import Spinner from "../../components/Spinner";
 import ItemsGrid from "../../components/ItemsGrid";
 import ServerError from "../../components/ServerError";
-import { queries } from "../../utils/gql";
+import { queries, Request } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
-export default function Requests({ communityId }) {
-  const { loading, error, data, client } = useQuery(queries.GET_REQUESTS, {
+export default function Requests({ communityId }: { communityId: string }) {
+  const { loading, error, data, client } = useQuery<
+    { requests: Array<Request> },
+    { communityId: string }
+  >(queries.GET_REQUESTS, {
     skip: !communityId,
     variables: { communityId },
     onError: ({ message }) => {
-      console.log(message);
+      console.warn(message);
     },
   });
 
@@ -128,7 +128,3 @@ export default function Requests({ communityId }) {
     </ItemsGrid>
   );
 }
-
-Requests.propTypes = {
-  communityId: PropTypes.string.isRequired,
-};

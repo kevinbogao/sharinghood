@@ -1,12 +1,18 @@
-// @ts-nocheck
-
-import PropTypes from "prop-types";
+import { ReactNode } from "react";
 import { useApolloClient } from "@apollo/client";
 import { Link } from "react-router-dom";
-import { queries } from "../utils/gql";
+import { queries, Post, Request } from "../utils/gql";
 import Members from "./Members";
 
-export default function ItemsGrid({ isPost, children, communityId }) {
+export default function ItemsGrid({
+  isPost,
+  children,
+  communityId,
+}: {
+  isPost: boolean;
+  children: ReactNode;
+  communityId: string;
+}) {
   const client = useApolloClient();
 
   return (
@@ -16,7 +22,7 @@ export default function ItemsGrid({ isPost, children, communityId }) {
           <Link
             to="/find"
             onMouseOver={() => {
-              client.query({
+              client.query<{ posts: Array<Post> }, { communityId: string }>({
                 query: queries.GET_POSTS,
                 variables: { communityId },
               });
@@ -30,7 +36,10 @@ export default function ItemsGrid({ isPost, children, communityId }) {
           <Link
             to="requests"
             onMouseOver={() => {
-              client.query({
+              client.query<
+                { requests: Array<Request> },
+                { communityId: string }
+              >({
                 query: queries.GET_REQUESTS,
                 variables: { communityId },
               });
@@ -126,9 +135,3 @@ export default function ItemsGrid({ isPost, children, communityId }) {
     </div>
   );
 }
-
-ItemsGrid.propTypes = {
-  isPost: PropTypes.bool.isRequired,
-  children: PropTypes.node.isRequired,
-  communityId: PropTypes.string.isRequired,
-};

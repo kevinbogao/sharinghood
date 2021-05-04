@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 export default function TermsAndConditions() {
   return (
     <div className="terms-and-conditions">

@@ -906,6 +906,14 @@ export namespace typeDefs {
     communityId: string;
   }
 
+  export interface RequestsData {
+    requests: Array<Request>;
+  }
+
+  export interface RequestsVars {
+    communityId: string;
+  }
+
   export interface PostDetailsData {
     post: Post;
     community: Community;
@@ -916,12 +924,12 @@ export namespace typeDefs {
     communityId: string;
   }
 
-  export interface GetPostAndCommunitiesData {
+  export interface PostAndCommunitiesData {
     post: Post;
     communities: Array<Community>;
   }
 
-  export interface GetPostAndCommunitiesVars {
+  export interface PostAndCommunitiesVars {
     postId: string;
   }
 

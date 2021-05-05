@@ -1,18 +1,20 @@
 import { ReactNode } from "react";
 import { useApolloClient } from "@apollo/client";
 import { Link } from "react-router-dom";
-import { queries, Post, Request } from "../utils/gql";
+import { queries, typeDefs } from "../utils/gql";
 import Members from "./Members";
+
+interface ItemsGridProps {
+  isPost: boolean;
+  children: ReactNode;
+  communityId: string;
+}
 
 export default function ItemsGrid({
   isPost,
   children,
   communityId,
-}: {
-  isPost: boolean;
-  children: ReactNode;
-  communityId: string;
-}) {
+}: ItemsGridProps) {
   const client = useApolloClient();
 
   return (
@@ -22,7 +24,7 @@ export default function ItemsGrid({
           <Link
             to="/find"
             onMouseOver={() => {
-              client.query<{ posts: Array<Post> }, { communityId: string }>({
+              client.query<typeDefs.PostsData, typeDefs.PostsVars>({
                 query: queries.GET_POSTS,
                 variables: { communityId },
               });
@@ -36,10 +38,7 @@ export default function ItemsGrid({
           <Link
             to="requests"
             onMouseOver={() => {
-              client.query<
-                { requests: Array<Request> },
-                { communityId: string }
-              >({
+              client.query<typeDefs.RequestsData, typeDefs.RequestsVars>({
                 query: queries.GET_REQUESTS,
                 variables: { communityId },
               });

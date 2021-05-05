@@ -1,4 +1,8 @@
-export default function InlineError({ text }: { text: string }) {
+interface InlineErrorProps {
+  text: string;
+}
+
+export default function InlineError({ text }: InlineErrorProps) {
   return (
     <span className="inline-error">
       {text}

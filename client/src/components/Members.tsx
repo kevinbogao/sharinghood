@@ -1,25 +1,32 @@
-// @ts-nocheck
-
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, RefObject } from "react";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons";
 import { queries } from "../utils/gql";
+import { typeDefs } from "../utils/typeDefs";
 import { transformImgUrl } from "../utils/helpers";
 import { tokenPayloadVar, selCommunityIdVar } from "../utils/cache";
 
 export default function Members() {
-  const node = useRef();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const node: RefObject<HTMLDivElement> | undefined = useRef(null);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
   const selCommunityId = useReactiveVar(selCommunityIdVar);
-  const { data } = useQuery(queries.LOCAL_COMMUNITY, {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { data } = useQuery<
+    typeDefs.LocalCommunityData,
+    typeDefs.LocalCommunityVars
+  >(queries.LOCAL_COMMUNITY, {
     skip: !selCommunityId,
-    variables: { communityId: selCommunityId },
+    variables: { communityId: selCommunityId! },
   });
 
-  function handleClickOutside(e) {
-    if (node.current.contains(e.target)) return;
+  function handleClickOutside(e: Event) {
+    if (
+      e.currentTarget instanceof Node &&
+      node?.current?.contains(e.currentTarget)
+    )
+      return;
+
     setIsExpanded(false);
   }
 
@@ -42,17 +49,20 @@ export default function Members() {
         onClick={() => setIsExpanded(!isExpanded)}
       />
       <div className="members-content">
-        {data?.community?.members?.length < 2 ? (
+        {data && data.community?.members?.length < 2 ? (
           <p>You are the only member in your community.</p>
         ) : (
           <p>
-            {data?.community?.members?.length - 1} members in your community
+            {data && data.community?.members?.length - 1} members in your
+            community
           </p>
         )}
         <div className="members-icon">
           {data?.community?.members
-            .filter((member) => member._id !== tokenPayload.userId)
-            .map((member) => (
+            .filter(
+              (member: typeDefs.User) => member._id !== tokenPayload?.userId
+            )
+            .map((member: typeDefs.User) => (
               <div key={member._id} className="member-icon">
                 {isExpanded && (
                   <span className="icon-tooltip">{member.name}</span>

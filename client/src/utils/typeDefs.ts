@@ -245,4 +245,12 @@ export namespace typeDefs {
   export interface CurrentCommunityAndCommunitiesVars {
     communityId: string;
   }
+
+  export interface LocalCommunityData {
+    community: Community;
+  }
+
+  export interface LocalCommunityVars {
+    communityId: string;
+  }
 }

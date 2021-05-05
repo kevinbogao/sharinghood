@@ -1,18 +1,18 @@
 import { Fragment } from "react";
 import { transformImgUrl } from "../utils/helpers";
-import { Thread, User } from "../utils/gql";
+import { typeDefs } from "../utils/gql";
+
+interface ThreadsProps {
+  threads: Array<typeDefs.Thread>;
+  members: Array<typeDefs.User>;
+  communityId: string;
+}
 
 export default function Threads({
   threads,
   members,
   communityId,
-}: {
-  threads: Array<Thread>;
-  members: Array<User>;
-  communityId: string;
-}) {
-  console.log(threads);
-
+}: ThreadsProps) {
   return (
     <div className="threads-container">
       {threads

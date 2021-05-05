@@ -1,20 +1,27 @@
-// @ts-nocheck
-
-import { useState } from "react";
-import PropTypes from "prop-types";
+import { useState, ChangeEvent } from "react";
+import { History } from "history";
 import { useMutation } from "@apollo/client";
 import moment from "moment";
 import DatePicker from "../../components/DatePicker";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
 import uploadImg from "../../assets/images/upload.png";
-import { queries, mutations } from "../../utils/gql";
-import { validateForm } from "../../utils/helpers";
+import { queries, mutations, typeDefs } from "../../utils/gql";
+import { validateForm, FormError } from "../../utils/helpers";
 
-export default function CreateRequest({ communityId, history }) {
-  let title, desc;
-  const [image, setImage] = useState(null);
-  const [error, setError] = useState({});
+interface CreateRequestProps {
+  communityId: string;
+  history: History;
+}
+
+export default function CreateRequest({
+  communityId,
+  history,
+}: CreateRequestProps) {
+  let title: HTMLInputElement | null;
+  let desc: HTMLInputElement | null;
+  const [image, setImage] = useState<string | null>(null);
+  const [error, setError] = useState<FormError>({});
   const [dateType, setDateType] = useState(0);
   const [dateNeed, setDateNeed] = useState(moment());
   const [dateReturn, setDateReturn] = useState(moment());
@@ -24,17 +31,17 @@ export default function CreateRequest({ communityId, history }) {
     {
       update(cache, { data: { createRequest } }) {
         // Fetch requests from cache
-        const data = cache.readQuery({
+        const requestsData = cache.readQuery<typeDefs.RequestsData>({
           query: queries.GET_REQUESTS,
           variables: { communityId },
         });
 
         // Update cached requests if it exists
-        if (data) {
+        if (requestsData) {
           cache.writeQuery({
             query: queries.GET_REQUESTS,
             variables: { communityId },
-            data: { requests: [createRequest, ...data.requests] },
+            data: { requests: [createRequest, ...requestsData.requests] },
           });
         }
         history.push("/requests");
@@ -53,8 +60,9 @@ export default function CreateRequest({ communityId, history }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validateForm({ title, desc, image }, setError);
-          if (Object.keys(errors).length === 0) {
+          const errors = validateForm({ title, desc }, image);
+          setError(errors);
+          if (Object.keys(errors).length === 0 && title && desc && image) {
             createRequest({
               variables: {
                 requestInput: {
@@ -78,12 +86,14 @@ export default function CreateRequest({ communityId, history }) {
             id="file-input"
             className="FileInput"
             type="file"
-            onChange={(e) => {
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
               const reader = new FileReader();
-              reader.readAsDataURL(e.target.files[0]);
-              reader.onload = () => {
-                setImage(reader.result);
-              };
+              if (e.currentTarget.files) {
+                reader.readAsDataURL(e.currentTarget.files[0]);
+                reader.onload = () => {
+                  setImage(reader.result!.toString());
+                };
+              }
             }}
           />
         </div>
@@ -165,10 +175,3 @@ export default function CreateRequest({ communityId, history }) {
     </div>
   );
 }
-
-CreateRequest.propTypes = {
-  communityId: PropTypes.string.isRequired,
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-};

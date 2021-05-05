@@ -12,10 +12,6 @@ interface State {
   requesterName?: string;
 }
 
-interface PostsData {
-  posts: Array<typeDefs.Post>;
-}
-
 interface CreatePostProps extends RouteComponentProps<{}, {}, State> {
   communityId: string;
 }
@@ -35,16 +31,16 @@ export default function CreatePost({
     mutations.CREATE_POST,
     {
       update(cache, { data: { createPost } }) {
-        const data = cache.readQuery<PostsData>({
+        const postsData = cache.readQuery<typeDefs.PostsData>({
           query: queries.GET_POSTS,
           variables: { communityId },
         });
 
-        if (data) {
-          cache.writeQuery<PostsData>({
+        if (postsData) {
+          cache.writeQuery<typeDefs.PostsData>({
             query: queries.GET_POSTS,
             variables: { communityId },
-            data: { posts: [createPost, ...data.posts] },
+            data: { posts: [createPost, ...postsData.posts] },
           });
         }
         history.push("/find");

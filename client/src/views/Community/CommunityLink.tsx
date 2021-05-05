@@ -1,7 +1,5 @@
-// @ts-nocheck
-
 import { useState, useEffect } from "react";
-import PropTypes from "prop-types";
+import { Location } from "history";
 import { Link } from "react-router-dom";
 import JsPDF from "jspdf";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,11 +7,20 @@ import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import karlaBold from "../../assets/fonts/karla-bold";
 import invitePoster from "../../assets/images/invite-poster.png";
 
+type State = {
+  isRegistered: boolean;
+  communityCode: string;
+};
+
+interface CommunityLinkProps {
+  location: Location<State>;
+}
+
 export default function CommunityLink({
   location: {
     state: { communityCode, isRegistered },
   },
-}) {
+}: CommunityLinkProps) {
   const [invite, setInvite] = useState("");
   const [copySucceed, setCopySucceed] = useState(false);
 
@@ -290,12 +297,3 @@ export default function CommunityLink({
     </div>
   );
 }
-
-CommunityLink.propTypes = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      isRegistered: PropTypes.bool.isRequired,
-      communityCode: PropTypes.string.isRequired,
-    }).isRequired,
-  }).isRequired,
-};

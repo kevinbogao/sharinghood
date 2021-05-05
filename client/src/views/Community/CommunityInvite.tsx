@@ -1,28 +1,39 @@
-// @ts-nocheck
-
 import { useState } from "react";
-import PropTypes from "prop-types";
 import {
   useQuery,
   useMutation,
   useApolloClient,
   useReactiveVar,
 } from "@apollo/client";
+import { History } from "history";
+import { match } from "react-router-dom";
 import Modal from "react-modal";
 import Spinner from "../../components/Spinner";
 import ProductScreenshot from "../../assets/images/product-screenshot.png";
 import { queries, mutations } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import { tokenPayloadVar, selCommunityIdVar } from "../../utils/cache";
 
-export default function CommunityInvite({ match, history }) {
+interface CommunityInviteProps {
+  match: match<{ communityCode: string }>;
+  history: History;
+}
+
+export default function CommunityInvite({
+  match,
+  history,
+}: CommunityInviteProps) {
   const client = useApolloClient();
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
   const [pageError, setPageError] = useState("");
   const [isErrModalOpen, setIsErrModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-  const tokenPayload = useReactiveVar(tokenPayloadVar);
 
   // Find community by community code from url
-  const { loading, data } = useQuery(queries.FIND_COMMUNITY_AND_MEMBERS, {
+  const { loading, data } = useQuery<
+    typeDefs.FindCommunityAndMembersData,
+    typeDefs.FindCommunityAndMembersVars
+  >(queries.FIND_COMMUNITY_AND_MEMBERS, {
     variables: { communityCode: match.params.communityCode },
     onError: ({ message }) => {
       console.log(message);
@@ -35,14 +46,21 @@ export default function CommunityInvite({ match, history }) {
     {
       update(cache, { data: { joinCommunity } }) {
         // Get and update communities cache
-        const communitiesData = cache.readQuery({
-          query: queries.GET_USER_COMMUNITIES,
-        });
-
-        if (communitiesData) {
-          cache.writeQuery({
+        const userCommunitiesData = cache.readQuery<typeDefs.UserCommunitiesData>(
+          {
             query: queries.GET_USER_COMMUNITIES,
-            communities: [...communitiesData.communities, joinCommunity],
+          }
+        );
+
+        if (userCommunitiesData) {
+          cache.writeQuery<typeDefs.UserCommunitiesData>({
+            query: queries.GET_USER_COMMUNITIES,
+            data: {
+              communities: [
+                ...userCommunitiesData.communities,
+                { ...joinCommunity, hasNotifications: false },
+              ],
+            },
           });
         }
 
@@ -60,7 +78,7 @@ export default function CommunityInvite({ match, history }) {
 
   // Try to join user to community if user is logged in,
   // else redirect user CommunityExist component
-  function handleSubmit(data) {
+  function handleSubmit(data: typeDefs.FindCommunityAndMembersData) {
     if (tokenPayload) {
       // Check if user is part of the community
       const userIsMember = data.community.members.some(
@@ -278,14 +296,3 @@ export default function CommunityInvite({ match, history }) {
     </div>
   );
 }
-
-CommunityInvite.propTypes = {
-  match: PropTypes.shape({
-    params: PropTypes.shape({
-      communityCode: PropTypes.string.isRequired,
-    }).isRequired,
-  }).isRequired,
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-};

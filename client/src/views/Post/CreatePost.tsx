@@ -1,70 +1,70 @@
-// @ts-nocheck
-
-import { useState } from "react";
-import PropTypes from "prop-types";
+import { useState, ChangeEvent } from "react";
+import { RouteComponentProps } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import uploadImg from "../../assets/images/upload.png";
 import Spinner from "../../components/Spinner";
-import { queries, mutations, Post } from "../../utils/gql";
+import { queries, mutations, typeDefs } from "../../utils/gql";
 import { validateForm, FormError } from "../../utils/helpers";
 
-interface PostInput {
-  postId: string;
-  title: string;
-  desc: string;
-  image: string;
-  condition: number;
-  isGiveaway: boolean;
-  requesterId: string;
+interface State {
+  requesterId?: string;
+  requesterName?: string;
 }
 
-export default function CreatePost({ communityId, history, location }: any) {
+interface PostsData {
+  posts: Array<typeDefs.Post>;
+}
+
+interface CreatePostProps extends RouteComponentProps<{}, {}, State> {
+  communityId: string;
+}
+
+export default function CreatePost({
+  communityId,
+  history,
+  location,
+}: CreatePostProps) {
   let title: HTMLInputElement | null;
-  let desc: any;
-  let isGiveaway: any;
-  const [image, setImage] = useState(null);
+  let desc: HTMLInputElement | null;
+  let isGiveaway: HTMLInputElement | null;
+  const [image, setImage] = useState<string | null>(null);
   const [condition, setCondition] = useState<number>(0);
   const [error, setError] = useState<FormError>({});
-  const [createPost, { loading: mutationLoading }] = useMutation<
-    { createPost: Post },
-    { postInput: PostInput; communityId: string }
-  >(mutations.CREATE_POST, {
-    // @ts-ignore
-    update(cache, { data: { createPost } }) {
-      // Fetch posts from cache
-      const data = cache.readQuery<
-        { posts: Array<Post> },
-        { communityId: string }
-      >({
-        query: queries.GET_POSTS,
-        variables: { communityId },
-      });
-
-      // Update cached posts if it exists
-      if (data) {
-        cache.writeQuery({
+  const [createPost, { loading: mutationLoading }] = useMutation(
+    mutations.CREATE_POST,
+    {
+      update(cache, { data: { createPost } }) {
+        const data = cache.readQuery<PostsData>({
           query: queries.GET_POSTS,
           variables: { communityId },
-          data: { posts: [createPost, ...data.posts] },
         });
-      }
-      history.push("/find");
-    },
-    onError: () => {
-      setError({
-        res:
-          "We are experiencing difficulties right now :( Please try again later",
-      });
-    },
-  });
+
+        if (data) {
+          cache.writeQuery<PostsData>({
+            query: queries.GET_POSTS,
+            variables: { communityId },
+            data: { posts: [createPost, ...data.posts] },
+          });
+        }
+        history.push("/find");
+      },
+      onError: () => {
+        setError({
+          res:
+            "We are experiencing difficulties right now :( Please try again later",
+        });
+      },
+    }
+  );
 
   return (
     <div className="share-control">
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validateForm({ title, desc, image }, setError);
+          let errors = validateForm({ title, desc }, image);
+          setError(errors);
           if (Object.keys(errors).length === 0 && title && desc && image) {
             createPost({
               variables: {
@@ -73,7 +73,7 @@ export default function CreatePost({ communityId, history, location }: any) {
                   desc: desc.value,
                   image,
                   condition: +condition,
-                  isGiveaway: isGiveaway.checked,
+                  isGiveaway: isGiveaway?.checked,
                   ...(location.state && {
                     requesterId: location.state.requesterId,
                   }),
@@ -98,12 +98,14 @@ export default function CreatePost({ communityId, history, location }: any) {
             id="file-input"
             className="FileInput"
             type="file"
-            onChange={(e) => {
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
               const reader = new FileReader();
-              reader.readAsDataURL(e.target.files[0]);
-              reader.onload = () => {
-                setImage(reader.result);
-              };
+              if (e.currentTarget.files) {
+                reader.readAsDataURL(e.currentTarget.files[0]);
+                reader.onload = () => {
+                  setImage(reader.result!.toString());
+                };
+              }
             }}
           />
         </div>
@@ -127,7 +129,7 @@ export default function CreatePost({ communityId, history, location }: any) {
         <select
           className="main-select"
           name="condition"
-          onChange={(e) => setCondition(e.target.value)}
+          onChange={(e) => setCondition(+e.currentTarget.value)}
         >
           <option value="0">New</option>
           <option value="1">Used but good</option>
@@ -213,16 +215,3 @@ export default function CreatePost({ communityId, history, location }: any) {
     </div>
   );
 }
-
-CreatePost.propTypes = {
-  communityId: PropTypes.string.isRequired,
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      requesterId: PropTypes.string,
-      requesterName: PropTypes.string,
-    }),
-  }).isRequired,
-};

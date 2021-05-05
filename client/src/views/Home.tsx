@@ -1,21 +1,27 @@
-// @ts-nocheck
-
 import { useState } from "react";
-import PropTypes from "prop-types";
+import { History } from "history";
 import { Link, Redirect } from "react-router-dom";
 import { useLazyQuery, useReactiveVar } from "@apollo/client";
 import InlineError from "../components/InlineError";
 import { queries } from "../utils/gql";
-import { validateForm, setErrorMsg } from "../utils/helpers";
+import { typeDefs } from "../utils/typeDefs";
+import { validateForm, setErrorMsg, FormError } from "../utils/helpers";
 import { accessTokenVar } from "../utils/cache";
 import vase from "../assets/images/vase.png";
 
-export default function Home({ history }) {
-  let code;
-  const [isCreate, setIsCreate] = useState(false);
-  const [error, setError] = useState({});
+interface HomeProps {
+  history: History;
+}
+
+export default function Home({ history }: HomeProps) {
+  let code: HTMLInputElement | null;
   const accessToken = useReactiveVar(accessTokenVar);
-  const [community] = useLazyQuery(queries.FIND_COMMUNITY_AND_MEMBERS, {
+  const [isCreate, setIsCreate] = useState(false);
+  const [error, setError] = useState<FormError>({});
+  const [community] = useLazyQuery<
+    typeDefs.FindCommunityAndMembersData,
+    typeDefs.FindCommunityAndMembersVars
+  >(queries.FIND_COMMUNITY_AND_MEMBERS, {
     onCompleted: ({ community }) => {
       if (community) {
         history.push({
@@ -75,8 +81,9 @@ export default function Home({ history }) {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                const errors = validateForm({ code }, setError);
-                if (Object.keys(errors).length === 0) {
+                const errors = validateForm({ code });
+                setError(errors);
+                if (Object.keys(errors).length === 0 && code) {
                   community({
                     variables: {
                       communityCode: code.value,
@@ -223,9 +230,3 @@ export default function Home({ history }) {
     </div>
   );
 }
-
-Home.propTypes = {
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-};

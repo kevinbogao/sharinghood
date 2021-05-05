@@ -1,8 +1,8 @@
-// @ts-nocheck
+interface NotFoundProps {
+  itemType: string;
+}
 
-import PropTypes from "prop-types";
-
-export default function NotFound({ itemType }) {
+export default function NotFound({ itemType }: NotFoundProps) {
   return (
     <div className="not-found-control">
       <p className="main-p">{itemType} not found</p>
@@ -18,7 +18,3 @@ export default function NotFound({ itemType }) {
     </div>
   );
 }
-
-NotFound.propTypes = {
-  itemType: PropTypes.string.isRequired,
-};

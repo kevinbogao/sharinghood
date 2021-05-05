@@ -1,17 +1,20 @@
-// @ts-nocheck
-
 import { useState } from "react";
-import PropTypes from "prop-types";
+import { History } from "history";
 import { useMutation } from "@apollo/client";
 import Modal from "react-modal";
 import Spinner from "./Spinner";
-import { mutations } from "../utils/gql";
+import { mutations, typeDefs } from "../utils/gql";
 import { transformImgUrl } from "../utils/helpers";
 
-export default function ProfilePosts({ posts, history }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selPost, setSelPost] = useState(null);
+interface ProfilePostsProps {
+  posts: Array<typeDefs.Post>;
+  history: History;
+}
+
+export default function ProfilePosts({ posts, history }: ProfilePostsProps) {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selPost, setSelPost] = useState<typeDefs.Post | null>(null);
   const [inactivatePost, { loading: mutationLoading }] = useMutation(
     mutations.INACTIVATE_POST,
     {
@@ -91,9 +94,11 @@ export default function ProfilePosts({ posts, history }) {
           className="main-btn modal"
           onClick={(e) => {
             e.preventDefault();
-            inactivatePost({
-              variables: { postId: selPost._id },
-            });
+            if (selPost) {
+              inactivatePost({
+                variables: { postId: selPost._id },
+              });
+            }
           }}
         >
           Yes
@@ -191,16 +196,3 @@ export default function ProfilePosts({ posts, history }) {
     </>
   );
 }
-
-ProfilePosts.propTypes = {
-  posts: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      image: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-};

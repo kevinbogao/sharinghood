@@ -78,7 +78,7 @@ export default function CommunityInvite({
 
   // Try to join user to community if user is logged in,
   // else redirect user CommunityExist component
-  function handleSubmit(data: typeDefs.FindCommunityAndMembersData) {
+  function handleSubmit(data: typeDefs.FindCommunityAndMembersData): void {
     if (tokenPayload) {
       // Check if user is part of the community
       const userIsMember = data.community.members.some(

@@ -1,7 +1,8 @@
 import { ReactNode } from "react";
 import { useApolloClient } from "@apollo/client";
 import { Link } from "react-router-dom";
-import { queries, typeDefs } from "../utils/gql";
+import { queries } from "../utils/gql";
+import { typeDefs } from "../utils/typeDefs";
 import Members from "./Members";
 
 interface ItemsGridProps {

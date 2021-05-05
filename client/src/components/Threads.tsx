@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { transformImgUrl } from "../utils/helpers";
-import { typeDefs } from "../utils/gql";
+import { typeDefs } from "../utils/typeDefs";
 
 interface ThreadsProps {
   threads: Array<typeDefs.Thread>;

@@ -1,8 +1,6 @@
-type SpinnerProps = { isCover?: boolean } & typeof defaultProps;
-
-const defaultProps = {
-  isCover: false,
-};
+interface SpinnerProps {
+  isCover?: boolean;
+}
 
 export default function Spinner({ isCover }: SpinnerProps) {
   return (

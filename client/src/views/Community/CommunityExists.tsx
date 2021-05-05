@@ -1,18 +1,34 @@
-// @ts-nocheck
-
 import { useState } from "react";
+import { Location, History } from "history";
 import { Redirect } from "react-router-dom";
-import PropTypes from "prop-types";
 import InlineError from "../../components/InlineError";
 import profileImg from "../../assets/images/profile-img.png";
 import uploadImg from "../../assets/images/upload.png";
-import { validateForm, transformImgUrl } from "../../utils/helpers";
+import { typeDefs } from "../../utils/typeDefs";
+import { validateForm, transformImgUrl, FormError } from "../../utils/helpers";
 
-export default function CommunityExists({ location: { state }, history }) {
-  let name;
-  let apartment;
-  const [image, setImage] = useState(null);
-  const [error, setError] = useState({});
+type State = {
+  members?: Array<typeDefs.User>;
+  isCreator: boolean;
+  communityId?: string;
+  communityName?: string;
+  communityCode?: string;
+  communityZipCode?: string;
+};
+
+interface CommunityExistsProps {
+  location: Location<State>;
+  history: History;
+}
+
+export default function CommunityExists({
+  location: { state },
+  history,
+}: CommunityExistsProps) {
+  let name: HTMLInputElement | null;
+  let apartment: HTMLInputElement | null;
+  const [image, setImage] = useState<string | null>(null);
+  const [error, setError] = useState<FormError>({});
 
   return !state ? (
     <Redirect push to="/" />
@@ -24,7 +40,7 @@ export default function CommunityExists({ location: { state }, history }) {
           <p>This is your community</p>
           <h1>{state.communityName}</h1>
           <div className="community-members">
-            {state.members.map((member) => (
+            {state.members?.map((member) => (
               <div key={member._id}>
                 <div
                   className="member-img"
@@ -44,8 +60,9 @@ export default function CommunityExists({ location: { state }, history }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validateForm({ name, apartment }, setError);
-          if (Object.keys(errors).length === 0) {
+          const errors = validateForm({ name, apartment });
+          setError(errors);
+          if (Object.keys(errors).length === 0 && name && apartment) {
             history.push({
               pathname: "/register",
               state: {
@@ -84,11 +101,13 @@ export default function CommunityExists({ location: { state }, history }) {
             className="FileInput"
             type="file"
             onChange={(e) => {
-              const reader = new FileReader();
-              reader.readAsDataURL(e.target.files[0]);
-              reader.onload = () => {
-                setImage(reader.result);
-              };
+              if (e.currentTarget.files) {
+                const reader = new FileReader();
+                reader.readAsDataURL(e.currentTarget.files[0]);
+                reader.onload = () => {
+                  setImage(reader.result!.toString());
+                };
+              }
             }}
           />
         </div>
@@ -196,24 +215,3 @@ export default function CommunityExists({ location: { state }, history }) {
     </div>
   );
 }
-
-CommunityExists.propTypes = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      members: PropTypes.arrayOf(
-        PropTypes.shape({
-          _id: PropTypes.string.isRequired,
-          image: PropTypes.string.isRequired,
-        })
-      ),
-      isCreator: PropTypes.bool.isRequired,
-      communityId: PropTypes.string,
-      communityName: PropTypes.string,
-      communityCode: PropTypes.string,
-      communityZipCode: PropTypes.string,
-    }),
-  }).isRequired,
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-};

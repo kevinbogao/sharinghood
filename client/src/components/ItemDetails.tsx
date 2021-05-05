@@ -1,12 +1,19 @@
-// @ts-nocheck
-import { useState } from "react";
-import PropTypes from "prop-types";
+import { useState, ReactNode } from "react";
+import { History } from "history";
 import { useLazyQuery, useMutation, useApolloClient } from "@apollo/client";
 import Modal from "react-modal";
 import moment from "moment";
 import Spinner from "./Spinner";
-import { queries, mutations } from "../utils/gql";
+import { queries, mutations, typeDefs } from "../utils/gql";
 import { transformImgUrl } from "../utils/helpers";
+
+interface ItemDetailsProps {
+  history: History;
+  item: typeDefs.Post | typeDefs.Request;
+  userId: string;
+  communityId: string;
+  children: ReactNode;
+}
 
 export default function ItemDetails({
   history,
@@ -14,10 +21,13 @@ export default function ItemDetails({
   userId,
   communityId,
   children,
-}) {
+}: ItemDetailsProps) {
   const client = useApolloClient();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [findNotification] = useLazyQuery(queries.FIND_NOTIFICATION, {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [findNotification] = useLazyQuery<
+    typeDefs.FindNotificationData,
+    typeDefs.FindNotificationVars
+  >(queries.FIND_NOTIFICATION, {
     onCompleted: ({ findNotification }) => {
       // Redirect user to chat if chat (notification) exists, else
       // open the send message modal for the user to create a new notification
@@ -283,22 +293,3 @@ export default function ItemDetails({
     </>
   );
 }
-
-ItemDetails.propTypes = {
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-  item: PropTypes.shape({
-    image: PropTypes.string.isRequired,
-    creator: PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      image: PropTypes.string.isRequired,
-      apartment: PropTypes.string.isRequired,
-      createdAt: PropTypes.string.isRequired,
-    }).isRequired,
-  }).isRequired,
-  userId: PropTypes.string.isRequired,
-  communityId: PropTypes.string.isRequired,
-  children: PropTypes.node.isRequired,
-};

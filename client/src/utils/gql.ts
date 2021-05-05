@@ -785,6 +785,19 @@ export namespace typeDefs {
     community: Community;
   }
 
+  export interface BookingInput {
+    postId: string;
+    bookingId?: string;
+    communityId?: string;
+    notificationId?: string;
+    status: number;
+    dateType: number;
+    dateNeed?: string;
+    dateReturn?: string;
+    notifyContent?: string;
+    notifyRecipientId?: string;
+  }
+
   export interface Community {
     __typename: string;
     _id: string;
@@ -910,5 +923,14 @@ export namespace typeDefs {
 
   export interface GetPostAndCommunitiesVars {
     postId: string;
+  }
+
+  export interface FindNotificationData {
+    findNotification: typeDefs.Notification;
+  }
+
+  export interface FindNotificationVars {
+    recipientId: string;
+    communityId: string;
   }
 }

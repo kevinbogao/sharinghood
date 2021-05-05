@@ -26,8 +26,8 @@ export default function EditPost({ history, match }: EditPostProps) {
   const tokenPayload = useReactiveVar(tokenPayloadVar);
   const selCommunityId = useReactiveVar(selCommunityIdVar);
   const { loading, error, data } = useQuery<
-    typeDefs.GetPostAndCommunitiesData,
-    typeDefs.GetPostAndCommunitiesVars
+    typeDefs.PostAndCommunitiesData,
+    typeDefs.PostAndCommunitiesVars
   >(queries.GET_POST_AND_COMMUNITIES, {
     variables: { postId: match.params.id },
     onCompleted: ({ post, communities }) => {
@@ -77,7 +77,7 @@ export default function EditPost({ history, match }: EditPostProps) {
       }
 
       // Add post to select community's posts array in cache
-      const postAndCommunityData = cache.readQuery<typeDefs.GetPostAndCommunitiesData>(
+      const postAndCommunityData = cache.readQuery<typeDefs.PostAndCommunitiesData>(
         {
           query: queries.GET_POST_AND_COMMUNITIES,
           variables: { postId: match.params.id },

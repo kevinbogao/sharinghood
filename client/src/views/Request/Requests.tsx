@@ -6,13 +6,17 @@ import moment from "moment";
 import Spinner from "../../components/Spinner";
 import ItemsGrid from "../../components/ItemsGrid";
 import ServerError from "../../components/ServerError";
-import { queries, Request } from "../../utils/gql";
+import { queries, typeDefs } from "../../utils/gql";
 import { transformImgUrl } from "../../utils/helpers";
 
-export default function Requests({ communityId }: { communityId: string }) {
+interface RequestsProps {
+  communityId: string;
+}
+
+export default function Requests({ communityId }: RequestsProps) {
   const { loading, error, data, client } = useQuery<
-    { requests: Array<Request> },
-    { communityId: string }
+    typeDefs.RequestsData,
+    typeDefs.RequestsVars
   >(queries.GET_REQUESTS, {
     skip: !communityId,
     variables: { communityId },

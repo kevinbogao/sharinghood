@@ -6,7 +6,11 @@ import ServerError from "../../components/ServerError";
 import { transformImgUrl } from "../../utils/helpers";
 import { queries, typeDefs } from "../../utils/gql";
 
-export default function Posts({ communityId }: { communityId: string }) {
+interface PostsProps {
+  communityId: string;
+}
+
+export default function Posts({ communityId }: PostsProps) {
   const { loading, error, data, client } = useQuery<
     typeDefs.PostsData,
     typeDefs.PostsVars

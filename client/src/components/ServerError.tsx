@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import logo from "../assets/images/logo.png";
 
 export default function ServerError() {

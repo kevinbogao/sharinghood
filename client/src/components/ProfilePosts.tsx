@@ -3,7 +3,8 @@ import { History } from "history";
 import { useMutation } from "@apollo/client";
 import Modal from "react-modal";
 import Spinner from "./Spinner";
-import { mutations, typeDefs } from "../utils/gql";
+import { mutations } from "../utils/gql";
+import { typeDefs } from "../utils/typeDefs";
 import { transformImgUrl } from "../utils/helpers";
 
 interface ProfilePostsProps {

@@ -4,7 +4,8 @@ import { useLazyQuery, useMutation, useApolloClient } from "@apollo/client";
 import Modal from "react-modal";
 import moment from "moment";
 import Spinner from "./Spinner";
-import { queries, mutations, typeDefs } from "../utils/gql";
+import { queries, mutations } from "../utils/gql";
+import { typeDefs } from "../utils/typeDefs";
 import { transformImgUrl } from "../utils/helpers";
 
 interface ItemDetailsProps {

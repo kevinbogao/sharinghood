@@ -1,6 +1,4 @@
-// @ts-nocheck
-
-import PropTypes from "prop-types";
+import { History } from "history";
 import {
   useQuery,
   useMutation,
@@ -11,18 +9,33 @@ import moment from "moment";
 import Spinner from "../../components/Spinner";
 import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 
-export default function Notifications({ history, communityId }) {
+interface NotificationsProps {
+  history: History;
+  communityId: string;
+}
+
+export default function Notifications({
+  history,
+  communityId,
+}: NotificationsProps) {
   const client = useApolloClient();
   const tokenPayload = useReactiveVar(tokenPayloadVar);
-  const { loading, error, data } = useQuery(queries.GET_NOTIFICATIONS, {
+  const { loading, error, data } = useQuery<
+    typeDefs.NotificationsData,
+    typeDefs.NotificationsVars
+  >(queries.GET_NOTIFICATIONS, {
     variables: { communityId },
     fetchPolicy: "network-only",
     onCompleted: () => {
       // Get communities from cache
-      const communitiesData = client.readQuery({
+      const communitiesData = client.readQuery<
+        typeDefs.UserCommunitiesData,
+        void
+      >({
         query: queries.GET_USER_COMMUNITIES,
       });
 
@@ -50,6 +63,7 @@ export default function Notifications({ history, communityId }) {
   const [
     updateBooking,
     {
+      // @ts-ignore
       loading: { mutationLoading },
     },
   ] = useMutation(mutations.UPDATE_BOOKING, {
@@ -64,7 +78,7 @@ export default function Notifications({ history, communityId }) {
     <ServerError />
   ) : (
     <div className="notifications-control">
-      {data.notifications.length ? (
+      {data?.notifications.length && tokenPayload ? (
         <>
           {data.notifications.map((notification) => (
             <div
@@ -73,7 +87,7 @@ export default function Notifications({ history, communityId }) {
               role="presentation"
               // Redirect to post if notification type is 2 else go to notification details
               onClick={() => {
-                if (notification.ofType === 2) {
+                if (notification.ofType === 2 && notification.post) {
                   history.push(`/shared/${notification.post._id}`);
                 } else {
                   history.push(`/notification/${notification._id}`);
@@ -127,7 +141,7 @@ export default function Notifications({ history, communityId }) {
                     </div>
                   </div>
                 </>
-              ) : notification.ofType === 1 ? (
+              ) : notification.ofType === 1 && notification.booking ? (
                 <>
                   <div className="left-img">
                     <div
@@ -221,12 +235,12 @@ export default function Notifications({ history, communityId }) {
                                     variables: {
                                       bookingInput: {
                                         status: 1,
-                                        bookingId: notification.booking._id,
+                                        bookingId: notification?.booking?._id,
                                         communityId,
                                         notificationId: notification._id,
-                                        notifyContent: `${tokenPayload.userName} has accepted your booking on ${notification.booking.post.title}`,
+                                        notifyContent: `${tokenPayload.userName} has accepted your booking on ${notification?.booking?.post.title}`,
                                         notifyRecipientId:
-                                          notification.booking.booker._id,
+                                          notification?.booking?.booker._id,
                                       },
                                     },
                                   });
@@ -244,12 +258,12 @@ export default function Notifications({ history, communityId }) {
                                     variables: {
                                       bookingInput: {
                                         status: 2,
-                                        bookingId: notification.booking._id,
+                                        bookingId: notification?.booking?._id,
                                         communityId,
                                         notificationId: notification._id,
-                                        notifyContent: `${tokenPayload.userName} has denied your booking on ${notification.booking.post.title}`,
+                                        notifyContent: `${tokenPayload.userName} has denied your booking on ${notification?.booking?.post.title}`,
                                         notifyRecipientId:
-                                          notification.booking.booker._id,
+                                          notification?.booking?.booker._id,
                                       },
                                     },
                                   });
@@ -304,7 +318,7 @@ export default function Notifications({ history, communityId }) {
                   <div className="item-info">
                     <div className="item-status">
                       <p className="title">
-                        {notification.post.creator.name} uploaded a item for
+                        {notification?.post?.creator.name} uploaded a item for
                         your request!
                       </p>
                     </div>
@@ -434,10 +448,3 @@ export default function Notifications({ history, communityId }) {
     </div>
   );
 }
-
-Notifications.propTypes = {
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-  communityId: PropTypes.string.isRequired,
-};

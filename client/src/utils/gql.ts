@@ -3,11 +3,11 @@ import { gql } from "@apollo/client";
 ///
 /* QUERIES */
 ///
-export const queries = {
+export namespace queries {
   ///
   /// LOCAL
   ///
-  LOCAL_COMMUNITY: gql`
+  export const LOCAL_COMMUNITY = gql`
     query LocalCommunity {
       community(communityId: $communityId) @client {
         members {
@@ -17,12 +17,12 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
   ///
   /// USER
   ///
-  GET_USER: gql`
+  export const GET_USER = gql`
     query GetUser {
       user {
         _id
@@ -41,26 +41,26 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
-  VALIDATE_RESET_LINK: gql`
+  export const VALIDATE_RESET_LINK = gql`
     query ValidateResetLink($resetKey: String!) {
       validateResetLink(resetKey: $resetKey)
     }
-  `,
+  `;
 
   ///
   /// COMMUNITY
   ///
-  FIND_COMMUNITY: gql`
+  export const FIND_COMMUNITY = gql`
     query FindCommunity($communityCode: String!) {
       community(communityCode: $communityCode) {
         _id
       }
     }
-  `,
+  `;
 
-  FIND_COMMUNITY_AND_MEMBERS: gql`
+  export const FIND_COMMUNITY_AND_MEMBERS = gql`
     query FindCommunityAndMembers($communityCode: String) {
       community(communityCode: $communityCode) {
         _id
@@ -72,9 +72,9 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
-  GET_USER_COMMUNITIES: gql`
+  export const GET_USER_COMMUNITIES = gql`
     query Communities {
       communities {
         _id
@@ -82,9 +82,9 @@ export const queries = {
         hasNotifications
       }
     }
-  `,
+  `;
 
-  GET_CURRENT_COMMUNITY_AND_COMMUNITIES: gql`
+  export const GET_CURRENT_COMMUNITY_AND_COMMUNITIES = gql`
     query GetCurrentCommunityAndCommunities($communityId: ID) {
       community(communityId: $communityId) {
         _id
@@ -105,12 +105,12 @@ export const queries = {
         hasNotifications
       }
     }
-  `,
+  `;
 
   ///
   /// POST
   ///
-  GET_POST: gql`
+  export const GET_POST = gql`
     query Post($postId: ID!) {
       post(postId: $postId) {
         _id
@@ -138,9 +138,9 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
-  GET_POST_DETAILS: gql`
+  export const GET_POST_DETAILS = gql`
     query GetPostDetails($postId: ID!) {
       post(postId: $postId) {
         _id
@@ -175,9 +175,9 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
-  GET_POSTS: gql`
+  export const GET_POSTS = gql`
     query Posts($communityId: ID!) {
       posts(communityId: $communityId) {
         _id
@@ -189,9 +189,9 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
-  GET_POST_AND_COMMUNITIES: gql`
+  export const GET_POST_AND_COMMUNITIES = gql`
     query GetPostAndCommunities($postId: ID!) {
       post(postId: $postId) {
         _id
@@ -213,12 +213,12 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
   ///
   /// REQUEST
   ///
-  GET_REQUEST: gql`
+  export const GET_REQUEST = gql`
     query Request($requestId: ID!) {
       request(requestId: $requestId) {
         _id
@@ -246,9 +246,9 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
-  GET_REQUEST_DETAILS: gql`
+  export const GET_REQUEST_DETAILS = gql`
     query GetRequestDetails($requestId: ID!) {
       request(requestId: $requestId) {
         _id
@@ -284,9 +284,9 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
-  GET_REQUESTS: gql`
+  export const GET_REQUESTS = gql`
     query Requests($communityId: ID!) {
       requests(communityId: $communityId) {
         _id
@@ -301,12 +301,12 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
   ///
   /// NOTIFICATION
   ///
-  GET_NOTIFICATION: gql`
+  export const GET_NOTIFICATION = gql`
     query GetNotification($notificationId: ID!) {
       notification(notificationId: $notificationId) {
         _id
@@ -352,9 +352,9 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
-  GET_NOTIFICATIONS: gql`
+  export const GET_NOTIFICATIONS = gql`
     query GetNotifications($communityId: ID!) {
       notifications(communityId: $communityId) {
         _id
@@ -396,20 +396,20 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
-  FIND_NOTIFICATION: gql`
+  export const FIND_NOTIFICATION = gql`
     query FindNotification($recipientId: ID!, $communityId: ID!) {
       findNotification(recipientId: $recipientId, communityId: $communityId) {
         _id
       }
     }
-  `,
+  `;
 
   ///
   /// ACTIVITY
   ///
-  GET_ACTIVITIES: gql`
+  export const GET_ACTIVITIES = gql`
     query GetActivities {
       totalActivities {
         totalCommunities
@@ -428,9 +428,9 @@ export const queries = {
         }
       }
     }
-  `,
+  `;
 
-  GET_COMMUNITY_ACTIVITIES: gql`
+  export const GET_COMMUNITY_ACTIVITIES = gql`
     query CommunityActivities($communityId: ID!) {
       communityActivities(communityId: $communityId) {
         _id
@@ -489,32 +489,32 @@ export const queries = {
         }
       }
     }
-  `,
-};
+  `;
+}
 
 ///
 /* MUTATIONS */
 ///
-export const mutations = {
+export namespace mutations {
   ///
   /// USER
   ///
-  LOGIN: gql`
+  export const LOGIN = gql`
     mutation Login($email: String!, $password: String!) {
       login(email: $email, password: $password) {
         accessToken
         refreshToken
       }
     }
-  `,
+  `;
 
-  LOGOUT: gql`
+  export const LOGOUT = gql`
     mutation Logout {
       logout
     }
-  `,
+  `;
 
-  UPDATE_USER: gql`
+  export const UPDATE_USER = gql`
     mutation UpdateUser($userInput: UserInput) {
       updateUser(userInput: $userInput) {
         _id
@@ -524,30 +524,30 @@ export const mutations = {
         apartment
       }
     }
-  `,
+  `;
 
-  FORGOT_PASSWORD: gql`
+  export const FORGOT_PASSWORD = gql`
     mutation ForgotPassword($email: String!) {
       forgotPassword(email: $email)
     }
-  `,
+  `;
 
-  RESET_PASSWORD: gql`
+  export const RESET_PASSWORD = gql`
     mutation ResetPassword($resetKey: String!, $password: String!) {
       resetPassword(resetKey: $resetKey, password: $password)
     }
-  `,
+  `;
 
-  ADD_FCM_TOKEN_TO_USER: gql`
+  export const ADD_FCM_TOKEN_TO_USER = gql`
     mutation AddFcmToken($fcmToken: String!) {
       addFcmToken(fcmToken: $fcmToken)
     }
-  `,
+  `;
 
   ///
   /// USER & COMMUNITY
   ///
-  REGISTER_AND_OR_CREATE_COMMUNITY: gql`
+  export const REGISTER_AND_OR_CREATE_COMMUNITY = gql`
     mutation RegisterAndOrCreateCommunity(
       $userInput: UserInput!
       $communityInput: CommunityInput
@@ -567,32 +567,32 @@ export const mutations = {
         }
       }
     }
-  `,
+  `;
 
   ///
   /// COMMUNITY
   ///
-  CREATE_COMMUNITY: gql`
+  export const CREATE_COMMUNITY = gql`
     mutation CreateCommunity($communityInput: CommunityInput!) {
       createCommunity(communityInput: $communityInput) {
         _id
       }
     }
-  `,
+  `;
 
-  JOIN_COMMUNITY: gql`
+  export const JOIN_COMMUNITY = gql`
     mutation JoinCommunity($communityId: ID!) {
       joinCommunity(communityId: $communityId) {
         _id
         name
       }
     }
-  `,
+  `;
 
   ///
   /// POST
   ///
-  CREATE_POST: gql`
+  export const CREATE_POST = gql`
     mutation CreatePost($postInput: PostInput!, $communityId: ID) {
       createPost(postInput: $postInput, communityId: $communityId) {
         _id
@@ -605,45 +605,46 @@ export const mutations = {
         }
       }
     }
-  `,
+  `;
 
-  UPDATE_POST: gql`
+  export const UPDATE_POST = gql`
     mutation UpdatePost($postInput: PostInput!) {
       updatePost(postInput: $postInput) {
         _id
         title
+        desc
         image
         condition
       }
     }
-  `,
+  `;
 
-  INACTIVATE_POST: gql`
+  export const INACTIVATE_POST = gql`
     mutation InactivatePost($postId: ID!) {
       inactivatePost(postId: $postId)
     }
-  `,
+  `;
 
-  DELETE_POST: gql`
+  export const DELETE_POST = gql`
     mutation DeletePost($postId: ID!) {
       deletePost(postId: $postId) {
         _id
       }
     }
-  `,
+  `;
 
-  ADD_POST_TO_COMMUNITY: gql`
+  export const ADD_POST_TO_COMMUNITY = gql`
     mutation AddPostToCommunity($postId: ID!, $communityId: ID!) {
       addPostToCommunity(postId: $postId, communityId: $communityId) {
         _id
       }
     }
-  `,
+  `;
 
   ///
   /// REQUEST
   ///
-  CREATE_REQUEST: gql`
+  export const CREATE_REQUEST = gql`
     mutation CreateRequest($requestInput: RequestInput!, $communityId: ID!) {
       createRequest(requestInput: $requestInput, communityId: $communityId) {
         _id
@@ -656,20 +657,20 @@ export const mutations = {
         }
       }
     }
-  `,
+  `;
 
-  DELETE_REQUEST: gql`
+  export const DELETE_REQUEST = gql`
     mutation DeleteRequest($requestId: ID!) {
       deleteRequest(requestId: $requestId) {
         _id
       }
     }
-  `,
+  `;
 
   ///
   /// THREAD
   ///
-  CREATE_THREAD: gql`
+  export const CREATE_THREAD = gql`
     mutation CreateThread($threadInput: ThreadInput!) {
       createThread(threadInput: $threadInput) {
         _id
@@ -682,12 +683,12 @@ export const mutations = {
         }
       }
     }
-  `,
+  `;
 
   ///
   /// MESSAGE
   ///
-  CREATE_MESSAGE: gql`
+  export const CREATE_MESSAGE = gql`
     mutation CreateMessage($messageInput: MessageInput!) {
       createMessage(messageInput: $messageInput) {
         _id
@@ -698,24 +699,24 @@ export const mutations = {
         createdAt
       }
     }
-  `,
+  `;
 
   ///
   /// BOOKING
   ///
-  UPDATE_BOOKING: gql`
+  export const UPDATE_BOOKING = gql`
     mutation UpdateBooking($bookingInput: BookingInput!) {
       updateBooking(bookingInput: $bookingInput) {
         _id
         status
       }
     }
-  `,
+  `;
 
   ///
   /// NOTIFICATION
   ///
-  CREATE_NOTIFICATION: gql`
+  export const CREATE_NOTIFICATION = gql`
     mutation CreateNotification($notificationInput: NotificationInput) {
       createNotification(notificationInput: $notificationInput) {
         _id
@@ -747,17 +748,17 @@ export const mutations = {
         }
       }
     }
-  `,
-};
+  `;
+}
 
 ///
 /* SUBSCRIPTIONS  */
 ///
-export const subscriptions = {
+export namespace subscriptions {
   ///
   /// MESSAGE
   ///
-  MESSAGES_SUBSCRIPTION: gql`
+  export const MESSAGES_SUBSCRIPTION = gql`
     subscription onNewNotificationMessage($notificationId: ID!) {
       newNotificationMessage(notificationId: $notificationId) {
         _id
@@ -768,100 +769,146 @@ export const subscriptions = {
         }
       }
     }
-  `,
-};
-
-export interface Booking {
-  _id: string;
-  status: number;
-  dateType: number;
-  dateNeed: Date;
-  dateReturn: Date;
-  post: Post;
-  booker: User;
-  community: Community;
+  `;
 }
 
-export interface Community {
-  _id: string;
-  name: string;
-  code: string;
-  zipCode: string;
-  password?: string;
-  creator: User;
-  members: Array<User>;
-  posts: Array<Post>;
-  requests: Array<Request>;
-  hasNotifications?: boolean;
-}
+export namespace typeDefs {
+  export interface Booking {
+    __typename: string;
+    _id: string;
+    status: number;
+    dateType: number;
+    dateNeed: Date;
+    dateReturn: Date;
+    post: Post;
+    booker: User;
+    community: Community;
+  }
 
-export interface Message {
-  _id: string;
-  text: string;
-  sender: User;
-  notification: Notification;
-}
+  export interface Community {
+    __typename: string;
+    _id: string;
+    name: string;
+    code: string;
+    zipCode: string;
+    password?: string;
+    creator: User;
+    members: Array<User>;
+    posts: Array<Post>;
+    requests: Array<Request>;
+    hasNotifications?: boolean;
+  }
 
-export interface Notification {
-  _id: string;
-  ofType: number;
-  post?: Post;
-  booking?: Booking;
-  community: Community;
-  messages: Array<Message>;
-  participants: Array<User>;
-  isRead: {
-    [userId: string]: boolean;
-  };
-}
+  export interface Message {
+    __typename: string;
+    _id: string;
+    text: string;
+    sender: User;
+    notification: Notification;
+  }
 
-export interface Post {
-  _id: string;
-  title: string;
-  desc: string;
-  condition: number;
-  image: string;
-  isGiveaway: boolean;
-  creator: User;
-  threads: Array<Thread>;
-  bookings: Array<Booking>;
-}
+  export interface Notification {
+    __typename: string;
+    _id: string;
+    ofType: number;
+    post?: Post;
+    booking?: Booking;
+    community: Community;
+    messages: Array<Message>;
+    participants: Array<User>;
+    isRead: {
+      [userId: string]: boolean;
+    };
+  }
 
-export interface Request {
-  _id: string;
-  title: string;
-  desc: string;
-  image: string;
-  dateType: number;
-  dateNeed: Date;
-  dateReturn: Date;
-  creator: User;
-  threads: Array<Thread>;
-}
+  export interface Post {
+    __typename: string;
+    _id: string;
+    title: string;
+    desc: string;
+    condition: number;
+    image: string;
+    isGiveaway: boolean;
+    creator: User;
+    threads: Array<Thread>;
+    bookings: Array<Booking>;
+  }
 
-export interface Thread {
-  _id: string;
-  content: string;
-  poster: User;
-  community: Community;
-}
+  export interface Request {
+    __typename: string;
+    _id: string;
+    title: string;
+    desc: string;
+    image: string;
+    dateType: number;
+    dateNeed: Date;
+    dateReturn: Date;
+    creator: User;
+    threads: Array<Thread>;
+  }
 
-export interface User {
-  _id: string;
-  name: string;
-  email: string;
-  password: string;
-  image: string;
-  desc?: string;
-  apartment?: string;
-  lastLogin?: Date;
-  isNotified: boolean;
-  isAdmin: boolean;
-  isMigrated: boolean;
-  tokenVersion: number;
-  fcmTokens: Array<string>;
-  posts: Array<Post>;
-  requests: Array<Request>;
-  communities: Array<Community>;
-  notifications: Array<Notification>;
+  export interface Thread {
+    __typename: string;
+    _id: string;
+    content: string;
+    poster: User;
+    community: Community;
+  }
+
+  export interface ThreadInput {
+    content: string;
+    isPost: boolean;
+    parentId: string;
+    communityId: string;
+    recipientId: string;
+  }
+
+  export interface User {
+    __typename: string;
+    _id: string;
+    name: string;
+    email: string;
+    password: string;
+    image: string;
+    desc?: string;
+    apartment?: string;
+    lastLogin?: Date;
+    isNotified: boolean;
+    isAdmin: boolean;
+    isMigrated: boolean;
+    tokenVersion: number;
+    fcmTokens: Array<string>;
+    posts: Array<Post>;
+    requests: Array<Request>;
+    communities: Array<Community>;
+    notifications: Array<Notification>;
+    createdAt: Date;
+  }
+
+  export interface PostsData {
+    posts: Array<Post>;
+  }
+
+  export interface PostsVars {
+    communityId: string;
+  }
+
+  export interface PostDetailsData {
+    post: Post;
+    community: Community;
+  }
+
+  export interface PostDetailsVars {
+    postId: string;
+    communityId: string;
+  }
+
+  export interface GetPostAndCommunitiesData {
+    post: Post;
+    communities: Array<Community>;
+  }
+
+  export interface GetPostAndCommunitiesVars {
+    postId: string;
+  }
 }

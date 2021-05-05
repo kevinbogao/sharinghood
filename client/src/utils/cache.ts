@@ -2,11 +2,12 @@ import { makeVar } from "@apollo/client";
 import jwtDecode from "jwt-decode";
 
 export interface TokenPayload {
-  userId: string;
-  tokenVersion: number;
-  isAdmin?: Boolean;
-  iat: number;
+  email: string;
   exp: number;
+  iat: number;
+  isAdmin?: Boolean;
+  userId: string;
+  userName: string;
 }
 
 const accessToken = localStorage.getItem("@sharinghood:accessToken");

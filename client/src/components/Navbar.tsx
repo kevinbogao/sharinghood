@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, LegacyRef } from "react";
+import { useState, useEffect, useRef, RefObject } from "react";
 import { useHistory, Link, NavLink } from "react-router-dom";
 import {
   useQuery,
@@ -14,36 +14,31 @@ import {
   faCaretDown,
   faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { queries, mutations, Community } from "../utils/gql";
+import { queries, mutations } from "../utils/gql";
+import { typeDefs } from "../utils/typeDefs";
 import {
   accessTokenVar,
   tokenPayloadVar,
   selCommunityIdVar,
   clearLocalStorageAndCache,
-  TokenPayload,
 } from "../utils/cache";
 
-interface CurrentCommunityAndCommunitiesData {
-  community: Community;
-  communities: Array<Community>;
-}
-
 export default function Navbar() {
-  const node: LegacyRef<HTMLDivElement> | undefined = useRef(null);
   const history = useHistory();
   const client = useApolloClient();
+  const node: RefObject<HTMLDivElement> | undefined = useRef(null);
   const [isMenuActive, setIsMenuActive] = useState<boolean>(false);
-  const accessToken: string | null = useReactiveVar(accessTokenVar);
-  const tokenPayload: TokenPayload | null = useReactiveVar(tokenPayloadVar);
-  const selCommunityId: string | null = useReactiveVar(selCommunityIdVar);
+  const accessToken = useReactiveVar(accessTokenVar);
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const selCommunityId = useReactiveVar(selCommunityIdVar);
 
   // Get current community & user's communities
   const { data } = useQuery<
-    CurrentCommunityAndCommunitiesData,
-    { communityId: string | null }
+    typeDefs.CurrentCommunityAndCommunitiesData,
+    typeDefs.CurrentCommunityAndCommunitiesVars
   >(queries.GET_CURRENT_COMMUNITY_AND_COMMUNITIES, {
     skip: !accessToken || !selCommunityId,
-    variables: { communityId: selCommunityId },
+    variables: { communityId: selCommunityId! },
     onError: ({ message }) => {
       console.warn(message);
     },
@@ -52,11 +47,13 @@ export default function Navbar() {
   // Revoke user's refreshToken
   const [logout] = useMutation<{ logout: void }>(mutations.LOGOUT);
 
-  function handleClickOutside(e: any) {
-    // @ts-ignore
-    if (node.current.contains(e.target)) {
+  function handleClickOutside(e: Event) {
+    if (
+      e.currentTarget instanceof Node &&
+      node?.current?.contains(e.currentTarget)
+    )
       return;
-    }
+
     setIsMenuActive(false);
   }
 

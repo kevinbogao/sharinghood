@@ -236,4 +236,13 @@ export namespace typeDefs {
   export interface FindCommunityAndMembersVars {
     communityCode: string;
   }
+
+  export interface CurrentCommunityAndCommunitiesData {
+    community: Community;
+    communities: Array<Community>;
+  }
+
+  export interface CurrentCommunityAndCommunitiesVars {
+    communityId: string;
+  }
 }

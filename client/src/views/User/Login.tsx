@@ -1,12 +1,11 @@
 import { useState } from "react";
-import PropTypes from "prop-types";
+import { Location, History } from "history";
 import { Link } from "react-router-dom";
-import { History } from "history";
 import { useMutation } from "@apollo/client";
 import jwtDecode from "jwt-decode";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
-import { mutations } from "../../utils/gql";
+import { mutations, typeDefs } from "../../utils/gql";
 import {
   accessTokenVar,
   refreshTokenVar,
@@ -15,18 +14,14 @@ import {
 } from "../../utils/cache";
 import { validateForm, setErrorMsg, FormError } from "../../utils/helpers";
 
-interface LoginData {
-  accessToken: string;
-  refreshToken: string;
+type State = { communityCode: string };
+
+interface LoginProps {
+  location: Location<State>;
+  history: History;
 }
 
-export default function Login({
-  history,
-  location,
-}: {
-  history: History;
-  location: any;
-}) {
+export default function Login({ history, location }: LoginProps) {
   // Get communityCode from props if user is directed from CommunityExists
   // else set it as null
   let email: HTMLInputElement | null;
@@ -34,8 +29,8 @@ export default function Login({
   const { communityCode } = location.state || { communityCode: null };
   const [error, setError] = useState<FormError>({});
   const [login, { loading: mutationLoading }] = useMutation<
-    { login: LoginData },
-    { email: string; password: string }
+    { login: typeDefs.LoginData },
+    typeDefs.LoginVars
   >(mutations.LOGIN, {
     onCompleted: async ({ login }) => {
       const tokenPayload: TokenPayload = await jwtDecode(login.accessToken);
@@ -63,7 +58,8 @@ export default function Login({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validateForm({ email, password }, setError);
+          const errors = validateForm({ email, password });
+          setError(errors);
           if (Object.keys(errors).length === 0 && email && password) {
             login({
               variables: {
@@ -125,14 +121,3 @@ export default function Login({
     </div>
   );
 }
-
-Login.propTypes = {
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      communityCode: PropTypes.string,
-    }),
-  }).isRequired,
-};

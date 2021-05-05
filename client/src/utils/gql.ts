@@ -61,7 +61,7 @@ export namespace queries {
   `;
 
   export const FIND_COMMUNITY_AND_MEMBERS = gql`
-    query FindCommunityAndMembers($communityCode: String) {
+    query FindCommunityAndMembers($communityCode: String!) {
       community(communityCode: $communityCode) {
         _id
         name
@@ -75,7 +75,7 @@ export namespace queries {
   `;
 
   export const GET_USER_COMMUNITIES = gql`
-    query Communities {
+    query GetUserCommunities {
       communities {
         _id
         name
@@ -409,8 +409,8 @@ export namespace queries {
   ///
   /// ACTIVITY
   ///
-  export const GET_ACTIVITIES = gql`
-    query GetActivities {
+  export const GET_TOTAl_ACTIVITIES = gql`
+    query GetTotalActivities {
       totalActivities {
         totalCommunities
         totalUsers
@@ -924,6 +924,16 @@ export namespace typeDefs {
     communityId: string;
   }
 
+  export interface RequestDetailsData {
+    request: Request;
+    community: Community;
+  }
+
+  export interface RequestDetailsVars {
+    requestId: string;
+    communityId: string;
+  }
+
   export interface PostAndCommunitiesData {
     post: Post;
     communities: Array<Community>;
@@ -940,5 +950,41 @@ export namespace typeDefs {
   export interface FindNotificationVars {
     recipientId: string;
     communityId: string;
+  }
+
+  export interface LoginData {
+    accessToken: string;
+    refreshToken: string;
+  }
+
+  export interface LoginVars {
+    email: string;
+    password: string;
+  }
+
+  export interface UserData {
+    user: User;
+  }
+
+  export interface CommunityActivities
+    extends Omit<Community, "password" | "hasNotifications"> {
+    numUsers?: number;
+    numPosts?: number;
+    numRequests?: number;
+    numBookings?: number;
+    bookings: [Booking];
+  }
+
+  export interface TotalActivities {
+    totalCommunities: number;
+    totalUsers: number;
+    totalPosts: number;
+    totalRequests: number;
+    totalBookings: number;
+    communitiesActivities: [CommunityActivities];
+  }
+
+  export interface TotalActivitiesData {
+    totalActivities: TotalActivities;
   }
 }

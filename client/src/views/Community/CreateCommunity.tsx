@@ -1,21 +1,35 @@
-// @ts-nocheck
-
 import { useState } from "react";
-import PropTypes from "prop-types";
+import { Location, History } from "history";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
 import { queries, mutations } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import { selCommunityIdVar } from "../../utils/cache";
-import { validateForm } from "../../utils/helpers";
+import { validateForm, FormError } from "../../utils/helpers";
 
-export default function CreateCommunity({ history, location }) {
+type State = { isLoggedIn?: boolean };
+
+interface CreateCommunityProps {
+  history: History;
+  location: Location<State>;
+}
+
+export default function CreateCommunity({
+  history,
+  location,
+}: CreateCommunityProps) {
   const { isLoggedIn } = location.state || { isLoggedIn: false };
-  let communityName, code, zipCode;
-  const [error, setError] = useState({});
+  let communityName: HTMLInputElement | null;
+  let code: HTMLInputElement | null;
+  let zipCode: HTMLInputElement | null;
+  const [error, setError] = useState<FormError>({});
 
   // Find community & check if community code exists
-  const [community, { loading }] = useLazyQuery(queries.FIND_COMMUNITY, {
+  const [community, { loading }] = useLazyQuery<
+    typeDefs.FindCommunityData,
+    typeDefs.FindCommunityVars
+  >(queries.FIND_COMMUNITY, {
     onCompleted: ({ community }) => {
       // Set code error if community exists
       if (community) {
@@ -24,9 +38,9 @@ export default function CreateCommunity({ history, location }) {
         history.push({
           pathname: "/find-community",
           state: {
-            communityName: communityName.value,
-            communityCode: code.value,
-            communityZipCode: zipCode.value,
+            communityName: communityName?.value,
+            communityCode: code?.value,
+            communityZipCode: zipCode?.value,
             isCreator: true,
           },
         });
@@ -66,11 +80,14 @@ export default function CreateCommunity({ history, location }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validateForm(
-            { communityName, code, zipCode },
-            setError
-          );
-          if (Object.keys(errors).length === 0) {
+          const errors = validateForm({ communityName, code, zipCode });
+          setError(errors);
+          if (
+            Object.keys(errors).length === 0 &&
+            communityName &&
+            code &&
+            zipCode
+          ) {
             if (isLoggedIn) {
               createCommunity({
                 variables: {
@@ -168,14 +185,3 @@ export default function CreateCommunity({ history, location }) {
     </div>
   );
 }
-
-CreateCommunity.propTypes = {
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      isLoggedIn: PropTypes.bool,
-    }),
-  }).isRequired,
-};

@@ -1,8 +1,10 @@
-// @ts-nocheck
+type SpinnerProps = { isCover?: boolean } & typeof defaultProps;
 
-import PropTypes from "prop-types";
+const defaultProps = {
+  isCover: false,
+};
 
-export default function Spinner({ isCover }) {
+export default function Spinner({ isCover }: SpinnerProps) {
   return (
     <div className={`loading-control ${isCover && "foreground"}`}>
       <div className="lds-ring">
@@ -75,11 +77,3 @@ export default function Spinner({ isCover }) {
     </div>
   );
 }
-
-Spinner.propTypes = {
-  isCover: PropTypes.bool,
-};
-
-Spinner.defaultProps = {
-  isCover: false,
-};

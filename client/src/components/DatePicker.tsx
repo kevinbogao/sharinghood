@@ -1,11 +1,17 @@
-// @ts-nocheck
-
 import { useState, useEffect } from "react";
-import PropTypes from "prop-types";
-import { DateRangePicker } from "react-dates";
-import momentPropTypes from "react-moment-proptypes";
+import { Moment } from "moment";
+import { DateRangePicker, FocusedInputShape } from "react-dates";
 import "react-dates/initialize";
 import "react-dates/lib/css/_datepicker.css";
+
+interface DatePickerProps {
+  dateType: number;
+  dateNeed: Moment | null;
+  dateReturn: Moment | null;
+  setDateType(dateType: number): void;
+  setDateNeed(dateNeed: Moment): void;
+  setDateReturn(dateReturn: Moment): void;
+}
 
 export default function DatePicker({
   dateType,
@@ -14,9 +20,11 @@ export default function DatePicker({
   setDateType,
   setDateNeed,
   setDateReturn,
-}) {
-  const [isMobile, setIsMobile] = useState(false);
-  const [focusedInput, setFocusedInput] = useState(null);
+}: DatePickerProps) {
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [focusedInput, setFocusedInput] = useState<FocusedInputShape | null>(
+    null
+  );
 
   // Set isMobile boolean value based on window width
   useEffect(() => {
@@ -52,8 +60,8 @@ export default function DatePicker({
             endDate={dateReturn}
             endDateId="your_unique_end_date_id"
             onDatesChange={({ startDate, endDate }) => {
-              setDateNeed(startDate);
-              setDateReturn(endDate);
+              setDateNeed(startDate!);
+              setDateReturn(endDate!);
             }}
             focusedInput={focusedInput}
             onFocusChange={(focusedInput) => setFocusedInput(focusedInput)}
@@ -145,12 +153,3 @@ export default function DatePicker({
     </>
   );
 }
-
-DatePicker.propTypes = {
-  dateType: PropTypes.number.isRequired,
-  dateNeed: momentPropTypes.momentObj.isRequired,
-  dateReturn: momentPropTypes.momentObj.isRequired,
-  setDateType: PropTypes.func.isRequired,
-  setDateNeed: PropTypes.func.isRequired,
-  setDateReturn: PropTypes.func.isRequired,
-};

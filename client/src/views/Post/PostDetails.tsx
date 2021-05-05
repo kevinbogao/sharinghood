@@ -58,21 +58,23 @@ export default function PostDetails({
       console.log(message);
     },
     update(cache, { data: { createThread } }) {
-      const { post, community } = cache.readQuery<typeDefs.PostDetailsData>({
+      const postDetailsData = cache.readQuery<typeDefs.PostDetailsData>({
         query: queries.GET_POST_DETAILS,
         variables: { postId: match.params.id, communityId },
-      })!;
-
-      cache.writeQuery<typeDefs.PostDetailsData>({
-        query: queries.GET_POST_DETAILS,
-        data: {
-          post: {
-            ...post,
-            threads: [...post.threads, createThread],
-          },
-          community,
-        },
       });
+
+      if (postDetailsData) {
+        cache.writeQuery<typeDefs.PostDetailsData>({
+          query: queries.GET_POST_DETAILS,
+          data: {
+            ...postDetailsData,
+            post: {
+              ...postDetailsData.post,
+              threads: [...postDetailsData.post.threads, createThread],
+            },
+          },
+        });
+      }
     },
   });
 

@@ -1,8 +1,6 @@
-// @ts-nocheck
-
 import { useState, Fragment } from "react";
-import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
+import { History } from "history";
+import { Link, match } from "react-router-dom";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,17 +11,30 @@ import Threads from "../../components/Threads";
 import NotFound from "../../components/NotFound";
 import ItemDetails from "../../components/ItemDetails";
 import ServerError from "../../components/ServerError";
-import { queries, mutations } from "../../utils/gql";
+import { queries, mutations, typeDefs } from "../../utils/gql";
 import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 
-export default function RequestDetails({ communityId, match, history }) {
+interface RequestDetailsProps {
+  communityId: string;
+  match: match<{ id: string }>;
+  history: History;
+}
+
+export default function RequestDetails({
+  communityId,
+  match,
+  history,
+}: RequestDetailsProps) {
   const [comment, setComment] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
 
   // Get request details
-  const { loading, error, data } = useQuery(queries.GET_REQUEST_DETAILS, {
+  const { loading, error, data } = useQuery<
+    typeDefs.RequestDetailsData,
+    typeDefs.RequestDetailsVars
+  >(queries.GET_REQUEST_DETAILS, {
     variables: { requestId: match.params.id, communityId },
     onError: ({ message }) => {
       console.log(message);
@@ -39,20 +50,23 @@ export default function RequestDetails({ communityId, match, history }) {
       console.log(message);
     },
     update(cache, { data: { createThread } }) {
-      const { request } = cache.readQuery({
+      const requestDetailsData = cache.readQuery<typeDefs.RequestDetailsData>({
         query: queries.GET_REQUEST_DETAILS,
-        variables: { requestId: data.request._id, communityId },
+        variables: { requestId: data?.request._id, communityId },
       });
 
-      cache.writeQuery({
-        query: queries.GET_REQUEST_DETAILS,
-        data: {
-          request: {
-            ...request,
-            threads: [...request.threads, createThread],
+      if (requestDetailsData) {
+        cache.writeQuery({
+          query: queries.GET_REQUEST_DETAILS,
+          data: {
+            ...requestDetailsData,
+            request: {
+              ...requestDetailsData.request,
+              threads: [...requestDetailsData.request.threads, createThread],
+            },
           },
-        },
-      });
+        });
+      }
     },
   });
 
@@ -64,19 +78,23 @@ export default function RequestDetails({ communityId, match, history }) {
         console.log(message);
       },
       update(cache, { data: { deleteRequest } }) {
-        const { requests } = cache.readQuery({
+        const requestsData = cache.readQuery<typeDefs.RequestsData>({
           query: queries.GET_REQUESTS,
           variables: { communityId },
         });
-        cache.writeQuery({
-          query: queries.GET_REQUESTS,
-          variables: { communityId },
-          data: {
-            requests: requests.filter(
-              (request) => request._id !== deleteRequest._id
-            ),
-          },
-        });
+
+        if (requestsData) {
+          cache.writeQuery<typeDefs.RequestsData>({
+            query: queries.GET_REQUESTS,
+            variables: { communityId },
+            data: {
+              requests: requestsData.requests.filter(
+                (request) => request._id !== deleteRequest._id
+              ),
+            },
+          });
+        }
+
         history.push("/requests");
       },
     }
@@ -86,7 +104,7 @@ export default function RequestDetails({ communityId, match, history }) {
     <Spinner />
   ) : error ? (
     <ServerError />
-  ) : data?.request ? (
+  ) : data?.request && tokenPayload ? (
     <div className="item-control">
       <ItemDetails
         item={data.request}
@@ -312,15 +330,3 @@ export default function RequestDetails({ communityId, match, history }) {
     <NotFound itemType="Request" />
   );
 }
-
-RequestDetails.propTypes = {
-  communityId: PropTypes.string.isRequired,
-  match: PropTypes.shape({
-    params: PropTypes.shape({
-      id: PropTypes.string.isRequired,
-    }).isRequired,
-  }).isRequired,
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-};

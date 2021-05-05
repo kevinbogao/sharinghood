@@ -1,7 +1,6 @@
-// @ts-nocheck
-
 import { useState, Fragment } from "react";
-import PropTypes from "prop-types";
+import { History } from "history";
+import { match } from "react-router-dom";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -18,24 +17,37 @@ import Spinner from "../../components/Spinner";
 import NotFound from "../../components/NotFound";
 import ItemDetails from "../../components/ItemDetails";
 import ServerError from "../../components/ServerError";
-import { queries, mutations } from "../../utils/gql";
+import { queries, mutations, typeDefs } from "../../utils/gql";
 import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 
 const CONDITIONS = ["New", "Used but good", "Used but little damaged"];
 const CONDITION_ICONS = [faCheckDouble, faCheck, faExclamationTriangle];
 
-export default function PostDetails({ communityId, match, history }) {
+interface PostDetailsProps {
+  communityId: string;
+  match: match<{ id: string }>;
+  history: History;
+}
+
+export default function PostDetails({
+  communityId,
+  match,
+  history,
+}: PostDetailsProps) {
   const [comment, setComment] = useState("");
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [dateType, setDateType] = useState(0);
   const [dateNeed, setDateNeed] = useState(moment());
   const [dateReturn, setDateReturn] = useState(moment());
   const tokenPayload = useReactiveVar(tokenPayloadVar);
-  const { loading, error, data } = useQuery(queries.GET_POST_DETAILS, {
+  const { loading, error, data } = useQuery<
+    typeDefs.PostDetailsData,
+    typeDefs.PostDetailsVars
+  >(queries.GET_POST_DETAILS, {
     variables: { postId: match.params.id, communityId },
     onError: ({ message }) => {
-      console.log(message);
+      console.warn(message);
     },
   });
   const [createThread] = useMutation(mutations.CREATE_THREAD, {
@@ -46,17 +58,19 @@ export default function PostDetails({ communityId, match, history }) {
       console.log(message);
     },
     update(cache, { data: { createThread } }) {
-      const { post } = cache.readQuery({
+      const { post, community } = cache.readQuery<typeDefs.PostDetailsData>({
         query: queries.GET_POST_DETAILS,
-        variables: { postId: data.post._id, communityId },
-      });
-      cache.writeQuery({
+        variables: { postId: match.params.id, communityId },
+      })!;
+
+      cache.writeQuery<typeDefs.PostDetailsData>({
         query: queries.GET_POST_DETAILS,
         data: {
           post: {
             ...post,
             threads: [...post.threads, createThread],
           },
+          community,
         },
       });
     },
@@ -80,7 +94,7 @@ export default function PostDetails({ communityId, match, history }) {
     <Spinner />
   ) : error ? (
     <ServerError />
-  ) : data?.post ? (
+  ) : data?.post && tokenPayload ? (
     <div className="item-control">
       <ItemDetails
         item={data.post}
@@ -305,15 +319,3 @@ export default function PostDetails({ communityId, match, history }) {
 }
 
 Modal.setAppElement("#root");
-
-PostDetails.propTypes = {
-  communityId: PropTypes.string.isRequired,
-  match: PropTypes.shape({
-    params: PropTypes.shape({
-      id: PropTypes.string.isRequired,
-    }).isRequired,
-  }).isRequired,
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-};

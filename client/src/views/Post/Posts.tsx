@@ -4,12 +4,12 @@ import ItemsGrid from "../../components/ItemsGrid";
 import Spinner from "../../components/Spinner";
 import ServerError from "../../components/ServerError";
 import { transformImgUrl } from "../../utils/helpers";
-import { queries, Post } from "../../utils/gql";
+import { queries, typeDefs } from "../../utils/gql";
 
 export default function Posts({ communityId }: { communityId: string }) {
   const { loading, error, data, client } = useQuery<
-    { posts: Array<Post> },
-    { communityId: string }
+    typeDefs.PostsData,
+    typeDefs.PostsVars
   >(queries.GET_POSTS, {
     skip: !communityId,
     variables: { communityId },
@@ -24,8 +24,7 @@ export default function Posts({ communityId }: { communityId: string }) {
     <ServerError />
   ) : (
     <ItemsGrid isPost communityId={communityId}>
-      {/* @ts-ignore */}
-      {data?.posts?.map((post) => (
+      {data?.posts.map((post) => (
         <div key={post._id} className="item-card">
           <Link
             to={{

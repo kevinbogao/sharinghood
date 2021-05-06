@@ -1,23 +1,29 @@
-// @ts-nocheck
-
-import { useState } from "react";
-import PropTypes from "prop-types";
+import { useState, ChangeEvent } from "react";
+import { History } from "history";
 import { useQuery, useMutation } from "@apollo/client";
 import Spinner from "../../components/Spinner";
 import ProfilePosts from "../../components/ProfilePosts";
 import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import { transformImgUrl } from "../../utils/helpers";
 
-export default function Profile({ history }) {
+interface ProfileProps {
+  history: History;
+}
+
+export default function Profile({ history }: ProfileProps) {
   const [name, setName] = useState("");
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState<string | null>(null);
   const [apartment, setApartment] = useState("");
-  const { data, error, loading } = useQuery(queries.GET_USER, {
-    onError: ({ message }) => {
-      console.log(message);
-    },
-  });
+  const { loading, data, error } = useQuery<typeDefs.UserData, void>(
+    queries.GET_USER,
+    {
+      onError: ({ message }) => {
+        console.log(message);
+      },
+    }
+  );
   const [updateUser, { loading: mutationLoading }] = useMutation(
     mutations.UPDATE_USER,
     {
@@ -68,7 +74,8 @@ export default function Profile({ history }) {
               alt="profile pic"
               src={
                 image ||
-                transformImgUrl(JSON.parse(data.user.image).secure_url, 300)
+                (data?.user.image &&
+                  transformImgUrl(JSON.parse(data.user.image).secure_url, 300))
               }
             />
           </label>
@@ -76,12 +83,14 @@ export default function Profile({ history }) {
             id="file-input"
             className="FileInput"
             type="file"
-            onChange={(e) => {
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
               const reader = new FileReader();
-              reader.readAsDataURL(e.target.files[0]);
-              reader.onload = () => {
-                setImage(reader.result);
-              };
+              if (e.currentTarget.files) {
+                reader.readAsDataURL(e.currentTarget.files[0]);
+                reader.onload = () => {
+                  setImage(reader.result!.toString());
+                };
+              }
             }}
           />
         </div>
@@ -89,21 +98,25 @@ export default function Profile({ history }) {
           Pictures increase trust by 80%. Feel free to make your profile more
           trustworthy by uploading a picture.
         </p>
-        {data.user.posts.length > 0 && (
+        {data && data.user.posts.length > 0 && (
           <ProfilePosts posts={data.user.posts} history={history} />
         )}
         <p className="main-p">Your name</p>
         <input
           className="main-input"
-          defaultValue={data.user.name}
+          defaultValue={data?.user.name}
           onChange={(e) => setName(e.target.value)}
         />
         <p className="main-p">Email address</p>
-        <input className="main-input" defaultValue={data.user.email} disabled />
+        <input
+          className="main-input"
+          defaultValue={data?.user.email}
+          disabled
+        />
         <p className="main-p">Where can the neighbours find you?</p>
         <input
           className="main-input"
-          defaultValue={data.user.apartment}
+          defaultValue={data?.user.apartment}
           onChange={(e) => setApartment(e.target.value)}
         />
         <button className="main-btn block" type="submit">
@@ -169,14 +182,3 @@ export default function Profile({ history }) {
     </div>
   );
 }
-
-Profile.propTypes = {
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-    location: PropTypes.shape({
-      state: PropTypes.shape({
-        creatorName: PropTypes.string,
-      }),
-    }),
-  }).isRequired,
-};

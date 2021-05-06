@@ -5,7 +5,8 @@ import { useMutation } from "@apollo/client";
 import jwtDecode from "jwt-decode";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
-import { mutations, typeDefs } from "../../utils/gql";
+import { mutations } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import {
   accessTokenVar,
   refreshTokenVar,

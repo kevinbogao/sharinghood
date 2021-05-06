@@ -69,7 +69,7 @@ const splitLink = split(
 );
 
 // Init cache
-const cache = new InMemoryCache({
+const cache: InMemoryCache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {

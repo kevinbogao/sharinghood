@@ -7,9 +7,9 @@
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "tsc && node dist/index.js",
     "client": "cd ../client && npm run start",
-    "server": "nodemon src/index.js",
+    "server": "nodemon src/index.ts",
     "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\"",
     "test": "jest"
   },
@@ -22,8 +22,12 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/__utils",
-      "/__mocks__/"
-    ]
+      "/__mocks__/",
+      "/dist/"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    }
   },
   "eslintConfig": {
     "extends": [
@@ -92,6 +96,13 @@
     "winston-mongodb": "^5.0.7"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/ioredis": "^4.26.0",
+    "@types/jest": "^26.0.23",
+    "@types/jsonwebtoken": "^8.5.1",
+    "@types/lodash": "^4.14.168",
+    "@types/node-gcm": "^1.0.0",
+    "@types/nodemailer": "^6.4.1",
     "concurrently": "^6.0.2",
     "eslint": "^7.24.0",
     "eslint-config-airbnb-base": "^14.2.0",
@@ -104,6 +115,9 @@
     "mongodb-memory-server": "^6.9.6",
     "nodemailer-stub": "^1.2.2",
     "nodemon": "^2.0.7",
-    "prettier": "^2.2.1"
+    "prettier": "^2.2.1",
+    "ts-jest": "^26.5.5",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
   }
 }

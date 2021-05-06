@@ -7,7 +7,7 @@
     "Sparsh Tyagi <sparsh.tyagi@code.berlin>",
     "Bo Gao <bo.gao@code.berlin>"
   ],
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "engines": {
     "node": "15.x",
     "npm": "7.x"

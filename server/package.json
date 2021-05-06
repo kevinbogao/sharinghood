@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "repository": "https://github.com/kevinbogao/sharinghood/tree/master/server",
   "author": "Bo Gao <bo.gao@code.berlin>",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",

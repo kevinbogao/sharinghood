@@ -1,4 +1,7 @@
 export namespace typeDefs {
+  ///
+  /// Type Definitions
+  ///
   export interface Booking {
     __typename: string;
     _id: string;
@@ -124,74 +127,6 @@ export namespace typeDefs {
     createdAt: Date;
   }
 
-  export interface PostsData {
-    posts: Array<Post>;
-  }
-
-  export interface PostsVars {
-    communityId: string;
-  }
-
-  export interface RequestsData {
-    requests: Array<Request>;
-  }
-
-  export interface RequestsVars {
-    communityId: string;
-  }
-
-  export interface PostDetailsData {
-    post: Post;
-    community: Community;
-  }
-
-  export interface PostDetailsVars {
-    postId: string;
-    communityId: string;
-  }
-
-  export interface RequestDetailsData {
-    request: Request;
-    community: Community;
-  }
-
-  export interface RequestDetailsVars {
-    requestId: string;
-    communityId: string;
-  }
-
-  export interface PostAndCommunitiesData {
-    post: Post;
-    communities: Array<Community>;
-  }
-
-  export interface PostAndCommunitiesVars {
-    postId: string;
-  }
-
-  export interface FindNotificationData {
-    findNotification: typeDefs.Notification;
-  }
-
-  export interface FindNotificationVars {
-    recipientId: string;
-    communityId: string;
-  }
-
-  export interface LoginData {
-    accessToken: string;
-    refreshToken: string;
-  }
-
-  export interface LoginVars {
-    email: string;
-    password: string;
-  }
-
-  export interface UserData {
-    user: User;
-  }
-
   export interface CommunityActivities {
     _id: string;
     name: string;
@@ -217,26 +152,29 @@ export namespace typeDefs {
     communitiesActivities: [CommunityActivities];
   }
 
-  export interface TotalActivitiesData {
-    totalActivities: TotalActivities;
-  }
+  ///
+  /* LOCAL */
+  ///
 
-  export interface CommunityActivitiesData {
-    communityActivities: CommunityActivities;
-  }
-
-  export interface CommunityActivitiesVars {
-    communityId: string;
-  }
-
-  export interface FindCommunityAndMembersData {
+  /// LOCAL_COMMUNITY
+  export interface LocalCommunityData {
     community: Community;
   }
 
-  export interface FindCommunityAndMembersVars {
-    communityCode: string;
+  export interface LocalCommunityVars {
+    communityId: string;
   }
 
+  /// GET_USER
+  export interface UserData {
+    user: User;
+  }
+
+  ///
+  /* COMMUNITY */
+  ///
+
+  /// FIND_COMMUNITY
   export interface FindCommunityData {
     community: Community;
   }
@@ -245,6 +183,21 @@ export namespace typeDefs {
     communityCode: string;
   }
 
+  /// FIND_COMMUNITY_AND_MEMBERS
+  export interface FindCommunityAndMembersData {
+    community: Community;
+  }
+
+  export interface FindCommunityAndMembersVars {
+    communityCode: string;
+  }
+
+  /// GET_USER_COMMUNITIES
+  export interface UserCommunitiesData {
+    communities: Array<Community>;
+  }
+
+  /// GET_CURRENT_COMMUNITY_AND_COMMUNITIES
   export interface CurrentCommunityAndCommunitiesData {
     community: Community;
     communities: Array<Community>;
@@ -254,15 +207,124 @@ export namespace typeDefs {
     communityId: string;
   }
 
-  export interface LocalCommunityData {
+  ///
+  /* POST */
+  ///
+
+  /// GET_POST_DETAILS
+  export interface PostDetailsData {
+    post: Post;
     community: Community;
   }
 
-  export interface LocalCommunityVars {
+  export interface PostDetailsVars {
+    postId: string;
     communityId: string;
   }
 
-  export interface UserCommunitiesData {
+  /// GET_POSTS
+  export interface PostsData {
+    posts: Array<Post>;
+  }
+
+  export interface PostsVars {
+    communityId: string;
+  }
+
+  /// GET_POST_AND_COMMUNITIES
+  export interface PostAndCommunitiesData {
+    post: Post;
     communities: Array<Community>;
+  }
+
+  export interface PostAndCommunitiesVars {
+    postId: string;
+  }
+
+  ///
+  /* REQUEST */
+  ///
+
+  /// GET_REQUESTS
+  export interface RequestsData {
+    requests: Array<Request>;
+  }
+
+  export interface RequestsVars {
+    communityId: string;
+  }
+
+  /// GET_REQUEST_DETAILS
+  export interface RequestDetailsData {
+    request: Request;
+    community: Community;
+  }
+
+  export interface RequestDetailsVars {
+    requestId: string;
+    communityId: string;
+  }
+
+  ///
+  /* NOTIFICATION */
+  ///
+
+  /// GET_NOTIFICATION
+  export interface NotificationData {
+    notification: Notification;
+    community: Community;
+  }
+
+  export interface NotificationVars {
+    notificationId: string;
+    communityId: string;
+  }
+
+  /// GET_NOTIFICATIONS
+  export interface NotificationsData {
+    notifications: Array<Notification>;
+  }
+
+  export interface NotificationsVars {
+    communityId: string;
+  }
+
+  /// FIND_NOTIFICATION
+  export interface FindNotificationData {
+    findNotification: typeDefs.Notification;
+  }
+
+  export interface FindNotificationVars {
+    recipientId: string;
+    communityId: string;
+  }
+
+  ///
+  /* ACTIVITY */
+  ///
+
+  /// GET_TOTAl_ACTIVITIES
+  export interface TotalActivitiesData {
+    totalActivities: TotalActivities;
+  }
+
+  /// GET_COMMUNITY_ACTIVITIES
+  export interface CommunityActivitiesData {
+    communityActivities: CommunityActivities;
+  }
+
+  export interface CommunityActivitiesVars {
+    communityId: string;
+  }
+
+  /// MUTATIONS LOGIN
+  export interface LoginData {
+    accessToken: string;
+    refreshToken: string;
+  }
+
+  export interface LoginVars {
+    email: string;
+    password: string;
   }
 }

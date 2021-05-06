@@ -34,52 +34,49 @@ export function isValidEmail(email: string): boolean {
 
 export function validateForm(
   elements: InputElements,
-  setError: Dispatch<SetStateAction<FormError>>
+  image?: string | null
 ): FormError {
   let errors: FormError = {};
+  // Empty image
+  if (image === null) errors.image = "Please upload a picture of the item";
+
   for (const key in elements) {
-    // Empty image object
-    if (key === "image") {
-      if (!elements[key]) errors[key] = EMPTY_INPUT_ERRORS[key];
-    } else {
-      // Empty input fields
-      if (elements[key]!.value === "") errors[key] = EMPTY_INPUT_ERRORS[key];
-      else {
-        // Community code
-        if (key === "code" && hasNonStdChars(elements[key]!.value)) {
-          errors[key] = "Please only use standard alphanumerics";
-        }
-
-        // Email
-        if (key === "email" && !isValidEmail(elements[key]!.value)) {
-          errors[key] = "Email address is invalid";
-        }
-
-        // Password
-        if (
-          key === "password" &&
-          "confirmPassword" in elements &&
-          elements[key]!.value.length < 7
-        ) {
-          errors[key] = "Your password must be longer than 7 characters";
-        }
+    if (elements[key]!.value === "") errors[key] = EMPTY_INPUT_ERRORS[key];
+    else {
+      // Community code
+      if (key === "code" && hasNonStdChars(elements[key]!.value)) {
+        errors[key] = "Please only use standard alphanumerics";
       }
 
-      // Confirm password
+      // Email
+      if (key === "email" && !isValidEmail(elements[key]!.value)) {
+        errors[key] = "Email address is invalid";
+      }
+
+      // Password
       if (
-        key === "confirmPassword" &&
-        elements[key]!.value !== elements.password!.value
+        key === "password" &&
+        "confirmPassword" in elements &&
+        elements[key]!.value.length < 7
       ) {
-        errors[key] = "Passwords do not match";
-      }
-
-      // Checkbox
-      if (key === "agreed" && !elements[key]!.checked) {
-        errors[key] = EMPTY_INPUT_ERRORS[key];
+        errors[key] = "Your password must be longer than 7 characters";
       }
     }
+
+    // Confirm password
+    if (
+      key === "confirmPassword" &&
+      elements[key]!.value !== elements.password!.value
+    ) {
+      errors[key] = "Passwords do not match";
+    }
+
+    // Checkbox
+    if (key === "agreed" && !elements[key]!.checked) {
+      errors[key] = EMPTY_INPUT_ERRORS[key];
+    }
   }
-  setError(errors);
+
   return errors;
 }
 

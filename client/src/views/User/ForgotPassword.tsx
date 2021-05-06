@@ -1,22 +1,27 @@
-// @ts-nocheck
-
 import { useState } from "react";
-import PropTypes from "prop-types";
+import { Location } from "history";
 import { Redirect } from "react-router-dom";
 import { useMutation, useReactiveVar } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
 import { mutations } from "../../utils/gql";
 import { accessTokenVar } from "../../utils/cache";
-import { validateForm, setErrorMsg } from "../../utils/helpers";
+import { validateForm, setErrorMsg, FormError } from "../../utils/helpers";
 
-export default function ForgotPassword({ location }) {
-  let email;
+type State = { from: string };
+
+interface ForgotPasswordProps {
+  location: Location<State>;
+}
+
+export default function ForgotPassword({ location }: ForgotPasswordProps) {
+  let email: HTMLInputElement | null;
+  const accessToken = useReactiveVar(accessTokenVar);
   const { from } = location.state || { from: { pathname: "/" } };
-  const [error, setError] = useState({});
+  const [error, setError] = useState<FormError>({});
   const [isSuccess, setIsSuccess] = useState(false);
   const [isReSend, setIsReSend] = useState(false);
-  const accessToken = useReactiveVar(accessTokenVar);
+  const [enteredEmail, setEnteredEmail] = useState<string | null>(null);
   const [forgotPassword, { loading: mutationLoading }] = useMutation(
     mutations.FORGOT_PASSWORD,
     {
@@ -46,17 +51,13 @@ export default function ForgotPassword({ location }) {
               type="submit"
               onClick={(e) => {
                 e.preventDefault();
-                const errors = validateForm({ email }, setError);
-                if (Object.keys(errors).length === 0) {
-                  forgotPassword({
-                    variables: { email: email.value.toLowerCase() },
-                  });
-                  // Stop render resend button for 5 sec, and re-render again
-                  setIsReSend(true);
-                  setTimeout(() => {
-                    setIsReSend(false);
-                  }, 5000);
-                }
+                forgotPassword({
+                  variables: { email: enteredEmail },
+                });
+                setIsReSend(true);
+                setTimeout(() => {
+                  setIsReSend(false);
+                }, 5000);
               }}
             >
               Resend
@@ -72,10 +73,12 @@ export default function ForgotPassword({ location }) {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              const errors = validateForm({ email }, setError);
+              const errors = validateForm({ email });
+              setError(errors);
               if (Object.keys(errors).length === 0) {
+                setEnteredEmail(email!.value.toLowerCase());
                 forgotPassword({
-                  variables: { email: email.value.toLowerCase() },
+                  variables: { email: email?.value.toLowerCase() },
                 });
               }
             }}
@@ -84,7 +87,6 @@ export default function ForgotPassword({ location }) {
               className="main-input"
               type="text"
               placeholder="Email"
-              // onChange={(e) => setEmail(e.target.value)}
               ref={(node) => (email = node)}
             />
             {error.email && <InlineError text={error.email} />}
@@ -112,26 +114,3 @@ export default function ForgotPassword({ location }) {
     </div>
   );
 }
-
-ForgotPassword.propTypes = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      from: PropTypes.shape({
-        pathname: PropTypes.string,
-      }),
-    }),
-  }),
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-};
-
-ForgotPassword.defaultProps = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      from: PropTypes.shape({
-        pathname: "/",
-      }),
-    }),
-  }),
-};

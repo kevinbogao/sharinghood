@@ -75,26 +75,26 @@ const server: ApolloServer = new ApolloServer({
       throw new AuthenticationError("Not Authenticated");
     },
   },
-  cors: {
-    credentials: true,
-    origin: (origin, callback) => {
-      if (origin) {
-        const whitelist = [
-          process.env.ORIGIN,
-          process.env.ORIGIN_INSECURE,
-          "http://localhost:4000",
-        ];
-        if (whitelist.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error("Not allowed by CORS"));
-        }
-        // Mobile client
-      } else {
-        callback(null, false);
-      }
-    },
-  },
+  // cors: {
+  //   credentials: true,
+  //   origin: (origin, callback) => {
+  //     if (origin) {
+  //       const whitelist = [
+  //         process.env.ORIGIN,
+  //         process.env.ORIGIN_INSECURE,
+  //         "http://localhost:4000",
+  //       ];
+  //       if (whitelist.includes(origin)) {
+  //         callback(null, true);
+  //       } else {
+  //         callback(new Error("Not allowed by CORS"));
+  //       }
+  //       // Mobile client
+  //     } else {
+  //       callback(null, false);
+  //     }
+  //   },
+  // },
 });
 
 // Start server

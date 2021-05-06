@@ -1,24 +1,27 @@
-// @ts-nocheck
-
 import { useState } from "react";
-import PropTypes from "prop-types";
-import { Redirect } from "react-router-dom";
+import { Location } from "history";
+import { Redirect, match } from "react-router-dom";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import moment from "moment";
+import moment, { Moment } from "moment";
 import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../components/Spinner";
 import ServerError from "../components/ServerError";
 import { queries } from "../utils/gql";
+import { typeDefs } from "../utils/typeDefs";
 import { tokenPayloadVar } from "../utils/cache";
 import { transformImgUrl } from "../utils/helpers";
+
+interface FormattedKeys {
+  [key: string]: string;
+}
 
 const STATS_IDS = ["members", "posts", "requests", "bookings"];
 const ID_SET = new Set(["post", "creator", "booker"]);
 const DATE_SET = new Set(["createdAt", "dateNeed", "dateReturn", "lastLogin"]);
 const USER_SET = new Set(["creator", "booker"]);
 const BOOKING_STATUS = ["Pending", "Accepted", "Denied"];
-const FORMATTED_KEYS = {
+const FORMATTED_KEYS: FormattedKeys = {
   _id: "ID",
   post: "Post ID",
   name: "Name",
@@ -38,16 +41,31 @@ const FORMATTED_KEYS = {
   lastLogin: "Last Login",
 };
 
-export default function DashboardDetails({ location, match }) {
+type State = { from: { pathname: string } };
+
+interface DashboardDetailsProps {
+  location: Location<State>;
+  match: match<{ id: string }>;
+}
+
+export default function DashboardDetails({
+  location,
+  match,
+}: DashboardDetailsProps) {
   const { from } = location.state || { from: { pathname: "/" } };
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
   const [sortOrder, setSortOrder] = useState(-1);
   const [selectedId, setSelectedId] = useState("");
   const [selectedCol, setSelectedCol] = useState("_id");
   const [selectedStat, setSelectedStat] = useState("members");
-  const [selectedStatActivities, setSelectedStatActivities] = useState([]);
-  const tokenPayload = useReactiveVar(tokenPayloadVar);
-  const { loading, error, data } = useQuery(queries.GET_COMMUNITY_ACTIVITIES, {
-    skip: !tokenPayload.isAdmin,
+  const [selectedStatActivities, setSelectedStatActivities] = useState<
+    Array<any>
+  >([]);
+  const { loading, error, data } = useQuery<
+    typeDefs.CommunityActivitiesData,
+    typeDefs.CommunityActivitiesVars
+  >(queries.GET_COMMUNITY_ACTIVITIES, {
+    skip: !tokenPayload || !tokenPayload.isAdmin,
     variables: { communityId: match.params.id },
     onCompleted: ({ communityActivities }) => {
       setSelectedStatActivities(communityActivities["members"]);
@@ -57,7 +75,7 @@ export default function DashboardDetails({ location, match }) {
     },
   });
 
-  function sortColumns(column) {
+  function sortColumns(column: string): void {
     const stats = selectedStatActivities.slice();
     if (typeof stats[0][column] === "string") {
       stats.sort((a, b) => {
@@ -74,7 +92,7 @@ export default function DashboardDetails({ location, match }) {
     setSortOrder(sortOrder * -1);
   }
 
-  function formatTime(dateType, timeString) {
+  function formatTime(dateType: number, timeString: Date): string | Moment {
     if (dateType === 0) return "ASAP";
     else if (dateType === 1) return "N/A";
     return moment(+timeString).format("MMM DD HH:mm");
@@ -82,25 +100,25 @@ export default function DashboardDetails({ location, match }) {
 
   // Find selected item in its associated array by id and set it as selected id in state,
   // & set its stat type as selected
-  function findById(stat, key) {
+  function findById(stat: any, key: string): void {
     if (USER_SET.has(key)) {
-      const targetUser = data.communityActivities.members.filter(
-        (member) => member._id === stat[key]._id
+      const targetUser = data!.communityActivities.members.filter(
+        (member: typeDefs.User) => member._id === stat[key]._id
       );
       setSelectedId(targetUser[0]._id);
       setSelectedStat("members");
-      setSelectedStatActivities(data.communityActivities["members"]);
+      setSelectedStatActivities(data!.communityActivities["members"]);
     } else if (key === "post") {
-      const targetPost = data.communityActivities.posts.filter(
-        (post) => post._id === stat[key]._id
+      const targetPost = data!.communityActivities.posts.filter(
+        (post: typeDefs.Post) => post._id === stat[key]._id
       );
       setSelectedId(targetPost[0]._id);
       setSelectedStat("posts");
-      setSelectedStatActivities(data.communityActivities["posts"]);
+      setSelectedStatActivities(data!.communityActivities["posts"]);
     }
   }
 
-  return !tokenPayload.isAdmin ? (
+  return !tokenPayload || !tokenPayload.isAdmin ? (
     <Redirect to={from} />
   ) : loading ? (
     <Spinner />
@@ -111,11 +129,11 @@ export default function DashboardDetails({ location, match }) {
       <div className="dashboard-overview">
         <div className="dashboard-header orange">
           <div className="dashboard-overview-highlight">
-            <h2>{data.communityActivities.name} Community</h2>
+            <h2>{data?.communityActivities.name} Community</h2>
             <h4>
-              ID: {data.communityActivities._id} | Code:{" "}
-              {data.communityActivities.code} | Zipcode:{" "}
-              {data.communityActivities.zipCode}
+              ID: {data?.communityActivities._id} | Code:{" "}
+              {data?.communityActivities.code} | Zipcode:{" "}
+              {data?.communityActivities.zipCode}
             </h4>
           </div>
         </div>
@@ -129,10 +147,12 @@ export default function DashboardDetails({ location, match }) {
                 }`}
                 onClick={() => {
                   setSelectedStat(stat);
-                  setSelectedStatActivities(data.communityActivities[stat]);
+                  //  @ts-ignore
+                  setSelectedStatActivities(data?.communityActivities[stat]);
                 }}
                 role="presentation"
               >
+                {/* @ts-ignore */}
                 <h2>{data.communityActivities[stat].length}</h2>
                 <h4>Total {stat.charAt(0).toUpperCase() + stat.slice(1)}</h4>
               </div>
@@ -369,28 +389,3 @@ export default function DashboardDetails({ location, match }) {
     </div>
   );
 }
-
-DashboardDetails.propTypes = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      from: PropTypes.shape({
-        pathname: PropTypes.string,
-      }),
-    }),
-  }),
-  match: PropTypes.shape({
-    params: PropTypes.shape({
-      id: PropTypes.string.isRequired,
-    }).isRequired,
-  }).isRequired,
-};
-
-DashboardDetails.defaultProps = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      from: PropTypes.shape({
-        pathname: "/",
-      }),
-    }),
-  }),
-};

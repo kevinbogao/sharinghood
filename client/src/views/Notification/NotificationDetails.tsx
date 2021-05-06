@@ -1,7 +1,6 @@
-// @ts-nocheck
-
 import { useState, useEffect } from "react";
-import PropTypes from "prop-types";
+import { History } from "history";
+import { match } from "react-router-dom";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,22 +8,33 @@ import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../../components/Spinner";
 import ServerError from "../../components/ServerError";
 import { queries, mutations, subscriptions } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 
-export default function NotificationDetails({ communityId, match, history }) {
+interface NotificationDetailsProps {
+  communityId: string;
+  match: match<{ id: string }>;
+  history: History;
+}
+
+export default function NotificationDetails({
+  communityId,
+  match,
+  history,
+}: NotificationDetailsProps) {
   const [text, setText] = useState("");
   const tokenPayload = useReactiveVar(tokenPayloadVar);
-  const { subscribeToMore, loading, error, data } = useQuery(
-    queries.GET_NOTIFICATION,
-    {
-      fetchPolicy: "network-only",
-      variables: { notificationId: match.params.id, communityId },
-      onError: ({ message }) => {
-        console.log(message);
-      },
-    }
-  );
+  const { subscribeToMore, loading, error, data } = useQuery<
+    typeDefs.NotificationData,
+    typeDefs.NotificationVars
+  >(queries.GET_NOTIFICATION, {
+    fetchPolicy: "network-only",
+    variables: { notificationId: match.params.id, communityId },
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
   const [createMessage, { error: mutationError }] = useMutation(
     mutations.CREATE_MESSAGE,
     {
@@ -44,6 +54,7 @@ export default function NotificationDetails({ communityId, match, history }) {
   const [
     updateBooking,
     {
+      // @ts-ignore
       loading: { mutationLoading },
     },
   ] = useMutation(mutations.UPDATE_BOOKING, {
@@ -57,6 +68,7 @@ export default function NotificationDetails({ communityId, match, history }) {
     const unsubscribe = subscribeToMore({
       document: subscriptions.MESSAGES_SUBSCRIPTION,
       variables: { notificationId: match.params.id },
+      // @ts-ignore
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
 
@@ -65,6 +77,7 @@ export default function NotificationDetails({ communityId, match, history }) {
           notification: {
             messages: [
               ...prev.notification.messages,
+              // @ts-ignore
               subscriptionData.data.newNotificationMessage,
             ],
           },
@@ -85,7 +98,7 @@ export default function NotificationDetails({ communityId, match, history }) {
       <div className="notification-info">
         <div className="info-imgs">
           {data?.community?.members
-            .filter((member) => member._id === tokenPayload.userId)
+            .filter((member) => member._id === tokenPayload?.userId)
             .map((member) => (
               <div
                 key={member._id}
@@ -100,135 +113,156 @@ export default function NotificationDetails({ communityId, match, history }) {
             ))}
           <div
             className="user-img recipient"
-            style={{
-              backgroundImage: `url(${transformImgUrl(
-                JSON.parse(data.notification.participants[0].image).secure_url,
-                200
-              )})`,
-            }}
+            style={
+              data?.notification.participants[0].image
+                ? {
+                    backgroundImage: `url(${transformImgUrl(
+                      JSON.parse(data.notification.participants[0].image)
+                        .secure_url,
+                      200
+                    )})`,
+                  }
+                : undefined
+            }
           />
         </div>
-        {data.notification.ofType === 0 && (
+        {data?.notification.ofType === 0 && (
           <>
             <p>You - {data.notification.participants[0].name}</p>
           </>
         )}
-        {data.notification.ofType === 1 && (
-          <div className="item-info">
-            <div className="item-status">
-              <p
-                className="p-link"
-                role="presentation"
-                onClick={() => {
-                  history.push(`/shared/${data.notification.booking.post._id}`);
-                }}
-              >
-                {data.notification.booking.post.title}
-              </p>
-              {data.notification.booking.dateType === 0 ? (
-                <span>As soon as possible</span>
-              ) : data.notification.booking.dateType === 1 ? (
-                <span>No timeframe</span>
-              ) : (
-                <span>
-                  {moment(+data.notification.booking.dateNeed).format(
-                    "DD.MM.Y"
-                  )}{" "}
-                  -{" "}
-                  {moment(+data.notification.booking.dateReturn).format(
-                    "DD.MM.Y"
-                  )}
-                </span>
-              )}
-            </div>
-            <div className="item-btns">
-              {data.notification.booking.booker._id === tokenPayload.userId ? (
-                <>
-                  {data.notification.booking.status === 0 ? (
-                    <button type="button" className="noti-btn status pending">
-                      Pending
-                    </button>
-                  ) : data.notification.booking.status === 1 ? (
-                    <button type="button" className="noti-btn status accept">
-                      Accepted
-                    </button>
-                  ) : (
-                    <button type="button" className="noti-btn status deny">
-                      Denied
-                    </button>
-                  )}
-                </>
-              ) : (
-                <>
-                  {data.notification.booking.status === 0 ? (
-                    <>
-                      <button
-                        type="button"
-                        className="noti-btn accept"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          updateBooking({
-                            variables: {
-                              bookingInput: {
-                                status: 1,
-                                bookingId: data.notification.booking._id,
-                                communityId,
-                                notificationId: data.notification._id,
-                                notifyContent: `${tokenPayload.userName} has accepted your booking on ${data.notification.booking.post.title}`,
-                                notifyRecipientId:
-                                  data.notification.booking.booker._id,
-                              },
-                            },
-                          });
-                        }}
-                      >
-                        Accept
+        {data?.notification.ofType === 1 &&
+          data.notification.booking &&
+          tokenPayload && (
+            <div className="item-info">
+              <div className="item-status">
+                <p
+                  className="p-link"
+                  role="presentation"
+                  onClick={() => {
+                    history.push(
+                      `/shared/${data.notification.booking?.post._id}`
+                    );
+                  }}
+                >
+                  {data.notification.booking.post.title}
+                </p>
+                {data.notification.booking.dateType === 0 ? (
+                  <span>As soon as possible</span>
+                ) : data.notification.booking.dateType === 1 ? (
+                  <span>No timeframe</span>
+                ) : (
+                  <span>
+                    {moment(+data.notification.booking.dateNeed).format(
+                      "DD.MM.Y"
+                    )}{" "}
+                    -{" "}
+                    {moment(+data.notification.booking.dateReturn).format(
+                      "DD.MM.Y"
+                    )}
+                  </span>
+                )}
+              </div>
+              <div className="item-btns">
+                {/* @ts-ignore */}
+                {data.notification.booking.booker._id ===
+                tokenPayload.userId ? (
+                  <>
+                    {data.notification.booking.status === 0 ? (
+                      <button type="button" className="noti-btn status pending">
+                        Pending
                       </button>
-                      <button
-                        className="noti-btn deny"
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          updateBooking({
-                            variables: {
-                              bookingInput: {
-                                status: 2,
-                                bookingId: data.notification.booking._id,
-                                communityId,
-                                notificationId: data.notification._id,
-                                notifyContent: `${tokenPayload.userName} has denied your booking on ${data.notification.booking.post.title}`,
-                                notifyRecipientId:
-                                  data.notification.booking.booker._id,
-                              },
-                            },
-                          });
-                        }}
-                      >
-                        Deny
+                    ) : data.notification.booking.status === 1 ? (
+                      <button type="button" className="noti-btn status accept">
+                        Accepted
                       </button>
-                    </>
-                  ) : data.notification.booking.status === 1 ? (
-                    <button type="button" className="noti-btn status accept">
-                      Accepted
-                    </button>
-                  ) : (
-                    <button type="button" className="noti-btn status deny">
-                      Denied
-                    </button>
-                  )}
-                </>
-              )}
+                    ) : (
+                      <button type="button" className="noti-btn status deny">
+                        Denied
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {data.notification.booking.status === 0 ? (
+                      <>
+                        <button
+                          type="button"
+                          className="noti-btn accept"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            updateBooking({
+                              variables: {
+                                bookingInput: {
+                                  status: 1,
+                                  bookingId: data.notification.booking!._id,
+                                  communityId,
+                                  notificationId: data.notification._id,
+                                  notifyContent: `${
+                                    tokenPayload.userName
+                                  } has accepted your booking on ${
+                                    data.notification.booking!.post.title
+                                  }`,
+                                  notifyRecipientId: data.notification.booking!
+                                    .booker._id,
+                                },
+                              },
+                            });
+                          }}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          className="noti-btn deny"
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            updateBooking({
+                              variables: {
+                                bookingInput: {
+                                  status: 2,
+                                  bookingId: data.notification.booking!._id,
+                                  communityId,
+                                  notificationId: data.notification._id,
+                                  notifyContent: `${
+                                    tokenPayload.userName
+                                  } has denied your booking on ${
+                                    data.notification.booking!.post.title
+                                  }`,
+                                  notifyRecipientId: data.notification.booking!
+                                    .booker._id,
+                                },
+                              },
+                            });
+                          }}
+                        >
+                          Deny
+                        </button>
+                      </>
+                    ) : data.notification.booking.status === 1 ? (
+                      <button type="button" className="noti-btn status accept">
+                        Accepted
+                      </button>
+                    ) : (
+                      <button type="button" className="noti-btn status deny">
+                        Denied
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
       <div className="notification-chat">
         <div className="chat-content">
           {data &&
+            // @ts-ignore
             data.notification.messages.map((message) => (
               <div
                 key={message._id}
                 className={
+                  // @ts-ignore
                   message.sender._id === tokenPayload.userId
                     ? "send"
                     : "received"
@@ -251,7 +285,7 @@ export default function NotificationDetails({ communityId, match, history }) {
                     messageInput: {
                       text,
                       communityId,
-                      recipientId: data.notification.participants[0]._id,
+                      recipientId: data?.notification.participants[0]._id,
                       notificationId: match.params.id,
                     },
                   },
@@ -270,7 +304,7 @@ export default function NotificationDetails({ communityId, match, history }) {
                     messageInput: {
                       text,
                       communityId,
-                      recipientId: data.notification.participants[0]._id,
+                      recipientId: data?.notification.participants[0]._id,
                       notificationId: match.params.id,
                     },
                   },
@@ -436,15 +470,3 @@ export default function NotificationDetails({ communityId, match, history }) {
     </div>
   );
 }
-
-NotificationDetails.propTypes = {
-  communityId: PropTypes.string.isRequired,
-  match: PropTypes.shape({
-    params: PropTypes.shape({
-      id: PropTypes.string.isRequired,
-    }).isRequired,
-  }).isRequired,
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-};

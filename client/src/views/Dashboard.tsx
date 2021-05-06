@@ -1,7 +1,5 @@
-// @ts-nocheck
-
 import { useState } from "react";
-import PropTypes from "prop-types";
+import { Location, History } from "history";
 import { Redirect } from "react-router-dom";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,9 +7,14 @@ import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../components/Spinner";
 import ServerError from "../components/ServerError";
 import { queries } from "../utils/gql";
+import { typeDefs } from "../utils/typeDefs";
 import { tokenPayloadVar } from "../utils/cache";
 
-const FORMATTED_KEYS = {
+interface FormattedKeys {
+  [key: string]: string;
+}
+
+const FORMATTED_KEYS: FormattedKeys = {
   _id: "Community ID",
   name: "Community Name",
   code: "Community Code",
@@ -21,23 +24,39 @@ const FORMATTED_KEYS = {
   numBookings: "Bookings",
 };
 
-export default function Dashboard({ location, history }) {
+interface IndexableCommunityActivities extends typeDefs.CommunityActivities {
+  [key: string]: any;
+}
+
+type State = { from: { pathname: string } };
+
+interface DashboardProps {
+  location: Location<State>;
+  history: History;
+}
+
+export default function Dashboard({ location, history }: DashboardProps) {
   const { from } = location.state || { from: { pathname: "/" } };
+  const tokenPayload = useReactiveVar(tokenPayloadVar);
   const [sortOrder, setSortOrder] = useState(-1);
   const [selectedCol, setSelectedCol] = useState("_id");
-  const [communitiesActivities, setCommunitiesActivities] = useState([]);
-  const tokenPayload = useReactiveVar(tokenPayloadVar);
-  const { loading, error, data } = useQuery(queries.GET_ACTIVITIES, {
-    skip: !tokenPayload.isAdmin,
-    onCompleted: ({ totalActivities }) => {
-      setCommunitiesActivities(totalActivities.communitiesActivities);
-    },
-    onError: ({ message }) => {
-      console.log(message);
-    },
-  });
+  const [communitiesActivities, setCommunitiesActivities] = useState<
+    Array<IndexableCommunityActivities>
+  >([]);
+  const { loading, error, data } = useQuery<typeDefs.TotalActivitiesData, void>(
+    queries.GET_TOTAl_ACTIVITIES,
+    {
+      skip: !tokenPayload || !tokenPayload.isAdmin,
+      onCompleted: ({ totalActivities }) => {
+        setCommunitiesActivities(totalActivities.communitiesActivities);
+      },
+      onError: ({ message }) => {
+        console.log(message);
+      },
+    }
+  );
 
-  function sortColumns(column) {
+  function sortColumns(column: string): void {
     // Copy communitiesActivities
     const stats = communitiesActivities.slice();
 
@@ -60,7 +79,7 @@ export default function Dashboard({ location, history }) {
     setSortOrder(sortOrder * -1);
   }
 
-  return !tokenPayload.isAdmin ? (
+  return !tokenPayload || !tokenPayload.isAdmin ? (
     <Redirect to={from} />
   ) : loading ? (
     <Spinner />
@@ -71,24 +90,24 @@ export default function Dashboard({ location, history }) {
       <div className="dashboard-overview">
         <div className="dashboard-header">
           <div className="dashboard-overview-highlight">
-            <h1>{data.totalActivities.totalCommunities}</h1>
+            <h1>{data?.totalActivities.totalCommunities}</h1>
             <h3>Total Communities</h3>
           </div>
           <div className="dashboard-overview-stats">
             <div className="stat-unclickable">
-              <h2>{data.totalActivities.totalUsers}</h2>
+              <h2>{data?.totalActivities.totalUsers}</h2>
               <h4>Total Users</h4>
             </div>
             <div className="stat-unclickable">
-              <h2>{data.totalActivities.totalPosts}</h2>
+              <h2>{data?.totalActivities.totalPosts}</h2>
               <h4>Total Posts</h4>
             </div>
             <div className="stat-unclickable">
-              <h2>{data.totalActivities.totalRequests}</h2>
+              <h2>{data?.totalActivities.totalRequests}</h2>
               <h4>Total Requests</h4>
             </div>
             <div className="stat-unclickable">
-              <h2>{data.totalActivities.totalBookings}</h2>
+              <h2>{data?.totalActivities.totalBookings}</h2>
               <h4>Total Bookings</h4>
             </div>
           </div>
@@ -258,26 +277,3 @@ export default function Dashboard({ location, history }) {
     </div>
   );
 }
-
-Dashboard.propTypes = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      from: PropTypes.shape({
-        pathname: PropTypes.string,
-      }),
-    }),
-  }),
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-};
-
-Dashboard.defaultProps = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      from: PropTypes.shape({
-        pathname: "/",
-      }),
-    }),
-  }),
-};

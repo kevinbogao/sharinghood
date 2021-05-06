@@ -1,10 +1,9 @@
-// @ts-nocheck
-
 import { useState, useEffect } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { useMutation, useApolloClient, useReactiveVar } from "@apollo/client";
 import firebase from "firebase/app";
 import "firebase/messaging";
+// @ts-ignore
 import _JSXStyle from "styled-jsx/style";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
@@ -35,6 +34,7 @@ import EditPost from "./views/Post/EditPost";
 import Notifications from "./views/Notification/Notifications";
 import NotificationDetails from "./views/Notification/NotificationDetails";
 import { queries, mutations } from "./utils/gql";
+import { typeDefs } from "./utils/typeDefs";
 import { accessTokenVar, serverErrorVar } from "./utils/cache";
 
 // _JSXStyle
@@ -110,14 +110,14 @@ export default function App() {
       // Subscribe to new FCM
       messaging.onMessage((payload) => {
         // Get all user's communities from cache
-        const data = client.readQuery({
+        const data = client.readQuery<typeDefs.UserCommunitiesData>({
           query: queries.GET_USER_COMMUNITIES,
         });
 
         // Write to cache with a new array of communities with target
         // community's hasNotifications status to true to cache
         if (data) {
-          client.writeQuery({
+          client.writeQuery<typeDefs.UserCommunitiesData>({
             query: queries.GET_USER_COMMUNITIES,
             data: {
               communities: data.communities.map((community) =>

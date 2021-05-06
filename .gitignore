@@ -10,8 +10,6 @@ build/
 remote-repo/
 coverage/
 .module-cache
-fixtures/dom/public/react-dom.js
-fixtures/dom/public/react.js
 test/the-files-to-test.generated.js
 *.log*
 chrome-user-data
@@ -26,9 +24,10 @@ chrome-user-data
 *.http
 nodemon.json
 .eslintcache
-
 server/dist
-
+react-app-env.d.ts
+fixtures/dom/public/react-dom.js
+fixtures/dom/public/react.js
 packages/react-devtools-core/dist
 packages/react-devtools-extensions/chrome/build
 packages/react-devtools-extensions/chrome/*.crx

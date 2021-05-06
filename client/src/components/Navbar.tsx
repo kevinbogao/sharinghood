@@ -48,12 +48,7 @@ export default function Navbar() {
   const [logout] = useMutation<{ logout: void }>(mutations.LOGOUT);
 
   function handleClickOutside(e: Event) {
-    if (
-      e.currentTarget instanceof Node &&
-      node?.current?.contains(e.currentTarget)
-    )
-      return;
-
+    if (e.target instanceof Node && node?.current?.contains(e.target)) return;
     setIsMenuActive(false);
   }
 

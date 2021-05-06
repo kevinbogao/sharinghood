@@ -21,12 +21,7 @@ export default function Members() {
   });
 
   function handleClickOutside(e: Event) {
-    if (
-      e.currentTarget instanceof Node &&
-      node?.current?.contains(e.currentTarget)
-    )
-      return;
-
+    if (e.target instanceof Node && node?.current?.contains(e.target)) return;
     setIsExpanded(false);
   }
 

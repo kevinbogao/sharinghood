@@ -59,6 +59,12 @@
             "@styled-jsx/plugin-sass"
           ]
         }
+      ],
+      [
+        "@babel/plugin-transform-typescript",
+        {
+          "allowNamespaces": true
+        }
       ]
     ]
   },
@@ -108,6 +114,7 @@
   },
   "devDependencies": {
     "@styled-jsx/plugin-sass": "^3.0.0",
+    "@types/react-dates": "^21.8.2",
     "@types/react-modal": "^3.12.0",
     "@types/react-router-dom": "^5.1.7",
     "@types/styled-jsx": "^2.2.8",

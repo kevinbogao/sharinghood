@@ -6,7 +6,8 @@ import moment from "moment";
 import Spinner from "../../components/Spinner";
 import ItemsGrid from "../../components/ItemsGrid";
 import ServerError from "../../components/ServerError";
-import { queries, typeDefs } from "../../utils/gql";
+import { queries } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import { transformImgUrl } from "../../utils/helpers";
 
 interface RequestsProps {

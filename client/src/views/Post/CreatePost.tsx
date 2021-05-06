@@ -4,7 +4,8 @@ import { useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import uploadImg from "../../assets/images/upload.png";
 import Spinner from "../../components/Spinner";
-import { queries, mutations, typeDefs } from "../../utils/gql";
+import { queries, mutations } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import { validateForm, FormError } from "../../utils/helpers";
 
 interface State {

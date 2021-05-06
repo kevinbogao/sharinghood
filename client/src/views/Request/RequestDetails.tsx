@@ -11,7 +11,8 @@ import Threads from "../../components/Threads";
 import NotFound from "../../components/NotFound";
 import ItemDetails from "../../components/ItemDetails";
 import ServerError from "../../components/ServerError";
-import { queries, mutations, typeDefs } from "../../utils/gql";
+import { queries, mutations } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import { tokenPayloadVar } from "../../utils/cache";
 import { transformImgUrl } from "../../utils/helpers";
 

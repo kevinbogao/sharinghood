@@ -4,7 +4,8 @@ import ItemsGrid from "../../components/ItemsGrid";
 import Spinner from "../../components/Spinner";
 import ServerError from "../../components/ServerError";
 import { transformImgUrl } from "../../utils/helpers";
-import { queries, typeDefs } from "../../utils/gql";
+import { queries } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 
 interface PostsProps {
   communityId: string;

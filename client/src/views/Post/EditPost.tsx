@@ -5,7 +5,8 @@ import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import Modal from "react-modal";
 import Spinner from "../../components/Spinner";
 import ServerError from "../../components/ServerError";
-import { queries, mutations, typeDefs } from "../../utils/gql";
+import { queries, mutations } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import { tokenPayloadVar, selCommunityIdVar } from "../../utils/cache";
 
 interface EditPostProps {

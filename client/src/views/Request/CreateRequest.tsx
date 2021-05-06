@@ -6,7 +6,8 @@ import DatePicker from "../../components/DatePicker";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
 import uploadImg from "../../assets/images/upload.png";
-import { queries, mutations, typeDefs } from "../../utils/gql";
+import { queries, mutations } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import { validateForm, FormError } from "../../utils/helpers";
 
 interface CreateRequestProps {

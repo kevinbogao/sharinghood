@@ -1,7 +1,5 @@
-// @ts-nocheck
-
 import { useState } from "react";
-import PropTypes from "prop-types";
+import { Location, History } from "history";
 import { useMutation } from "@apollo/client";
 import jwtDecode from "jwt-decode";
 import Modal from "react-modal";
@@ -15,8 +13,25 @@ import {
   accessTokenVar,
   refreshTokenVar,
   tokenPayloadVar,
+  TokenPayload,
 } from "../../utils/cache";
-import { validateForm } from "../../utils/helpers";
+import { validateForm, FormError } from "../../utils/helpers";
+
+type State = {
+  name: string;
+  image: string;
+  apartment: string;
+  isCreator: boolean;
+  communityId?: string;
+  communityName?: string;
+  communityCode?: string;
+  communityZipCode?: string;
+};
+
+interface RegisterProps {
+  location: Location<State>;
+  history: History;
+}
 
 export default function Register({
   location: {
@@ -32,17 +47,19 @@ export default function Register({
     },
   },
   history,
-}) {
-  let email, password, confirmPassword, isNotified, agreed;
-  const [error, setError] = useState({});
+}: RegisterProps) {
+  let email: HTMLInputElement | null;
+  let password: HTMLInputElement | null;
+  let confirmPassword: HTMLInputElement | null;
+  let isNotified: HTMLInputElement | null;
+  let agreed: HTMLInputElement | null;
+  const [error, setError] = useState<FormError>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [
     registerAndOrCreateCommunity,
     { loading: mutationLoading },
   ] = useMutation(mutations.REGISTER_AND_OR_CREATE_COMMUNITY, {
     onCompleted: async ({ registerAndOrCreateCommunity }) => {
-      console.log(registerAndOrCreateCommunity);
-
       const tokenPayload = await jwtDecode(
         registerAndOrCreateCommunity.user.accessToken
       );
@@ -56,7 +73,7 @@ export default function Register({
       );
       accessTokenVar(registerAndOrCreateCommunity.user.accessToken);
       refreshTokenVar(registerAndOrCreateCommunity.user.refreshTokenVar);
-      tokenPayloadVar(tokenPayload);
+      tokenPayloadVar(tokenPayload as TokenPayload);
 
       // Redirect user to community invite link if user is creator
       // else redirect user to communities page (fromLogin state will
@@ -96,11 +113,19 @@ export default function Register({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const errors = validateForm(
-            { email, password, confirmPassword, agreed },
-            setError
-          );
-          if (Object.keys(errors).length === 0) {
+          const errors = validateForm({
+            email,
+            password,
+            confirmPassword,
+            agreed,
+          });
+          setError(errors);
+          if (
+            Object.keys(errors).length === 0 &&
+            email &&
+            password &&
+            isNotified
+          ) {
             registerAndOrCreateCommunity({
               variables: {
                 userInput: {
@@ -291,21 +316,3 @@ export default function Register({
     </div>
   );
 }
-
-Register.propTypes = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      image: PropTypes.string.isRequired,
-      apartment: PropTypes.string.isRequired,
-      isCreator: PropTypes.bool.isRequired,
-      communityId: PropTypes.string,
-      communityName: PropTypes.string,
-      communityCode: PropTypes.string,
-      communityZipCode: PropTypes.string,
-    }).isRequired,
-  }).isRequired,
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
-};

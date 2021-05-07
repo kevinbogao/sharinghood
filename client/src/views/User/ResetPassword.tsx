@@ -1,19 +1,22 @@
-// @ts-nocheck
-
 import { useState } from "react";
+import { match } from "react-router-dom";
 import { Link } from "react-router-dom";
-import PropTypes from "prop-types";
 import { useQuery, useMutation } from "@apollo/client";
 import Spinner from "../../components/Spinner";
 import InlineError from "../../components/InlineError";
 import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
-import { validateForm } from "../../utils/helpers";
+import { validateForm, FormError } from "../../utils/helpers";
 
-export default function ResetPassword({ match }) {
-  let password, confirmPassword;
-  const [formError, setFormError] = useState({});
+interface ResetPasswordProps {
+  match: match<{ resetKey: string }>;
+}
+
+export default function ResetPassword({ match }: ResetPasswordProps) {
+  let password: HTMLInputElement | null;
+  let confirmPassword: HTMLInputElement | null;
   const [success, setSuccess] = useState(false);
+  const [formError, setFormError] = useState<FormError>({});
   const { loading, error, data } = useQuery(queries.VALIDATE_RESET_LINK, {
     variables: { resetKey: match.params.resetKey },
     onError: ({ message }) => {
@@ -62,11 +65,9 @@ export default function ResetPassword({ match }) {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    const errors = validateForm(
-                      { password, confirmPassword },
-                      setFormError
-                    );
-                    if (Object.keys(errors).length === 0) {
+                    const errors = validateForm({ password, confirmPassword });
+                    setFormError(errors);
+                    if (Object.keys(errors).length === 0 && password) {
                       resetPassword({
                         variables: {
                           resetKey: match.params.resetKey,
@@ -130,11 +131,3 @@ export default function ResetPassword({ match }) {
     </>
   );
 }
-
-ResetPassword.propTypes = {
-  match: PropTypes.shape({
-    params: PropTypes.shape({
-      resetKey: PropTypes.string.isRequired,
-    }).isRequired,
-  }).isRequired,
-};

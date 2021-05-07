@@ -1,5 +1,5 @@
 import { createTestClient } from "apollo-server-testing";
-import { gql } from "apollo-server";
+import { gql } from "apollo-server-koa";
 import { constructTestServer } from "./__utils";
 import { connect, close, cleanup } from "./__mocks__/inMemoryDb";
 import createInitData, {

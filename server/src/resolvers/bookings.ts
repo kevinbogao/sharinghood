@@ -1,4 +1,4 @@
-import { AuthenticationError } from "apollo-server";
+import { AuthenticationError } from "apollo-server-koa";
 import User, { UserDocument } from "../models/user";
 import Post, { PostDocument } from "../models/post";
 import Booking, { BookingDocument } from "../models/booking";

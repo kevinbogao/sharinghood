@@ -24,7 +24,7 @@
       "/node_modules/",
       "/__utils",
       "/__mocks__/",
-      "/dist/"
+      "./dist/"
     ],
     "transform": {
       "^.+\\.(ts|tsx)$": "ts-jest"
@@ -79,7 +79,8 @@
     "arrowParens": "always"
   },
   "dependencies": {
-    "apollo-server": "^2.22.2",
+    "@koa/cors": "^3.1.0",
+    "apollo-server-koa": "^2.24.0",
     "apollo-server-testing": "^2.22.2",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.25.1",
@@ -89,6 +90,7 @@
     "graphql-type-json": "^0.3.2",
     "ioredis": "^4.26.0",
     "jsonwebtoken": "^8.5.1",
+    "koa-helmet": "^6.1.0",
     "lodash": "^4.17.21",
     "mongoose": "^5.12.3",
     "node-gcm": "^1.0.4",

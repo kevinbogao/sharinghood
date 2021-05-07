@@ -1,4 +1,4 @@
-import { ApolloError, AuthenticationError } from "apollo-server";
+import { ApolloError, AuthenticationError } from "apollo-server-koa";
 import crypto from "crypto";
 import bcryptjs from "bcryptjs";
 import { Redis } from "ioredis";

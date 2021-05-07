@@ -1,6 +1,5 @@
-// @ts-nocheck
 import { createTestClient } from "apollo-server-testing";
-import { gql } from "apollo-server";
+import { gql } from "apollo-server-koa";
 // @ts-ignore
 import Redis from "ioredis-mock";
 import { constructTestServer } from "./__utils";

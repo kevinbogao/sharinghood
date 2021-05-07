@@ -1,4 +1,4 @@
-import { gql } from "apollo-server";
+import { gql } from "apollo-server-koa";
 // @ts-ignore
 import GraphQLJSON from "graphql-type-json";
 
@@ -148,11 +148,11 @@ const typeDefs = gql`
 
   # Bookings
   type Booking {
-    _id: ID
-    post: Post
-    status: Int
-    booker: User
-    dateType: Int
+    _id: ID!
+    post: Post!
+    status: Int!
+    booker: User!
+    dateType: Int!
     dateNeed: String
     dateReturn: String
   }

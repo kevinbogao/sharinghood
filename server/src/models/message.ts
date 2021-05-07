@@ -19,10 +19,12 @@ const messageSchema: Schema = new Schema(
     sender: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
     notification: {
       type: Schema.Types.ObjectId,
       ref: "Notification",
+      required: true,
     },
   },
   { timestamps: true }

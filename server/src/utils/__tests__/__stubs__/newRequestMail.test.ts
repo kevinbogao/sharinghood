@@ -1,10 +1,11 @@
 import nodemailer from "nodemailer";
+import moment from "moment";
 // @ts-ignore
 import { stubTransport } from "nodemailer-stub";
 import newRequestMail from "../../sendMail/newRequestMail";
 
 describe("Test newRequestMail function", () => {
-  it("Should send new community mail", async () => {
+  it("Should send new request mail", async () => {
     const transport = nodemailer.createTransport(stubTransport);
     jest
       .spyOn(nodemailer, "createTransport")
@@ -26,9 +27,10 @@ describe("Test newRequestMail function", () => {
       requestMailArgs.itemName,
       requestMailArgs.itemImageUrl,
       requestMailArgs.itemUrl,
-      requestMailArgs.dateNeed,
       requestMailArgs.to,
-      requestMailArgs.subject
+      requestMailArgs.subject,
+      "",
+      moment(+requestMailArgs.dateNeed).format("MMM DD")
     );
 
     expect(mail).toMatchObject({

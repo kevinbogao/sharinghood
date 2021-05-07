@@ -136,5 +136,6 @@ export default async function updateBookingMail(
 
   // Get status & return status
   const info = await sendMail(to, subject, text, html);
+
   return info;
 }

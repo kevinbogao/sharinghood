@@ -3,6 +3,7 @@ import {
   AuthenticationError,
   ForbiddenError,
 } from "apollo-server-koa";
+import moment from "moment";
 import { Types } from "mongoose";
 import User, { UserDocument } from "../models/user";
 import Thread from "../models/thread";
@@ -174,15 +175,15 @@ const requestsResolvers = {
           creator.save(),
           process.env.NODE_ENV === "production" &&
             emails.length &&
-            dateNeed &&
             newRequestMail(
               userName,
               title,
               JSON.parse(imgData).secure_url,
               `${process.env.ORIGIN}/requests/${request._id}`,
-              dateNeed,
               emails,
-              `${userName} requested ${title} in your community.`
+              `${userName} requested ${title} in your community.`,
+              "",
+              dateNeed && moment(+request.dateNeed).format("MMM DD")
             ),
         ]);
 

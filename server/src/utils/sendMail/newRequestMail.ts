@@ -5,11 +5,25 @@ export default async function newRequestMail(
   itemName: string,
   itemImageUrl: string,
   itemUrl: string,
-  dateNeed: Date,
   to: string | Array<string>,
   subject: string,
-  text: string = ""
+  text: string = "",
+  dateNeed?: string
 ) {
+  const needByParagraph = `
+    <p
+      style="
+      text-align: center;
+      color: #ff9635;
+      font-size: 26px;
+      font-weight: bold;
+      font-family: sans-serif;
+    "
+    >
+      By: <span style="color: #3f3d56;">${dateNeed}</span>
+    </p>
+    `;
+
   const html = `
     <!DOCTYPE html>
     <html style="margin: 0; padding: 0;">
@@ -54,17 +68,7 @@ export default async function newRequestMail(
           "
             src=${itemImageUrl}
           />
-          <p
-            style="
-            text-align: center;
-            color: #ff9635;
-            font-size: 26px;
-            font-weight: bold;
-            font-family: sans-serif;
-          "
-          >
-            By: <span style="color: #3f3d56;">${dateNeed}</span>
-          </p>
+          ${dateNeed ? needByParagraph : "<p></p>"}
           <p
             style="
             text-align: center;
@@ -188,5 +192,6 @@ export default async function newRequestMail(
 
   // Get status & return status
   const info = await sendMail(to, subject, text, html);
+
   return info;
 }

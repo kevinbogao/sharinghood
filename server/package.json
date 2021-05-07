@@ -91,6 +91,7 @@
     "jsonwebtoken": "^8.5.1",
     "koa-helmet": "^6.1.0",
     "lodash": "^4.17.21",
+    "moment": "^2.29.1",
     "mongoose": "^5.12.7",
     "node-gcm": "^1.0.4",
     "nodemailer": "^6.6.0",

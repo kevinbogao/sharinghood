@@ -19,4 +19,34 @@ const logger: Logger = createLogger({
   ],
 });
 
-export default logger;
+// Log server request
+export const requestLogger = {
+  requestDidStart() {
+    return {
+      willSendResponse(requestContext: any) {
+        if (requestContext.response.errors) {
+          // Log error if errors are encountered
+          logger.log(
+            "error",
+            `Request for ${requestContext.request.operationName}`,
+            {
+              query: requestContext.request.query,
+              variables: requestContext.request.variables,
+              error: requestContext.response.errors[0].message,
+            }
+          );
+        } else {
+          // Log request
+          logger.log(
+            "info",
+            `Request for ${requestContext.request.operationName}`,
+            {
+              query: requestContext.request.query,
+              variables: requestContext.request.variables,
+            }
+          );
+        }
+      },
+    };
+  },
+};

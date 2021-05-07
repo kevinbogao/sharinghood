@@ -144,7 +144,7 @@ const postsResolvers = {
       { user, redis }: { user: UserTokenContext; redis: Redis }
     ): Promise<CreatePostRes> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
-      const { userId, userName }: { userId: string; userName: string } = user;
+      const { userId, userName } = user;
 
       try {
         // Upload image to Cloudinary

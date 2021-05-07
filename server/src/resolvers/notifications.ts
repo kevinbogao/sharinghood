@@ -339,6 +339,7 @@ const notificationsResolvers = {
               ),
           ]);
         }
+
         // Create & save notification, add booking to notification if it is type 1
         const notification = await Notification.create({
           ...(ofType === 1 && booking && { booking: booking._id }),

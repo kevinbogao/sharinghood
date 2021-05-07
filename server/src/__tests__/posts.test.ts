@@ -218,7 +218,9 @@ describe("[Mutation.posts]", () => {
   it("Create post by user { communityId }", async () => {
     // Create an instance of ApolloServer
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01._id.toString() } }),
+      context: () => ({
+        user: { userId: mockUser01._id.toString(), userName: mockUser01.name },
+      }),
     });
 
     // Mock uploadImg function
@@ -262,7 +264,10 @@ describe("[Mutation.posts]", () => {
     const redis = new Redis();
 
     const { server } = constructTestServer({
-      context: () => ({ user: { userId: mockUser01._id.toString() }, redis }),
+      context: () => ({
+        user: { userId: mockUser01._id.toString(), userName: mockUser01.name },
+        redis,
+      }),
     });
 
     mockedUploadImg.mockImplementation(() =>

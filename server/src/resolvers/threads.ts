@@ -11,7 +11,7 @@ interface ThreadInput {
   isPost: boolean;
   parentId: string;
   communityId: string;
-  recipientId?: string;
+  recipientId: string;
 }
 
 const threadsResolvers = {
@@ -52,20 +52,11 @@ const threadsResolvers = {
         parent.threads.push(thread);
         await parent.save();
 
-        // Find recipient if recipientId is given
-        if (recipientId) {
-          const recipient: UserDocument | null = await User.findById(
-            recipientId
-          );
+        // Find recipient
+        const recipient: UserDocument | null = await User.findById(recipientId);
 
-          // Throw error if recipient is not found
-          if (!recipient) {
-            throw new ApolloError(
-              "Could not find recipient, notification will not be send"
-            );
-          }
-
-          // Sent push notification if recipient is found
+        // Sent push notification if recipient is found
+        if (recipient) {
           pushNotification(
             {},
             `${user.userName} commented your ${

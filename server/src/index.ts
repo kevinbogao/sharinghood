@@ -61,5 +61,8 @@ const httpServer = app.listen({ port: process.env.PORT || 4000 }, async () => {
   );
 });
 
-server.applyMiddleware({ app, cors: { credentials: true } });
+server.applyMiddleware({
+  app,
+  cors: { origin: process.env.ORIGIN, credentials: true },
+});
 server.installSubscriptionHandlers(httpServer);

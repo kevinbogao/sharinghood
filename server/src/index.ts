@@ -22,7 +22,7 @@ const server: ApolloServer = new ApolloServer({
   resolvers,
   engine: { reportSchema: true },
   plugins: [requestLogger],
-  context: (req) => {
+  context: (req: any) => {
     if (req.connection) {
       const user = verifyToken(req.connection.context.authToken);
       return { user };

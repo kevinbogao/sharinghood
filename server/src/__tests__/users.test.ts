@@ -1,5 +1,5 @@
 import { createTestClient } from "apollo-server-testing";
-import { gql } from "apollo-server";
+import { gql } from "apollo-server-koa";
 import { sign, verify } from "jsonwebtoken";
 // @ts-ignore
 import Redis from "ioredis-mock";

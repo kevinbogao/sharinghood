@@ -1,4 +1,4 @@
-import { gql } from "apollo-server";
+import { gql } from "apollo-server-koa";
 // @ts-ignore
 import GraphQLJSON from "graphql-type-json";
 

@@ -1,4 +1,4 @@
-import { UserInputError } from "apollo-server";
+import { UserInputError } from "apollo-server-koa";
 
 function capitalise(key: string): string {
   return key.charAt(0).toUpperCase() + key.slice(1);

@@ -1,4 +1,4 @@
-import { ApolloError, AuthenticationError } from "apollo-server";
+import { ApolloError, AuthenticationError } from "apollo-server-koa";
 import { Redis } from "ioredis";
 import { Types } from "mongoose";
 import User, { UserDocument } from "../models/user";

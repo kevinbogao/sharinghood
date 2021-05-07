@@ -1,4 +1,8 @@
-import { withFilter, ApolloError, AuthenticationError } from "apollo-server";
+import {
+  withFilter,
+  ApolloError,
+  AuthenticationError,
+} from "apollo-server-koa";
 import { Redis } from "ioredis";
 import pubsub from "../utils/pubsub";
 import User, { UserDocument } from "../models/user";

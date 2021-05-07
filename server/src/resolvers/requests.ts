@@ -2,7 +2,7 @@ import {
   ApolloError,
   AuthenticationError,
   ForbiddenError,
-} from "apollo-server";
+} from "apollo-server-koa";
 import { Types } from "mongoose";
 import User, { UserDocument } from "../models/user";
 import Thread from "../models/thread";

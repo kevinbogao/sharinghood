@@ -1,4 +1,4 @@
-import { ApolloError, AuthenticationError } from "apollo-server";
+import { ApolloError, AuthenticationError } from "apollo-server-koa";
 import User, { UserDocument } from "../models/user";
 import Post, { PostDocument } from "../models/post";
 import Thread, { ThreadDocument } from "../models/thread";

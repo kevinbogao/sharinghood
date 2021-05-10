@@ -17,9 +17,9 @@ import {
 import uploadImg from "../utils/uploadImg";
 import handleErrors from "../utils/handleErrors";
 import pbkdf2Verify from "../utils/pbkdf2Verify";
-import sendMail from "../utils/sendMail/index";
 import newAccountMail from "../utils/sendMail/newAccountMail";
 import newCommunityMail from "../utils/sendMail/newCommunityMail";
+import resetPasswordMail from "../utils/sendMail/resetPasswordMail";
 
 interface UserInput {
   name: string;
@@ -408,22 +408,22 @@ const usersResolvers = {
               60 * 60 * 24
             ),
             redis.set(`reset_key:${email}`, resetKey, "ex", 60 * 60 * 2),
-            sendMail(
-              user.email,
-              "Reset your Sharinghood password",
-              `${process.env.ORIGIN}/reset-password/${resetKey}`
-            ),
+            resetPasswordMail({
+              resetLink: `${process.env.ORIGIN}/reset-password/${resetKey}`,
+              to: user.email,
+              subject: "Reset your Sharinghood password",
+            }),
           ]);
 
           return true;
         }
 
         // Re-send reset link if existing reset-key is found
-        await sendMail(
-          email,
-          "Reset your Sharinghood password",
-          `${process.env.ORIGIN}/reset-password/${existingResetKey}`
-        );
+        await resetPasswordMail({
+          resetLink: `${process.env.ORIGIN}/reset-password/${existingResetKey}`,
+          to: user.email,
+          subject: "Reset your Sharinghood password",
+        });
 
         return true;
       } catch (err) {

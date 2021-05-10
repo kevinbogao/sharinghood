@@ -1,11 +1,11 @@
 import sendMail, { header, footer } from "./index";
 
-interface CommunityMailParams {
+type CommunityMailParams = {
   communityUrl: string;
   to: string | Array<string>;
   subject: string;
   text?: string;
-}
+};
 
 export default async function newCommunityMail({
   communityUrl,

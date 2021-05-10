@@ -1,12 +1,12 @@
 import sendMail, { header, footer } from "./index";
 
-interface AccountMailParams {
+type AccountMailParams = {
   confirmationUrl: string;
   communityName: string;
   to: string | Array<string>;
   subject: string;
   text?: string;
-}
+};
 
 export default async function newAccountMail({
   confirmationUrl,

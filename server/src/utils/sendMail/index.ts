@@ -122,6 +122,7 @@ export const header = `
       }
 
       .subject {
+        color: black;
         font-size: 24px;
         font-weight: 400;
         font-style: italic;
@@ -176,6 +177,10 @@ export const header = `
 
       .booking-btn {
         margin-bottom: 50px;
+      }
+
+      .reset-btn {
+        margin: 50px auto;
       }
 
       .btn-text {

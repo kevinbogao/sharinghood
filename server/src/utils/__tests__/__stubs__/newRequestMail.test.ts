@@ -22,16 +22,16 @@ describe("Test newRequestMail function", () => {
       subject: "Mock user 01 requested Mock item 01 in your community.",
     };
 
-    const mail = await newRequestMail(
-      requestMailArgs.userName,
-      requestMailArgs.itemName,
-      requestMailArgs.itemImageUrl,
-      requestMailArgs.itemUrl,
-      requestMailArgs.to,
-      requestMailArgs.subject,
-      "",
-      moment(+requestMailArgs.dateNeed).format("MMM DD")
-    );
+    const mail = await newRequestMail({
+      userName: requestMailArgs.userName,
+      itemName: requestMailArgs.itemName,
+      itemImageUrl: requestMailArgs.itemImageUrl,
+      itemUrl: requestMailArgs.itemUrl,
+      dateNeed: moment(+requestMailArgs.dateNeed).format("MMM DD"),
+      to: requestMailArgs.to,
+      subject: requestMailArgs.subject,
+      text: "",
+    });
 
     expect(mail).toMatchObject({
       from: "sharinghood@gmail.com",

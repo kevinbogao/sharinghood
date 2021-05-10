@@ -16,11 +16,11 @@ describe("Test newCommunityMail function", () => {
       subject: "Stub 01 subject",
     };
 
-    const mail = await newCommunityMail(
-      communityMailArgs.communityUrl,
-      communityMailArgs.to,
-      communityMailArgs.subject
-    );
+    const mail = await newCommunityMail({
+      communityUrl: communityMailArgs.communityUrl,
+      to: communityMailArgs.to,
+      subject: communityMailArgs.subject,
+    });
 
     expect(mail).toMatchObject({
       from: "sharinghood@gmail.com",

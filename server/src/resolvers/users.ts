@@ -275,12 +275,12 @@ const usersResolvers = {
           // Sent new account mail if user is notified
           process.env.NODE_ENV === "production" &&
             isNotified &&
-            newAccountMail(
-              `${process.env.ORIGIN}/share`,
-              community.name,
-              user.email,
-              "Welcome to Sharinghood"
-            ),
+            newAccountMail({
+              confirmationUrl: `${process.env.ORIGIN}/share`,
+              communityName: community.name,
+              to: user.email,
+              subject: "Welcome to Sharinghood",
+            }),
 
           // Sent new community mail if user is notified & isCreator
           process.env.NODE_ENV === "production" &&

@@ -9,7 +9,7 @@
   ],
   "license": "GPL-3.0-or-later",
   "engines": {
-    "node": "15.x",
+    "node": "14.x",
     "npm": "7.x"
   },
   "scripts": {
@@ -94,12 +94,14 @@
     "@types/react": "^17.0.5",
     "@types/react-dom": "^17.0.3",
     "apollo-link-token-refresh": "^0.3.2",
-    "dotenv": "^8.6.0",
+    "dotenv": "^9.0.1",
+    "eslint": "^7.26.0",
     "firebase": "^8.5.0",
     "graphql": "^15.5.0",
     "jspdf": "^2.1.1",
     "jwt-decode": "^3.0.0",
     "moment": "^2.29.0",
+    "node-sass": "^5.0.0",
     "prop-types": "^15.7.2",
     "react": "^17.0.1",
     "react-dates": "^21.8.0",
@@ -119,7 +121,6 @@
     "@types/react-router-dom": "^5.1.7",
     "@types/styled-jsx": "^2.2.8",
     "customize-cra": "^1.0.0",
-    "eslint": "7.24.0",
     "eslint-config-airbnb": "18.2.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-graphql": "^4.0.0",
@@ -127,7 +128,6 @@
     "eslint-plugin-jsx-a11y": "^6.3.1",
     "eslint-plugin-react": "^7.21.2",
     "eslint-plugin-react-hooks": "4.2.0",
-    "node-sass": "^5.0.0",
     "prettier": "^2.1.2",
     "react-app-rewired": "^2.1.6",
     "styled-jsx": "^3.3.0"

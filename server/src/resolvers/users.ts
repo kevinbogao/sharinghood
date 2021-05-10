@@ -131,6 +131,28 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
+    unsubscribeUser: async (
+      _: unknown,
+      { userId, token }: { userId: string; token: string },
+      { redis }: { redis: Redis }
+    ): Promise<boolean> => {
+      try {
+        // Find unsubscribeToken from redis
+        const unsubscribeToken = await redis.get(`unsubscribe_token:${userId}`);
+
+        // Set user's isNotify to false if token exists & it's same as
+        // input token
+        if (unsubscribeToken && unsubscribeToken === token) {
+          await redis.del(`unsubscribe_token:${userId}`);
+          await User.updateOne({ _id: userId }, { isNotified: false });
+          return true;
+        }
+
+        return false;
+      } catch (err) {
+        throw new Error(err);
+      }
+    },
   },
   Mutation: {
     login: async (
@@ -484,10 +506,6 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
-    // unsubscribe: async (_: unknown, { token }: { token: string }) => {
-    //   console.log(token);
-    //   console.log("lol");
-    // },
   },
 };
 

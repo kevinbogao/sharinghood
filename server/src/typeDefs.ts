@@ -221,6 +221,7 @@ const typeDefs = gql`
     # User
     user(userId: ID, communityId: ID): User!
     validateResetLink(resetKey: String!): Boolean!
+    unsubscribeUser(userId: String!, token: String!): Boolean!
 
     # Community
     community(communityId: ID, communityCode: String): Community

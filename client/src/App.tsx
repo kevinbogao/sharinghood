@@ -27,6 +27,7 @@ import CommunityInvite from "./views/Community/CommunityInvite";
 import RequestDetails from "./views/Request/RequestDetails";
 import CreateCommunity from "./views/Community/CreateCommunity";
 import CommunityExists from "./views/Community/CommunityExists";
+import Unsubscribe from "./views/User/Unsubsribe";
 import ResetPassword from "./views/User/ResetPassword";
 import ForgotPassword from "./views/User/ForgotPassword";
 import SelectCommunity from "./views/Community/SelectCommunity";
@@ -173,6 +174,7 @@ export default function App() {
             path="/community/:communityCode"
             component={CommunityInvite}
           />
+          <Route exact path="/unsubscribe/:id/:token" component={Unsubscribe} />
           <Route
             exact
             path="/reset-password/:resetKey"

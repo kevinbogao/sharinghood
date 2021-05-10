@@ -49,6 +49,12 @@ export namespace queries {
     }
   `;
 
+  export const UNSUBSCRIBE_USER = gql`
+    query UnsubscribeUser($userId: String!, $token: String!) {
+      unsubscribeUser(userId: $userId, token: $token)
+    }
+  `;
+
   ///
   /// COMMUNITY
   ///

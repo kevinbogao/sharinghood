@@ -1,4 +1,4 @@
-import { gql } from "apollo-server";
+import { gql } from "apollo-server-koa";
 // @ts-ignore
 import GraphQLJSON from "graphql-type-json";
 
@@ -8,15 +8,15 @@ const typeDefs = gql`
 
   ### User
   type User {
-    _id: ID
-    name: String
-    email: String
-    image: String
+    _id: ID!
+    name: String!
+    email: String!
+    image: String!
     desc: String
     apartment: String
-    isNotified: Boolean
-    isAdmin: Boolean
-    createdAt: String
+    isNotified: Boolean!
+    isAdmin: Boolean!
+    createdAt: String!
     lastLogin: String
     communities: [Community]
     notifications: [Notification]
@@ -47,7 +47,7 @@ const typeDefs = gql`
     code: String!
     zipCode: String!
     password: String
-    creator: User!
+    creator: User
     members: [User]
     posts: [Post]
     requests: [Request]
@@ -69,16 +69,16 @@ const typeDefs = gql`
 
   ### Post
   type Post {
-    _id: ID
-    title: String
-    desc: String
-    image: String
-    condition: Int
-    isGiveaway: Boolean
+    _id: ID!
+    title: String!
+    desc: String!
+    image: String!
+    condition: Int!
+    isGiveaway: Boolean!
     creator: User
     community: Community
     threads: [Thread]
-    createdAt: String
+    createdAt: String!
   }
 
   input PostInput {
@@ -94,16 +94,16 @@ const typeDefs = gql`
   ### Request
   type Request {
     _id: ID!
-    title: String
-    desc: String
-    image: String
-    dateType: Int
+    title: String!
+    desc: String!
+    image: String!
+    dateType: Int!
     dateNeed: String
     dateReturn: String
-    creator: User
+    creator: User!
     community: Community
     threads: [Thread]
-    createdAt: String
+    createdAt: String!
   }
 
   input RequestInput {
@@ -117,8 +117,8 @@ const typeDefs = gql`
 
   # Threads
   type Thread {
-    _id: ID
-    content: String
+    _id: ID!
+    content: String!
     poster: User
     community: Community
   }
@@ -128,15 +128,16 @@ const typeDefs = gql`
     isPost: Boolean!
     parentId: ID!
     communityId: ID!
-    recipientId: ID
+    recipientId: ID!
   }
 
   # Messages
   type Message {
     _id: ID!
-    text: String
-    sender: User
-    createdAt: String
+    text: String!
+    sender: User!
+    notification: Notification
+    createdAt: String!
   }
 
   input MessageInput {
@@ -148,11 +149,11 @@ const typeDefs = gql`
 
   # Bookings
   type Booking {
-    _id: ID
+    _id: ID!
     post: Post
-    status: Int
-    booker: User
-    dateType: Int
+    status: Int!
+    booker: User!
+    dateType: Int!
     dateNeed: String
     dateReturn: String
   }
@@ -173,29 +174,29 @@ const typeDefs = gql`
   # Notifications
   type Notification {
     _id: ID!
-    ofType: Int
+    ofType: Int!
     post: Post
     booking: Booking
     participants: [User]
     messages: [Message]
-    isRead: JSON
+    isRead: JSON!
     community: Community
   }
 
   input NotificationInput {
-    ofType: Int
-    recipientId: ID
+    ofType: Int!
+    recipientId: ID!
+    communityId: ID!
     bookingInput: BookingInput
-    communityId: ID
   }
 
   # Activities
   type TotalActivities {
-    totalCommunities: Int
     totalUsers: Int
     totalPosts: Int
     totalRequests: Int
     totalBookings: Int
+    totalCommunities: Int
     communitiesActivities: [CommunityActivities]
   }
 

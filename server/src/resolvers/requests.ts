@@ -2,7 +2,8 @@ import {
   ApolloError,
   AuthenticationError,
   ForbiddenError,
-} from "apollo-server";
+} from "apollo-server-koa";
+import moment from "moment";
 import { Types } from "mongoose";
 import User, { UserDocument } from "../models/user";
 import Thread from "../models/thread";
@@ -174,16 +175,19 @@ const requestsResolvers = {
           creator.save(),
           process.env.NODE_ENV === "production" &&
             emails.length &&
-            dateNeed &&
-            newRequestMail(
+            newRequestMail({
               userName,
-              title,
-              JSON.parse(imgData).secure_url,
-              `${process.env.ORIGIN}/requests/${request._id}`,
-              dateNeed,
-              emails,
-              `${userName} requested ${title} in your community.`
-            ),
+              itemName: title,
+              itemImageUrl: JSON.parse(imgData).secure_url,
+              itemUrl: `${process.env.ORIGIN}/requests/${request._id}`,
+              ...(dateNeed && {
+                dateNeed:
+                  dateNeed && moment(+request.dateNeed).format("MMM DD"),
+              }),
+              to: emails,
+              subject: `${userName} requested ${title} in your community.`,
+              text: "",
+            }),
         ]);
 
         // Get a list of users that has FCM tokens

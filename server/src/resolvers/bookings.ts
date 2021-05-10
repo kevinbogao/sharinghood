@@ -1,4 +1,4 @@
-import { AuthenticationError } from "apollo-server";
+import { AuthenticationError } from "apollo-server-koa";
 import User, { UserDocument } from "../models/user";
 import Post, { PostDocument } from "../models/post";
 import Booking, { BookingDocument } from "../models/booking";
@@ -45,9 +45,8 @@ const bookingsResolvers = {
         ).populate("post");
         if (!booking) throw new Error("Booking not found");
 
-        const notification: NotificationDocument | null = await Notification.findById(
-          notificationId
-        );
+        const notification: NotificationDocument | null =
+          await Notification.findById(notificationId);
         if (!notification) throw new Error("Notification not found");
 
         const recipient: UserDocument | null = await User.findById(
@@ -79,11 +78,11 @@ const bookingsResolvers = {
           notification.save(),
           process.env.NODE_ENV === "production" &&
             recipient.isNotified &&
-            updateBookingMail(
-              `${process.env.ORIGIN}/notifications`,
-              recipient.email,
-              notifyContent
-            ),
+            updateBookingMail({
+              bookingsUrl: `${process.env.ORIGIN}/notifications`,
+              to: recipient.email,
+              subject: notifyContent,
+            }),
           // Set communityId key to notifications:userId hash in redis
           redis.hset(
             `notifications:${notifyRecipientId}`,

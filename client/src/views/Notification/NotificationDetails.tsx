@@ -164,7 +164,6 @@ export default function NotificationDetails({
                 )}
               </div>
               <div className="item-btns">
-                {/* @ts-ignore */}
                 {data.notification.booking.booker._id ===
                 tokenPayload.userId ? (
                   <>

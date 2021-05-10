@@ -1,4 +1,4 @@
-import { AuthenticationError } from "apollo-server";
+import { AuthenticationError } from "apollo-server-koa";
 import { Types } from "mongoose";
 import User from "../models/user";
 import Post from "../models/post";

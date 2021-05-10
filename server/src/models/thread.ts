@@ -19,10 +19,12 @@ const threadSchema: Schema = new Schema(
     poster: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
     community: {
       type: Schema.Types.ObjectId,
       ref: "Community",
+      required: true,
     },
   },
   { timestamps: true }

@@ -1,4 +1,4 @@
-import { ApolloError, AuthenticationError } from "apollo-server";
+import { ApolloError, AuthenticationError } from "apollo-server-koa";
 import crypto from "crypto";
 import bcryptjs from "bcryptjs";
 import { Redis } from "ioredis";
@@ -17,9 +17,9 @@ import {
 import uploadImg from "../utils/uploadImg";
 import handleErrors from "../utils/handleErrors";
 import pbkdf2Verify from "../utils/pbkdf2Verify";
-import sendMail from "../utils/sendMail/index";
 import newAccountMail from "../utils/sendMail/newAccountMail";
 import newCommunityMail from "../utils/sendMail/newCommunityMail";
+import resetPasswordMail from "../utils/sendMail/resetPasswordMail";
 
 interface UserInput {
   name: string;
@@ -275,29 +275,27 @@ const usersResolvers = {
           // Sent new account mail if user is notified
           process.env.NODE_ENV === "production" &&
             isNotified &&
-            newAccountMail(
-              `${process.env.ORIGIN}/share`,
-              community.name,
-              user.email,
-              "Welcome to Sharinghood"
-            ),
+            newAccountMail({
+              confirmationUrl: `${process.env.ORIGIN}/share`,
+              communityName: community.name,
+              to: user.email,
+              subject: "Welcome to Sharinghood",
+            }),
 
           // Sent new community mail if user is notified & isCreator
           process.env.NODE_ENV === "production" &&
             isNotified &&
             isCreator &&
-            newCommunityMail(
-              `${process.env.ORIGIN}/community/${community.code}`,
-              user.email,
-              `Welcome tips for your new ${community.name} community`
-            ),
+            newCommunityMail({
+              communityUrl: `${process.env.ORIGIN}/community/${community.code}`,
+              to: user.email,
+              subject: `Welcome tips for your new ${community.name} community`,
+            }),
         ]);
-        // }
 
         // Sign accessToken & refreshToken
-        const { accessToken, refreshToken }: GeneratedTokens = generateTokens(
-          user
-        );
+        const { accessToken, refreshToken }: GeneratedTokens =
+          generateTokens(user);
 
         return {
           user: {
@@ -410,22 +408,22 @@ const usersResolvers = {
               60 * 60 * 24
             ),
             redis.set(`reset_key:${email}`, resetKey, "ex", 60 * 60 * 2),
-            sendMail(
-              user.email,
-              "Reset your Sharinghood password",
-              `${process.env.ORIGIN}/reset-password/${resetKey}`
-            ),
+            resetPasswordMail({
+              resetLink: `${process.env.ORIGIN}/reset-password/${resetKey}`,
+              to: user.email,
+              subject: "Reset your Sharinghood password",
+            }),
           ]);
 
           return true;
         }
 
         // Re-send reset link if existing reset-key is found
-        await sendMail(
-          email,
-          "Reset your Sharinghood password",
-          `${process.env.ORIGIN}/reset-password/${existingResetKey}`
-        );
+        await resetPasswordMail({
+          resetLink: `${process.env.ORIGIN}/reset-password/${existingResetKey}`,
+          to: user.email,
+          subject: "Reset your Sharinghood password",
+        });
 
         return true;
       } catch (err) {
@@ -486,6 +484,10 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
+    // unsubscribe: async (_: unknown, { token }: { token: string }) => {
+    //   console.log(token);
+    //   console.log("lol");
+    // },
   },
 };
 

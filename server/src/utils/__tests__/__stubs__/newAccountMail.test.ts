@@ -17,12 +17,12 @@ describe("Test newAccountMail function", () => {
       subject: "Stub 01 subject",
     };
 
-    const mail = await newAccountMail(
-      accountMailArgs.confirmationUrl,
-      accountMailArgs.communityName,
-      accountMailArgs.to,
-      accountMailArgs.subject
-    );
+    const mail = await newAccountMail({
+      confirmationUrl: accountMailArgs.confirmationUrl,
+      communityName: accountMailArgs.communityName,
+      to: accountMailArgs.to,
+      subject: accountMailArgs.subject,
+    });
 
     expect(mail).toMatchObject({
       from: "sharinghood@gmail.com",

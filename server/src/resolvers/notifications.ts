@@ -1,4 +1,4 @@
-import { ApolloError, AuthenticationError } from "apollo-server";
+import { ApolloError, AuthenticationError } from "apollo-server-koa";
 import { Redis } from "ioredis";
 import { Types } from "mongoose";
 import User, { UserDocument } from "../models/user";
@@ -332,13 +332,14 @@ const notificationsResolvers = {
             post.save(),
             process.env.NODE_ENV === "production" &&
               recipient.isNotified &&
-              updateBookingMail(
-                `${process.env.ORIGIN}/notifications`,
-                recipient.email,
-                `${user.userName} has requested to book your ${post.title}`
-              ),
+              updateBookingMail({
+                bookingsUrl: `${process.env.ORIGIN}/notifications`,
+                to: recipient.email,
+                subject: `${user.userName} has requested to book your ${post.title}`,
+              }),
           ]);
         }
+
         // Create & save notification, add booking to notification if it is type 1
         const notification = await Notification.create({
           ...(ofType === 1 && booking && { booking: booking._id }),

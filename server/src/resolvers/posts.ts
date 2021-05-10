@@ -2,7 +2,7 @@ import {
   ApolloError,
   AuthenticationError,
   ForbiddenError,
-} from "apollo-server";
+} from "apollo-server-koa";
 import { Redis } from "ioredis";
 import { Types } from "mongoose";
 import User, { UserDocument } from "../models/user";
@@ -144,7 +144,7 @@ const postsResolvers = {
       { user, redis }: { user: UserTokenContext; redis: Redis }
     ): Promise<CreatePostRes> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
-      const { userId, userName }: { userId: string; userName: string } = user;
+      const { userId, userName } = user;
 
       try {
         // Upload image to Cloudinary

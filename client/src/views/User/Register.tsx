@@ -15,7 +15,7 @@ import {
   tokenPayloadVar,
   TokenPayload,
 } from "../../utils/cache";
-import { validateForm, FormError } from "../../utils/helpers";
+import { validateForm, setErrorMsg, FormError } from "../../utils/helpers";
 
 type State = {
   name: string;
@@ -96,14 +96,9 @@ export default function Register({
         });
       }
     },
-
-    onError: (err) => {
-      console.log(err);
+    onError: ({ message }) => {
+      setErrorMsg(message, setError);
     },
-    // onError: ({ message }) => {
-    //   const errMsgArr = message.split(": ");
-    //   setError({ [errMsgArr[0]]: errMsgArr[1] });
-    // },
   });
 
   return (

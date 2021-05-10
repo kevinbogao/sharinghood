@@ -16,11 +16,11 @@ describe("Test updateBookingMail function", () => {
       subject: "Mock user 01 requested Mock item 01 in your community.",
     };
 
-    const mail = await updateBookingMail(
-      updateBookingMailArgs.bookingsUrl,
-      updateBookingMailArgs.to,
-      updateBookingMailArgs.subject
-    );
+    const mail = await updateBookingMail({
+      bookingsUrl: updateBookingMailArgs.bookingsUrl,
+      to: updateBookingMailArgs.to,
+      subject: updateBookingMailArgs.subject,
+    });
 
     expect(mail).toMatchObject({
       from: "sharinghood@gmail.com",

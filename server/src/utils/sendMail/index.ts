@@ -38,7 +38,6 @@ export const header = `
       body {
         width: 70%;
         margin: 50px auto 20px auto;
-        background-color: white;
       }
 
       .orange {
@@ -47,6 +46,10 @@ export const header = `
 
       .blue {
         color: #3f3d56;
+      }
+
+      .black {
+        color: black;
       }
 
       .header-img-font-lg {
@@ -66,7 +69,6 @@ export const header = `
       }
 
       .header-bg {
-        width: 100%;
         padding: 60px 20px;
         background: url("https://i.imgur.com/8OkZW8S.png");
         background-repeat: no-repeat;
@@ -184,6 +186,7 @@ export const header = `
       }
 
       .community {
+        color: black;
         font-size: 13px;
         font-weight: 200;
         text-align: center;
@@ -203,10 +206,10 @@ export const header = `
       }
 
       .footer-text {
+        color: black;
         margin: 7px auto;
         font-size: 13px;
         text-decoration: none;
-        color: black;
       }
 
       .dot {
@@ -227,7 +230,6 @@ export const footer = `
   <div class="separator" />
   </div>
   <div class="footer">
-    <a class="footer-text" href="http://localhost:3000/unsubscribe/token"
     <a class="footer-text" href="${process.env.ORIGIN}/unsubscribe/${token}"
       >Unsubscribe
     </a>

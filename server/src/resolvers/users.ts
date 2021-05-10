@@ -286,18 +286,16 @@ const usersResolvers = {
           process.env.NODE_ENV === "production" &&
             isNotified &&
             isCreator &&
-            newCommunityMail(
-              `${process.env.ORIGIN}/community/${community.code}`,
-              user.email,
-              `Welcome tips for your new ${community.name} community`
-            ),
+            newCommunityMail({
+              communityUrl: `${process.env.ORIGIN}/community/${community.code}`,
+              to: user.email,
+              subject: `Welcome tips for your new ${community.name} community`,
+            }),
         ]);
-        // }
 
         // Sign accessToken & refreshToken
-        const { accessToken, refreshToken }: GeneratedTokens = generateTokens(
-          user
-        );
+        const { accessToken, refreshToken }: GeneratedTokens =
+          generateTokens(user);
 
         return {
           user: {
@@ -486,6 +484,10 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
+    // unsubscribe: async (_: unknown, { token }: { token: string }) => {
+    //   console.log(token);
+    //   console.log("lol");
+    // },
   },
 };
 

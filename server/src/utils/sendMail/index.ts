@@ -174,6 +174,10 @@ export const header = `
         text-decoration: none;
       }
 
+      .booking-btn {
+        margin-bottom: 50px;
+      }
+
       .btn-text {
         max-width: 65%;
         margin: auto;

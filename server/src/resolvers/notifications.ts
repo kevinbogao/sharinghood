@@ -332,11 +332,11 @@ const notificationsResolvers = {
             post.save(),
             process.env.NODE_ENV === "production" &&
               recipient.isNotified &&
-              updateBookingMail(
-                `${process.env.ORIGIN}/notifications`,
-                recipient.email,
-                `${user.userName} has requested to book your ${post.title}`
-              ),
+              updateBookingMail({
+                bookingsUrl: `${process.env.ORIGIN}/notifications`,
+                to: recipient.email,
+                subject: `${user.userName} has requested to book your ${post.title}`,
+              }),
           ]);
         }
 

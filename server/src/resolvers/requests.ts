@@ -175,16 +175,19 @@ const requestsResolvers = {
           creator.save(),
           process.env.NODE_ENV === "production" &&
             emails.length &&
-            newRequestMail(
+            newRequestMail({
               userName,
-              title,
-              JSON.parse(imgData).secure_url,
-              `${process.env.ORIGIN}/requests/${request._id}`,
-              emails,
-              `${userName} requested ${title} in your community.`,
-              "",
-              dateNeed && moment(+request.dateNeed).format("MMM DD")
-            ),
+              itemName: title,
+              itemImageUrl: JSON.parse(imgData).secure_url,
+              itemUrl: `${process.env.ORIGIN}/requests/${request._id}`,
+              ...(dateNeed && {
+                dateNeed:
+                  dateNeed && moment(+request.dateNeed).format("MMM DD"),
+              }),
+              to: emails,
+              subject: `${userName} requested ${title} in your community.`,
+              text: "",
+            }),
         ]);
 
         // Get a list of users that has FCM tokens

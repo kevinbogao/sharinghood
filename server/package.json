@@ -24,7 +24,7 @@
       "/node_modules/",
       "/__utils",
       "/__mocks__/",
-      "./dist/"
+      "<rootDir>/dist/"
     ],
     "transform": {
       "^.+\\.(ts|tsx)$": "ts-jest"

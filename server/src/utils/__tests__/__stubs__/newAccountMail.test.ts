@@ -13,6 +13,7 @@ describe("Test newAccountMail function", () => {
     const accountMailArgs = {
       confirmationUrl: "https://sharinghood.co/share",
       communityName: "Mock community 01",
+      recipientId: "stub01Id",
       to: "stub01@email.com",
       subject: "Stub 01 subject",
     };
@@ -20,6 +21,7 @@ describe("Test newAccountMail function", () => {
     const mail = await newAccountMail({
       confirmationUrl: accountMailArgs.confirmationUrl,
       communityName: accountMailArgs.communityName,
+      recipientId: accountMailArgs.recipientId,
       to: accountMailArgs.to,
       subject: accountMailArgs.subject,
     });

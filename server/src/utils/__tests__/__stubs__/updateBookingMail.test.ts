@@ -12,12 +12,14 @@ describe("Test updateBookingMail function", () => {
 
     const updateBookingMailArgs = {
       bookingsUrl: "https://sharinghood.co/notifications",
+      recipientId: "stub01Id",
       to: "stub01@email.com",
       subject: "Mock user 01 requested Mock item 01 in your community.",
     };
 
     const mail = await updateBookingMail({
       bookingsUrl: updateBookingMailArgs.bookingsUrl,
+      recipientId: updateBookingMailArgs.recipientId,
       to: updateBookingMailArgs.to,
       subject: updateBookingMailArgs.subject,
     });

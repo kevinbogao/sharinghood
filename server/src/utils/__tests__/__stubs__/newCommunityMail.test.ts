@@ -12,12 +12,14 @@ describe("Test newCommunityMail function", () => {
 
     const communityMailArgs = {
       communityUrl: "https://sharinghood.co/community/mockCommunity01",
+      recipientId: "stub01Id",
       to: "stub01@email.com",
       subject: "Stub 01 subject",
     };
 
     const mail = await newCommunityMail({
       communityUrl: communityMailArgs.communityUrl,
+      recipientId: communityMailArgs.recipientId,
       to: communityMailArgs.to,
       subject: communityMailArgs.subject,
     });

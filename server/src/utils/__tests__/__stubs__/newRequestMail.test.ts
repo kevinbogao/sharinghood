@@ -11,6 +11,11 @@ describe("Test newRequestMail function", () => {
       .spyOn(nodemailer, "createTransport")
       .mockImplementation(() => transport);
 
+    const recipients = [
+      { _id: "mockUser01Id", email: "mockUser01Email" },
+      { _id: "mockUser02Id", email: "mockUser02Email" },
+    ];
+
     const requestMailArgs = {
       userName: "Mock user 01",
       itemName: "Mock item 01",
@@ -28,7 +33,7 @@ describe("Test newRequestMail function", () => {
       itemImageUrl: requestMailArgs.itemImageUrl,
       itemUrl: requestMailArgs.itemUrl,
       dateNeed: moment(+requestMailArgs.dateNeed).format("MMM DD"),
-      to: requestMailArgs.to,
+      recipients,
       subject: requestMailArgs.subject,
       text: "",
     });

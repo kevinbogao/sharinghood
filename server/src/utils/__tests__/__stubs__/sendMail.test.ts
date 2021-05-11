@@ -30,12 +30,12 @@ describe("Test sendMail function", () => {
     };
 
     // SendMail with mailArgs
-    const mail = await sendMail(
-      mailArgs.to,
-      mailArgs.subject,
-      mailArgs.text,
-      mailArgs.html
-    );
+    const mail = await sendMail({
+      to: mailArgs.to,
+      subject: mailArgs.subject,
+      text: mailArgs.text,
+      html: mailArgs.html,
+    });
 
     expect(mail).toMatchObject({
       from: "sharinghood@gmail.com",

@@ -80,6 +80,7 @@ const bookingsResolvers = {
             recipient.isNotified &&
             updateBookingMail({
               bookingsUrl: `${process.env.ORIGIN}/notifications`,
+              recipientId: recipient._id as string,
               to: recipient.email,
               subject: notifyContent,
             }),

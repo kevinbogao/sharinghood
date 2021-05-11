@@ -300,6 +300,7 @@ const usersResolvers = {
             newAccountMail({
               confirmationUrl: `${process.env.ORIGIN}/share`,
               communityName: community.name,
+              recipientId: user._id as string,
               to: user.email,
               subject: "Welcome to Sharinghood",
             }),
@@ -310,6 +311,7 @@ const usersResolvers = {
             isCreator &&
             newCommunityMail({
               communityUrl: `${process.env.ORIGIN}/community/${community.code}`,
+              recipientId: user._id as string,
               to: user.email,
               subject: `Welcome tips for your new ${community.name} community`,
             }),

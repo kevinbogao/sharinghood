@@ -10,7 +10,7 @@ import { verifyToken } from "./utils/authToken";
 import { requestLogger } from "./utils/logger";
 
 // Create redis instance
-const redis: Redis.Redis = new Redis(process.env.REDIS_URL);
+export const redis: Redis.Redis = new Redis(process.env.REDIS_URL);
 
 // Create Koa
 const app = new Koa();

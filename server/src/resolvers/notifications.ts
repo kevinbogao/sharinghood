@@ -28,8 +28,8 @@ const notificationsResolvers = {
 
       try {
         // Get notification & populate data && get notification mongoose instance
-        const notification: Array<NotificationDocument> = await Notification.aggregate(
-          [
+        const notification: Array<NotificationDocument> =
+          await Notification.aggregate([
             {
               $match: { _id: Types.ObjectId(notificationId) },
             },
@@ -89,8 +89,7 @@ const notificationsResolvers = {
                 as: "messages",
               },
             },
-          ]
-        );
+          ]);
 
         // Update isRead of current user to true via MongoDB API to
         // avoid mongoose's auto timestamp
@@ -252,13 +251,12 @@ const notificationsResolvers = {
       try {
         // Find a notification where both of users participates in and of
         // type 0 and in the given community
-        const notification: NotificationDocument | null = await Notification.findOne(
-          {
+        const notification: NotificationDocument | null =
+          await Notification.findOne({
             ofType: 0,
             participants: { $all: [recipientId, user.userId] },
             community: communityId,
-          }
-        );
+          });
 
         // Return chat/notification object if it is found
         return notification;
@@ -299,13 +297,8 @@ const notificationsResolvers = {
           // If type is 1 (i.e booking), create booking
         } else if (ofType === 1 && bookingInput) {
           // Destruct variables from bookingInput
-          const {
-            postId,
-            dateType,
-            status,
-            dateNeed,
-            dateReturn,
-          } = bookingInput;
+          const { postId, dateType, status, dateNeed, dateReturn } =
+            bookingInput;
 
           // Create & save booking && get parent post && recipient
           [booking, post, recipient] = await Promise.all([
@@ -334,6 +327,7 @@ const notificationsResolvers = {
               recipient.isNotified &&
               updateBookingMail({
                 bookingsUrl: `${process.env.ORIGIN}/notifications`,
+                recipientId: recipient._id as string,
                 to: recipient.email,
                 subject: `${user.userName} has requested to book your ${post.title}`,
               }),

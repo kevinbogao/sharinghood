@@ -1,9 +1,11 @@
-import sendMail, { header, footer } from "./index";
+import sendMail, { header } from "./index";
+import generateFooter from "./generateFooter";
 
 type AccountMailParams = {
   confirmationUrl: string;
   communityName: string;
-  to: string | Array<string>;
+  recipientId: string;
+  to: string;
   subject: string;
   text?: string;
 };
@@ -11,10 +13,13 @@ type AccountMailParams = {
 export default async function newAccountMail({
   confirmationUrl,
   communityName,
+  recipientId,
   to,
   subject,
   text = "",
 }: AccountMailParams) {
+  const footer = await generateFooter(recipientId);
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -63,7 +68,7 @@ export default async function newAccountMail({
   `;
 
   // Get status & return status
-  const info = await sendMail(to, subject, text, html);
+  const info = await sendMail({ to, subject, text, html });
 
   return info;
 }

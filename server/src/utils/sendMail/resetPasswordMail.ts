@@ -2,7 +2,7 @@ import sendMail, { header } from "./index";
 
 type ResetPasswordMailParams = {
   resetLink: string;
-  to: string | Array<string>;
+  to: string;
   subject: string;
   text?: string;
 };
@@ -44,7 +44,7 @@ export default async function resetPasswordMail({
   `;
 
   // Get status & return status
-  const info = await sendMail(to, subject, text, html);
+  const info = await sendMail({ to, subject, text, html });
 
   return info;
 }

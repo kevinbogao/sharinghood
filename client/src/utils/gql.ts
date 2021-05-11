@@ -31,6 +31,7 @@ export namespace queries {
         email
         apartment
         isAdmin
+        isNotified
         communities {
           _id
         }
@@ -528,6 +529,7 @@ export namespace mutations {
         image
         email
         apartment
+        isNotified
       }
     }
   `;

@@ -335,7 +335,9 @@ const usersResolvers = {
     },
     updateUser: async (
       _: unknown,
-      { userInput: { name, image, desc, apartment } }: { userInput: UserInput },
+      {
+        userInput: { name, image, desc, apartment, isNotified },
+      }: { userInput: UserInput },
       { user }: { user: UserTokenContext }
     ): Promise<UserDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
@@ -355,6 +357,7 @@ const usersResolvers = {
         if (image && imgData) userData.image = imgData;
         if (desc) userData.desc = desc;
         if (apartment) userData.apartment = apartment;
+        if (isNotified !== null) userData.isNotified = isNotified;
 
         // Save to user
         const updatedUser: UserDocument = await userData.save();

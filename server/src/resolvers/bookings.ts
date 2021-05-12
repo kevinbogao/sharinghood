@@ -68,8 +68,13 @@ const bookingsResolvers = {
         // Update booking status
         booking.status = status;
 
-        // Set recipient's notification isRead status to false
-        notification.isRead[notifyRecipientId] = false;
+        // Set recipient's notification isRead status to false & user's
+        // isRead to true
+        notification.isRead = {
+          [notifyRecipientId]: false,
+          [user.userId]: true,
+        };
+
         notification.markModified("isRead");
 
         // Save booking & send booking notification email if user is notified

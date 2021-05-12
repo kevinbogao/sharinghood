@@ -51,17 +51,14 @@ export default function NotificationDetails({
   // 0: pending
   // 1: accepted
   // 2: declined
-  const [
-    updateBooking,
+  const [updateBooking, { loading: mutationLoading }] = useMutation(
+    mutations.UPDATE_BOOKING,
     {
-      // @ts-ignore
-      loading: { mutationLoading },
-    },
-  ] = useMutation(mutations.UPDATE_BOOKING, {
-    onError: ({ message }) => {
-      console.log(message);
-    },
-  });
+      onError: ({ message }) => {
+        console.log(message);
+      },
+    }
+  );
 
   // Subscribe to new messages
   useEffect(() => {
@@ -202,8 +199,8 @@ export default function NotificationDetails({
                                   } has accepted your booking on ${
                                     data.notification.booking!.post.title
                                   }`,
-                                  notifyRecipientId: data.notification.booking!
-                                    .booker._id,
+                                  notifyRecipientId:
+                                    data.notification.booking!.booker._id,
                                 },
                               },
                             });
@@ -228,8 +225,8 @@ export default function NotificationDetails({
                                   } has denied your booking on ${
                                     data.notification.booking!.post.title
                                   }`,
-                                  notifyRecipientId: data.notification.booking!
-                                    .booker._id,
+                                  notifyRecipientId:
+                                    data.notification.booking!.booker._id,
                                 },
                               },
                             });

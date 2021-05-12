@@ -598,6 +598,7 @@ describe("[Mutation.users]", () => {
           image
           email
           apartment
+          isNotified
         }
       }
     `;
@@ -616,6 +617,7 @@ describe("[Mutation.users]", () => {
     const mutationInput = {
       name: "MockUser01+",
       apartment: "001+",
+      isNotified: false,
       image: mockedUploadImg(),
     };
 
@@ -630,6 +632,7 @@ describe("[Mutation.users]", () => {
     expect(res.data.updateUser).toMatchObject({
       name: mutationInput.name,
       apartment: mutationInput.apartment,
+      isNotified: false,
       image: JSON.stringify(updatedMockUploadResponse),
     });
   });

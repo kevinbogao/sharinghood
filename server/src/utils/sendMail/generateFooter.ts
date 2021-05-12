@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { redis } from "../../index";
+import redis from "../redis";
 
 export default async function generateFooter(
   recipientId: string

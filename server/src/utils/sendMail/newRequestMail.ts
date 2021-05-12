@@ -57,7 +57,6 @@ export default async function newRequestMail({
       </html>
     `;
 
-    const info = await sendMail({ to: recipient.email, subject, text, html });
-    return info;
+    await sendMail({ to: recipient.email, subject, text, html });
   });
 }

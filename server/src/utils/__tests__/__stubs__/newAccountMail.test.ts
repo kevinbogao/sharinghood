@@ -1,7 +1,11 @@
 import nodemailer from "nodemailer";
 // @ts-ignore
 import { stubTransport } from "nodemailer-stub";
+import generateFooter from "../../sendMail/generateFooter";
 import newAccountMail from "../../sendMail/newAccountMail";
+
+jest.mock("../../sendMail/generateFooter");
+const mockedGenerateFooter = generateFooter as jest.Mock<any>;
 
 describe("Test newAccountMail function", () => {
   it("Should send new community mail", async () => {
@@ -17,6 +21,8 @@ describe("Test newAccountMail function", () => {
       to: "stub01@email.com",
       subject: "Stub 01 subject",
     };
+
+    mockedGenerateFooter.mockImplementation(() => {});
 
     const mail = await newAccountMail({
       confirmationUrl: accountMailArgs.confirmationUrl,

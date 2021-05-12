@@ -42,9 +42,8 @@ const messagesResolvers = {
 
       try {
         // Get notification & throw error if not found
-        const notification: NotificationDocument | null = await Notification.findById(
-          notificationId
-        );
+        const notification: NotificationDocument | null =
+          await Notification.findById(notificationId);
         if (!notification) throw new ApolloError("Notification not found");
 
         // Get recipient & throw error if not found

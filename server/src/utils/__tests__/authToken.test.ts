@@ -13,7 +13,7 @@ describe("[Utils.authToken]", () => {
   // GENERATE_TOKENS
   it("Should generate accessToken and refreshToken", () => {
     const { accessToken, refreshToken } = generateTokens(
-      (mockUser01 as unknown) as UserDocument
+      mockUser01 as unknown as UserDocument
     );
 
     const accessTokenPayload = verify(

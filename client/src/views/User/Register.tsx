@@ -55,51 +55,49 @@ export default function Register({
   let agreed: HTMLInputElement | null;
   const [error, setError] = useState<FormError>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [
-    registerAndOrCreateCommunity,
-    { loading: mutationLoading },
-  ] = useMutation(mutations.REGISTER_AND_OR_CREATE_COMMUNITY, {
-    onCompleted: async ({ registerAndOrCreateCommunity }) => {
-      const tokenPayload = await jwtDecode(
-        registerAndOrCreateCommunity.user.accessToken
-      );
-      localStorage.setItem(
-        "@sharinghood:accessToken",
-        registerAndOrCreateCommunity.user.accessToken
-      );
-      localStorage.setItem(
-        "@sharinghood:refreshToken",
-        registerAndOrCreateCommunity.user.refreshToken
-      );
-      accessTokenVar(registerAndOrCreateCommunity.user.accessToken);
-      refreshTokenVar(registerAndOrCreateCommunity.user.refreshTokenVar);
-      tokenPayloadVar(tokenPayload as TokenPayload);
+  const [registerAndOrCreateCommunity, { loading: mutationLoading }] =
+    useMutation(mutations.REGISTER_AND_OR_CREATE_COMMUNITY, {
+      onCompleted: async ({ registerAndOrCreateCommunity }) => {
+        const tokenPayload = await jwtDecode(
+          registerAndOrCreateCommunity.user.accessToken
+        );
+        localStorage.setItem(
+          "@sharinghood:accessToken",
+          registerAndOrCreateCommunity.user.accessToken
+        );
+        localStorage.setItem(
+          "@sharinghood:refreshToken",
+          registerAndOrCreateCommunity.user.refreshToken
+        );
+        accessTokenVar(registerAndOrCreateCommunity.user.accessToken);
+        refreshTokenVar(registerAndOrCreateCommunity.user.refreshTokenVar);
+        tokenPayloadVar(tokenPayload as TokenPayload);
 
-      // Redirect user to community invite link if user is creator
-      // else redirect user to communities page (fromLogin state will
-      // redirect user to find)
-      if (isCreator) {
-        history.push({
-          pathname: "/community-link",
-          state: {
-            communityId: registerAndOrCreateCommunity.community._id,
-            communityCode: registerAndOrCreateCommunity.community.code,
-            isRegistered: false,
-          },
-        });
-      } else {
-        history.push({
-          pathname: "/communities",
-          state: {
-            fromLogin: true,
-          },
-        });
-      }
-    },
-    onError: ({ message }) => {
-      setErrorMsg(message, setError);
-    },
-  });
+        // Redirect user to community invite link if user is creator
+        // else redirect user to communities page (fromLogin state will
+        // redirect user to find)
+        if (isCreator) {
+          history.push({
+            pathname: "/community-link",
+            state: {
+              communityId: registerAndOrCreateCommunity.community._id,
+              communityCode: registerAndOrCreateCommunity.community.code,
+              isRegistered: false,
+            },
+          });
+        } else {
+          history.push({
+            pathname: "/communities",
+            state: {
+              fromLogin: true,
+            },
+          });
+        }
+      },
+      onError: ({ message }) => {
+        setErrorMsg(message, setError);
+      },
+    });
 
   return (
     <div className="register-control">

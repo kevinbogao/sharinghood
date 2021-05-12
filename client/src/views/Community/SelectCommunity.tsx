@@ -32,10 +32,8 @@ export default function SelectCommunity({
   const selCommunityId = useReactiveVar(selCommunityIdVar);
   const [pageError, setPageError] = useState<FormError>({});
   const [isNewCommunity, setIsNewCommunity] = useState(false);
-  const [
-    foundCommunity,
-    setFoundCommunity,
-  ] = useState<typeDefs.Community | null>(null);
+  const [foundCommunity, setFoundCommunity] =
+    useState<typeDefs.Community | null>(null);
 
   function selectCommunity(communityId: string) {
     // Store communityId in localStorage
@@ -131,11 +129,10 @@ export default function SelectCommunity({
     {
       update(cache, { data: { joinCommunity } }) {
         // Get and update communities cache
-        const userCommunitiesData = cache.readQuery<typeDefs.UserCommunitiesData>(
-          {
+        const userCommunitiesData =
+          cache.readQuery<typeDefs.UserCommunitiesData>({
             query: queries.GET_USER_COMMUNITIES,
-          }
-        );
+          });
 
         if (userCommunitiesData) {
           cache.writeQuery<typeDefs.UserCommunitiesData>({
@@ -230,8 +227,7 @@ export default function SelectCommunity({
                 onClick={() => {
                   if (data?.communities && data.communities.length >= 5) {
                     setPageError({
-                      code:
-                        "You have reached the maximum number of communities",
+                      code: "You have reached the maximum number of communities",
                     });
                   } else {
                     history.push({

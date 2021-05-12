@@ -449,30 +449,27 @@ describe("[Mutation.posts]", () => {
       _id: mockPost01._id.toString(),
     });
 
-    const [
-      post,
-      user,
-      communities,
-      threads,
-      bookings,
-      notifications,
-    ] = await Promise.all([
-      Post.findById(mockPost01._id),
-      User.findById(mockPost01.creator),
-      Community.find({
-        _id: {
-          $in: [mockCommunity01._id.toString(), mockCommunity02._id.toString()],
-        },
-      }),
-      Thread.find({ _id: { $in: mockPost01.threads } }),
-      Booking.find({ _id: { $in: mockPost01.bookings } }),
-      Notification.find({
-        $or: [
-          { booking: { $in: mockPost01.bookings } },
-          { post: mockPost01._id },
-        ],
-      }),
-    ]);
+    const [post, user, communities, threads, bookings, notifications] =
+      await Promise.all([
+        Post.findById(mockPost01._id),
+        User.findById(mockPost01.creator),
+        Community.find({
+          _id: {
+            $in: [
+              mockCommunity01._id.toString(),
+              mockCommunity02._id.toString(),
+            ],
+          },
+        }),
+        Thread.find({ _id: { $in: mockPost01.threads } }),
+        Booking.find({ _id: { $in: mockPost01.bookings } }),
+        Notification.find({
+          $or: [
+            { booking: { $in: mockPost01.bookings } },
+            { post: mockPost01._id },
+          ],
+        }),
+      ]);
 
     // Expect post to be null
     expect(post).toBeNull();

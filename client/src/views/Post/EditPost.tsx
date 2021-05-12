@@ -78,12 +78,11 @@ export default function EditPost({ history, match }: EditPostProps) {
       }
 
       // Add post to select community's posts array in cache
-      const postAndCommunityData = cache.readQuery<typeDefs.PostAndCommunitiesData>(
-        {
+      const postAndCommunityData =
+        cache.readQuery<typeDefs.PostAndCommunitiesData>({
           query: queries.GET_POST_AND_COMMUNITIES,
           variables: { postId: match.params.id },
-        }
-      );
+        });
 
       if (postAndCommunityData) {
         // Construct new communities array of community objects with

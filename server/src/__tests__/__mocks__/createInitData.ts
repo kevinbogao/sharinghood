@@ -24,8 +24,7 @@ export const mockUploadResponse = {
   type: "upload",
   etag: "7ef2ec78ef5314bbad366054d2fc4399",
   placeholder: false,
-  url:
-    "http://res.cloudinary.com/dyr3b99uj/image/upload/v1582569792/w9hb72biqpmowzyhwohy.png",
+  url: "http://res.cloudinary.com/dyr3b99uj/image/upload/v1582569792/w9hb72biqpmowzyhwohy.png",
   secure_url:
     "https://res.cloudinary.com/dyr3b99uj/image/upload/v1582569792/w9hb72biqpmowzyhwohy.png",
 };
@@ -46,8 +45,7 @@ export const updatedMockUploadResponse = {
   type: "upload",
   etag: "7ef2ec78ef5314bbad366054d2fc4399",
   placeholder: false,
-  url:
-    "http://res.cloudinary.com/dc87yxcas/image/upload/v1594160379/hp0ffukc6xoeipwm929c.png",
+  url: "http://res.cloudinary.com/dc87yxcas/image/upload/v1594160379/hp0ffukc6xoeipwm929c.png",
   secure_url:
     "https://res.cloudinary.com/dc87yxcas/image/upload/v1594160379/hp0ffukc6xoeipwm929c.png",
 };

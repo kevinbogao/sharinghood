@@ -82,21 +82,22 @@ const communitiesResolvers = {
         ]);
 
         // Get hasNotifications value from redis hash for each community of user
-        const communities: Array<CommunityAndHasNotifications> = await Promise.all(
-          (userCommunities[0].communities as Array<CommunityDocument>).map(
-            async (community: CommunityDocument) => {
-              const hasNotifications = await redis.hget(
-                `notifications:${user.userId}`,
-                `${community._id}`
-              );
+        const communities: Array<CommunityAndHasNotifications> =
+          await Promise.all(
+            (userCommunities[0].communities as Array<CommunityDocument>).map(
+              async (community: CommunityDocument) => {
+                const hasNotifications = await redis.hget(
+                  `notifications:${user.userId}`,
+                  `${community._id}`
+                );
 
-              return {
-                ...community,
-                hasNotifications: hasNotifications === "true" || false,
-              };
-            }
-          )
-        );
+                return {
+                  ...community,
+                  hasNotifications: hasNotifications === "true" || false,
+                };
+              }
+            )
+          );
 
         return communities;
       } catch (err) {

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { Location } from "history";
-import { Link } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import JsPDF from "jspdf";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
@@ -12,15 +11,9 @@ type State = {
   communityCode: string;
 };
 
-interface CommunityLinkProps {
-  location: Location<State>;
-}
-
-export default function CommunityLink({
-  location: {
-    state: { communityCode, isRegistered },
-  },
-}: CommunityLinkProps) {
+export default function CommunityLink() {
+  let location = useLocation<State>();
+  const { isRegistered, communityCode } = location.state;
   const [invite, setInvite] = useState("");
   const [copySucceed, setCopySucceed] = useState(false);
 

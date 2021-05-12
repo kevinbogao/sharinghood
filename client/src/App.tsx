@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { useMutation, useApolloClient, useReactiveVar } from "@apollo/client";
 import firebase from "firebase/app";
 import "firebase/messaging";
-// @ts-ignore
-import _JSXStyle from "styled-jsx/style";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./views/Home";
 import Posts from "./views/Post/Posts";
 import Navbar from "./components/Navbar";
+import Spinner from "./components/Spinner";
 import ServerError from "./components/ServerError";
 import Profile from "./views/User/Profile";
 import Login from "./views/User/Login";
@@ -22,7 +21,6 @@ import DashboardDetails from "./views/DashboardDetails";
 import CreatePost from "./views/Post/CreatePost";
 import PostDetails from "./views/Post/PostDetails";
 import CreateRequest from "./views/Request/CreateRequest";
-import CommunityLink from "./views/Community/CommunityLink";
 import CommunityInvite from "./views/Community/CommunityInvite";
 import RequestDetails from "./views/Request/RequestDetails";
 import CreateCommunity from "./views/Community/CreateCommunity";
@@ -37,6 +35,11 @@ import NotificationDetails from "./views/Notification/NotificationDetails";
 import { queries, mutations } from "./utils/gql";
 import { typeDefs } from "./utils/typeDefs";
 import { accessTokenVar, serverErrorVar } from "./utils/cache";
+// @ts-ignore
+import _JSXStyle from "styled-jsx/style";
+
+// Lazy load CommunityLink
+const CommunityLink = lazy(() => import("./views/Community/CommunityLink"));
 
 // _JSXStyle
 if (typeof global !== "undefined") {
@@ -167,7 +170,15 @@ export default function App() {
           <Route exact path="/" component={Home} />
           <Route exact path="/register" component={Register} />
           <Route exact path="/create-community" component={CreateCommunity} />
-          <Route exact path="/community-link" component={CommunityLink} />
+          <Route
+            exact
+            path="/community-link"
+            render={() => (
+              <Suspense fallback={<Spinner />}>
+                <CommunityLink />
+              </Suspense>
+            )}
+          />
           <Route exact path="/find-community" component={CommunityExists} />
           <Route
             exact

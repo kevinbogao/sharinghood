@@ -22,9 +22,8 @@ export default function DatePicker({
   setDateReturn,
 }: DatePickerProps) {
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [focusedInput, setFocusedInput] = useState<FocusedInputShape | null>(
-    null
-  );
+  const [focusedInput, setFocusedInput] =
+    useState<FocusedInputShape | null>(null);
 
   // Set isMobile boolean value based on window width
   useEffect(() => {

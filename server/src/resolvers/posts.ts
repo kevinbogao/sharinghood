@@ -90,8 +90,8 @@ const postsResolvers = {
 
       try {
         // Get all posts from given community
-        const communityPosts: Array<CommunityDocument> = await Community.aggregate(
-          [
+        const communityPosts: Array<CommunityDocument> =
+          await Community.aggregate([
             {
               $match: { _id: Types.ObjectId(communityId) },
             },
@@ -124,8 +124,7 @@ const postsResolvers = {
             {
               $project: { posts: 1 }, // return posts array only
             },
-          ]
-        );
+          ]);
 
         return communityPosts[0].posts;
       } catch (err) {
@@ -183,7 +182,9 @@ const postsResolvers = {
           await community.save();
 
           // Get a list of users that has FCM tokens
-          const receivers: Array<Receiver> = (community.members as Array<UserDocument>)
+          const receivers: Array<Receiver> = (
+            community.members as Array<UserDocument>
+          )
             .filter((member) => member.fcmTokens.length)
             .map((member) => ({
               _id: member._id,
@@ -368,11 +369,10 @@ const postsResolvers = {
 
         // Get all notifications that is related to post's bookings or
         // the post itself
-        const notifications: Array<NotificationDocument> = await Notification.find(
-          {
+        const notifications: Array<NotificationDocument> =
+          await Notification.find({
             $or: [{ booking: { $in: bookings } }, { post: postId }],
-          }
-        );
+          });
 
         // Get a list to notifications' messages ids
         const messages = notifications

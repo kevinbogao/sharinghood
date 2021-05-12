@@ -46,11 +46,10 @@ export default function CommunityInvite({
     {
       update(cache, { data: { joinCommunity } }) {
         // Get and update communities cache
-        const userCommunitiesData = cache.readQuery<typeDefs.UserCommunitiesData>(
-          {
+        const userCommunitiesData =
+          cache.readQuery<typeDefs.UserCommunitiesData>({
             query: queries.GET_USER_COMMUNITIES,
-          }
-        );
+          });
 
         if (userCommunitiesData) {
           cache.writeQuery<typeDefs.UserCommunitiesData>({

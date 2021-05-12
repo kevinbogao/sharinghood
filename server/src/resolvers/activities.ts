@@ -44,8 +44,8 @@ const activitiesResolvers = {
         const totalBookings: number = await Booking.countDocuments();
 
         // Get all communities stats
-        const communitiesActivities: Array<CommunityDocument> = await Community.aggregate(
-          [
+        const communitiesActivities: Array<CommunityDocument> =
+          await Community.aggregate([
             {
               $match: { _id: { $exists: true } },
             },
@@ -72,8 +72,7 @@ const activitiesResolvers = {
                 },
               },
             },
-          ]
-        );
+          ]);
 
         return {
           totalCommunities,
@@ -97,8 +96,8 @@ const activitiesResolvers = {
       }
 
       try {
-        const communityActivities: Array<CommunityDocument> = await Community.aggregate(
-          [
+        const communityActivities: Array<CommunityDocument> =
+          await Community.aggregate([
             { $match: { _id: Types.ObjectId(communityId) } },
             {
               $lookup: {
@@ -163,8 +162,7 @@ const activitiesResolvers = {
                 },
               },
             },
-          ]
-        );
+          ]);
 
         // Get bookings from community
         const bookings: Array<BookingDocument> | null = await Booking.find({

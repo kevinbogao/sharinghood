@@ -1,18 +1,23 @@
-import sendMail, { header, footer } from "./index";
+import sendMail, { header } from "./index";
+import generateFooter from "./generateFooter";
 
 type CommunityMailParams = {
   communityUrl: string;
-  to: string | Array<string>;
+  recipientId: string;
+  to: string;
   subject: string;
   text?: string;
 };
 
 export default async function newCommunityMail({
   communityUrl,
+  recipientId,
   to,
   subject,
   text = "",
 }: CommunityMailParams) {
+  const footer = await generateFooter(recipientId);
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -82,7 +87,7 @@ export default async function newCommunityMail({
   `;
 
   // Get status & return status
-  const info = await sendMail(to, subject, text, html);
+  const info = await sendMail({ to, subject, text, html });
 
   return info;
 }

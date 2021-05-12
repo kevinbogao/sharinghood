@@ -2,15 +2,12 @@ require("dotenv").config();
 import Koa from "koa";
 import helmet from "koa-helmet";
 import { ApolloServer, AuthenticationError } from "apollo-server-koa";
-import Redis from "ioredis";
 import mongoose from "mongoose";
 import typeDefs from "./typeDefs";
 import resolvers from "./resolvers";
+import redis from "./utils/redis";
 import { verifyToken } from "./utils/authToken";
 import { requestLogger } from "./utils/logger";
-
-// Create redis instance
-const redis: Redis.Redis = new Redis(process.env.REDIS_URL);
 
 // Create Koa
 const app = new Koa();

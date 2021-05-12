@@ -6,6 +6,7 @@ import Spinner from "../../components/Spinner";
 import InlineError from "../../components/InlineError";
 import ServerError from "../../components/ServerError";
 import { queries, mutations } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import { validateForm, FormError } from "../../utils/helpers";
 
 interface ResetPasswordProps {
@@ -17,7 +18,10 @@ export default function ResetPassword({ match }: ResetPasswordProps) {
   let confirmPassword: HTMLInputElement | null;
   const [success, setSuccess] = useState(false);
   const [formError, setFormError] = useState<FormError>({});
-  const { loading, error, data } = useQuery(queries.VALIDATE_RESET_LINK, {
+  const { loading, error, data } = useQuery<
+    typeDefs.ValidateResetLinkData,
+    typeDefs.ValidateResetLinkVars
+  >(queries.VALIDATE_RESET_LINK, {
     variables: { resetKey: match.params.resetKey },
     onError: ({ message }) => {
       console.log(message);
@@ -42,7 +46,7 @@ export default function ResetPassword({ match }: ResetPasswordProps) {
   ) : (
     <>
       <div className="reset-password-control">
-        {data.validateResetLink ? (
+        {data?.validateResetLink ? (
           <>
             {success ? (
               <>

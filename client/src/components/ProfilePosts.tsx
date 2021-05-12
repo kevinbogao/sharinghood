@@ -179,7 +179,7 @@ export default function ProfilePosts({ posts, history }: ProfilePostsProps) {
               }
 
               .post-img {
-                margin: 0 5px 0 0;
+                margin: 0 5px 10px 0;
                 width: 160px;
                 height: 136px;
                 background-size: cover;

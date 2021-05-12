@@ -170,6 +170,25 @@ export namespace typeDefs {
     user: User;
   }
 
+  /// VALIDATE_RESET_LINK
+  export interface ValidateResetLinkData {
+    validateResetLink: boolean;
+  }
+
+  export interface ValidateResetLinkVars {
+    resetKey: string;
+  }
+
+  /// UNSUBSCRIBE_USER
+  export interface UnsubscribeUserData {
+    unsubscribeUser: boolean;
+  }
+
+  export interface UnsubscribeUserVars {
+    userId: string;
+    token: string;
+  }
+
   ///
   /* COMMUNITY */
   ///

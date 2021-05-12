@@ -131,6 +131,28 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
+    unsubscribeUser: async (
+      _: unknown,
+      { userId, token }: { userId: string; token: string },
+      { redis }: { redis: Redis }
+    ): Promise<boolean> => {
+      try {
+        // Find unsubscribeToken from redis
+        const unsubscribeToken = await redis.get(`unsubscribe_token:${userId}`);
+
+        // Set user's isNotify to false if token exists & it's same as
+        // input token
+        if (unsubscribeToken && unsubscribeToken === token) {
+          await redis.del(`unsubscribe_token:${userId}`);
+          await User.updateOne({ _id: userId }, { isNotified: false });
+          return true;
+        }
+
+        return false;
+      } catch (err) {
+        throw new Error(err);
+      }
+    },
   },
   Mutation: {
     login: async (
@@ -278,6 +300,7 @@ const usersResolvers = {
             newAccountMail({
               confirmationUrl: `${process.env.ORIGIN}/share`,
               communityName: community.name,
+              recipientId: user._id as string,
               to: user.email,
               subject: "Welcome to Sharinghood",
             }),
@@ -288,6 +311,7 @@ const usersResolvers = {
             isCreator &&
             newCommunityMail({
               communityUrl: `${process.env.ORIGIN}/community/${community.code}`,
+              recipientId: user._id as string,
               to: user.email,
               subject: `Welcome tips for your new ${community.name} community`,
             }),
@@ -311,7 +335,9 @@ const usersResolvers = {
     },
     updateUser: async (
       _: unknown,
-      { userInput: { name, image, desc, apartment } }: { userInput: UserInput },
+      {
+        userInput: { name, image, desc, apartment, isNotified },
+      }: { userInput: UserInput },
       { user }: { user: UserTokenContext }
     ): Promise<UserDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
@@ -331,6 +357,7 @@ const usersResolvers = {
         if (image && imgData) userData.image = imgData;
         if (desc) userData.desc = desc;
         if (apartment) userData.apartment = apartment;
+        if (isNotified !== null) userData.isNotified = isNotified;
 
         // Save to user
         const updatedUser: UserDocument = await userData.save();
@@ -484,10 +511,6 @@ const usersResolvers = {
         throw new Error(err);
       }
     },
-    // unsubscribe: async (_: unknown, { token }: { token: string }) => {
-    //   console.log(token);
-    //   console.log("lol");
-    // },
   },
 };
 

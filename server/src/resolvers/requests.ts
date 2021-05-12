@@ -1,7 +1,7 @@
 import {
   ApolloError,
-  AuthenticationError,
   ForbiddenError,
+  AuthenticationError,
 } from "apollo-server-koa";
 import moment from "moment";
 import { Types } from "mongoose";
@@ -78,8 +78,8 @@ const requestsResolvers = {
 
       try {
         // Get all requests from given community
-        const communityRequests: Array<CommunityDocument> = await Community.aggregate(
-          [
+        const communityRequests: Array<CommunityDocument> =
+          await Community.aggregate([
             {
               $match: { _id: Types.ObjectId(communityId) },
             },
@@ -112,8 +112,7 @@ const requestsResolvers = {
             {
               $project: { requests: 1 },
             },
-          ]
-        );
+          ]);
 
         return communityRequests[0].requests;
       } catch (err) {
@@ -164,31 +163,33 @@ const requestsResolvers = {
         community.requests.push(request);
         creator.requests.push(request);
 
-        // Parse array of members object into array of emails if member is notified
-        const emails: Array<string> = (community.members as Array<UserDocument>)
+        // Parse array of members object into array of Recipients if member
+        // is notified
+        const recipients = (community.members as Array<UserDocument>)
           .filter((member: UserDocument) => member.isNotified === true)
-          .map((member: UserDocument) => member.email);
+          .map((member: UserDocument) => ({
+            _id: member._id as string,
+            email: member.email,
+          }));
 
-        // Save community & sent email to subscribed users
-        await Promise.all([
-          community.save(),
-          creator.save(),
-          process.env.NODE_ENV === "production" &&
-            emails.length &&
-            newRequestMail({
-              userName,
-              itemName: title,
-              itemImageUrl: JSON.parse(imgData).secure_url,
-              itemUrl: `${process.env.ORIGIN}/requests/${request._id}`,
-              ...(dateNeed && {
-                dateNeed:
-                  dateNeed && moment(+request.dateNeed).format("MMM DD"),
-              }),
-              to: emails,
-              subject: `${userName} requested ${title} in your community.`,
-              text: "",
+        // Save community & creator
+        await Promise.all([community.save(), creator.save()]);
+
+        // Sent email to subscribed users
+        if (process.env.NODE_ENV === "production" && recipients.length) {
+          await newRequestMail({
+            userName,
+            itemName: title,
+            itemImageUrl: JSON.parse(imgData).secure_url,
+            itemUrl: `${process.env.ORIGIN}/requests/${request._id}`,
+            ...(dateNeed && {
+              dateNeed: dateNeed && moment(+request.dateNeed).format("MMM DD"),
             }),
-        ]);
+            recipients,
+            subject: `${userName} requested ${title} in your community.`,
+            text: "",
+          });
+        }
 
         // Get a list of users that has FCM tokens
         const receivers = (community.members as Array<UserDocument>)

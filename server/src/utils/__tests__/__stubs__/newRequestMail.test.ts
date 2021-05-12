@@ -2,7 +2,11 @@ import nodemailer from "nodemailer";
 import moment from "moment";
 // @ts-ignore
 import { stubTransport } from "nodemailer-stub";
+import generateFooter from "../../sendMail/generateFooter";
 import newRequestMail from "../../sendMail/newRequestMail";
+
+jest.mock("../../sendMail/generateFooter");
+const mockedGenerateFooter = generateFooter as jest.Mock<any>;
 
 describe("Test newRequestMail function", () => {
   it("Should send new request mail", async () => {
@@ -10,6 +14,13 @@ describe("Test newRequestMail function", () => {
     jest
       .spyOn(nodemailer, "createTransport")
       .mockImplementation(() => transport);
+
+    const recipients = [
+      { _id: "mockUser01Id", email: "mock.user01@email.com" },
+      { _id: "mockUser02Id", email: "mock.user02@email.com" },
+    ];
+
+    mockedGenerateFooter.mockImplementation(() => {});
 
     const requestMailArgs = {
       userName: "Mock user 01",
@@ -28,15 +39,11 @@ describe("Test newRequestMail function", () => {
       itemImageUrl: requestMailArgs.itemImageUrl,
       itemUrl: requestMailArgs.itemUrl,
       dateNeed: moment(+requestMailArgs.dateNeed).format("MMM DD"),
-      to: requestMailArgs.to,
+      recipients,
       subject: requestMailArgs.subject,
       text: "",
     });
 
-    expect(mail).toMatchObject({
-      from: "sharinghood@gmail.com",
-      subject: requestMailArgs.subject,
-      to: expect.arrayContaining([requestMailArgs.to]),
-    });
+    expect(mail).not.toBeDefined();
   });
 });

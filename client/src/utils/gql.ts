@@ -31,6 +31,7 @@ export namespace queries {
         email
         apartment
         isAdmin
+        isNotified
         communities {
           _id
         }
@@ -46,6 +47,12 @@ export namespace queries {
   export const VALIDATE_RESET_LINK = gql`
     query ValidateResetLink($resetKey: String!) {
       validateResetLink(resetKey: $resetKey)
+    }
+  `;
+
+  export const UNSUBSCRIBE_USER = gql`
+    query UnsubscribeUser($userId: String!, $token: String!) {
+      unsubscribeUser(userId: $userId, token: $token)
     }
   `;
 
@@ -522,6 +529,7 @@ export namespace mutations {
         image
         email
         apartment
+        isNotified
       }
     }
   `;

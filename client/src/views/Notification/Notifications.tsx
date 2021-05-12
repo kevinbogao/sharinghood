@@ -60,17 +60,14 @@ export default function Notifications({
   // 0: pending
   // 1: accepted
   // 2: declined
-  const [
-    updateBooking,
+  const [updateBooking, { loading: mutationLoading }] = useMutation(
+    mutations.UPDATE_BOOKING,
     {
-      // @ts-ignore
-      loading: { mutationLoading },
-    },
-  ] = useMutation(mutations.UPDATE_BOOKING, {
-    onError: ({ message }) => {
-      console.log(message);
-    },
-  });
+      onError: ({ message }) => {
+        console.log(message);
+      },
+    }
+  );
 
   return loading ? (
     <Spinner />

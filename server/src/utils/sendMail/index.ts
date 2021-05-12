@@ -1,11 +1,18 @@
 import nodemailer from "nodemailer";
 
-export default async function sendMail(
-  to: string | Array<string>,
-  subject: string,
-  text: string,
-  html?: string
-) {
+type SendMailParams = {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+};
+
+export default async function sendMail({
+  to,
+  subject,
+  text,
+  html,
+}: SendMailParams) {
   const transport = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -231,21 +238,4 @@ export const header = `
       rel="stylesheet"
     />
   </head>
-`;
-
-const token = "123";
-
-export const footer = `
-  <div class="separator" />
-  </div>
-  <div class="footer">
-    <a class="footer-text" href="${process.env.ORIGIN}/unsubscribe/${token}"
-      >Unsubscribe
-    </a>
-    <p class="dot">·</p>
-    <a class="footer-text" href="${process.env.ORIGIN}/login">
-      Sign in to sharinghood
-    </a>
-  </div>
-  <p class="footer-text">Contact us any time via: sharinghood@gmail.com</p>
 `;

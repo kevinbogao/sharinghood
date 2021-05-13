@@ -14,16 +14,12 @@ async function removeInvalidTokens(
   invalidTokens: InvalidTokens
 ): Promise<void> {
   try {
-    await Promise.all([
-      Object.keys(invalidTokens).map((userId) =>
-        Promise.resolve(
-          User.updateOne(
-            { _id: userId },
-            { $pull: { fcmTokens: { $in: invalidTokens[userId] } } }
-          )
-        )
-      ),
-    ]);
+    for (const userId in invalidTokens) {
+      await User.updateOne(
+        { _id: userId },
+        { $pull: { fcmTokens: { $in: invalidTokens[userId] } } }
+      );
+    }
   } catch (err) {
     console.log(err);
   }

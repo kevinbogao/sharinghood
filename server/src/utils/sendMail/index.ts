@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { google } from "googleapis";
 
 type SendMailParams = {
   to: string;
@@ -7,6 +8,18 @@ type SendMailParams = {
   html: string;
 };
 
+const oAuth2Client = new google.auth.OAuth2(
+  process.env.OAUTH_CLIENT_ID,
+  process.env.OAUTH_CLIENT_SECRET,
+  "https://developers.google.com/oauthplayground"
+);
+
+oAuth2Client.setCredentials({
+  refresh_token: process.env.OAUTH_REFRESH_TOKEN,
+});
+
+const accessToken = oAuth2Client.getAccessToken();
+
 export default async function sendMail({
   to,
   subject,
@@ -14,10 +27,15 @@ export default async function sendMail({
   html,
 }: SendMailParams) {
   const transport = nodemailer.createTransport({
+    // @ts-ignore
     service: "gmail",
     auth: {
+      type: "OAuth2",
       user: process.env.GMAIL_USERNAME,
-      pass: process.env.GMAIL_PASSWORD,
+      clientId: process.env.OAUTH_CLIENT_ID,
+      clientSecret: process.env.OAUTH_CLIENT_SECRET,
+      refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+      accessToken,
     },
   });
 

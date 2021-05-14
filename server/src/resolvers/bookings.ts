@@ -1,4 +1,5 @@
 import { AuthenticationError } from "apollo-server-koa";
+import { Redis } from "ioredis";
 import User, { UserDocument } from "../models/user";
 import Post, { PostDocument } from "../models/post";
 import Booking, { BookingDocument } from "../models/booking";
@@ -34,7 +35,7 @@ const bookingsResolvers = {
           notifyRecipientId,
         },
       }: { bookingInput: BookingInput },
-      { user, redis }: { user: UserTokenContext; redis: any }
+      { user, redis }: { user: UserTokenContext; redis: Redis }
     ): Promise<BookingDocument> => {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
@@ -92,8 +93,7 @@ const bookingsResolvers = {
           // Set communityId key to notifications:userId hash in redis
           redis.hset(
             `notifications:${notifyRecipientId}`,
-            `${communityId}`,
-            true
+            new Map([[`${communityId}`, "true"]])
           ),
         ]);
 

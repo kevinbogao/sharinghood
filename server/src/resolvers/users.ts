@@ -372,7 +372,6 @@ const usersResolvers = {
     ): Promise<GeneratedTokens> => {
       try {
         // Validate token
-        // const tokenPayload = verifyToken(token) as RefreshTokenPayload | null;
         const tokenPayload = verifyToken(token) as RefreshTokenPayload | null;
 
         // Throw auth error if token is invalid or userId is not included

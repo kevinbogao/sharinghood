@@ -79,9 +79,7 @@ const messagesResolvers = {
           newNotificationMessage: {
             _id: message._id,
             text: message.text,
-            sender: {
-              _id: userId,
-            },
+            sender: { _id: userId },
             // @ts-ignore
             createdAt: message.createdAt,
           },

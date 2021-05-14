@@ -29,10 +29,8 @@ export default function ForgotPassword({ location }: ForgotPasswordProps) {
         // Set success if true is returned
         if (forgotPassword) setIsSuccess(true);
       },
-      onError: (err) => {
-        console.log(err);
-        console.log(err.graphQLErrors);
-        /* setErrorMsg(message, setError); */
+      onError: ({ message }) => {
+        setErrorMsg(message, setError);
       },
     }
   );

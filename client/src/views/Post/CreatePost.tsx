@@ -1,5 +1,5 @@
 import { useState, ChangeEvent } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import { Location, History } from "history";
 import { useMutation } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import uploadImg from "../../assets/images/upload.png";
@@ -8,13 +8,15 @@ import { queries, mutations } from "../../utils/gql";
 import { typeDefs } from "../../utils/typeDefs";
 import { validateForm, FormError } from "../../utils/helpers";
 
-interface State {
+type State = {
   requesterId?: string;
   requesterName?: string;
-}
+};
 
-interface CreatePostProps extends RouteComponentProps<{}, {}, State> {
+interface CreatePostProps {
   communityId: string;
+  history: History;
+  location: Location<State>;
 }
 
 export default function CreatePost({

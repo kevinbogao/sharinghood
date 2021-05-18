@@ -18,36 +18,40 @@ oAuth2Client.setCredentials({
   refresh_token: process.env.OAUTH_REFRESH_TOKEN,
 });
 
-const accessToken = oAuth2Client.getAccessToken();
-
 export default async function sendMail({
   to,
   subject,
   text,
   html,
 }: SendMailParams) {
-  const transport = nodemailer.createTransport({
-    // @ts-ignore
-    service: "gmail",
-    auth: {
-      type: "OAuth2",
-      user: process.env.GMAIL_USERNAME,
-      clientId: process.env.OAUTH_CLIENT_ID,
-      clientSecret: process.env.OAUTH_CLIENT_SECRET,
-      refreshToken: process.env.OAUTH_REFRESH_TOKEN,
-      accessToken,
-    },
-  });
+  try {
+    const accessToken = await oAuth2Client.getAccessToken();
 
-  const info = await transport.sendMail({
-    from: '"Sharinghood" <sharinghood@gmail.com>',
-    to,
-    subject,
-    text,
-    html,
-  });
+    const transport = nodemailer.createTransport({
+      // @ts-ignore
+      service: "gmail",
+      auth: {
+        type: "OAuth2",
+        user: process.env.GMAIL_USERNAME,
+        clientId: process.env.OAUTH_CLIENT_ID,
+        clientSecret: process.env.OAUTH_CLIENT_SECRET,
+        refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+        accessToken,
+      },
+    });
 
-  return info;
+    const info = await transport.sendMail({
+      from: '"Sharinghood" <sharinghood@gmail.com>',
+      to,
+      subject,
+      text,
+      html,
+    });
+
+    return info;
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 export const header = `

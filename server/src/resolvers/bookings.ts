@@ -78,24 +78,25 @@ const bookingsResolvers = {
 
         notification.markModified("isRead");
 
-        // Save booking & send booking notification email if user is notified
-        await Promise.all([
-          booking.save(),
-          notification.save(),
-          process.env.NODE_ENV === "production" &&
-            recipient.isNotified &&
-            updateBookingMail({
-              bookingsUrl: `${process.env.ORIGIN}/notifications`,
-              recipientId: recipient._id as string,
-              to: recipient.email,
-              subject: notifyContent,
-            }),
-          // Set communityId key to notifications:userId hash in redis
-          redis.hset(
-            `notifications:${notifyRecipientId}`,
-            new Map([[`${communityId}`, "true"]])
-          ),
-        ]);
+        // Save booking & notification
+        await booking.save();
+        await notification.save();
+
+        // send booking notification email if user is notified
+        if (process.env.NODE_ENV === "production" && recipient.isNotified) {
+          await updateBookingMail({
+            bookingsUrl: `${process.env.ORIGIN}/notifications`,
+            recipientId: recipient._id as string,
+            to: recipient.email,
+            subject: notifyContent,
+          });
+        }
+
+        // Set communityId key to notifications:userId hash in redis
+        await redis.hset(
+          `notifications:${notifyRecipientId}`,
+          new Map([[`${communityId}`, "true"]])
+        );
 
         // Send push notification to requester
         pushNotification(

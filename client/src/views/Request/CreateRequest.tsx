@@ -1,11 +1,11 @@
-import { useState, ChangeEvent } from "react";
+import { useState } from "react";
 import { History } from "history";
 import { useMutation } from "@apollo/client";
 import moment from "moment";
 import DatePicker from "../../components/DatePicker";
-import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
-import uploadImg from "../../assets/images/upload.png";
+import ImageInput from "../../components/ImageInput";
+import InlineError from "../../components/InlineError";
 import { queries, mutations } from "../../utils/gql";
 import { typeDefs } from "../../utils/typeDefs";
 import { validateForm, FormError } from "../../utils/helpers";
@@ -78,25 +78,7 @@ export default function CreateRequest({
           }
         }}
       >
-        <div className="image-upload">
-          <label htmlFor="file-input">
-            <img alt="profile pic" src={image || uploadImg} />
-          </label>
-          <input
-            id="file-input"
-            className="FileInput"
-            type="file"
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              const reader = new FileReader();
-              if (e.currentTarget.files) {
-                reader.readAsDataURL(e.currentTarget.files[0]);
-                reader.onload = () => {
-                  setImage(reader.result!.toString());
-                };
-              }
-            }}
-          />
-        </div>
+        <ImageInput image={image} setImage={setImage} isItem={true} />
         {error.image && <InlineError text={error.image} />}
         <input
           className="main-input"
@@ -138,19 +120,6 @@ export default function CreateRequest({
 
             @include sm {
               max-width: 300px;
-            }
-
-            .image-upload > input {
-              display: none;
-            }
-
-            img {
-              margin-top: 30px;
-              border-radius: 4px;
-              width: 148px;
-              height: 180px;
-              object-fit: contain;
-              box-shadow: 1px 1px 1px 1px #eeeeee;
             }
 
             .main-input {

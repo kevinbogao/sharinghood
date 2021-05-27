@@ -1,10 +1,11 @@
-import { useState, ChangeEvent } from "react";
+import { useState } from "react";
 import { History } from "history";
 import { match } from "react-router-dom";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import Modal from "react-modal";
 import Spinner from "../../components/Spinner";
 import ServerError from "../../components/ServerError";
+import ImageInput from "../../components/ImageInput";
 import { queries, mutations } from "../../utils/gql";
 import { typeDefs } from "../../utils/typeDefs";
 import { tokenPayloadVar, selCommunityIdVar } from "../../utils/cache";
@@ -218,28 +219,11 @@ export default function EditPost({ history, match }: EditPostProps) {
             }
           }}
         >
-          <div className="image-upload">
-            <label htmlFor="file-input">
-              <img
-                alt="profile pic"
-                src={image || JSON.parse(data.post.image).secure_url}
-              />
-            </label>
-            <input
-              id="file-input"
-              className="FileInput"
-              type="file"
-              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                const reader = new FileReader();
-                if (e.currentTarget.files) {
-                  reader.readAsDataURL(e.currentTarget.files[0]);
-                  reader.onload = () => {
-                    setImage(reader.result!.toString());
-                  };
-                }
-              }}
-            />
-          </div>
+          <ImageInput
+            image={image || JSON.parse(data.post.image).secure_url}
+            setImage={setImage}
+            isItem={true}
+          />
           <p className="main-p">Title</p>
           <input
             className="main-input"
@@ -360,20 +344,6 @@ export default function EditPost({ history, match }: EditPostProps) {
               @include sm {
                 max-width: 300px;
                 width: 80vw;
-              }
-
-              .image-upload > input {
-                display: none;
-              }
-
-              label[for="file-input"] > img {
-                cursor: pointer;
-                margin-top: 30px;
-                border-radius: 4px;
-                width: 148px;
-                height: 180px;
-                object-fit: contain;
-                box-shadow: 1px 1px 1px 1px #eeeeee;
               }
 
               h2 {

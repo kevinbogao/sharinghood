@@ -118,18 +118,21 @@ export default function App() {
       messaging.onMessage((payload) => {
         if (payload.data) {
           // Get all user's communities from cache
-          const data = client.readQuery<typeDefs.UserCommunitiesData, void>({
+          const userCommunitiesCache = client.readQuery<
+            typeDefs.UserCommunitiesData,
+            void
+          >({
             query: queries.GET_USER_COMMUNITIES,
           });
 
           // Write to cache with a new array of communities with target
           // community's hasNotifications status to true to cache
 
-          if (data) {
+          if (userCommunitiesCache) {
             client.writeQuery<typeDefs.UserCommunitiesData, void>({
               query: queries.GET_USER_COMMUNITIES,
               data: {
-                communities: data.communities.map((community) =>
+                communities: userCommunitiesCache.communities.map((community) =>
                   community._id === payload.data.communityId
                     ? { ...community, hasNotifications: true }
                     : community

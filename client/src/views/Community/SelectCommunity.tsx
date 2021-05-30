@@ -130,7 +130,7 @@ export default function SelectCommunity({
   >(mutations.JOIN_COMMUNITY, {
     update(cache, { data }) {
       // Get and update communities cache
-      const userCommunitiesData = cache.readQuery<
+      const userCommunitiesCache = cache.readQuery<
         typeDefs.UserCommunitiesData,
         void
       >({
@@ -138,13 +138,13 @@ export default function SelectCommunity({
       });
 
       if (data) {
-        // Update cache if userCommunitiesData exists
-        if (userCommunitiesData) {
+        // Update cache if userCommunitiesCache exists
+        if (userCommunitiesCache) {
           cache.writeQuery<typeDefs.UserCommunitiesData, void>({
             query: queries.GET_USER_COMMUNITIES,
             data: {
               communities: [
-                ...userCommunitiesData.communities,
+                ...userCommunitiesCache.communities,
                 { ...data.joinCommunity, hasNotifications: false },
               ],
             },

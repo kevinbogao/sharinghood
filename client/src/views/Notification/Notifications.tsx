@@ -32,7 +32,7 @@ export default function Notifications({
     fetchPolicy: "network-only",
     onCompleted: () => {
       // Get communities from cache
-      const communitiesData = client.readQuery<
+      const communitiesCache = client.readQuery<
         typeDefs.UserCommunitiesData,
         void
       >({
@@ -41,11 +41,11 @@ export default function Notifications({
 
       // Write to cache with a new communities array with the current
       // community's hasNotifications is set to false
-      if (communitiesData) {
+      if (communitiesCache) {
         client.writeQuery<typeDefs.UserCommunitiesData, void>({
           query: queries.GET_USER_COMMUNITIES,
           data: {
-            communities: communitiesData.communities.map((community) =>
+            communities: communitiesCache.communities.map((community) =>
               community._id === communityId
                 ? { ...community, hasNotifications: false }
                 : community

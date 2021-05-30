@@ -22,15 +22,15 @@ export default function ProfilePosts({ posts, history }: ProfilePostsProps) {
   >(mutations.INACTIVATE_POST, {
     update(cache, { data }) {
       if (data!.inactivatePost) {
-        const userCommunitiesData = cache.readQuery<
+        const userCommunitiesCache = cache.readQuery<
           typeDefs.UserCommunitiesData,
           void
         >({
           query: queries.GET_USER_COMMUNITIES,
         });
 
-        if (userCommunitiesData) {
-          userCommunitiesData.communities.forEach((community) => {
+        if (userCommunitiesCache) {
+          userCommunitiesCache.communities.forEach((community) => {
             const postsCache = cache.readQuery<
               typeDefs.PostsData,
               typeDefs.PostsVars

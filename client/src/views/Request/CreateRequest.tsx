@@ -33,7 +33,7 @@ export default function CreateRequest({
   >(mutations.CREATE_REQUEST, {
     update(cache, { data }) {
       // Fetch requests from cache
-      const requestsData = cache.readQuery<
+      const requestsCache = cache.readQuery<
         typeDefs.RequestsData,
         typeDefs.RequestsVars
       >({
@@ -42,11 +42,11 @@ export default function CreateRequest({
       });
 
       // Update cached requests if it exists
-      if (requestsData) {
+      if (requestsCache) {
         cache.writeQuery<typeDefs.RequestsData, typeDefs.RequestsVars>({
           query: queries.GET_REQUESTS,
           variables: { communityId },
-          data: { requests: [data!.createRequest, ...requestsData.requests] },
+          data: { requests: [data!.createRequest, ...requestsCache.requests] },
         });
       }
       history.push("/requests");

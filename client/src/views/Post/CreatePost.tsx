@@ -35,18 +35,19 @@ export default function CreatePost({
     typeDefs.CreatePostVars
   >(mutations.CREATE_POST, {
     update(cache, { data }) {
-      const postsData = cache.readQuery<typeDefs.PostsData, typeDefs.PostsVars>(
-        {
-          query: queries.GET_POSTS,
-          variables: { communityId },
-        }
-      );
+      const postsCache = cache.readQuery<
+        typeDefs.PostsData,
+        typeDefs.PostsVars
+      >({
+        query: queries.GET_POSTS,
+        variables: { communityId },
+      });
 
-      if (data && postsData) {
+      if (data && postsCache) {
         cache.writeQuery<typeDefs.PostsData, typeDefs.PostsVars>({
           query: queries.GET_POSTS,
           variables: { communityId },
-          data: { posts: [data.createPost, ...postsData.posts] },
+          data: { posts: [data.createPost, ...postsCache.posts] },
         });
       }
       history.push("/find");

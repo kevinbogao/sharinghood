@@ -66,23 +66,24 @@ export default function EditPost({ history, match }: EditPostProps) {
     update(cache, { data }) {
       // Get posts by community id, if posts exist, add selected post to the
       // posts array
-      const postsData = cache.readQuery<typeDefs.PostsData, typeDefs.PostsVars>(
-        {
-          query: queries.GET_POSTS,
-          variables: { communityId: data!.addPostToCommunity._id },
-        }
-      );
+      const postsCache = cache.readQuery<
+        typeDefs.PostsData,
+        typeDefs.PostsVars
+      >({
+        query: queries.GET_POSTS,
+        variables: { communityId: data!.addPostToCommunity._id },
+      });
 
-      if (postsData) {
+      if (postsCache) {
         cache.writeQuery<typeDefs.PostsData, typeDefs.PostsVars>({
           query: queries.GET_POSTS,
           variables: { communityId: data!.addPostToCommunity._id },
-          data: { posts: [postAndCommunities!.post, ...postsData.posts] },
+          data: { posts: [postAndCommunities!.post, ...postsCache.posts] },
         });
       }
 
       // Add post to select community's posts array in cache
-      const postAndCommunityData = cache.readQuery<
+      const postAndCommunityCache = cache.readQuery<
         typeDefs.PostAndCommunitiesData,
         typeDefs.PostAndCommunitiesVars
       >({
@@ -90,10 +91,10 @@ export default function EditPost({ history, match }: EditPostProps) {
         variables: { postId: match.params.id },
       });
 
-      if (postAndCommunityData) {
+      if (postAndCommunityCache) {
         // Construct new communities array of community objects with
         // new post pushed to the posts array in the selected community
-        const newCommunities = postAndCommunityData.communities.map(
+        const newCommunities = postAndCommunityCache.communities.map(
           (community) => {
             if (community._id === data!.addPostToCommunity._id) {
               return {
@@ -134,7 +135,7 @@ export default function EditPost({ history, match }: EditPostProps) {
     typeDefs.UpdatePostVars
   >(mutations.UPDATE_POST, {
     update(cache, { data }) {
-      const postDetailsData = cache.readQuery<
+      const postDetailsCache = cache.readQuery<
         typeDefs.PostDetailsData,
         typeDefs.PostDetailsVars
       >({
@@ -145,13 +146,13 @@ export default function EditPost({ history, match }: EditPostProps) {
         },
       });
 
-      if (postDetailsData) {
+      if (postDetailsCache) {
         cache.writeQuery<typeDefs.PostDetailsData, typeDefs.PostDetailsVars>({
           query: queries.GET_POST_DETAILS,
           data: {
-            ...postDetailsData,
+            ...postDetailsCache,
             post: {
-              ...postDetailsData.post,
+              ...postDetailsCache.post,
               title: data!.updatePost.title,
               desc: data!.updatePost.desc,
               image: data!.updatePost.image,
@@ -177,7 +178,7 @@ export default function EditPost({ history, match }: EditPostProps) {
       // Delete post from all communities in cache
       postAndCommunities?.communities.forEach((community) => {
         // Get post by community id from cache
-        const postsData = cache.readQuery<
+        const postsCache = cache.readQuery<
           typeDefs.PostsData,
           typeDefs.PostsVars
         >({
@@ -185,13 +186,13 @@ export default function EditPost({ history, match }: EditPostProps) {
           variables: { communityId: community._id },
         });
 
-        if (postsData) {
+        if (postsCache) {
           // Remove the post from posts array
           cache.writeQuery<typeDefs.PostsData, typeDefs.PostsVars>({
             query: queries.GET_POSTS,
             variables: { communityId: community._id },
             data: {
-              posts: postsData.posts.filter(
+              posts: postsCache.posts.filter(
                 (post) => post._id !== data!.deletePost._id
               ),
             },

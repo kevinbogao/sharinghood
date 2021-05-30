@@ -54,7 +54,7 @@ export default function RequestDetails({
       console.log(message);
     },
     update(cache, { data }) {
-      const requestDetailsData = cache.readQuery<
+      const requestDetailsCache = cache.readQuery<
         typeDefs.RequestDetailsData,
         typeDefs.RequestDetailsVars
       >({
@@ -62,7 +62,7 @@ export default function RequestDetails({
         variables: { requestId: match.params.id, communityId },
       });
 
-      if (requestDetailsData) {
+      if (requestDetailsCache) {
         cache.writeQuery<
           typeDefs.RequestDetailsData,
           typeDefs.RequestDetailsVars
@@ -70,11 +70,11 @@ export default function RequestDetails({
           query: queries.GET_REQUEST_DETAILS,
           variables: { requestId: match.params.id, communityId },
           data: {
-            ...requestDetailsData,
+            ...requestDetailsCache,
             request: {
-              ...requestDetailsData.request,
+              ...requestDetailsCache.request,
               threads: [
-                ...requestDetailsData.request.threads,
+                ...requestDetailsCache.request.threads,
                 data!.createThread,
               ],
             },
@@ -93,7 +93,7 @@ export default function RequestDetails({
       console.log(message);
     },
     update(cache, { data }) {
-      const requestsData = cache.readQuery<
+      const requestsCache = cache.readQuery<
         typeDefs.RequestsData,
         typeDefs.RequestsVars
       >({
@@ -101,12 +101,12 @@ export default function RequestDetails({
         variables: { communityId },
       });
 
-      if (requestsData) {
+      if (requestsCache) {
         cache.writeQuery<typeDefs.RequestsData, typeDefs.RequestsVars>({
           query: queries.GET_REQUESTS,
           variables: { communityId },
           data: {
-            requests: requestsData.requests.filter(
+            requests: requestsCache.requests.filter(
               (request) => request._id !== data!.deleteRequest._id
             ),
           },

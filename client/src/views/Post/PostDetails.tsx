@@ -59,7 +59,7 @@ export default function PostDetails({
       setComment("");
     },
     update(cache, { data }) {
-      const postDetailsData = cache.readQuery<
+      const postDetailsCache = cache.readQuery<
         typeDefs.PostDetailsData,
         typeDefs.PostDetailsVars
       >({
@@ -67,15 +67,15 @@ export default function PostDetails({
         variables: { postId: match.params.id, communityId },
       });
 
-      if (postDetailsData) {
+      if (postDetailsCache) {
         cache.writeQuery<typeDefs.PostDetailsData, typeDefs.PostDetailsVars>({
           query: queries.GET_POST_DETAILS,
           variables: { postId: match.params.id, communityId },
           data: {
-            ...postDetailsData,
+            ...postDetailsCache,
             post: {
-              ...postDetailsData.post,
-              threads: [...postDetailsData.post.threads, data!.createThread],
+              ...postDetailsCache.post,
+              threads: [...postDetailsCache.post.threads, data!.createThread],
             },
           },
         });

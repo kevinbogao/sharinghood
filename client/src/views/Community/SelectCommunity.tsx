@@ -124,39 +124,44 @@ export default function SelectCommunity({
   });
 
   // Add user to community
-  const [joinCommunity, { loading: mutationLoading }] = useMutation(
-    mutations.JOIN_COMMUNITY,
-    {
-      update(cache, { data: { joinCommunity } }) {
-        // Get and update communities cache
-        const userCommunitiesData =
-          cache.readQuery<typeDefs.UserCommunitiesData>({
-            query: queries.GET_USER_COMMUNITIES,
-          });
+  const [joinCommunity, { loading: mutationLoading }] = useMutation<
+    typeDefs.JoinCommunityData,
+    typeDefs.JoinCommunityVars
+  >(mutations.JOIN_COMMUNITY, {
+    update(cache, { data }) {
+      // Get and update communities cache
+      const userCommunitiesData = cache.readQuery<
+        typeDefs.UserCommunitiesData,
+        void
+      >({
+        query: queries.GET_USER_COMMUNITIES,
+      });
 
+      if (data) {
+        // Update cache if userCommunitiesData exists
         if (userCommunitiesData) {
-          cache.writeQuery<typeDefs.UserCommunitiesData>({
+          cache.writeQuery<typeDefs.UserCommunitiesData, void>({
             query: queries.GET_USER_COMMUNITIES,
             data: {
               communities: [
                 ...userCommunitiesData.communities,
-                { ...joinCommunity, hasNotifications: false },
+                { ...data.joinCommunity, hasNotifications: false },
               ],
             },
           });
         }
 
         // Set community id
-        selectCommunity(joinCommunity._id);
+        selectCommunity(data.joinCommunity._id);
+      }
 
-        // Redirect to posts page
-        history.push("/find");
-      },
-      onError: ({ message }) => {
-        console.log(message);
-      },
-    }
-  );
+      // Redirect to posts page
+      history.push("/find");
+    },
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
 
   return loading ? (
     <Spinner />

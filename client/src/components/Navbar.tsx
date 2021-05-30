@@ -27,6 +27,7 @@ export default function Navbar() {
   const history = useHistory();
   const client = useApolloClient();
   const node: RefObject<HTMLDivElement> | undefined = useRef(null);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isMenuActive, setIsMenuActive] = useState<boolean>(false);
   const accessToken = useReactiveVar(accessTokenVar);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
@@ -45,11 +46,15 @@ export default function Navbar() {
   });
 
   // Revoke user's refreshToken
-  const [logout] = useMutation<{ logout: void }>(mutations.LOGOUT);
+  const [logout] = useMutation<typeDefs.LogoutData, void>(mutations.LOGOUT);
 
   function handleClickOutside(e: Event) {
     if (e.target instanceof Node && node?.current?.contains(e.target)) return;
     setIsMenuActive(false);
+  }
+
+  function toggleMenu() {
+    setIsMenuActive(!isMenuActive);
   }
 
   // Handling clicking outside of MainDrawer
@@ -64,9 +69,22 @@ export default function Navbar() {
     };
   }, [isMenuActive]);
 
-  function toggleMenu() {
-    setIsMenuActive(!isMenuActive);
-  }
+  // Set isMobile boolean value based on window width
+  useEffect(() => {
+    // Set isMobile on init
+    setIsMobile(window.matchMedia("(max-width: 576px)").matches);
+
+    // Set isMobile on screen size
+    function handleWindowResize() {
+      setIsMobile(window.matchMedia("(max-width: 576px)").matches);
+    }
+
+    // Event listener for screen resizing
+    window.addEventListener("resize", handleWindowResize);
+
+    // Return a function from the effect that removes the event listener
+    return () => window.removeEventListener("resize", handleWindowResize);
+  }, []);
 
   return (
     <div ref={node} className="nav-control">
@@ -113,7 +131,7 @@ export default function Navbar() {
         <div className="nav-user-content">
           {!!accessToken ? (
             <div className="nav-icons">
-              {selCommunityId && (
+              {selCommunityId && !isMobile && (
                 <>
                   <FontAwesomeIcon
                     className="nav-icon"
@@ -175,6 +193,24 @@ export default function Navbar() {
         <NavLink className="nav-menu-item" to="/share" onClick={toggleMenu}>
           Share
         </NavLink>
+        {isMobile && (
+          <>
+            <NavLink
+              className="nav-menu-item dashboard"
+              to="/profile"
+              onClick={toggleMenu}
+            >
+              Profile
+            </NavLink>
+            <NavLink
+              className="nav-menu-item dashboard"
+              to="/notifications"
+              onClick={toggleMenu}
+            >
+              Notifications
+            </NavLink>
+          </>
+        )}
         {tokenPayload?.isAdmin && (
           <NavLink
             className="nav-menu-item dashboard"
@@ -241,16 +277,6 @@ export default function Navbar() {
                 text-align: center;
                 color: $orange;
                 font-weight: bold;
-
-                @include sm {
-                  font-size: 21px;
-
-                  &.select {
-                    width: 120px;
-                    white-space: nowrap;
-                    overflow: hidden;
-                  }
-                }
               }
             }
 
@@ -339,7 +365,7 @@ export default function Navbar() {
             cursor: pointer;
 
             @include sm {
-              margin-left: 5px;
+              margin-left: 0px;
               padding: 5px;
               font-size: 17px;
             }

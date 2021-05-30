@@ -50,7 +50,8 @@ export default async function sendMail({
 
     return info;
   } catch (err) {
-    throw new Error(err);
+    console.log(err);
+    return;
   }
 }
 

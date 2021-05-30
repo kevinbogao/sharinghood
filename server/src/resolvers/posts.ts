@@ -262,7 +262,7 @@ const postsResolvers = {
     updatePost: async (
       _: unknown,
       {
-        postInput: { postId, title, desc, image, condition },
+        postInput: { postId, title, desc, image, condition, isGiveaway },
       }: { postInput: PostInput },
       { user }: { user: UserTokenContext }
     ): Promise<PostDocument> => {
@@ -289,6 +289,7 @@ const postsResolvers = {
         if (desc) post.desc = desc;
         if (image && imgData) post.image = imgData;
         if (condition) post.condition = condition;
+        if (isGiveaway !== undefined) post.isGiveaway = isGiveaway;
 
         // Save & return post
         const updatedPost = await post.save();

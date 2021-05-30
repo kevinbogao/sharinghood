@@ -35,30 +35,30 @@ export default function NotificationDetails({
       console.log(message);
     },
   });
-  const [createMessage, { error: mutationError }] = useMutation(
-    mutations.CREATE_MESSAGE,
-    {
-      onCompleted: () => {
-        setText("");
-      },
-      onError: ({ message }) => {
-        console.log(message);
-      },
-    }
-  );
+  const [createMessage, { error: mutationError }] = useMutation<
+    typeDefs.CreateMessageData,
+    typeDefs.CreateMessageVars
+  >(mutations.CREATE_MESSAGE, {
+    onCompleted: () => {
+      setText("");
+    },
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
 
   // Update booking status by changing booking status int
   // 0: pending
   // 1: accepted
   // 2: declined
-  const [updateBooking, { loading: mutationLoading }] = useMutation(
-    mutations.UPDATE_BOOKING,
-    {
-      onError: ({ message }) => {
-        console.log(message);
-      },
-    }
-  );
+  const [updateBooking, { loading: mutationLoading }] = useMutation<
+    typeDefs.UpdateBookingData,
+    typeDefs.UpdateBookingVars
+  >(mutations.UPDATE_BOOKING, {
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
 
   // Subscribe to new messages
   useEffect(() => {
@@ -275,13 +275,13 @@ export default function NotificationDetails({
             onChange={(e) => setText(e.target.value)}
             onKeyUp={(e) => {
               const keyCode = e.keyCode || e.which;
-              if (keyCode === 13 && text !== "") {
+              if (data && keyCode === 13 && text !== "") {
                 createMessage({
                   variables: {
                     messageInput: {
                       text,
                       communityId,
-                      recipientId: data?.notification.participants[0]._id,
+                      recipientId: data.notification.participants[0]._id,
                       notificationId: match.params.id,
                     },
                   },
@@ -294,13 +294,13 @@ export default function NotificationDetails({
             icon={faPaperPlane}
             type="submit"
             onClick={() => {
-              if (text !== "") {
+              if (data && text !== "") {
                 createMessage({
                   variables: {
                     messageInput: {
                       text,
                       communityId,
-                      recipientId: data?.notification.participants[0]._id,
+                      recipientId: data.notification.participants[0]._id,
                       notificationId: match.params.id,
                     },
                   },

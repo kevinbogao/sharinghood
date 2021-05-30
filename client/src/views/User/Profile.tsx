@@ -29,23 +29,23 @@ export default function Profile({ history }: ProfileProps) {
       },
     }
   );
-  const [updateUser, { loading: mutationLoading }] = useMutation(
-    mutations.UPDATE_USER,
-    {
-      update(cache, { data: { updateUser } }) {
-        cache.writeQuery({
-          query: queries.GET_USER,
-          data: {
-            user: updateUser,
-          },
-        });
-        history.push("/find");
-      },
-      onError: ({ message }) => {
-        console.log(message);
-      },
-    }
-  );
+  const [updateUser, { loading: mutationLoading }] = useMutation<
+    typeDefs.UpdateUserData,
+    typeDefs.UpdateUserVars
+  >(mutations.UPDATE_USER, {
+    update(cache, { data }) {
+      cache.writeQuery<typeDefs.UserData, void>({
+        query: queries.GET_USER,
+        data: {
+          user: data!.updateUser,
+        },
+      });
+      history.push("/find");
+    },
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
 
   return loading ? (
     <Spinner />

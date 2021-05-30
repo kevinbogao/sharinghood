@@ -20,6 +20,7 @@ export default function EditPost({ history, match }: EditPostProps) {
   const [desc, setDesc] = useState<string>("");
   const [image, setImage] = useState<string | null>(null);
   const [condition, setCondition] = useState<string>("");
+  const [isGiveaway, setIsGiveaway] = useState(false);
   const [communityArr, setCommunityArr] = useState<Array<typeDefs.Community>>(
     []
   );
@@ -27,7 +28,11 @@ export default function EditPost({ history, match }: EditPostProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
   const selCommunityId = useReactiveVar(selCommunityIdVar);
-  const { loading, error, data } = useQuery<
+  const {
+    loading,
+    error,
+    data: postAndCommunities,
+  } = useQuery<
     typeDefs.PostAndCommunitiesData,
     typeDefs.PostAndCommunitiesVars
   >(queries.GET_POST_AND_COMMUNITIES, {
@@ -37,6 +42,9 @@ export default function EditPost({ history, match }: EditPostProps) {
       if (tokenPayload && post.creator._id !== tokenPayload.userId) {
         history.replace(`/shared/${post._id}`);
       }
+
+      // Set inGiveaway to local state
+      setIsGiveaway(post.isGiveaway);
 
       // Create a list of communities where the post is not present in
       const remainCommunities = communities.filter(
@@ -51,51 +59,48 @@ export default function EditPost({ history, match }: EditPostProps) {
   });
 
   // Add post to selected community
-  const [addPostToCommunity] = useMutation(mutations.ADD_POST_TO_COMMUNITY, {
-    update(cache, { data: { addPostToCommunity } }) {
+  const [addPostToCommunity] = useMutation<
+    typeDefs.AddPostToCommunityData,
+    typeDefs.AddPostToCommunityVars
+  >(mutations.ADD_POST_TO_COMMUNITY, {
+    update(cache, { data }) {
       // Get posts by community id, if posts exist, add selected post to the
       // posts array
-      const postsData = cache.readQuery<typeDefs.PostsData>({
-        query: queries.GET_POSTS,
-        variables: { communityId: addPostToCommunity._id },
-      });
+      const postsData = cache.readQuery<typeDefs.PostsData, typeDefs.PostsVars>(
+        {
+          query: queries.GET_POSTS,
+          variables: { communityId: data!.addPostToCommunity._id },
+        }
+      );
 
       if (postsData) {
-        // Create a post object with selected fields
-        const postSel = (({ _id, __typename, title, image, creator }) => ({
-          _id,
-          __typename,
-          title,
-          image,
-          creator,
-        }))(data!.post);
-
-        // Add post to the posts array in cache
-        cache.writeQuery({
+        cache.writeQuery<typeDefs.PostsData, typeDefs.PostsVars>({
           query: queries.GET_POSTS,
-          variables: { communityId: addPostToCommunity._id },
-          data: { posts: [postSel, ...postsData.posts] },
+          variables: { communityId: data!.addPostToCommunity._id },
+          data: { posts: [postAndCommunities!.post, ...postsData.posts] },
         });
       }
 
       // Add post to select community's posts array in cache
-      const postAndCommunityData =
-        cache.readQuery<typeDefs.PostAndCommunitiesData>({
-          query: queries.GET_POST_AND_COMMUNITIES,
-          variables: { postId: match.params.id },
-        });
+      const postAndCommunityData = cache.readQuery<
+        typeDefs.PostAndCommunitiesData,
+        typeDefs.PostAndCommunitiesVars
+      >({
+        query: queries.GET_POST_AND_COMMUNITIES,
+        variables: { postId: match.params.id },
+      });
 
       if (postAndCommunityData) {
         // Construct new communities array of community objects with
         // new post pushed to the posts array in the selected community
         const newCommunities = postAndCommunityData.communities.map(
           (community) => {
-            if (community._id === addPostToCommunity._id) {
+            if (community._id === data!.addPostToCommunity._id) {
               return {
                 ...community,
                 posts: [
                   ...community.posts,
-                  { __typename: "Post", _id: data!.post._id },
+                  { __typename: "Post", _id: postAndCommunities!.post._id },
                 ],
               };
             }
@@ -114,7 +119,7 @@ export default function EditPost({ history, match }: EditPostProps) {
       // Remove the added community from communityArr
       setCommunityArr(
         communityArr.filter(
-          (community) => community._id !== addPostToCommunity._id
+          (community) => community._id !== data!.addPostToCommunity._id
         )
       );
     },
@@ -124,57 +129,70 @@ export default function EditPost({ history, match }: EditPostProps) {
   });
 
   // Update post mutation & redirect user to home
-  const [updatePost, { loading: mutationLoading }] = useMutation(
-    mutations.UPDATE_POST,
-    {
-      update(cache, { data: { updatePost } }) {
-        const postDetailsData = cache.readQuery<typeDefs.PostDetailsData>({
-          query: queries.GET_POST_DETAILS,
-          variables: { postId: data?.post._id, communityId: selCommunityId },
-        });
+  const [updatePost, { loading: mutationLoading }] = useMutation<
+    typeDefs.UpdatePostData,
+    typeDefs.UpdatePostVars
+  >(mutations.UPDATE_POST, {
+    update(cache, { data }) {
+      const postDetailsData = cache.readQuery<
+        typeDefs.PostDetailsData,
+        typeDefs.PostDetailsVars
+      >({
+        query: queries.GET_POST_DETAILS,
+        variables: {
+          postId: postAndCommunities!.post._id,
+          communityId: selCommunityId!,
+        },
+      });
 
-        if (postDetailsData) {
-          cache.writeQuery<typeDefs.PostDetailsData>({
-            query: queries.GET_POST_DETAILS,
-            data: {
-              ...postDetailsData,
-              post: {
-                ...postDetailsData.post,
-                title: updatePost.title,
-                desc: updatePost.desc,
-                image: updatePost.image,
-                condition: updatePost.condition,
-              },
+      if (postDetailsData) {
+        cache.writeQuery<typeDefs.PostDetailsData, typeDefs.PostDetailsVars>({
+          query: queries.GET_POST_DETAILS,
+          data: {
+            ...postDetailsData,
+            post: {
+              ...postDetailsData.post,
+              title: data!.updatePost.title,
+              desc: data!.updatePost.desc,
+              image: data!.updatePost.image,
+              condition: data!.updatePost.condition,
+              isGiveaway: data!.updatePost.isGiveaway,
             },
-          });
-        }
-        history.goBack();
-      },
-      onError: ({ message }) => {
-        console.log(message);
-      },
-    }
-  );
+          },
+        });
+      }
+      history.goBack();
+    },
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
 
   // Delete user's post
-  const [deletePost] = useMutation(mutations.DELETE_POST, {
-    update(cache, { data: { deletePost } }) {
+  const [deletePost] = useMutation<
+    typeDefs.DeletePostData,
+    typeDefs.DeletePostVars
+  >(mutations.DELETE_POST, {
+    update(cache, { data }) {
       // Delete post from all communities in cache
-      data?.communities.forEach((community) => {
+      postAndCommunities?.communities.forEach((community) => {
         // Get post by community id from cache
-        const postsData = cache.readQuery<typeDefs.PostsData>({
+        const postsData = cache.readQuery<
+          typeDefs.PostsData,
+          typeDefs.PostsVars
+        >({
           query: queries.GET_POSTS,
           variables: { communityId: community._id },
         });
 
         if (postsData) {
           // Remove the post from posts array
-          cache.writeQuery({
+          cache.writeQuery<typeDefs.PostsData, typeDefs.PostsVars>({
             query: queries.GET_POSTS,
             variables: { communityId: community._id },
             data: {
               posts: postsData.posts.filter(
-                (post) => post._id !== deletePost._id
+                (post) => post._id !== data!.deletePost._id
               ),
             },
           });
@@ -194,13 +212,19 @@ export default function EditPost({ history, match }: EditPostProps) {
   ) : error ? (
     <ServerError />
   ) : (
-    data && (
+    postAndCommunities && (
       <div className="edit-post-control">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             // Redirect to post details page if no changes were made
-            if (!title && !desc && !image && !condition) {
+            if (
+              !title &&
+              !desc &&
+              !image &&
+              !condition &&
+              postAndCommunities.post.isGiveaway === isGiveaway
+            ) {
               history.goBack();
             } else {
               updatePost({
@@ -211,7 +235,11 @@ export default function EditPost({ history, match }: EditPostProps) {
                     ...(desc && { desc }),
                     ...(image && { image }),
                     ...(condition && {
-                      condition: +condition || data.post.condition,
+                      condition:
+                        +condition || postAndCommunities.post.condition,
+                    }),
+                    ...(postAndCommunities.post.isGiveaway !== isGiveaway && {
+                      isGiveaway,
                     }),
                   },
                 },
@@ -220,7 +248,9 @@ export default function EditPost({ history, match }: EditPostProps) {
           }}
         >
           <ImageInput
-            image={image || JSON.parse(data.post.image).secure_url}
+            image={
+              image || JSON.parse(postAndCommunities.post.image).secure_url
+            }
             setImage={setImage}
             isItem={true}
           />
@@ -228,18 +258,18 @@ export default function EditPost({ history, match }: EditPostProps) {
           <input
             className="main-input"
             onChange={(e) => setTitle(e.currentTarget.value)}
-            defaultValue={data.post.title}
+            defaultValue={postAndCommunities.post.title}
           />
           <p className="main-p">Description</p>
           <input
             className="main-input"
             onChange={(e) => setDesc(e.currentTarget.value)}
-            defaultValue={data.post.desc}
+            defaultValue={postAndCommunities.post.desc}
           />
           <p className="main-p">Condition: </p>
           <select
             className="main-select"
-            value={+condition || data.post.condition}
+            value={+condition || postAndCommunities.post.condition}
             onChange={(e) => setCondition(e.currentTarget.value)}
             name="condition"
           >
@@ -247,6 +277,17 @@ export default function EditPost({ history, match }: EditPostProps) {
             <option value="1">Used but good</option>
             <option value="2">Used but little damaged</option>
           </select>
+          <div className="giveaway">
+            <input
+              className="checkbox"
+              type="checkbox"
+              checked={isGiveaway || false}
+              onChange={() => setIsGiveaway(!isGiveaway)}
+            />
+            <p className="main-p checkbox">
+              This is a giveaway! (People can borrow it for an indefinite time)
+            </p>
+          </div>
           <button
             className="login-btn"
             type="button"
@@ -273,10 +314,13 @@ export default function EditPost({ history, match }: EditPostProps) {
           }}
         >
           {communityArr.length ? (
-            <p className="modal-p">Add {data.post.title} to community</p>
+            <p className="modal-p">
+              Add {postAndCommunities.post.title} to community
+            </p>
           ) : (
             <p className="modal-p">
-              You have shared {data.post.title} in all your communities
+              You have shared {postAndCommunities.post.title} in all your
+              communities
             </p>
           )}
           {communityArr.map((community) => (
@@ -319,7 +363,7 @@ export default function EditPost({ history, match }: EditPostProps) {
             onClick={(e) => {
               e.preventDefault();
               deletePost({
-                variables: { postId: data.post._id },
+                variables: { postId: postAndCommunities.post._id },
               });
             }}
           >
@@ -365,9 +409,36 @@ export default function EditPost({ history, match }: EditPostProps) {
                 margin: 20px auto 10px auto;
               }
 
+              .giveaway {
+                display: flex;
+
+                input {
+                  margin: 5px 10px auto auto;
+
+                  &.checkbox {
+                    margin: 20px 10px 0 0;
+                  }
+                }
+
+                .main-p {
+                  max-width: 280px;
+                  font-size: 19px;
+                  margin: 0;
+
+                  &.checkbox {
+                    margin: 14px 0;
+                    font-size: 16px;
+                  }
+
+                  @include sm {
+                    max-width: calc(100% - 20px);
+                  }
+                }
+              }
+
               .login-btn {
                 display: block;
-                margin: 15px auto auto auto;
+                margin: 9px auto auto auto;
                 padding: 0;
                 border: none;
                 font-size: 17px;

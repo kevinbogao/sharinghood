@@ -27,17 +27,17 @@ export default function ResetPassword({ match }: ResetPasswordProps) {
       console.log(message);
     },
   });
-  const [resetPassword, { loading: mutationLoading }] = useMutation(
-    mutations.RESET_PASSWORD,
-    {
-      onCompleted: ({ resetPassword }) => {
-        if (resetPassword) setSuccess(true);
-      },
-      onError: ({ message }) => {
-        console.log(message);
-      },
-    }
-  );
+  const [resetPassword, { loading: mutationLoading }] = useMutation<
+    typeDefs.ResetPasswordData,
+    typeDefs.ResetPasswordVars
+  >(mutations.RESET_PASSWORD, {
+    onCompleted: ({ resetPassword }) => {
+      if (resetPassword) setSuccess(true);
+    },
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
 
   return loading ? (
     <Spinner />

@@ -16,6 +16,7 @@ import {
   TokenPayload,
 } from "../../utils/cache";
 import { validateForm, setErrorMsg, FormError } from "../../utils/helpers";
+import { typeDefs } from "../../utils/typeDefs";
 
 type State = {
   name: string;
@@ -56,7 +57,10 @@ export default function Register({
   const [error, setError] = useState<FormError>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [registerAndOrCreateCommunity, { loading: mutationLoading }] =
-    useMutation(mutations.REGISTER_AND_OR_CREATE_COMMUNITY, {
+    useMutation<
+      typeDefs.RegisterAndOrCreateCommunityData,
+      typeDefs.RegisterAndOrCreateCommunityVars
+    >(mutations.REGISTER_AND_OR_CREATE_COMMUNITY, {
       onCompleted: async ({ registerAndOrCreateCommunity }) => {
         const tokenPayload = await jwtDecode(
           registerAndOrCreateCommunity.user.accessToken
@@ -70,7 +74,7 @@ export default function Register({
           registerAndOrCreateCommunity.user.refreshToken
         );
         accessTokenVar(registerAndOrCreateCommunity.user.accessToken);
-        refreshTokenVar(registerAndOrCreateCommunity.user.refreshTokenVar);
+        refreshTokenVar(registerAndOrCreateCommunity.user.refreshToken);
         tokenPayloadVar(tokenPayload as TokenPayload);
 
         // Redirect user to community invite link if user is creator
@@ -133,9 +137,9 @@ export default function Register({
                 },
                 ...(isCreator && {
                   communityInput: {
-                    name: communityName,
-                    code: communityCode,
-                    zipCode: communityZipCode,
+                    name: communityName!,
+                    code: communityCode!,
+                    zipCode: communityZipCode!,
                   },
                 }),
               },

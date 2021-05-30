@@ -30,31 +30,33 @@ export default function CreatePost({
   const [image, setImage] = useState<string | null>(null);
   const [condition, setCondition] = useState<number>(0);
   const [error, setError] = useState<FormError>({});
-  const [createPost, { loading: mutationLoading }] = useMutation(
-    mutations.CREATE_POST,
-    {
-      update(cache, { data: { createPost } }) {
-        const postsData = cache.readQuery<typeDefs.PostsData>({
+  const [createPost, { loading: mutationLoading }] = useMutation<
+    typeDefs.CreatePostData,
+    typeDefs.CreatePostVars
+  >(mutations.CREATE_POST, {
+    update(cache, { data }) {
+      const postsData = cache.readQuery<typeDefs.PostsData, typeDefs.PostsVars>(
+        {
           query: queries.GET_POSTS,
           variables: { communityId },
-        });
-
-        if (postsData) {
-          cache.writeQuery<typeDefs.PostsData>({
-            query: queries.GET_POSTS,
-            variables: { communityId },
-            data: { posts: [createPost, ...postsData.posts] },
-          });
         }
-        history.push("/find");
-      },
-      onError: () => {
-        setError({
-          res: "We are experiencing difficulties right now :( Please try again later",
+      );
+
+      if (data && postsData) {
+        cache.writeQuery<typeDefs.PostsData, typeDefs.PostsVars>({
+          query: queries.GET_POSTS,
+          variables: { communityId },
+          data: { posts: [data.createPost, ...postsData.posts] },
         });
-      },
-    }
-  );
+      }
+      history.push("/find");
+    },
+    onError: () => {
+      setError({
+        res: "We are experiencing difficulties right now :( Please try again later",
+      });
+    },
+  });
 
   return (
     <div className="share-control">
@@ -71,7 +73,7 @@ export default function CreatePost({
                   desc: desc.value,
                   image,
                   condition: +condition,
-                  isGiveaway: isGiveaway?.checked,
+                  isGiveaway: isGiveaway!.checked,
                   ...(location.state && {
                     requesterId: location.state.requesterId,
                   }),

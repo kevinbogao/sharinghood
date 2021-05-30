@@ -68,7 +68,10 @@ export default function App() {
   const serverError = useReactiveVar(serverErrorVar);
 
   // Mutation to add FCM token to user
-  const [addFcmToken] = useMutation(mutations.ADD_FCM_TOKEN_TO_USER, {
+  const [addFcmToken] = useMutation<
+    typeDefs.AddFcmTokenData,
+    typeDefs.AddFcmTokenVars
+  >(mutations.ADD_FCM_TOKEN_TO_USER, {
     onError: ({ message }) => {
       console.log(message);
     },

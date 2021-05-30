@@ -39,18 +39,18 @@ export default function ItemDetails({
   });
 
   // Create chat related notification
-  const [createNotification, { loading: mutationLoading }] = useMutation(
-    mutations.CREATE_NOTIFICATION,
-    {
-      onCompleted: ({ createNotification }) => {
-        // Redirect user to chat on mutation complete
-        history.push(`/notification/${createNotification._id}`);
-      },
-      onError: ({ message }) => {
-        console.log(message);
-      },
-    }
-  );
+  const [createNotification, { loading: mutationLoading }] = useMutation<
+    typeDefs.CreateNotificationData,
+    typeDefs.CreateNotificationVars
+  >(mutations.CREATE_NOTIFICATION, {
+    onCompleted: ({ createNotification }) => {
+      // Redirect user to chat on mutation complete
+      history.push(`/notification/${createNotification._id}`);
+    },
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
 
   return (
     <>

@@ -354,7 +354,7 @@ const usersResolvers = {
         if (image && imgData) userData.image = imgData;
         if (desc) userData.desc = desc;
         if (apartment) userData.apartment = apartment;
-        if (isNotified !== null) userData.isNotified = isNotified;
+        if (isNotified !== undefined) userData.isNotified = isNotified;
 
         // Save to user
         const updatedUser: UserDocument = await userData.save();

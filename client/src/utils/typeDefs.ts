@@ -15,12 +15,12 @@ export namespace typeDefs {
   }
 
   export interface BookingInput {
-    postId: string;
+    postId?: string;
     bookingId?: string;
     communityId?: string;
     notificationId?: string;
     status: number;
-    dateType: number;
+    dateType?: number;
     dateNeed?: string;
     dateReturn?: string;
     notifyContent?: string;
@@ -41,12 +41,26 @@ export namespace typeDefs {
     hasNotifications?: boolean;
   }
 
+  export interface CommunityInput {
+    name: string;
+    code: string;
+    zipCode?: string;
+    password?: string;
+  }
+
   export interface Message {
     __typename: string;
     _id: string;
     text: string;
     sender: User;
     notification: Notification;
+  }
+
+  export interface MessageInput {
+    text: string;
+    recipientId: string;
+    communityId: string;
+    notificationId: string;
   }
 
   export interface Notification {
@@ -63,6 +77,13 @@ export namespace typeDefs {
     };
   }
 
+  export interface NotificationInput {
+    ofType: number;
+    recipientId: string;
+    communityId: string;
+    bookingInput?: BookingInput;
+  }
+
   export interface Post {
     __typename: string;
     _id: string;
@@ -76,6 +97,16 @@ export namespace typeDefs {
     bookings: Array<Booking>;
   }
 
+  export interface PostInput {
+    postId?: string;
+    title?: string;
+    desc?: string;
+    image?: string;
+    condition?: number;
+    isGiveaway?: boolean;
+    requesterId?: string;
+  }
+
   export interface Request {
     __typename: string;
     _id: string;
@@ -87,6 +118,15 @@ export namespace typeDefs {
     dateReturn: Date;
     creator: User;
     threads: Array<Thread>;
+  }
+
+  export interface RequestInput {
+    title: string;
+    desc: string;
+    image: string;
+    dateType: number;
+    dateNeed?: string;
+    dateReturn?: string;
   }
 
   export interface Thread {
@@ -125,6 +165,18 @@ export namespace typeDefs {
     communities: Array<Community>;
     notifications: Array<Notification>;
     createdAt: Date;
+  }
+
+  export interface UserInput {
+    name?: string;
+    email?: string;
+    password?: string;
+    image?: string;
+    desc?: string;
+    apartment?: string;
+    communityId?: string;
+    isNotified?: boolean;
+    isCreator?: boolean;
   }
 
   export interface CommunityActivities {
@@ -190,6 +242,85 @@ export namespace typeDefs {
   }
 
   ///
+  /* USER */
+  ///
+
+  /// LOGIN
+  export interface LoginData {
+    login: {
+      accessToken: string;
+      refreshToken: string;
+    };
+  }
+
+  export interface LoginVars {
+    email: string;
+    password: string;
+  }
+
+  /// LOGOUT
+  export interface LogoutData {
+    logout: boolean;
+  }
+
+  /// UPDATE_USER
+  export interface UpdateUserData {
+    updateUser: User;
+  }
+
+  export interface UpdateUserVars {
+    userInput: UserInput;
+  }
+
+  /// FORGOT_PASSWORD
+  export interface ForgotPasswordData {
+    forgotPassword: boolean;
+  }
+
+  export interface ForgotPasswordVars {
+    email: string;
+  }
+
+  /// RESET_PASSWORD
+  export interface ResetPasswordData {
+    resetPassword: boolean;
+  }
+
+  export interface ResetPasswordVars {
+    resetKey: string;
+    password: string;
+  }
+
+  /// ADD_FCM_TOKEN_TO_USER
+  export interface AddFcmTokenData {
+    addFcmToken: boolean;
+  }
+
+  export interface AddFcmTokenVars {
+    fcmToken: string;
+  }
+
+  ///
+  /* USER & COMMUNITY */
+  ///
+
+  /// REGISTER_AND_OR_CREATE_COMMUNITY
+  export interface RegisterAndOrCreateCommunityData {
+    registerAndOrCreateCommunity: {
+      user: {
+        accessToken: string;
+        refreshToken: string;
+      };
+      community: Community;
+    };
+  }
+
+  export interface RegisterAndOrCreateCommunityVars {
+    userInput: UserInput;
+    communityInput?: CommunityInput;
+  }
+
+  ///
   /* COMMUNITY */
   ///
 
@@ -223,6 +354,24 @@ export namespace typeDefs {
   }
 
   export interface CurrentCommunityAndCommunitiesVars {
+    communityId: string;
+  }
+
+  /// CREATE_COMMUNITY
+  export interface CreateCommunityData {
+    createCommunity: Community;
+  }
+
+  export interface CreateCommunityVars {
+    communityInput: CommunityInput;
+  }
+
+  /// JOIN_COMMUNITY
+  export interface JoinCommunityData {
+    joinCommunity: Community;
+  }
+
+  export interface JoinCommunityVars {
     communityId: string;
   }
 
@@ -260,6 +409,53 @@ export namespace typeDefs {
     postId: string;
   }
 
+  /// CREATE_POST
+  export interface CreatePostData {
+    createPost: Post;
+  }
+
+  export interface CreatePostVars {
+    postInput: PostInput;
+    communityId: string;
+  }
+
+  /// UPDATE_POST
+  export interface UpdatePostData {
+    updatePost: Post;
+  }
+
+  export interface UpdatePostVars {
+    postInput: PostInput;
+  }
+
+  /// DELETE_POST
+  export interface DeletePostData {
+    deletePost: Post;
+  }
+
+  export interface DeletePostVars {
+    postId: string;
+  }
+
+  /// ADD_POST_TO_COMMUNITY
+  export interface AddPostToCommunityData {
+    addPostToCommunity: Community;
+  }
+
+  export interface AddPostToCommunityVars {
+    postId: string;
+    communityId: string;
+  }
+
+  /// INACTIVATE_POST
+  export interface InactivatePostData {
+    inactivatePost: boolean;
+  }
+
+  export interface InactivatePostVars {
+    postId: string;
+  }
+
   ///
   /* REQUEST */
   ///
@@ -282,6 +478,25 @@ export namespace typeDefs {
   export interface RequestDetailsVars {
     requestId: string;
     communityId: string;
+  }
+
+  /// CREATE_REQUEST
+  export interface CreateRequestData {
+    createRequest: Request;
+  }
+
+  export interface CreateRequestVars {
+    requestInput: RequestInput;
+    communityId: string;
+  }
+
+  /// DELETE_REQUEST
+  export interface DeleteRequestData {
+    deleteRequest: Request;
+  }
+
+  export interface DeleteRequestVars {
+    requestId: string;
   }
 
   ///
@@ -318,6 +533,55 @@ export namespace typeDefs {
     communityId: string;
   }
 
+  /// CREATE_NOTIFICATION
+  export interface CreateNotificationData {
+    createNotification: Notification;
+  }
+
+  export interface CreateNotificationVars {
+    notificationInput: NotificationInput;
+  }
+
+  ///
+  /* BOOKING */
+  ///
+
+  /// UPDATE_BOOKING
+  export interface UpdateBookingData {
+    _id: string;
+    status: number;
+  }
+
+  export interface UpdateBookingVars {
+    bookingInput: BookingInput;
+  }
+
+  ///
+  /* THREAD */
+  ///
+
+  /// CREATE_THREAD
+  export interface CreateThreadData {
+    createThread: Thread;
+  }
+
+  export interface CreateThreadVars {
+    threadInput: ThreadInput;
+  }
+
+  ///
+  /* MESSAGE */
+  ///
+
+  /// CREATE_MESSAGE
+  export interface CreateMessageData {
+    createMessage: Message;
+  }
+
+  export interface CreateMessageVars {
+    messageInput: MessageInput;
+  }
+
   ///
   /* ACTIVITY */
   ///
@@ -334,16 +598,5 @@ export namespace typeDefs {
 
   export interface CommunityActivitiesVars {
     communityId: string;
-  }
-
-  /// MUTATIONS LOGIN
-  export interface LoginData {
-    accessToken: string;
-    refreshToken: string;
-  }
-
-  export interface LoginVars {
-    email: string;
-    password: string;
   }
 }

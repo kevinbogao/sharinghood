@@ -1,9 +1,9 @@
-import { useState, ChangeEvent } from "react";
+import { useState } from "react";
 import { Location, History } from "history";
 import { useMutation } from "@apollo/client";
-import InlineError from "../../components/InlineError";
-import uploadImg from "../../assets/images/upload.png";
 import Spinner from "../../components/Spinner";
+import ImageInput from "../../components/ImageInput";
+import InlineError from "../../components/InlineError";
 import { queries, mutations } from "../../utils/gql";
 import { typeDefs } from "../../utils/typeDefs";
 import { validateForm, FormError } from "../../utils/helpers";
@@ -30,31 +30,34 @@ export default function CreatePost({
   const [image, setImage] = useState<string | null>(null);
   const [condition, setCondition] = useState<number>(0);
   const [error, setError] = useState<FormError>({});
-  const [createPost, { loading: mutationLoading }] = useMutation(
-    mutations.CREATE_POST,
-    {
-      update(cache, { data: { createPost } }) {
-        const postsData = cache.readQuery<typeDefs.PostsData>({
+  const [createPost, { loading: mutationLoading }] = useMutation<
+    typeDefs.CreatePostData,
+    typeDefs.CreatePostVars
+  >(mutations.CREATE_POST, {
+    update(cache, { data }) {
+      const postsCache = cache.readQuery<
+        typeDefs.PostsData,
+        typeDefs.PostsVars
+      >({
+        query: queries.GET_POSTS,
+        variables: { communityId },
+      });
+
+      if (data && postsCache) {
+        cache.writeQuery<typeDefs.PostsData, typeDefs.PostsVars>({
           query: queries.GET_POSTS,
           variables: { communityId },
+          data: { posts: [data.createPost, ...postsCache.posts] },
         });
-
-        if (postsData) {
-          cache.writeQuery<typeDefs.PostsData>({
-            query: queries.GET_POSTS,
-            variables: { communityId },
-            data: { posts: [createPost, ...postsData.posts] },
-          });
-        }
-        history.push("/find");
-      },
-      onError: () => {
-        setError({
-          res: "We are experiencing difficulties right now :( Please try again later",
-        });
-      },
-    }
-  );
+      }
+      history.push("/find");
+    },
+    onError: () => {
+      setError({
+        res: "We are experiencing difficulties right now :( Please try again later",
+      });
+    },
+  });
 
   return (
     <div className="share-control">
@@ -71,7 +74,7 @@ export default function CreatePost({
                   desc: desc.value,
                   image,
                   condition: +condition,
-                  isGiveaway: isGiveaway?.checked,
+                  isGiveaway: isGiveaway!.checked,
                   ...(location.state && {
                     requesterId: location.state.requesterId,
                   }),
@@ -88,25 +91,7 @@ export default function CreatePost({
             item for their request
           </p>
         )}
-        <div className="image-upload">
-          <label htmlFor="file-input">
-            <img alt="profile pic" src={image || uploadImg} />
-          </label>
-          <input
-            id="file-input"
-            className="FileInput"
-            type="file"
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              const reader = new FileReader();
-              if (e.currentTarget.files) {
-                reader.readAsDataURL(e.currentTarget.files[0]);
-                reader.onload = () => {
-                  setImage(reader.result!.toString());
-                };
-              }
-            }}
-          />
-        </div>
+        <ImageInput image={image} setImage={setImage} isItem={true} />
         {error.image && <InlineError text={error.image} />}
         <input
           className="main-input"
@@ -162,19 +147,6 @@ export default function CreatePost({
 
             @include sm {
               max-width: 300px;
-            }
-
-            .image-upload > input {
-              display: none;
-            }
-
-            img {
-              margin-top: 30px;
-              border-radius: 4px;
-              width: 148px;
-              height: 180px;
-              object-fit: contain;
-              box-shadow: 1px 1px 1px 1px #eeeeee;
             }
 
             .main-btn {

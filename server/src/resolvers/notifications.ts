@@ -317,21 +317,19 @@ const notificationsResolvers = {
           if (!post) throw new ApolloError("Post not found");
           if (!recipient) throw new ApolloError("User not found");
 
-          // Add booking to post bookings
+          // Add booking to post bookings & save
           post.bookings.push(booking);
+          await post.save();
 
-          // Save post & sent booking email to recipient if recipient is subscribed to email
-          await Promise.all([
-            post.save(),
-            process.env.NODE_ENV === "production" &&
-              recipient.isNotified &&
-              updateBookingMail({
-                bookingsUrl: `${process.env.ORIGIN}/notifications`,
-                recipientId: recipient._id as string,
-                to: recipient.email,
-                subject: `${user.userName} has requested to book your ${post.title}`,
-              }),
-          ]);
+          // Sent booking email to recipient if recipient is subscribed to email
+          if (process.env.NODE_ENV === "production" && recipient.isNotified) {
+            await updateBookingMail({
+              bookingsUrl: `${process.env.ORIGIN}/notifications`,
+              recipientId: recipient._id as string,
+              to: recipient.email,
+              subject: `${user.userName} has requested to book your ${post.title}`,
+            });
+          }
         }
 
         // Create & save notification, add booking to notification if it is type 1

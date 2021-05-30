@@ -561,8 +561,8 @@ export namespace mutations {
       $communityInput: CommunityInput
     ) {
       registerAndOrCreateCommunity(
-        communityInput: $communityInput
         userInput: $userInput
+        communityInput: $communityInput
       ) {
         user {
           accessToken
@@ -623,6 +623,7 @@ export namespace mutations {
         desc
         image
         condition
+        isGiveaway
       }
     }
   `;

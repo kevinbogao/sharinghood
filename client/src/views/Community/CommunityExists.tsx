@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Location, History } from "history";
 import { Redirect } from "react-router-dom";
+import ImageInput from "../../components/ImageInput";
 import InlineError from "../../components/InlineError";
 import profileImg from "../../assets/images/profile-img.png";
-import uploadImg from "../../assets/images/upload.png";
 import { typeDefs } from "../../utils/typeDefs";
 import { validateForm, transformImgUrl, FormError } from "../../utils/helpers";
 
@@ -92,25 +92,7 @@ export default function CommunityExists({
           Pictures increase trust by 80% Feel free to make your profile more
           trustworthy by uploading a picture.
         </p>
-        <div className="image-upload">
-          <label htmlFor="file-input">
-            <img alt="profile pic" src={image || uploadImg} />
-          </label>
-          <input
-            id="file-input"
-            className="FileInput"
-            type="file"
-            onChange={(e) => {
-              if (e.currentTarget.files) {
-                const reader = new FileReader();
-                reader.readAsDataURL(e.currentTarget.files[0]);
-                reader.onload = () => {
-                  setImage(reader.result!.toString());
-                };
-              }
-            }}
-          />
-        </div>
+        <ImageInput image={image} setImage={setImage} isItem={false} />
         <p>Where can the neighbours find you?</p>
         <input
           type="text"
@@ -161,18 +143,6 @@ export default function CommunityExists({
               margin: 20px auto;
               color: $orange;
               max-width: 300px;
-            }
-
-            .image-upload > input {
-              display: none;
-            }
-
-            label[for="file-input"] > img {
-              cursor: pointer;
-              height: 100px;
-              width: 100px;
-              border-radius: 50%;
-              box-shadow: 1px 1px 1px 1px #eeeeee;
             }
 
             button.login-btn {

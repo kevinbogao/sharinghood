@@ -52,25 +52,22 @@ export default function CreateCommunity({
   });
 
   // Create a new community for user
-  const [createCommunity, { loading: mutationLoading }] = useMutation(
-    mutations.CREATE_COMMUNITY,
-    {
-      onCompleted: ({ createCommunity }) => {
-        // Set community id to localStorage, change community id cache
-        // & redirect to /find
-        localStorage.setItem(
-          "@sharinghood:selCommunityId",
-          createCommunity._id
-        );
-        selCommunityIdVar(createCommunity._id);
-        history.push("/find");
-      },
-      onError: ({ message }) => {
-        const errMsgArr = message.split(": ");
-        setError({ [errMsgArr[0]]: errMsgArr[1] });
-      },
-    }
-  );
+  const [createCommunity, { loading: mutationLoading }] = useMutation<
+    typeDefs.CreateCommunityData,
+    typeDefs.CreateCommunityVars
+  >(mutations.CREATE_COMMUNITY, {
+    onCompleted: ({ createCommunity }) => {
+      // Set community id to localStorage, change community id cache
+      // & redirect to /find
+      localStorage.setItem("@sharinghood:selCommunityId", createCommunity._id);
+      selCommunityIdVar(createCommunity._id);
+      history.push("/find");
+    },
+    onError: ({ message }) => {
+      const errMsgArr = message.split(": ");
+      setError({ [errMsgArr[0]]: errMsgArr[1] });
+    },
+  });
 
   return (
     <div className="create-community-control">

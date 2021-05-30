@@ -3,7 +3,7 @@ import { History } from "history";
 import { useMutation } from "@apollo/client";
 import Modal from "react-modal";
 import Spinner from "./Spinner";
-import { mutations } from "../utils/gql";
+import { queries, mutations } from "../utils/gql";
 import { typeDefs } from "../utils/typeDefs";
 import { transformImgUrl } from "../utils/helpers";
 
@@ -16,19 +16,51 @@ export default function ProfilePosts({ posts, history }: ProfilePostsProps) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selPost, setSelPost] = useState<typeDefs.Post | null>(null);
-  const [inactivatePost, { loading: mutationLoading }] = useMutation(
-    mutations.INACTIVATE_POST,
-    {
-      onCompleted: () => {
-        // TODO: remove from local state if exists
+  const [inactivatePost, { loading: mutationLoading }] = useMutation<
+    typeDefs.InactivatePostData,
+    typeDefs.InactivatePostVars
+  >(mutations.INACTIVATE_POST, {
+    update(cache, { data }) {
+      if (data!.inactivatePost) {
+        const userCommunitiesCache = cache.readQuery<
+          typeDefs.UserCommunitiesData,
+          void
+        >({
+          query: queries.GET_USER_COMMUNITIES,
+        });
+
+        if (userCommunitiesCache) {
+          userCommunitiesCache.communities.forEach((community) => {
+            const postsCache = cache.readQuery<
+              typeDefs.PostsData,
+              typeDefs.PostsVars
+            >({
+              query: queries.GET_POSTS,
+              variables: { communityId: community._id },
+            });
+
+            if (postsCache) {
+              cache.writeQuery<typeDefs.PostsData, typeDefs.PostsVars>({
+                query: queries.GET_POSTS,
+                variables: { communityId: community._id },
+                data: {
+                  posts: postsCache.posts.filter(
+                    (post) => post._id !== selPost!._id
+                  ),
+                },
+              });
+            }
+          });
+        }
+
         setIsModalOpen(false);
         setSelPost(null);
-      },
-      onError: ({ message }) => {
-        console.log(message);
-      },
-    }
-  );
+      }
+    },
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
 
   return (
     <>

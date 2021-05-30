@@ -41,23 +41,28 @@ export default function CommunityInvite({
   });
 
   // Mutation for user to joinCommunity
-  const [joinCommunity, { loading: mutationLoading }] = useMutation(
-    mutations.JOIN_COMMUNITY,
-    {
-      update(cache, { data: { joinCommunity } }) {
-        // Get and update communities cache
-        const userCommunitiesData =
-          cache.readQuery<typeDefs.UserCommunitiesData>({
-            query: queries.GET_USER_COMMUNITIES,
-          });
+  const [joinCommunity, { loading: mutationLoading }] = useMutation<
+    typeDefs.JoinCommunityData,
+    typeDefs.JoinCommunityVars
+  >(mutations.JOIN_COMMUNITY, {
+    update(cache, { data }) {
+      // Get and update communities cache
+      const userCommunitiesCache = cache.readQuery<
+        typeDefs.UserCommunitiesData,
+        void
+      >({
+        query: queries.GET_USER_COMMUNITIES,
+      });
 
-        if (userCommunitiesData) {
-          cache.writeQuery<typeDefs.UserCommunitiesData>({
+      if (data) {
+        // Update cache if userCommunitiesCache exists
+        if (userCommunitiesCache) {
+          cache.writeQuery<typeDefs.UserCommunitiesData, void>({
             query: queries.GET_USER_COMMUNITIES,
             data: {
               communities: [
-                ...userCommunitiesData.communities,
-                { ...joinCommunity, hasNotifications: false },
+                ...userCommunitiesCache.communities,
+                { ...data.joinCommunity, hasNotifications: false },
               ],
             },
           });
@@ -65,15 +70,18 @@ export default function CommunityInvite({
 
         // Set community id to localStorage, change community id cache
         // & redirect to /find
-        localStorage.setItem("@sharinghood:selCommunityId", joinCommunity._id);
-        selCommunityIdVar(joinCommunity._id);
+        localStorage.setItem(
+          "@sharinghood:selCommunityId",
+          data.joinCommunity._id
+        );
+        selCommunityIdVar(data.joinCommunity._id);
         history.push("/find");
-      },
-      onError: ({ message }) => {
-        setPageError(message);
-      },
-    }
-  );
+      }
+    },
+    onError: ({ message }) => {
+      setPageError(message);
+    },
+  });
 
   // Try to join user to community if user is logged in,
   // else redirect user CommunityExist component

@@ -30,7 +30,7 @@ export default function Login({ history, location }: LoginProps) {
   const { communityCode } = location.state || { communityCode: null };
   const [error, setError] = useState<FormError>({});
   const [login, { loading: mutationLoading }] = useMutation<
-    { login: typeDefs.LoginData },
+    typeDefs.LoginData,
     typeDefs.LoginVars
   >(mutations.LOGIN, {
     onCompleted: async ({ login }) => {

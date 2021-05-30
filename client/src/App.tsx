@@ -25,7 +25,7 @@ import CommunityInvite from "./views/Community/CommunityInvite";
 import RequestDetails from "./views/Request/RequestDetails";
 import CreateCommunity from "./views/Community/CreateCommunity";
 import CommunityExists from "./views/Community/CommunityExists";
-import Unsubscribe from "./views/User/Unsubsribe";
+import Unsubscribe from "./views/User/Unsubscribe";
 import ResetPassword from "./views/User/ResetPassword";
 import ForgotPassword from "./views/User/ForgotPassword";
 import SelectCommunity from "./views/Community/SelectCommunity";
@@ -68,7 +68,10 @@ export default function App() {
   const serverError = useReactiveVar(serverErrorVar);
 
   // Mutation to add FCM token to user
-  const [addFcmToken] = useMutation(mutations.ADD_FCM_TOKEN_TO_USER, {
+  const [addFcmToken] = useMutation<
+    typeDefs.AddFcmTokenData,
+    typeDefs.AddFcmTokenVars
+  >(mutations.ADD_FCM_TOKEN_TO_USER, {
     onError: ({ message }) => {
       console.log(message);
     },
@@ -115,18 +118,21 @@ export default function App() {
       messaging.onMessage((payload) => {
         if (payload.data) {
           // Get all user's communities from cache
-          const data = client.readQuery<typeDefs.UserCommunitiesData, void>({
+          const userCommunitiesCache = client.readQuery<
+            typeDefs.UserCommunitiesData,
+            void
+          >({
             query: queries.GET_USER_COMMUNITIES,
           });
 
           // Write to cache with a new array of communities with target
           // community's hasNotifications status to true to cache
 
-          if (data) {
+          if (userCommunitiesCache) {
             client.writeQuery<typeDefs.UserCommunitiesData, void>({
               query: queries.GET_USER_COMMUNITIES,
               data: {
-                communities: data.communities.map((community) =>
+                communities: userCommunitiesCache.communities.map((community) =>
                   community._id === payload.data.communityId
                     ? { ...community, hasNotifications: true }
                     : community

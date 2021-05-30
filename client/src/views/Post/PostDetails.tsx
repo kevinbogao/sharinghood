@@ -51,47 +51,54 @@ export default function PostDetails({
       console.warn(message);
     },
   });
-  const [createThread] = useMutation(mutations.CREATE_THREAD, {
+  const [createThread] = useMutation<
+    typeDefs.CreateThreadData,
+    typeDefs.CreateThreadVars
+  >(mutations.CREATE_THREAD, {
     onCompleted: () => {
       setComment("");
     },
-    onError: ({ message }) => {
-      console.log(message);
-    },
-    update(cache, { data: { createThread } }) {
-      const postDetailsData = cache.readQuery<typeDefs.PostDetailsData>({
+    update(cache, { data }) {
+      const postDetailsCache = cache.readQuery<
+        typeDefs.PostDetailsData,
+        typeDefs.PostDetailsVars
+      >({
         query: queries.GET_POST_DETAILS,
         variables: { postId: match.params.id, communityId },
       });
 
-      if (postDetailsData) {
-        cache.writeQuery<typeDefs.PostDetailsData>({
+      if (postDetailsCache) {
+        cache.writeQuery<typeDefs.PostDetailsData, typeDefs.PostDetailsVars>({
           query: queries.GET_POST_DETAILS,
+          variables: { postId: match.params.id, communityId },
           data: {
-            ...postDetailsData,
+            ...postDetailsCache,
             post: {
-              ...postDetailsData.post,
-              threads: [...postDetailsData.post.threads, createThread],
+              ...postDetailsCache.post,
+              threads: [...postDetailsCache.post.threads, data!.createThread],
             },
           },
         });
       }
     },
+    onError: ({ message }) => {
+      console.log(message);
+    },
   });
 
   // Create a new booking notification for user and owner
-  const [createNotification, { loading: mutationLoading }] = useMutation(
-    mutations.CREATE_NOTIFICATION,
-    {
-      onCompleted: ({ createNotification }) => {
-        // Redirect user to chat on mutation complete
-        history.push(`/notification/${createNotification._id}`);
-      },
-      onError: ({ message }) => {
-        console.log(message);
-      },
-    }
-  );
+  const [createNotification, { loading: mutationLoading }] = useMutation<
+    typeDefs.CreateNotificationData,
+    typeDefs.CreateNotificationVars
+  >(mutations.CREATE_NOTIFICATION, {
+    onCompleted: ({ createNotification }) => {
+      // Redirect user to chat on mutation complete
+      history.push(`/notification/${createNotification._id}`);
+    },
+    onError: ({ message }) => {
+      console.log(message);
+    },
+  });
 
   return loading ? (
     <Spinner />
@@ -165,7 +172,10 @@ export default function PostDetails({
                     postId: match.params.id,
                     dateType,
                     status: 0,
-                    ...(dateType === 2 && { dateNeed, dateReturn }),
+                    ...(dateType === 2 && {
+                      dateNeed: dateNeed.toString(),
+                      dateReturn: dateReturn.toString(),
+                    }),
                   },
                   ofType: 1,
                   recipientId: data.post.creator._id,

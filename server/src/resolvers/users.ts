@@ -290,32 +290,29 @@ const usersResolvers = {
         community.members.push(user._id);
 
         // Save user and community
-        await Promise.all([
-          user.save(),
-          community.save(),
+        await user.save();
+        await community.save();
 
-          // Sent new account mail if user is notified
-          process.env.NODE_ENV === "production" &&
-            isNotified &&
-            newAccountMail({
-              confirmationUrl: `${process.env.ORIGIN}/share`,
-              communityName: community.name,
-              recipientId: user._id as string,
-              to: user.email,
-              subject: "Welcome to Sharinghood",
-            }),
+        // Sent new account mail if user is notified
+        if (process.env.NODE_ENV === "production" && isNotified) {
+          await newAccountMail({
+            confirmationUrl: `${process.env.ORIGIN}/share`,
+            communityName: community.name,
+            recipientId: user._id as string,
+            to: user.email,
+            subject: "Welcome to Sharinghood",
+          });
 
           // Sent new community mail if user is notified & isCreator
-          process.env.NODE_ENV === "production" &&
-            isNotified &&
-            isCreator &&
-            newCommunityMail({
+          if (isCreator) {
+            await newCommunityMail({
               communityUrl: `${process.env.ORIGIN}/community/${community.code}`,
               recipientId: user._id as string,
               to: user.email,
               subject: `Welcome tips for your new ${community.name} community`,
-            }),
-        ]);
+            });
+          }
+        }
 
         // Sign accessToken & refreshToken
         const { accessToken, refreshToken }: GeneratedTokens =
@@ -357,7 +354,7 @@ const usersResolvers = {
         if (image && imgData) userData.image = imgData;
         if (desc) userData.desc = desc;
         if (apartment) userData.apartment = apartment;
-        if (isNotified !== null) userData.isNotified = isNotified;
+        if (isNotified !== undefined) userData.isNotified = isNotified;
 
         // Save to user
         const updatedUser: UserDocument = await userData.save();

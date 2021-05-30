@@ -43,27 +43,40 @@ export default function RequestDetails({
   });
 
   // Create a thread to request for current user in current community
-  const [createThread] = useMutation(mutations.CREATE_THREAD, {
+  const [createThread] = useMutation<
+    typeDefs.CreateThreadData,
+    typeDefs.CreateThreadVars
+  >(mutations.CREATE_THREAD, {
     onCompleted: () => {
       setComment("");
     },
     onError: ({ message }) => {
       console.log(message);
     },
-    update(cache, { data: { createThread } }) {
-      const requestDetailsData = cache.readQuery<typeDefs.RequestDetailsData>({
+    update(cache, { data }) {
+      const requestDetailsCache = cache.readQuery<
+        typeDefs.RequestDetailsData,
+        typeDefs.RequestDetailsVars
+      >({
         query: queries.GET_REQUEST_DETAILS,
-        variables: { requestId: data?.request._id, communityId },
+        variables: { requestId: match.params.id, communityId },
       });
 
-      if (requestDetailsData) {
-        cache.writeQuery({
+      if (requestDetailsCache) {
+        cache.writeQuery<
+          typeDefs.RequestDetailsData,
+          typeDefs.RequestDetailsVars
+        >({
           query: queries.GET_REQUEST_DETAILS,
+          variables: { requestId: match.params.id, communityId },
           data: {
-            ...requestDetailsData,
+            ...requestDetailsCache,
             request: {
-              ...requestDetailsData.request,
-              threads: [...requestDetailsData.request.threads, createThread],
+              ...requestDetailsCache.request,
+              threads: [
+                ...requestDetailsCache.request.threads,
+                data!.createThread,
+              ],
             },
           },
         });
@@ -72,34 +85,37 @@ export default function RequestDetails({
   });
 
   // Delete request if user is request creator
-  const [deleteRequest, { loading: mutationLoading }] = useMutation(
-    mutations.DELETE_REQUEST,
-    {
-      onError: ({ message }) => {
-        console.log(message);
-      },
-      update(cache, { data: { deleteRequest } }) {
-        const requestsData = cache.readQuery<typeDefs.RequestsData>({
+  const [deleteRequest, { loading: mutationLoading }] = useMutation<
+    typeDefs.DeleteRequestData,
+    typeDefs.DeleteRequestVars
+  >(mutations.DELETE_REQUEST, {
+    onError: ({ message }) => {
+      console.log(message);
+    },
+    update(cache, { data }) {
+      const requestsCache = cache.readQuery<
+        typeDefs.RequestsData,
+        typeDefs.RequestsVars
+      >({
+        query: queries.GET_REQUESTS,
+        variables: { communityId },
+      });
+
+      if (requestsCache) {
+        cache.writeQuery<typeDefs.RequestsData, typeDefs.RequestsVars>({
           query: queries.GET_REQUESTS,
           variables: { communityId },
+          data: {
+            requests: requestsCache.requests.filter(
+              (request) => request._id !== data!.deleteRequest._id
+            ),
+          },
         });
+      }
 
-        if (requestsData) {
-          cache.writeQuery<typeDefs.RequestsData>({
-            query: queries.GET_REQUESTS,
-            variables: { communityId },
-            data: {
-              requests: requestsData.requests.filter(
-                (request) => request._id !== deleteRequest._id
-              ),
-            },
-          });
-        }
-
-        history.push("/requests");
-      },
-    }
-  );
+      history.push("/requests");
+    },
+  });
 
   return loading ? (
     <Spinner />

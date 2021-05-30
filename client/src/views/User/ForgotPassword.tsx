@@ -5,6 +5,7 @@ import { useMutation, useReactiveVar } from "@apollo/client";
 import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
 import { mutations } from "../../utils/gql";
+import { typeDefs } from "../../utils/typeDefs";
 import { accessTokenVar } from "../../utils/cache";
 import { validateForm, setErrorMsg, FormError } from "../../utils/helpers";
 
@@ -22,18 +23,18 @@ export default function ForgotPassword({ location }: ForgotPasswordProps) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isReSend, setIsReSend] = useState(false);
   const [enteredEmail, setEnteredEmail] = useState<string | null>(null);
-  const [forgotPassword, { loading: mutationLoading }] = useMutation(
-    mutations.FORGOT_PASSWORD,
-    {
-      onCompleted: ({ forgotPassword }) => {
-        // Set success if true is returned
-        if (forgotPassword) setIsSuccess(true);
-      },
-      onError: ({ message }) => {
-        setErrorMsg(message, setError);
-      },
-    }
-  );
+  const [forgotPassword, { loading: mutationLoading }] = useMutation<
+    typeDefs.ForgotPasswordData,
+    typeDefs.ForgotPasswordVars
+  >(mutations.FORGOT_PASSWORD, {
+    onCompleted: ({ forgotPassword }) => {
+      // Set success if true is returned
+      if (forgotPassword) setIsSuccess(true);
+    },
+    onError: ({ message }) => {
+      setErrorMsg(message, setError);
+    },
+  });
 
   return accessToken ? (
     <Redirect to={from} />
@@ -51,9 +52,11 @@ export default function ForgotPassword({ location }: ForgotPasswordProps) {
               type="submit"
               onClick={(e) => {
                 e.preventDefault();
-                forgotPassword({
-                  variables: { email: enteredEmail },
-                });
+                if (enteredEmail) {
+                  forgotPassword({
+                    variables: { email: enteredEmail },
+                  });
+                }
                 setIsReSend(true);
                 setTimeout(() => {
                   setIsReSend(false);
@@ -75,10 +78,10 @@ export default function ForgotPassword({ location }: ForgotPasswordProps) {
               e.preventDefault();
               const errors = validateForm({ email });
               setError(errors);
-              if (Object.keys(errors).length === 0) {
+              if (Object.keys(errors).length === 0 && email) {
                 setEnteredEmail(email!.value.toLowerCase());
                 forgotPassword({
-                  variables: { email: email?.value.toLowerCase() },
+                  variables: { email: email.value.toLowerCase() },
                 });
               }
             }}

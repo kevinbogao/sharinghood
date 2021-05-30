@@ -1,11 +1,11 @@
-import { useState, ChangeEvent } from "react";
+import { useState } from "react";
 import { History } from "history";
 import { useMutation } from "@apollo/client";
 import moment from "moment";
 import DatePicker from "../../components/DatePicker";
-import InlineError from "../../components/InlineError";
 import Spinner from "../../components/Spinner";
-import uploadImg from "../../assets/images/upload.png";
+import ImageInput from "../../components/ImageInput";
+import InlineError from "../../components/InlineError";
 import { queries, mutations } from "../../utils/gql";
 import { typeDefs } from "../../utils/typeDefs";
 import { validateForm, FormError } from "../../utils/helpers";
@@ -27,33 +27,36 @@ export default function CreateRequest({
   const [dateNeed, setDateNeed] = useState(moment());
   const [dateReturn, setDateReturn] = useState(moment());
 
-  const [createRequest, { loading: mutationLoading }] = useMutation(
-    mutations.CREATE_REQUEST,
-    {
-      update(cache, { data: { createRequest } }) {
-        // Fetch requests from cache
-        const requestsData = cache.readQuery<typeDefs.RequestsData>({
+  const [createRequest, { loading: mutationLoading }] = useMutation<
+    typeDefs.CreateRequestData,
+    typeDefs.CreateRequestVars
+  >(mutations.CREATE_REQUEST, {
+    update(cache, { data }) {
+      // Fetch requests from cache
+      const requestsCache = cache.readQuery<
+        typeDefs.RequestsData,
+        typeDefs.RequestsVars
+      >({
+        query: queries.GET_REQUESTS,
+        variables: { communityId },
+      });
+
+      // Update cached requests if it exists
+      if (requestsCache) {
+        cache.writeQuery<typeDefs.RequestsData, typeDefs.RequestsVars>({
           query: queries.GET_REQUESTS,
           variables: { communityId },
+          data: { requests: [data!.createRequest, ...requestsCache.requests] },
         });
-
-        // Update cached requests if it exists
-        if (requestsData) {
-          cache.writeQuery({
-            query: queries.GET_REQUESTS,
-            variables: { communityId },
-            data: { requests: [createRequest, ...requestsData.requests] },
-          });
-        }
-        history.push("/requests");
-      },
-      onError: () => {
-        setError({
-          res: "We are experiencing difficulties right now :( Please try again later",
-        });
-      },
-    }
-  );
+      }
+      history.push("/requests");
+    },
+    onError: () => {
+      setError({
+        res: "We are experiencing difficulties right now :( Please try again later",
+      });
+    },
+  });
 
   return (
     <div className="request-control">
@@ -70,7 +73,10 @@ export default function CreateRequest({
                   desc: desc.value,
                   image,
                   dateType,
-                  ...(dateType === 2 && { dateNeed, dateReturn }),
+                  ...(dateType === 2 && {
+                    dateNeed: dateNeed.toString(),
+                    dateReturn: dateReturn.toString(),
+                  }),
                 },
                 communityId,
               },
@@ -78,25 +84,7 @@ export default function CreateRequest({
           }
         }}
       >
-        <div className="image-upload">
-          <label htmlFor="file-input">
-            <img alt="profile pic" src={image || uploadImg} />
-          </label>
-          <input
-            id="file-input"
-            className="FileInput"
-            type="file"
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              const reader = new FileReader();
-              if (e.currentTarget.files) {
-                reader.readAsDataURL(e.currentTarget.files[0]);
-                reader.onload = () => {
-                  setImage(reader.result!.toString());
-                };
-              }
-            }}
-          />
-        </div>
+        <ImageInput image={image} setImage={setImage} isItem={true} />
         {error.image && <InlineError text={error.image} />}
         <input
           className="main-input"
@@ -138,19 +126,6 @@ export default function CreateRequest({
 
             @include sm {
               max-width: 300px;
-            }
-
-            .image-upload > input {
-              display: none;
-            }
-
-            img {
-              margin-top: 30px;
-              border-radius: 4px;
-              width: 148px;
-              height: 180px;
-              object-fit: contain;
-              box-shadow: 1px 1px 1px 1px #eeeeee;
             }
 
             .main-input {

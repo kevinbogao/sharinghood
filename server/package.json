@@ -84,7 +84,7 @@
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.25.1",
     "dotenv": "^10.0.0",
-    "googleapis": "^74.2.0",
+    "googleapis": "^78.0.0",
     "graphql": "^15.5.0",
     "graphql-redis-subscriptions": "^2.3.1",
     "graphql-type-json": "^0.3.2",

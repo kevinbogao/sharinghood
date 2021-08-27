@@ -7,6 +7,20 @@ const resolvers = require("./resolvers");
 const logger = require("./utils/loggger");
 const { verifyToken } = require("./utils/authToken");
 
+const rateLimit = require("express-rate-limit");
+
+// Enable if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
+// see https://expressjs.com/en/guide/behind-proxies.html
+app.set("trust proxy", 1);
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
+
+//  apply to all requests
+app.use(limiter);
+
 // Create redis instance
 const redis = new Redis(process.env.REDIS_URL);
 
@@ -79,11 +93,7 @@ const server = new ApolloServer({
     credentials: true,
     origin: (origin, callback) => {
       if (origin) {
-        const whitelist = [
-          process.env.ORIGIN,
-          process.env.ORIGIN_INSECURE,
-          "http://localhost:4000",
-        ];
+        const whitelist = [process.env.ORIGIN, process.env.ORIGIN_INSECURE];
         if (whitelist.includes(origin)) {
           callback(null, true);
         } else {

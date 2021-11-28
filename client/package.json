@@ -10,7 +10,7 @@
   "license": "GPL-3.0-or-later",
   "engines": {
     "node": "16.x",
-    "npm": "7.x"
+    "yarn": "1.x"
   },
   "scripts": {
     "start": "react-app-rewired start",
@@ -58,12 +58,6 @@
           "plugins": [
             "@styled-jsx/plugin-sass"
           ]
-        }
-      ],
-      [
-        "@babel/plugin-transform-typescript",
-        {
-          "allowNamespaces": true
         }
       ]
     ]

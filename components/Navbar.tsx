@@ -125,15 +125,17 @@ export default function Navbar() {
               <SVG
                 className="nav-icon"
                 icon="signOut"
-                onClick={async () => {
-                  await logout();
-                  localStorage.removeItem("@sharinghood:communityId");
-                  localStorage.removeItem("@sharinghood:accessToken");
-                  localStorage.removeItem("@sharinghood:refreshToken");
-                  accessTokenVar(null);
-                  refreshTokenVar(null);
-                  tokenPayloadVar(null);
-                  communityIdVar(null);
+                onClick={() => {
+                  setTimeout(() => {
+                    localStorage.removeItem("@sharinghood:communityId");
+                    localStorage.removeItem("@sharinghood:accessToken");
+                    localStorage.removeItem("@sharinghood:refreshToken");
+                    accessTokenVar(null);
+                    refreshTokenVar(null);
+                    tokenPayloadVar(null);
+                    communityIdVar(null);
+                  }, 0);
+                  logout();
                 }}
               />
             </>

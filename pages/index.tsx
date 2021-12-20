@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import { useLazyQuery, useReactiveVar } from "@apollo/client";
@@ -21,8 +20,13 @@ export default function Home() {
     setError,
     formState: { errors },
   } = useForm<CodeInput>();
-  const [isCreate, setIsCreate] = useState(false);
   const accessToken = useReactiveVar(accessTokenVar);
+  const [isCreate, setIsCreate] = useState(false);
+
+  useEffect(() => {
+    if (accessToken) router.push("/posts");
+  }, [router, accessToken]);
+
   const [community, { loading }] = useLazyQuery<
     types.FindCommunityData,
     types.FindCommunityVars
@@ -42,71 +46,65 @@ export default function Home() {
     },
   });
 
-  useEffect(() => {
-    if (accessToken) router.push("/posts");
-  }, [router, accessToken]);
-
   return (
     <div className="home-control">
-      <div className="home-content">
-        <div className="home-intro">
-          <p className="main-p">Refuse. Dispose. Separate.</p>
-          <p className="main-p">
-            Find appreciation for your items by consuming less and sharing more.
-          </p>
+      <div className="home-intro">
+        <p className="main-p">Refuse. Dispose. Separate.</p>
+        <p className="main-p">
+          Find appreciation for your items by consuming less and sharing more.
+        </p>
+      </div>
+      <div className="home-community">
+        <div className="home-switch">
+          <button
+            type="button"
+            className={`${isCreate && "active"}`}
+            onClick={() => setIsCreate(true)}
+          >
+            Create Your Community
+          </button>
+          <div className="switch-btn-separator" />
+          <button
+            type="button"
+            className={`${!isCreate && "active"}`}
+            onClick={() => setIsCreate(false)}
+          >
+            Enter Community Code
+          </button>
         </div>
-        <div className="home-community">
-          <div className="home-switch">
-            <button
-              type="button"
-              className={`${isCreate && "active"}`}
-              onClick={() => setIsCreate(true)}
-            >
-              Create Your Community
-            </button>
-            <div className="switch-btn-separator" />
-            <button
-              type="button"
-              className={`${!isCreate && "active"}`}
-              onClick={() => setIsCreate(false)}
-            >
-              Enter Community Code
-            </button>
-          </div>
-          {isCreate ? (
-            <Link href="/communities/create">
-              <a>
-                <button type="button" className="main-btn create">
-                  Create Community
-                </button>
-              </a>
-            </Link>
-          ) : (
-            <form
-              onSubmit={handleSubmit((data) => {
-                if (Object.keys(errors).length === 0) {
-                  community({ variables: { communityCode: data.code } });
-                }
+        {isCreate ? (
+          <button
+            type="button"
+            className="main-btn create"
+            onClick={() => router.push("/communities/create")}
+          >
+            Create Community
+          </button>
+        ) : (
+          <form
+            onSubmit={handleSubmit((data) => {
+              if (Object.keys(errors).length === 0) {
+                community({ variables: { communityCode: data.code } });
+              }
+            })}
+          >
+            <input
+              className="main-input"
+              placeholder="Community Code"
+              {...register("code", {
+                required: "Please enter a community code",
+                pattern: {
+                  value: /^[a-z0-9]+$/i,
+                  message: "Please only use standard alphanumerics",
+                },
               })}
-            >
-              <input
-                className="main-input"
-                placeholder="Community Code"
-                {...register("code", {
-                  required: "Please enter a community code",
-                  pattern: {
-                    value: /^[a-z0-9]+$/i,
-                    message: "Please only use standard alphanumerics",
-                  },
-                })}
-              />
-              {errors.code && <InlineError home text={errors.code.message!} />}
-              <button className="main-btn" type="submit">
-                {loading ? <Loader /> : "Find my community"}
-              </button>
-            </form>
-          )}
-        </div>
+            />
+            {errors.code && <InlineError home text={errors.code.message!} />}
+            <button className="main-btn" type="submit">
+              {loading ? <Loader /> : "Find my community"}
+            </button>
+          </form>
+        )}
       </div>
       <style jsx>
         {`
@@ -114,94 +112,68 @@ export default function Home() {
 
           .home-control {
             display: flex;
-            flex-direction: column;
+            margin: auto;
+            align-items: center;
+            justify-content: space-evenly;
+            width: 60vw;
+            flex-direction: row;
 
-            .main-p {
-              max-width: initial;
+            @include xl {
+              width: 80vw;
             }
 
-            .home-content {
-              flex: 1 1 0%;
-              margin: auto;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              overflow-y: scroll;
+            @include lg {
+              flex-direction: column;
+            }
 
-              @include xl {
-                max-width: 80vw;
-              }
+            .home-intro {
+              flex: 1;
+              text-align: center;
 
               @include lg {
-                flex-direction: column;
-                justify-content: center;
+                flex: initial;
+                margin-bottom: 40px;
+              }
+            }
+
+            .home-community {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+
+              @include lg {
+                flex: initial;
               }
 
-              .home-intro {
-                flex: 1;
-                text-align: center;
+              .main-btn {
+                margin-top: 20px;
+                width: 240px;
 
-                @include lg {
-                  flex: initial;
-                }
-
-                p {
-                  margin: 20px auto;
-                  width: 60%;
-
-                  @include sm {
-                    width: 80%;
-                  }
-                }
-
-                @include lg {
-                  margin-bottom: 40px;
+                &.create {
+                  margin-top: 94px;
                 }
               }
 
-              .home-community {
-                flex: 1;
+              .main-input {
+                width: 220px;
+              }
+
+              .home-switch {
+                max-width: 500px;
                 display: flex;
-                flex-direction: column;
-                align-items: center;
 
-                @include lg {
-                  flex: initial;
-                }
-
-                .home-switch {
-                  max-width: 500px;
-                  display: flex;
-
-                  button {
-                    margin: auto 20px;
-                    display: block;
-                    font-size: 18px;
-                    background: none;
-                    border-width: 0;
-                    cursor: pointer;
-                    color: $black;
-
-                    &.active {
-                      color: $orange;
-                    }
-                  }
-                }
-
-                .main-input {
-                  width: 220px;
-                }
-
-                .main-btn {
-                  margin-top: 20px;
+                button {
+                  margin: auto 20px;
                   display: block;
-                  width: 240px;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
+                  font-size: 18px;
+                  background: none;
+                  border-width: 0;
+                  cursor: pointer;
+                  color: $black;
 
-                  &.create {
-                    margin-top: 90px;
+                  &.active {
+                    color: $orange;
                   }
                 }
               }

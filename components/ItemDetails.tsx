@@ -179,7 +179,7 @@ export default function ItemDetails({
                         />
                       </div>
                       <div className="thread-content">
-                        <span className="">{member.name}</span>
+                        <span>{member.name}</span>
                         <p>{thread.content}</p>
                       </div>
                     </Fragment>
@@ -188,11 +188,25 @@ export default function ItemDetails({
               <div className="item-separator" />
             </Fragment>
           ))}
-        <div className="thread-control">
-          {community?.members
-            .filter((member) => member.id === userId)
-            .map((member) => (
-              <div className="new-thread-content" key={member.id}>
+        {community?.members
+          .filter((member) => member.id === userId)
+          .map((member) => (
+            <div className="thread-control" key={member.id}>
+              <div className="member-img">
+                <Image
+                  alt="profile pic"
+                  src={
+                    member.imageUrl
+                      ? transformImgUrl(member.imageUrl, 200)
+                      : "/profile-img.png"
+                  }
+                  layout="fill"
+                  objectFit="cover"
+                />
+              </div>
+
+              <div className="new-thread-content">
+                <span>{member.name}</span>
                 <input
                   type="text"
                   className="main-input"
@@ -217,8 +231,8 @@ export default function ItemDetails({
                   }}
                 />
               </div>
-            ))}
-        </div>
+            </div>
+          ))}
       </div>
       <Modal
         className="react-modal"
@@ -384,6 +398,7 @@ export default function ItemDetails({
           .thread-control {
             width: 100%;
             display: flex;
+            align-items: center;
 
             .member-img {
               margin: 15px 15px 15px 0;
@@ -411,6 +426,7 @@ export default function ItemDetails({
 
               span {
                 font-size: 20px;
+                margin-bottom: 10px;
               }
 
               p {
@@ -431,11 +447,16 @@ export default function ItemDetails({
                 color: $black;
               }
 
+              span {
+                margin-top: 15px;
+                font-size: 20px;
+              }
+
               .main-input {
                 height: initial;
                 width: initial;
                 max-width: initial;
-                margin: 20px 0;
+                margin: 10px 0;
                 font-size: 16px;
                 height: 10px;
                 flex: 2;

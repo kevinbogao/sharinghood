@@ -1,4 +1,5 @@
 import type { AppProps } from "next/app";
+import Head from "next/head";
 import { useEffect } from "react";
 import {
   split,
@@ -11,12 +12,13 @@ import {
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import jwtDecode from "jwt-decode";
-import { AccessToken } from "../lib/auth";
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { TokenRefreshLink } from "apollo-link-token-refresh";
 import Navbar from "../components/Navbar";
 import NotificationBanner from "../components/NotificationBanner";
+import { Auth } from "../lib/types";
+import { AccessToken } from "../lib/auth";
 
 const httpLink = createHttpLink({
   uri: process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT_HTTP!,
@@ -67,11 +69,6 @@ const cache: InMemoryCache = new InMemoryCache({
     },
   },
 });
-
-interface Auth {
-  accessToken: string;
-  refreshToken: string;
-}
 
 const client = new ApolloClient({
   link: ApolloLink.from([
@@ -139,6 +136,10 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <ApolloProvider client={client}>
+      <Head>
+        <title>Sharinghood</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       <NotificationBanner />
       <Navbar />
       <div className="base-control">

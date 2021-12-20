@@ -25,7 +25,6 @@ export function prepareConnection(): Promise<void> {
         synchronize: process.env.NODE_ENV !== "production",
         entities,
         namingStrategy: new SnakeNamingStrategy(),
-        // logging: true,
       });
     })();
   }
@@ -46,53 +45,9 @@ const apolloServer = new ApolloServer({
     return { user, connection: dbConnection, redis, loader };
   },
   subscriptions: { path: "/api" },
-  // formatError(err) {
-  //   console.log(err);
-  //   if (err.originalError instanceof UserInputError) {
-  //     console.log("WORKSSSSSSSSSSS");
-  //   }
-  //   return err;
-  // },
 });
 
 export const config = { api: { bodyParser: false } };
-
-// export default function graphqlWithSubscriptionHandler(req: any, res: any) {
-//   if (!res.socket.server.apolloServer) {
-//     apolloServer.installSubscriptionHandlers(res.socket.server);
-//     const handler = apolloServer.createHandler({ path: "/api" });
-//     res.socket.server.apolloServer = handler;
-//   }
-
-//   return res.socket.server.apolloServer(req, res);
-// }
-
-// const graphqlWithSubscriptionHandler = (req: any, res: any) => {
-//   const oldOne = res.socket.server.apolloServer;
-//   if (
-//     //we need compare old apolloServer with newOne, becasue after hot-reload are not equals
-//     oldOne &&
-//     oldOne !== apolloServer
-//   ) {
-//     console.warn("FIXING HOT RELOAD !!!!!!!!!!!!!!! ");
-//     delete res.socket.server.apolloServer;
-//   }
-
-//   if (!res.socket.server.apolloServer) {
-//     console.log(`* apolloServer (re)initialization *`);
-
-//     apolloServer.installSubscriptionHandlers(res.socket.server);
-//     res.socket.server.apolloServer = apolloServer;
-//     const handler = apolloServer.createHandler({ path: "/api" });
-//     res.socket.server.apolloServerHandler = handler;
-//     //clients losts old connections, but clients are able to reconnect
-//     oldOne?.stop();
-//   }
-
-//   return res.socket.server.apolloServerHandler(req, res);
-// };
-
-// export default graphqlWithSubscriptionHandler;
 
 export default function graphqlWithSubscriptionHandler(req: any, res: any) {
   const oldOne = res.socket.server.apolloServer;

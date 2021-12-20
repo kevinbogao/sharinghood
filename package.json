@@ -10,7 +10,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest"
   },
   "eslintConfig": {
     "extends": "next/core-web-vitals"
@@ -20,6 +21,15 @@
     "trailingComma": "es5",
     "arrowParens": "always",
     "singleQuote": false
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/__utils",
+      "/__mocks__/",
+      "<rootDir>/dist/"
+    ]
   },
   "dependencies": {
     "@apollo/client": "^3.5.5",
@@ -36,6 +46,7 @@
     "graphql-redis-subscriptions": "^2.4.2",
     "graphql-subscriptions": "^2.0.0",
     "ioredis": "^4.28.2",
+    "jest": "^27.4.5",
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.21",
@@ -62,6 +73,7 @@
     "@styled-jsx/plugin-sass": "^4.0.2",
     "@types/bcryptjs": "^2.4.2",
     "@types/ioredis": "^4.28.1",
+    "@types/jest": "^27.0.3",
     "@types/lodash": "^4.14.177",
     "@types/micro-cors": "^0.1.2",
     "@types/node": "16.11.11",

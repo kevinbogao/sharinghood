@@ -35,7 +35,7 @@ const httpLink = new HttpLink({
 
 // Auth headers
 const authLink = setContext(async (_, { headers }) => {
-  const accessToken = localStorage.getItem("@sharinghood:accessToken");
+  const accessToken = localStorage.getItem("@sharingplatform:accessToken");
   return {
     headers: {
       ...headers,
@@ -50,7 +50,7 @@ const wsLink = new WebSocketLink({
   options: {
     reconnect: true,
     connectionParams: () => ({
-      authToken: localStorage.getItem("@sharinghood:accessToken"),
+      authToken: localStorage.getItem("@sharingplatform:accessToken"),
     }),
   },
 });
@@ -118,64 +118,64 @@ const cache: InMemoryCache = new InMemoryCache({
 // Init apollo client
 const client = new ApolloClient({
   link: ApolloLink.from([
-    //     new TokenRefreshLink<any>({
-    //       accessTokenField: "accessToken",
-    //       isTokenValidOrUndefined: (): boolean => {
-    //         const accessToken = localStorage.getItem("@sharinghood:accessToken");
-    //
-    //         // Return false if accessToken is not expired
-    //         if (accessToken) {
-    //           const { exp }: { exp: number } = jwtDecode(accessToken);
-    //           if (Date.now() >= exp * 1000) return false;
-    //         }
-    //
-    //         return true;
-    //       },
-    //       handleFetch: () => {},
-    //       fetchAccessToken: async () => {
-    //         const res = await fetch(
-    //           process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP as string,
-    //           {
-    //             method: "POST",
-    //             credentials: "include",
-    //             headers: { "Content-Type": "application/json" },
-    //             body: JSON.stringify({
-    //               query: `
-    //               mutation TokenRefresh($token: String!) {
-    //                 tokenRefresh(token: $token) {
-    //                   accessToken
-    //                   refreshToken
-    //                 }
-    //               }
-    //             `,
-    //               variables: {
-    //                 token: localStorage.getItem("@sharinghood:refreshToken"),
-    //               },
-    //             }),
-    //           }
-    //         );
-    //
-    //         return res.json();
-    //       },
-    //       handleResponse: () => (res: any) => {
-    //         if (res.data.tokenRefresh) {
-    //           localStorage.setItem(
-    //             "@sharinghood:accessToken",
-    //             res.data.tokenRefresh.accessToken
-    //           );
-    //           localStorage.setItem(
-    //             "@sharinghood:refreshToken",
-    //             res.data.tokenRefresh.refreshToken
-    //           );
-    //         }
-    //       },
-    //       handleError: ({ message }) => {
-    //         if (message === "Failed to fetch") {
-    //           console.warn("Network error. Please try to login again");
-    //           clearLocalStorageAndCache();
-    //         }
-    //       },
-    //     }),
+    new TokenRefreshLink<any>({
+      accessTokenField: "accessToken",
+      isTokenValidOrUndefined: (): boolean => {
+        const accessToken = localStorage.getItem("@sharinghood:accessToken");
+
+        // Return false if accessToken is not expired
+        if (accessToken) {
+          const { exp }: { exp: number } = jwtDecode(accessToken);
+          if (Date.now() >= exp * 1000) return false;
+        }
+
+        return true;
+      },
+      handleFetch: () => {},
+      fetchAccessToken: async () => {
+        const res = await fetch(
+          process.env.REACT_APP_GRAPHQL_ENDPOINT_HTTP as string,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              query: `
+                  mutation TokenRefresh($token: String!) {
+                    tokenRefresh(token: $token) {
+                      accessToken
+                      refreshToken
+                    }
+                  }
+                `,
+              variables: {
+                token: localStorage.getItem("@sharinghood:refreshToken"),
+              },
+            }),
+          }
+        );
+
+        return res.json();
+      },
+      handleResponse: () => (res: any) => {
+        if (res.data.tokenRefresh) {
+          localStorage.setItem(
+            "@sharinghood:accessToken",
+            res.data.tokenRefresh.accessToken
+          );
+          localStorage.setItem(
+            "@sharinghood:refreshToken",
+            res.data.tokenRefresh.refreshToken
+          );
+        }
+      },
+      handleError: ({ message }) => {
+        if (message === "Failed to fetch") {
+          console.warn("Network error. Please try to login again");
+          clearLocalStorageAndCache();
+        }
+      },
+    }),
     onError(({ graphQLErrors, networkError, operation, forward }) => {
       if (graphQLErrors) {
         graphQLErrors.forEach((err: any) => {

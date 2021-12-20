@@ -35,16 +35,9 @@ import NotificationDetails from "./views/Notification/NotificationDetails";
 import { queries, mutations } from "./utils/gql";
 import { typeDefs } from "./utils/typeDefs";
 import { accessTokenVar, serverErrorVar } from "./utils/cache";
-// @ts-ignore
-import _JSXStyle from "styled-jsx/style";
 
 // Lazy load CommunityLink
 const CommunityLink = lazy(() => import("./views/Community/CommunityLink"));
-
-// _JSXStyle
-if (typeof global !== "undefined") {
-  Object.assign(global, { _JSXStyle });
-}
 
 // Initialize firebase
 if (!firebase.apps.length) {

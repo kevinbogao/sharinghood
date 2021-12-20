@@ -73,6 +73,7 @@ const threadsResolvers = {
 
         return thread;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },

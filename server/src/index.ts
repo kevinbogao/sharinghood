@@ -45,12 +45,7 @@ const server: ApolloServer = new ApolloServer({
 });
 
 const httpServer = app.listen({ port: process.env.PORT || 4000 }, async () => {
-  await mongoose.connect(`${process.env.MONGO_PATH}`, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-  });
+  await mongoose.connect(`${process.env.MONGO_PATH}`);
 
   console.log(`Server ready at http://localhost:4000${server.graphqlPath}`);
   console.log(

@@ -50,7 +50,7 @@ const postsResolvers = {
         // Get post && lookup creator & threads
         const post: Array<PostDocument> = await Post.aggregate([
           {
-            $match: { _id: Types.ObjectId(postId) },
+            $match: { _id: new Types.ObjectId(postId) },
           },
           {
             $lookup: {
@@ -78,6 +78,7 @@ const postsResolvers = {
         return post[0];
       } catch (err) {
         console.log(err);
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -93,7 +94,7 @@ const postsResolvers = {
         const communityPosts: Array<CommunityDocument> =
           await Community.aggregate([
             {
-              $match: { _id: Types.ObjectId(communityId) },
+              $match: { _id: new Types.ObjectId(communityId) },
             },
             {
               $lookup: {
@@ -129,6 +130,7 @@ const postsResolvers = {
         return communityPosts[0].posts;
       } catch (err) {
         console.log(err);
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -256,6 +258,7 @@ const postsResolvers = {
           },
         };
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -296,6 +299,7 @@ const postsResolvers = {
 
         return updatedPost;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -334,6 +338,7 @@ const postsResolvers = {
 
         return true;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -432,6 +437,7 @@ const postsResolvers = {
 
         return post;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -467,6 +473,7 @@ const postsResolvers = {
 
         return community;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },

@@ -41,7 +41,7 @@ const communitiesResolvers = {
                   { code: communityCode }
                 : // Query by community id
                   {
-                    _id: Types.ObjectId(communityId),
+                    _id: new Types.ObjectId(communityId),
                   }),
             },
           },
@@ -57,6 +57,7 @@ const communitiesResolvers = {
 
         return community[0];
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -70,7 +71,7 @@ const communitiesResolvers = {
       try {
         // Get all user's communities
         const userCommunities: Array<UserDocument> = await User.aggregate([
-          { $match: { _id: Types.ObjectId(user.userId) } },
+          { $match: { _id: new Types.ObjectId(user.userId) } },
           {
             $lookup: {
               from: "communities",
@@ -101,6 +102,7 @@ const communitiesResolvers = {
 
         return communities;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -131,7 +133,7 @@ const communitiesResolvers = {
         });
 
         // Add user to community, and add community to user
-        community.members.push(Types.ObjectId(user.userId));
+        community.members.push(new Types.ObjectId(user.userId));
         currentUser.communities.push(community._id);
         await Promise.all([community.save(), currentUser.save()]);
 
@@ -163,12 +165,13 @@ const communitiesResolvers = {
 
         // Save user to community members and save community to
         // user communities
-        currentUser.communities.push(Types.ObjectId(communityId));
-        community.members.push(Types.ObjectId(user.userId));
+        currentUser.communities.push(new Types.ObjectId(communityId));
+        community.members.push(new Types.ObjectId(user.userId));
         await Promise.all([currentUser.save(), community.save()]);
 
         return community;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },

@@ -31,7 +31,7 @@ const notificationsResolvers = {
         const notification: Array<NotificationDocument> =
           await Notification.aggregate([
             {
-              $match: { _id: Types.ObjectId(notificationId) },
+              $match: { _id: new Types.ObjectId(notificationId) },
             },
             {
               $lookup: {
@@ -71,7 +71,7 @@ const notificationsResolvers = {
                             $in: ["$_id", "$$participants"],
                           },
                           {
-                            $ne: ["$_id", Types.ObjectId(user.userId)],
+                            $ne: ["$_id", new Types.ObjectId(user.userId)],
                           },
                         ],
                       },
@@ -94,12 +94,13 @@ const notificationsResolvers = {
         // Update isRead of current user to true via MongoDB API to
         // avoid mongoose's auto timestamp
         await Notification.collection.findOneAndUpdate(
-          { _id: Types.ObjectId(notificationId) },
+          { _id: new Types.ObjectId(notificationId) },
           { $set: { [`isRead.${user.userId}`]: true } }
         );
 
         return notification[0];
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -113,7 +114,7 @@ const notificationsResolvers = {
       try {
         const userNotifications: Array<UserDocument> = await User.aggregate([
           {
-            $match: { _id: Types.ObjectId(user.userId) },
+            $match: { _id: new Types.ObjectId(user.userId) },
           },
           {
             $lookup: {
@@ -123,7 +124,7 @@ const notificationsResolvers = {
                 {
                   $match: {
                     // Filter notification by community id
-                    community: Types.ObjectId(communityId),
+                    community: new Types.ObjectId(communityId),
                     $expr: { $in: ["$_id", "$$notifications"] },
                   },
                 },
@@ -195,7 +196,7 @@ const notificationsResolvers = {
                                 $in: ["$_id", "$$participants"],
                               },
                               {
-                                $ne: ["$_id", Types.ObjectId(user.userId)],
+                                $ne: ["$_id", new Types.ObjectId(user.userId)],
                               },
                             ],
                           },
@@ -235,6 +236,7 @@ const notificationsResolvers = {
         // Return user's notifications to client
         return userNotifications[0].notifications;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -261,6 +263,7 @@ const notificationsResolvers = {
         // Return chat/notification object if it is found
         return notification;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -396,6 +399,7 @@ const notificationsResolvers = {
           }),
         };
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },

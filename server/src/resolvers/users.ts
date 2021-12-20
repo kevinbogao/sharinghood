@@ -54,7 +54,7 @@ const usersResolvers = {
         // Get user data && get user posts & notifications
         // If userId is given only match user's posts from given community
         const userData: Array<UserDocument> = await User.aggregate([
-          { $match: { _id: Types.ObjectId(userId || user.userId) } },
+          { $match: { _id: new Types.ObjectId(userId || user.userId) } },
           {
             $lookup: {
               from: "posts",
@@ -112,6 +112,7 @@ const usersResolvers = {
 
         return userData[0];
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -128,6 +129,7 @@ const usersResolvers = {
         if (userId) return true;
         return false;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -150,6 +152,7 @@ const usersResolvers = {
 
         return false;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -360,6 +363,7 @@ const usersResolvers = {
         const updatedUser: UserDocument = await userData.save();
         return updatedUser;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -482,6 +486,7 @@ const usersResolvers = {
 
         return true;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -504,6 +509,7 @@ const usersResolvers = {
 
         return true;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },

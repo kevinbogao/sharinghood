@@ -1,8 +1,5 @@
-import {
-  withFilter,
-  ApolloError,
-  AuthenticationError,
-} from "apollo-server-koa";
+import { ApolloError, AuthenticationError } from "apollo-server-koa";
+import { withFilter } from "graphql-subscriptions";
 import { Redis } from "ioredis";
 import pubsub from "../utils/pubsub";
 import User, { UserDocument } from "../models/user";
@@ -20,12 +17,30 @@ interface MessageInput {
 
 const NEW_NOTIFICATION_MESSAGE = "NEW_NOTIFICATION_MESSAGE";
 
+interface MessagePayload {
+  notificationId: string;
+  newNotificationMessage: {
+    _id: string;
+    text: string;
+    sender: {
+      _id: string;
+    };
+    createdAt: Date;
+  };
+}
+
+interface MessageArgs {
+  notificationId: string;
+}
+
 const messagesResolvers = {
   Subscription: {
     newNotificationMessage: {
       subscribe: withFilter(
         () => pubsub.asyncIterator(NEW_NOTIFICATION_MESSAGE),
-        (payload, args) => payload.notificationId === args.notificationId
+        (payload: MessagePayload, args: MessageArgs) => {
+          return payload.notificationId === args.notificationId;
+        }
       ),
     },
   },
@@ -102,6 +117,7 @@ const messagesResolvers = {
 
         return message;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },

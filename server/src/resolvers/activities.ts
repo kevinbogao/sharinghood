@@ -59,7 +59,7 @@ const activitiesResolvers = {
             },
             {
               $project: {
-                _id: 1,
+                // _id: 1,
                 name: 1,
                 code: 1,
                 numUsers: { $size: "$members" },
@@ -83,6 +83,7 @@ const activitiesResolvers = {
           communitiesActivities,
         };
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -98,7 +99,7 @@ const activitiesResolvers = {
       try {
         const communityActivities: Array<CommunityDocument> =
           await Community.aggregate([
-            { $match: { _id: Types.ObjectId(communityId) } },
+            { $match: { _id: new Types.ObjectId(communityId) } },
             {
               $lookup: {
                 from: "users",
@@ -125,7 +126,7 @@ const activitiesResolvers = {
             },
             {
               $project: {
-                _id: 1,
+                // _id: 1,
                 name: 1,
                 code: 1,
                 zipCode: 1,
@@ -174,6 +175,7 @@ const activitiesResolvers = {
           bookings,
         };
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },

@@ -43,7 +43,7 @@ const requestsResolvers = {
         // Get request && lookup creator & threads
         const request: Array<RequestDocument> = await Request.aggregate([
           {
-            $match: { _id: Types.ObjectId(requestId) },
+            $match: { _id: new Types.ObjectId(requestId) },
           },
           {
             $lookup: {
@@ -66,6 +66,7 @@ const requestsResolvers = {
 
         return request[0];
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -81,7 +82,7 @@ const requestsResolvers = {
         const communityRequests: Array<CommunityDocument> =
           await Community.aggregate([
             {
-              $match: { _id: Types.ObjectId(communityId) },
+              $match: { _id: new Types.ObjectId(communityId) },
             },
             {
               $lookup: {
@@ -116,6 +117,7 @@ const requestsResolvers = {
 
         return communityRequests[0].requests;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -215,6 +217,7 @@ const requestsResolvers = {
           },
         };
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },
@@ -264,6 +267,7 @@ const requestsResolvers = {
 
         return request;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },

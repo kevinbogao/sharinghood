@@ -114,6 +114,7 @@ const bookingsResolvers = {
 
         return booking;
       } catch (err) {
+        // @ts-ignore
         throw new Error(err);
       }
     },

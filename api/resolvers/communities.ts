@@ -82,14 +82,14 @@ const communityResolvers = {
   },
   Mutation: {
     async createCommunity(
-      { newUser }: { newUser?: User },
+      parent: { newUser?: User },
       {
         communityInput: { name, code },
       }: { communityInput: CreateCommunityInput },
       { user, connection }: Context
     ): Promise<Community> {
-      const creator = newUser
-        ? newUser
+      const creator = parent?.newUser
+        ? parent.newUser
         : await connection
             .getRepository(User)
             .findOne({ where: { id: user?.userId } });

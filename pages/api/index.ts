@@ -1,0 +1,110 @@
+import { ApolloServer } from "apollo-server-micro";
+import { createConnection, getConnection } from "typeorm";
+import { SnakeNamingStrategy } from "typeorm-naming-strategies";
+import { typeDefs } from "../../api/typeDefs";
+import { resolvers } from "../../api/resolvers";
+import { entities } from "../../api/entities";
+import { verifyToken, AccessToken } from "../../lib/auth";
+import { redis } from "../../lib/redis";
+import { GraphQLDatabaseLoader } from "@mando75/typeorm-graphql-loader";
+
+let connectionReadyPromise: Promise<void> | null = null;
+
+export function prepareConnection(): Promise<void> {
+  if (!connectionReadyPromise) {
+    connectionReadyPromise = (async () => {
+      try {
+        const staleConnection = getConnection();
+        await staleConnection.close();
+      } catch (_) {}
+
+      await createConnection({
+        type: "postgres",
+        url: process.env.POSTGRESQL_URL!,
+        ssl: { rejectUnauthorized: false },
+        synchronize: process.env.NODE_ENV !== "production",
+        entities,
+        namingStrategy: new SnakeNamingStrategy(),
+        // logging: true,
+      });
+    })();
+  }
+
+  return connectionReadyPromise;
+}
+
+const apolloServer = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: async ({ req, connection }: any) => {
+    if (connection) return;
+    const token = req.headers.authorization?.split(" ")[1] ?? "";
+    const user = verifyToken<AccessToken>(token);
+    await prepareConnection();
+    const dbConnection = getConnection();
+    const loader = new GraphQLDatabaseLoader(dbConnection);
+    return { user, connection: dbConnection, redis, loader };
+  },
+  subscriptions: { path: "/api" },
+  // formatError(err) {
+  //   console.log(err);
+  //   if (err.originalError instanceof UserInputError) {
+  //     console.log("WORKSSSSSSSSSSS");
+  //   }
+  //   return err;
+  // },
+});
+
+export const config = { api: { bodyParser: false } };
+
+// export default function graphqlWithSubscriptionHandler(req: any, res: any) {
+//   if (!res.socket.server.apolloServer) {
+//     apolloServer.installSubscriptionHandlers(res.socket.server);
+//     const handler = apolloServer.createHandler({ path: "/api" });
+//     res.socket.server.apolloServer = handler;
+//   }
+
+//   return res.socket.server.apolloServer(req, res);
+// }
+
+// const graphqlWithSubscriptionHandler = (req: any, res: any) => {
+//   const oldOne = res.socket.server.apolloServer;
+//   if (
+//     //we need compare old apolloServer with newOne, becasue after hot-reload are not equals
+//     oldOne &&
+//     oldOne !== apolloServer
+//   ) {
+//     console.warn("FIXING HOT RELOAD !!!!!!!!!!!!!!! ");
+//     delete res.socket.server.apolloServer;
+//   }
+
+//   if (!res.socket.server.apolloServer) {
+//     console.log(`* apolloServer (re)initialization *`);
+
+//     apolloServer.installSubscriptionHandlers(res.socket.server);
+//     res.socket.server.apolloServer = apolloServer;
+//     const handler = apolloServer.createHandler({ path: "/api" });
+//     res.socket.server.apolloServerHandler = handler;
+//     //clients losts old connections, but clients are able to reconnect
+//     oldOne?.stop();
+//   }
+
+//   return res.socket.server.apolloServerHandler(req, res);
+// };
+
+// export default graphqlWithSubscriptionHandler;
+
+export default function graphqlWithSubscriptionHandler(req: any, res: any) {
+  const oldOne = res.socket.server.apolloServer;
+  if (oldOne && oldOne !== apolloServer) delete res.socket.server.apolloServer;
+
+  if (!res.socket.server.apolloServer) {
+    apolloServer.installSubscriptionHandlers(res.socket.server);
+    res.socket.server.apolloServer = apolloServer;
+    const handler = apolloServer.createHandler({ path: "/api" });
+    res.socket.server.apolloServerHandler = handler;
+    oldOne?.stop();
+  }
+
+  return res.socket.server.apolloServerHandler(req, res);
+}

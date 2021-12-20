@@ -1,0 +1,465 @@
+import { useState, ReactNode, Fragment } from "react";
+import Image from "next/image";
+import { useRouter } from "next/router";
+import { useMutation, useLazyQuery, useApolloClient } from "@apollo/client";
+import Modal from "react-modal";
+import moment from "moment";
+import { transformImgUrl } from "../lib";
+import { queries, mutations } from "../lib/gql";
+import { types, NotificationType } from "../lib/types";
+import { Loader } from "./Container";
+
+type ItemType = "post" | "request";
+
+interface Item {
+  post: types.Post;
+  request: types.Request;
+}
+
+interface ItemDetailsProps {
+  type: ItemType;
+  item: Item[ItemType];
+  userId: string;
+  children: ReactNode;
+  community: types.Community;
+}
+
+export default function ItemDetails({
+  type,
+  item,
+  userId,
+  community,
+  children,
+}: ItemDetailsProps) {
+  const router = useRouter();
+  const client = useApolloClient();
+  const [comment, setComment] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  const [findNotification] = useLazyQuery<
+    types.FindNotificationData,
+    types.FindNotificationVars
+  >(queries.FIND_NOTIFICATION, {
+    fetchPolicy: "no-cache",
+    onCompleted({ findNotification }) {
+      if (!findNotification) setIsModalOpen(true);
+      else router.push(`/notifications/${findNotification.id}`);
+    },
+  });
+
+  const [createNotification, { loading: mutationLoading }] = useMutation<
+    types.CreateNotificationData,
+    types.CreateNotificationVars
+  >(mutations.CREATE_NOTIFICATION, {
+    onCompleted({ createNotification }) {
+      if (createNotification.id)
+        router.push(`/notifications/${createNotification.id}`);
+    },
+    onError({ message }) {
+      console.log(message);
+    },
+  });
+
+  const [createThread] = useMutation<
+    types.CreateThreadData,
+    types.CreateThreadVars
+  >(mutations.CREATE_THREAD, {
+    update(cache, { data }) {
+      setComment("");
+      const query =
+        type === "post"
+          ? queries.GET_POST_DETAILS
+          : queries.GET_REQUEST_DETAILS;
+      const variables = { [`${type}Id`]: item.id, communityId: community.id };
+      const itemDetailsCache: any = cache.readQuery({
+        query,
+        variables,
+      });
+
+      if (itemDetailsCache) {
+        cache.writeQuery({
+          query,
+          variables,
+          data: {
+            ...itemDetailsCache,
+            [type]: {
+              ...itemDetailsCache[type],
+              threads: [...itemDetailsCache[type].threads, data!.createThread],
+            },
+          },
+        });
+      }
+    },
+  });
+
+  return (
+    <>
+      <div className="item-content">
+        <div className="item-info">
+          <div
+            className="item-img"
+            style={{
+              backgroundImage: `url(${transformImgUrl(item.imageUrl, 700)})`,
+            }}
+          ></div>
+          {children}
+        </div>
+        <div className="item-creator">
+          <div className="creator-img">
+            <Image
+              alt="profile pic"
+              src={
+                item.creator.imageUrl
+                  ? transformImgUrl(item.creator.imageUrl, 500)
+                  : "/profile-img.png"
+              }
+              layout="fill"
+              objectFit="cover"
+            />
+          </div>
+          <div className="creator-info">
+            <p className="main-p name">{item.creator.name}</p>
+            <h6>Find me: {item.creator.apartment}</h6>
+            <p>
+              Member since{" "}
+              <span className="join-date">
+                {moment(+item.creator.createdAt).format("MMM DD")}
+              </span>
+            </p>
+            {item.creator.id !== userId && (
+              <button
+                className="msg-btn"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  findNotification({
+                    variables: {
+                      recipientId: item.creator.id,
+                      communityId: community.id,
+                    },
+                  });
+                }}
+                onMouseOver={() => {
+                  client.query({
+                    query: queries.FIND_NOTIFICATION,
+                    variables: {
+                      recipientId: item.creator.id,
+                      communityId: community.id,
+                    },
+                  });
+                }}
+              >
+                Send Message
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="item-separator" />
+      <div className="threads-container">
+        {item.threads
+          .filter((thread) => thread.community.id === community.id)
+          .map((thread) => (
+            <Fragment key={thread.id}>
+              <div className="thread-control">
+                {community.members
+                  .filter((member) => member.id === thread.creator.id)
+                  .map((member) => (
+                    <Fragment key={member.id}>
+                      <div className="member-img">
+                        <Image
+                          alt="profile pic"
+                          src={
+                            member.imageUrl
+                              ? transformImgUrl(member.imageUrl, 200)
+                              : "/profile-img.png"
+                          }
+                          layout="fill"
+                          objectFit="cover"
+                        />
+                      </div>
+                      <div className="thread-content">
+                        <span className="">{member.name}</span>
+                        <p>{thread.content}</p>
+                      </div>
+                    </Fragment>
+                  ))}
+              </div>
+              <div className="item-separator" />
+            </Fragment>
+          ))}
+        <div className="thread-control">
+          {community?.members
+            .filter((member) => member.id === userId)
+            .map((member) => (
+              <div className="new-thread-content" key={member.id}>
+                <input
+                  type="text"
+                  className="main-input"
+                  placeholder="Comment something..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  onKeyUp={(e) => {
+                    const keyCode = e.keyCode || e.which;
+                    if (keyCode === 13 && comment !== "") {
+                      createThread({
+                        variables: {
+                          threadInput: {
+                            content: comment,
+                            isPost: type === "post",
+                            parentId: item.id,
+                            communityId: community.id,
+                            recipientId: item.creator.id,
+                          },
+                        },
+                      });
+                    }
+                  }}
+                />
+              </div>
+            ))}
+        </div>
+      </div>
+      <Modal
+        className="react-modal"
+        isOpen={isModalOpen}
+        onRequestClose={() => setIsModalOpen(false)}
+      >
+        <p className="main-p">
+          Would you like to sent a message to {item.creator.name} ?
+        </p>
+        <button
+          className="main-btn modal"
+          type="submit"
+          onClick={(e) => {
+            e.preventDefault();
+            createNotification({
+              variables: {
+                notificationInput: {
+                  type: NotificationType.CHAT,
+                  recipientId: item.creator.id,
+                  communityId: community.id,
+                },
+              },
+            });
+          }}
+        >
+          {mutationLoading ? <Loader /> : "Yes"}
+        </button>
+        <button
+          className="main-btn modal grey"
+          type="button"
+          onClick={() => setIsModalOpen(false)}
+        >
+          Close
+        </button>
+      </Modal>
+      <style jsx>
+        {`
+          @import "../pages/index.scss";
+
+          .item-content {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+
+            .msg-btn {
+              color: $background;
+              background: $beige;
+              padding: 5px 12px;
+              border: none;
+              border-radius: 15px;
+              font-size: 15px;
+            }
+
+            @include lg {
+              flex-direction: column;
+            }
+
+            .item-info {
+              display: flex;
+              justify-content: flex-start;
+              align-items: center;
+
+              @include lg {
+                justify-content: space-between;
+              }
+
+              @include sm {
+                flex-direction: column;
+              }
+
+              .item-img {
+                height: 290px;
+                width: 320px;
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center;
+
+                @include md {
+                  max-height: 227px;
+                  max-width: 250px;
+                }
+
+                @include sm {
+                  max-width: 80vw;
+                }
+              }
+            }
+
+            .item-creator {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: space-between;
+              box-shadow: 0px 0px 6px $white;
+
+              @include lg {
+                margin-top: 20px;
+                flex-direction: row;
+                justify-content: start;
+              }
+
+              .creator-img {
+                margin: 10px;
+                width: 140px;
+                height: 140px;
+                position: relative;
+                overflow: hidden;
+                border-radius: 50%;
+
+                @include lg {
+                  width: 110px;
+                  height: 110px;
+                }
+
+                @include sm {
+                  width: 90px;
+                  height: 90px;
+                  padding-right: 0;
+                  margin: 10px 0px 10px 10px;
+                }
+              }
+
+              .creator-info {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 10px;
+                overflow-wrap: break-word;
+                text-align: center;
+
+                @include lg {
+                  width: 70%;
+                }
+
+                @include sm {
+                  padding: 10px 10px 10px 0px;
+                }
+
+                p {
+                  color: $grey-300;
+                  margin: 7px 0;
+                  max-width: 150px;
+
+                  @include lg {
+                    max-width: initial;
+                  }
+
+                  &.name {
+                    color: $black;
+                    font-weight: bold;
+                  }
+                }
+
+                h6 {
+                  font-size: 16px;
+                  color: $grey-300;
+                  max-width: 150px;
+                }
+              }
+            }
+          }
+
+          .thread-control {
+            width: 100%;
+            display: flex;
+
+            .member-img {
+              margin: 15px 15px 15px 0;
+              width: 50px;
+              height: 50px;
+              border-radius: 50%;
+              position: relative;
+              overflow: hidden;
+            }
+
+            .thread-content {
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              max-width: 88%;
+              padding: 15px 0;
+
+              @include sm {
+                max-width: 68%;
+              }
+
+              @include sm {
+                max-width: 77%;
+              }
+
+              span {
+                font-size: 20px;
+              }
+
+              p {
+                color: $black;
+                font-size: 16px;
+                word-wrap: break-word;
+              }
+            }
+
+            .new-thread-content {
+              width: 100%;
+              display: flex;
+              flex-direction: column;
+
+              .main-p {
+                margin: initial;
+                margin-top: 16px;
+                color: $black;
+              }
+
+              .main-input {
+                height: initial;
+                width: initial;
+                max-width: initial;
+                margin: 20px 0;
+                font-size: 16px;
+                height: 10px;
+                flex: 2;
+              }
+            }
+          }
+
+          .item-separator {
+            width: 100%;
+            height: 2px;
+            background: #f2f2f2bb;
+          }
+        `}
+      </style>
+      <style jsx global>
+        {`
+          @import "../pages/index.scss";
+
+          .item-icon {
+            color: $grey-300;
+            font-size: 18px;
+          }
+        `}
+      </style>
+    </>
+  );
+}

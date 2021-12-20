@@ -11,7 +11,6 @@ beforeAll(() => {
   process.env = Object.assign(process.env, { JWT_SECRET: "secret" });
 });
 
-/* AUTH_TOKEN UTILS */
 describe("[lib.auth]", () => {
   // GENERATE_TOKENS
   it("Should generate access token and refresh token", () => {
@@ -44,7 +43,6 @@ describe("[lib.auth]", () => {
     );
 
     const accessTokenPayload = verifyToken<AccessToken>(accessToken);
-
     expect(accessTokenPayload).toMatchObject({
       userId: mockUser01.id,
       userName: mockUser01.name,

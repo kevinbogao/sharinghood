@@ -13,6 +13,9 @@ mockUser01.isNotified = true;
 mockUser01.isAdmin = true;
 mockUser01.tokenVersion = 1;
 
+export const mockImageUrl =
+  "https://res.cloudinary.com/dyr3b99uj/image/upload/v1582569792/w9hb72biqpmowzyhwohy.png";
+
 // export const mockUser01 = User.create({
 //   name: "MockUser01",
 //   email: "mock.user01@email.com",

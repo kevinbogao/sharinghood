@@ -20,7 +20,7 @@ export function prepareConnection(): Promise<void> {
 
       await createConnection({
         type: "postgres",
-        url: process.env.POSTGRESQL_URL!,
+        url: process.env.DATABASE_URL!,
         ssl: { rejectUnauthorized: false },
         synchronize: process.env.NODE_ENV !== "production",
         entities,

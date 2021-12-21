@@ -484,3 +484,5 @@ export default function ItemDetails({
     </>
   );
 }
+
+Modal.setAppElement("#__next");

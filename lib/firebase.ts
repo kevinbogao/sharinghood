@@ -36,7 +36,7 @@ export default function pushNotification(
     message,
     { registrationTokens },
     (err: any, res: IResponseBody) => {
-      if (err) console.log(err);
+      if (err) console.warn(err);
       else {
         const invalidTokens = res.results?.reduce(
           (arr: string[], res, idx) =>

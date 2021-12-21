@@ -169,6 +169,13 @@ export default function Navbar() {
             </a>
           </Link>
         )}
+        <div className="nav-menu-item invite">
+          <Link href={`/community/${data?.community?.code}/link`}>
+            <a className="invite-btn" onClick={toggleMenu}>
+              Download Invitation
+            </a>
+          </Link>
+        </div>
         {isMobileView && (
           <>
             <Link href="/profile">
@@ -308,12 +315,6 @@ export default function Navbar() {
             cursor: pointer;
             margin-left: 10px;
 
-            // @include sm {
-            //   margin-left: 0px;
-            //   padding: 5px;
-            //   font-size: 17px;
-            // }
-
             &:hover {
               background: $grey-100;
             }
@@ -353,7 +354,7 @@ export default function Navbar() {
 
             .invite-btn {
               padding: 10px 20px;
-              margin-left: 8px;
+              margin-left: 5px;
               color: $background;
               background: $orange;
             }

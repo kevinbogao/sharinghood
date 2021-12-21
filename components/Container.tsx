@@ -1,6 +1,6 @@
 import { useEffect, ReactNode } from "react";
 import { useRouter } from "next/router";
-import { ApolloError } from "@apollo/client";
+import { useReactiveVar, ApolloError } from "@apollo/client";
 import { accessTokenVar, communityIdVar } from "../pages/_app";
 
 interface ContainerProps {
@@ -18,6 +18,8 @@ export function Container({
   children,
 }: ContainerProps) {
   const router = useRouter();
+  const acc = useReactiveVar(accessTokenVar);
+  const com = useReactiveVar(communityIdVar);
 
   useEffect(() => {
     const accessToken = localStorage.getItem("@sharinghood:accessToken");
@@ -29,7 +31,7 @@ export function Container({
         router.push("/communities");
     }
     // eslint-disable-next-line
-  }, [accessTokenVar(), communityIdVar()]);
+  }, [acc, com]);
 
   return loading ? <Spinner /> : <>{children}</>;
 }
@@ -213,7 +215,8 @@ export type Icon =
   | "angleUp"
   | "angleDown"
   | "angleDoubleLeft"
-  | "times";
+  | "times"
+  | "copy";
 
 const SVG_MAP: Record<Icon, any> = {
   bars: {
@@ -279,6 +282,10 @@ const SVG_MAP: Record<Icon, any> = {
   angleDown: {
     viewBox: "0 0 320 512",
     d: "M143 352.3L7 216.3c-9.4-9.4-9.4-24.6 0-33.9l22.6-22.6c9.4-9.4 24.6-9.4 33.9 0l96.4 96.4 96.4-96.4c9.4-9.4 24.6-9.4 33.9 0l22.6 22.6c9.4 9.4 9.4 24.6 0 33.9l-136 136c-9.2 9.4-24.4 9.4-33.8 0z",
+  },
+  copy: {
+    viewBox: "0 0 448 512",
+    d: "M320 448v40c0 13.255-10.745 24-24 24H24c-13.255 0-24-10.745-24-24V120c0-13.255 10.745-24 24-24h72v296c0 30.879 25.121 56 56 56h168zm0-344V0H152c-13.255 0-24 10.745-24 24v368c0 13.255 10.745 24 24 24h272c13.255 0 24-10.745 24-24V128H344c-13.2 0-24-10.8-24-24zm120.971-31.029L375.029 7.029A24 24 0 0 0 358.059 0H352v96h96v-6.059a24 24 0 0 0-7.029-16.97z",
   },
 };
 

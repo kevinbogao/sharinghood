@@ -204,8 +204,6 @@ export default function EditPost() {
         <FormProvider {...methods}>
           <form
             onSubmit={handleSubmit((data) => {
-              console.log(data);
-
               const post = postAndCommunities?.post;
               const { desc, title, condition, isGiveaway } = data;
               if (

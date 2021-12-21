@@ -76,7 +76,7 @@ export default function Home() {
           <button
             type="button"
             className="main-btn create"
-            onClick={() => router.push("/communities/create")}
+            onClick={() => router.push("/community/create")}
           >
             Create Community
           </button>

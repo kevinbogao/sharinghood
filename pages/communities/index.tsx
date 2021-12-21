@@ -156,7 +156,7 @@ export default function Communities() {
                     message:
                       "You have reached the maximum number of communities",
                   });
-                else router.push("/communities/create");
+                else router.push("/community/create");
               }}
             >
               Create Community

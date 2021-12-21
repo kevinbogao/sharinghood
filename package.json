@@ -48,6 +48,7 @@
     "ioredis": "^4.28.2",
     "jest": "^27.4.5",
     "jsonwebtoken": "^8.5.1",
+    "jspdf": "^2.4.0",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.21",
     "micro": "^9.3.4",

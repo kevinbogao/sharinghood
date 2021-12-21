@@ -70,8 +70,6 @@ export default function CommunityActivities() {
     },
   });
 
-  // console.log(data);
-
   function sortColumns(column: string): void {
     const stats = selectedStatActivities.slice();
     if (typeof stats[0][column] === "string") {

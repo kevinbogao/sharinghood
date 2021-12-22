@@ -248,9 +248,9 @@ export default function NotificationDetails() {
             )}
         </div>
         <div className="notification-chat">
-          <div className="chat-content">
+          <ul className="chat-content">
             {data?.notification.messages.map((message) => (
-              <div
+              <li
                 key={message.id}
                 className={
                   message.creator.id === tokenPayload?.userId
@@ -258,10 +258,10 @@ export default function NotificationDetails() {
                     : "received"
                 }
               >
-                <p>{message.content}</p>
-              </div>
+                {message.content}
+              </li>
             ))}
-          </div>
+          </ul>
           <div className="chat-input">
             <input
               type="text"
@@ -387,39 +387,33 @@ export default function NotificationDetails() {
 
                 .chat-content {
                   flex: 1 1 0%;
-                  margin: auto 25px;
                   overflow-y: auto;
-                  padding-top: 10px;
-                  padding-bottom: 10px;
+                  padding: 10px 25px;
 
                   .received {
-                    p {
-                      font-size: 17px;
-                      margin: 5px auto;
-                      padding: 7px 15px;
-                      clear: both;
-                      float: left;
-                      line-height: 1.3;
-                      max-width: 230px;
-                      color: $black;
-                      background: $grey-200;
-                      border-radius: 20px;
-                    }
+                    font-size: 17px;
+                    margin: 5px auto;
+                    padding: 7px 15px;
+                    clear: both;
+                    float: left;
+                    line-height: 1.3;
+                    max-width: 230px;
+                    color: $black;
+                    background: $grey-200;
+                    border-radius: 20px;
                   }
 
                   .send {
-                    p {
-                      font-size: 17px;
-                      margin: 5px auto;
-                      padding: 7px 15px;
-                      clear: both;
-                      float: right;
-                      line-height: 1.3;
-                      max-width: 230px;
-                      color: $background;
-                      background: #03ad008c;
-                      border-radius: 20px;
-                    }
+                    font-size: 17px;
+                    margin: 5px auto;
+                    padding: 7px 15px;
+                    clear: both;
+                    float: right;
+                    line-height: 1.3;
+                    max-width: 230px;
+                    color: $background;
+                    background: #03ad008c;
+                    border-radius: 20px;
                   }
                 }
 

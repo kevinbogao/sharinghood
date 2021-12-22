@@ -10,13 +10,13 @@ import {
 } from "typeorm";
 import {
   Post,
-  Community,
-  Request,
+  Token,
   Thread,
+  Request,
   Booking,
   Message,
+  Community,
   Notification,
-  Token,
 } from "./";
 
 @Entity()
@@ -24,7 +24,7 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   public id: string;
 
-  @Column("varchar", { length: 255, unique: true })
+  @Column("varchar", { length: 255 })
   public name: string;
 
   @Column("varchar", { length: 255, unique: true })

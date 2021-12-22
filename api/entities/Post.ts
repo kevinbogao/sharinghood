@@ -17,10 +17,10 @@ export class Post extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   public id: string;
 
-  @Column("varchar", { length: 255, unique: true })
+  @Column("varchar", { length: 255 })
   public title: string;
 
-  @Column("varchar", { length: 255, unique: true })
+  @Column("varchar", { length: 255 })
   public desc: string;
 
   @Column({

@@ -1,8 +1,14 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  BaseEntity,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { User } from "./";
 
 @Entity()
-export class Token {
+export class Token extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   public id: string;
 

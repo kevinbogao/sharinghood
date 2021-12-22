@@ -1,15 +1,16 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
   ManyToOne,
+  BaseEntity,
   CreateDateColumn,
   UpdateDateColumn,
+  PrimaryGeneratedColumn,
 } from "typeorm";
 import { Community, User, Post, Request } from "./index";
 
 @Entity()
-export class Thread {
+export class Thread extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   public id: string;
 

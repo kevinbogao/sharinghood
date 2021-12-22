@@ -24,10 +24,8 @@ export class Notification extends BaseEntity {
   })
   public type: NotificationType;
 
-  @OneToMany(() => Message, (message) => message.notification, {
-    onDelete: "CASCADE",
-  })
-  public messages: Message[];
+  @Column("uuid", { nullable: true })
+  public bookingId?: string;
 
   @OneToOne(() => Booking, { onDelete: "CASCADE" })
   @JoinColumn()
@@ -63,6 +61,11 @@ export class Notification extends BaseEntity {
 
   @ManyToOne(() => User, (user) => user.notifications, { nullable: true })
   public notifier: User;
+
+  @OneToMany(() => Message, (message) => message.notification, {
+    onDelete: "CASCADE",
+  })
+  public messages: Message[];
 
   @CreateDateColumn()
   public createdAt: Date;

@@ -56,7 +56,7 @@ export default function Members() {
           </p>
         )}
         <div className="members-icon">
-          {data?.community.members
+          {data?.community?.members
             .filter((member) => member.id !== tokenPayload?.userId)
             .map((member) => (
               <div key={member.id} className="member-icon">

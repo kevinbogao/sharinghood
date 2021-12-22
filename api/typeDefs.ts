@@ -197,7 +197,7 @@ export const typeDefs = gql`
     id: ID
     name: String
     code: String
-    usersCount: Int
+    membersCount: Int
     postsCount: Int
     requestsCount: Int
     bookingsCount: Int

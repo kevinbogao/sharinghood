@@ -12,7 +12,7 @@ const FORMATTED_KEYS: Record<TKeys, string> = {
   id: "Community ID",
   name: "Community Name",
   code: "Community Code",
-  usersCount: "Users",
+  membersCount: "Members",
   postsCount: "Posts",
   requestsCount: "Requests",
   bookingsCount: "Bookings",
@@ -26,6 +26,16 @@ export default function Dashboard() {
   const [communitiesActivities, setCommunitiesActivities] = useState<
     types.CommunitiesActivities[]
   >([]);
+
+  const { loading, error, data } = useQuery<types.TotalActivitiesData, void>(
+    queries.GET_TOTAl_ACTIVITIES,
+    {
+      skip: !tokenPayload?.isAdmin,
+      onCompleted({ totalActivities }) {
+        setCommunitiesActivities(totalActivities.communitiesActivities);
+      },
+    }
+  );
 
   useEffect(() => {
     if (!tokenPayload?.isAdmin) router.replace("/posts");
@@ -56,15 +66,7 @@ export default function Dashboard() {
     setSortOrder(sortOrder * -1);
   }
 
-  const { loading, error, data } = useQuery<types.TotalActivitiesData, void>(
-    queries.GET_TOTAl_ACTIVITIES,
-    {
-      skip: !tokenPayload?.isAdmin,
-      onCompleted({ totalActivities }) {
-        setCommunitiesActivities(totalActivities.communitiesActivities);
-      },
-    }
-  );
+  console.log(data);
 
   return (
     <Container auth={false} loading={loading} error={error}>
@@ -130,7 +132,7 @@ export default function Dashboard() {
                     <td>{communityActivities.id}</td>
                     <td>{communityActivities.name}</td>
                     <td>{communityActivities.code}</td>
-                    <td>{communityActivities.usersCount}</td>
+                    <td>{communityActivities.membersCount}</td>
                     <td>{communityActivities.postsCount}</td>
                     <td>{communityActivities.requestsCount}</td>
                     <td>{communityActivities.bookingsCount}</td>

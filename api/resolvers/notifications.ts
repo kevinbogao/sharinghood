@@ -110,7 +110,7 @@ const notificationResolvers = {
           bookingInput,
         },
       }: { notificationInput: CreateNotificationInput },
-      { user, connection, redis }: Context
+      { user, connection }: Context
     ): Promise<Notification> {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
@@ -127,7 +127,7 @@ const notificationResolvers = {
           {},
           { ...bookingInput },
           // @ts-ignore
-          { user, connection, redis }
+          { user, connection }
         );
         notification.booking = booking;
       } else if (type === NotificationType.REQUEST && postId) {

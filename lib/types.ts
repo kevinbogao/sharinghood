@@ -29,9 +29,9 @@ export enum ItemCondition {
 
 export interface Context {
   user?: AccessToken;
-  connection: Connection;
   redis: Redis;
   loader: GraphQLDatabaseLoader;
+  connection: Connection;
 }
 
 export interface Auth {
@@ -263,7 +263,7 @@ export namespace types {
     id: string;
     name: string;
     code: string;
-    usersCount: number;
+    membersCount: number;
     postsCount: number;
     requestsCount: number;
     bookingsCount: number;

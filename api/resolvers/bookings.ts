@@ -61,12 +61,10 @@ const bookingResolvers = {
           where: { id: bookingId },
           relations: ["post", "post.creator", "booker", "booker.tokens"],
         }),
-        connection
-          .getRepository(Notification)
-          .findOne({
-            where: { id: notificationId },
-            select: ["id", "notifierId"],
-          }),
+        connection.getRepository(Notification).findOne({
+          where: { id: notificationId },
+          select: ["id", "notifierId"],
+        }),
       ]);
 
       if (!booking) throw new UserInputError("Booking not found");

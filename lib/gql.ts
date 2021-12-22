@@ -73,6 +73,7 @@ export namespace queries {
         code
         members {
           id
+          name
           imageUrl
         }
       }
@@ -451,7 +452,7 @@ export namespace queries {
           id
           name
           code
-          usersCount
+          membersCount
           postsCount
           requestsCount
           bookingsCount

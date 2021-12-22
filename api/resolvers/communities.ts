@@ -34,7 +34,7 @@ const communityResolvers = {
     async community(
       _: unknown,
       { communityId }: { communityId: string },
-      { loader, user }: Context,
+      { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
     ) {
       if (!user) throw new AuthenticationError("Not Authenticated");
@@ -47,7 +47,7 @@ const communityResolvers = {
     async communities(
       _: unknown,
       __: unknown,
-      { user, loader, redis }: Context,
+      { user, redis, loader }: Context,
       info: IGraphQLToolsResolveInfo
     ): Promise<CommunityNotificationCount[]> {
       if (!user) throw new AuthenticationError("Not Authenticated");

@@ -38,8 +38,7 @@ export default function NotificationBanner() {
         const messaging = getMessaging();
         try {
           const token = await getToken(messaging, {
-            vapidKey:
-              "BI41SUqran3nYbIK-xay6w2sq2ZLiYtfQ8u4R9kuJT1ziFywcMW3G8iJ3FtU6P9v1ER6OY8a_dSutM3AZHO9B1Q",
+            vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY!,
           });
           if (token) addFcmToken({ variables: { fcmToken: token } });
         } catch (err) {

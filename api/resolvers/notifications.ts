@@ -30,8 +30,8 @@ const notificationResolvers = {
         .loadOne();
 
       if (!notification) throw new UserInputError("Notification not found");
-      if (notification.notifierId === user.userId)
-        notification.notifierId = null;
+      if (notification.notifier?.id === user.userId)
+        notification.notifier = null;
 
       return await connection.manager.save(notification);
     },

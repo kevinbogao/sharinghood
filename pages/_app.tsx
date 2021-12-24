@@ -49,7 +49,7 @@ const splitLink = process.browser
         options: {
           reconnect: true,
           connectionParams: () => ({
-            authToken: localStorage.getItem("@sharingplatform:accessToken"),
+            accessToken: localStorage.getItem("@sharinghood:accessToken"),
           }),
         },
       }),

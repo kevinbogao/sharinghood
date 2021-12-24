@@ -6,7 +6,7 @@ import {
 } from "apollo-server-micro";
 import { Connection } from "typeorm";
 import notificationResolvers from "./notifications";
-import { Post, Community, Booking, Notification } from "../entities";
+import { User, Post, Community, Booking, Notification } from "../entities";
 import pushNotification from "../../lib/firebase";
 import { upload } from "../../lib/image";
 import {
@@ -64,6 +64,7 @@ const postResolvers = {
             .leftJoin("post.communities", "community")
             .where("community.id = :id", { id: communityId })
         )
+        .order({ "post.createdAt": "DESC" })
         .loadMany();
 
       return posts;
@@ -79,30 +80,36 @@ const postResolvers = {
       { user, connection, redis, loader }: Context
     ): Promise<Post> {
       if (!user) throw new AuthenticationError("Not Authenticated");
-      const community = await connection
-        .getRepository(Community)
-        .createQueryBuilder("community")
-        .where("community.id = :communityId", { communityId })
-        .leftJoin("community.posts", "post")
-        .leftJoin("community.members", "member")
-        .leftJoin("member.tokens", "token")
-        .select(["community.id", "post.id", "member.id", "token.firebase"])
-        .getOne();
+      const [creator, community] = await Promise.all([
+        connection.getRepository(User).findOne({ where: { id: user.userId } }),
+        connection
+          .getRepository(Community)
+          .createQueryBuilder("community")
+          .where("community.id = :communityId", { communityId })
+          .leftJoin("community.posts", "post")
+          .leftJoin("community.members", "member")
+          .leftJoin("member.tokens", "token")
+          .select(["community.id", "post.id", "member.id", "token.firebase"])
+          .getOne(),
+      ]);
+      if (!creator) throw new UserInputError("user not found");
       if (!community) throw new UserInputError("Community not found");
 
       const imageUrl = await upload(image);
 
-      const post = new Post();
-      post.title = title;
-      post.desc = desc;
-      post.imageUrl = imageUrl;
-      post.condition = condition;
-      post.isGiveaway = isGiveaway;
-      post.creatorId = user.userId;
+      const post = await connection
+        .getRepository(Post)
+        .create({
+          title,
+          desc,
+          imageUrl,
+          condition,
+          isGiveaway,
+          creator,
+        })
+        .save();
 
-      const newPost = await connection.manager.save(post);
-
-      community.posts.push(newPost);
+      community.posts.push(post);
       await connection.manager.save(community);
 
       const receivers = community.members.filter(
@@ -120,7 +127,7 @@ const postResolvers = {
           {
             notificationInput: {
               type: NotificationType.REQUEST,
-              postId: newPost.id,
+              postId: post.id,
               recipientId: requesterId,
               communityId,
             },
@@ -139,7 +146,7 @@ const postResolvers = {
         );
       }
 
-      return newPost;
+      return post;
     },
     async updatePost(
       _: unknown,

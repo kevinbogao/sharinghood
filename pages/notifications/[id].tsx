@@ -389,6 +389,7 @@ export default function NotificationDetails() {
                   flex: 1 1 0%;
                   overflow-y: auto;
                   padding: 10px 25px;
+                  list-style-type: none;
 
                   .received {
                     font-size: 17px;

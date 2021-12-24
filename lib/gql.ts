@@ -360,20 +360,18 @@ export namespace queries {
           name
           imageUrl
         }
-        # participants {
-        #   id
-        #   name
-        #   imageUrl
-        # }
         messages {
           id
           content
           creator {
             id
           }
-          # createdAt
+          createdAt
         }
-        # isRead
+        # Ensure notifier deletion
+        notifier {
+          id
+        }
       }
     }
   `;

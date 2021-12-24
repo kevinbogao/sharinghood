@@ -1,4 +1,4 @@
-import { useRouter, withRouter } from "next/router";
+import { useRouter } from "next/router";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
@@ -29,7 +29,7 @@ interface RegisterInputs {
   agreed: boolean;
 }
 
-export default withRouter(function Register() {
+export default function Register() {
   const router = useRouter();
   const methods = useForm<RegisterInputs>();
   const {
@@ -343,4 +343,4 @@ export default withRouter(function Register() {
       </style>
     </div>
   );
-});
+}

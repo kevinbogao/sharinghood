@@ -7,11 +7,8 @@ import bookingResolvers from "./bookings";
 import { Booking, Notification } from "../entities";
 import sendMail from "../../lib/mail";
 import pushNotification from "../../lib/firebase";
-import {
-  Context,
-  NotificationType,
-  CreateNotificationInput,
-} from "../../lib/types";
+import { NotificationType } from "../../lib/enums";
+import type { Context, CreateNotificationInput } from "../../lib/types";
 
 const notificationResolvers = {
   Query: {

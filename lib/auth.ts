@@ -1,25 +1,8 @@
 import { sign, verify } from "jsonwebtoken";
 import { User } from "../api/entities";
+import { Auth } from "./types";
 
-export interface RefreshToken {
-  userId: string;
-  tokenVersion: number;
-  iat: number;
-  exp: number;
-}
-
-export interface AccessToken extends Omit<RefreshToken, "tokenVersion"> {
-  userName: string;
-  email: string;
-  isAdmin?: boolean;
-}
-
-export interface GeneratedTokens {
-  accessToken: string;
-  refreshToken: string;
-}
-
-export function generateTokens(user: User): GeneratedTokens {
+export function generateTokens(user: User): Auth {
   const refreshToken = sign(
     { userId: user.id, tokenVersion: user.tokenVersion },
     process.env.JWT_SECRET!,

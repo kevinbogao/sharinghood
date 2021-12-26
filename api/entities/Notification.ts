@@ -11,7 +11,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { User, Post, Community, Message, Booking } from "./";
-import { NotificationType } from "../../lib/types";
+import { NotificationType } from "../../lib/enums";
 
 @Entity()
 export class Notification extends BaseEntity {

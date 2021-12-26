@@ -4,8 +4,8 @@ export default function Custom500() {
       <div className="invalid-link">
         <h1>5XX</h1>
         <h3>
-          Oops! We're experiencing an error and we're working to fix it. Please
-          come back later.
+          Oops! We&apos;re experiencing an error and we&apos;re working to fix
+          it. Please come back later.
         </h3>
       </div>
       <style jsx>

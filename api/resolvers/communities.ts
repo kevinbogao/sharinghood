@@ -4,7 +4,7 @@ import {
   IGraphQLToolsResolveInfo,
 } from "apollo-server-micro";
 import { Community, User } from "../entities";
-import { Context, CreateCommunityInput } from "../../lib/types";
+import type { Context, CreateCommunityInput } from "../../lib/types";
 
 export interface CommunityNotificationCount extends Community {
   notificationCount: number;

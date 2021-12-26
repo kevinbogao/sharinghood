@@ -6,7 +6,8 @@ import Modal from "react-modal";
 import moment from "moment";
 import { transformImgUrl } from "../lib";
 import { queries, mutations } from "../lib/gql";
-import { types, NotificationType } from "../lib/types";
+import { types } from "../lib/types";
+import { NotificationType } from "../lib/enums";
 import { Loader } from "./Container";
 
 type ItemType = "post" | "request";

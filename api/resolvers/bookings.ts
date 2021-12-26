@@ -2,12 +2,11 @@ import { UserInputError, AuthenticationError } from "apollo-server-micro";
 import { User, Post, Booking, Notification } from "../entities";
 import sendMail from "../../lib/mail";
 import pushNotification from "../../lib/firebase";
-import {
+import { TimeFrame, BookingStatus } from "../../lib/enums";
+import type {
   Context,
-  TimeFrame,
-  BookingStatus,
-  CreateBookingInput,
   BookingInput,
+  CreateBookingInput,
 } from "../../lib/types";
 
 const bookingResolvers = {

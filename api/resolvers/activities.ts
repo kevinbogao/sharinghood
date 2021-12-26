@@ -4,7 +4,7 @@ import {
   IGraphQLToolsResolveInfo,
 } from "apollo-server-micro";
 import { User, Post, Request, Booking, Community } from "../entities";
-import { Context } from "../../lib/types";
+import type { Context } from "../../lib/types";
 
 const activityResolvers = {
   Query: {

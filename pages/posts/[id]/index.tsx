@@ -4,12 +4,8 @@ import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import { useForm, FormProvider } from "react-hook-form";
 import moment from "moment";
 import Modal from "react-modal";
-import {
-  types,
-  TimeFrame,
-  BookingStatus,
-  NotificationType,
-} from "../../../lib/types";
+import { types } from "../../../lib/types";
+import { TimeFrame, BookingStatus, NotificationType } from "../../../lib/enums";
 import { queries, mutations } from "../../../lib/gql";
 import { communityIdVar, tokenPayloadVar } from "../../_app";
 import { Container, SVG, Icon, Loader } from "../../../components/Container";

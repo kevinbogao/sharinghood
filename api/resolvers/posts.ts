@@ -9,12 +9,8 @@ import notificationResolvers from "./notifications";
 import { User, Post, Community, Booking, Notification } from "../entities";
 import pushNotification from "../../lib/firebase";
 import { upload } from "../../lib/image";
-import {
-  Context,
-  PostInput,
-  CreatePostInput,
-  NotificationType,
-} from "../../lib/types";
+import { NotificationType } from "../../lib/enums";
+import type { Context, PostInput, CreatePostInput } from "../../lib/types";
 
 async function getPostByCreator(
   postId: string,

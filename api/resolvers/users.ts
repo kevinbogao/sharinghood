@@ -11,8 +11,9 @@ import communityResolvers from "./communities";
 import { User, Community, Token } from "../entities";
 import sendMail from "../../lib/mail";
 import { upload } from "../../lib/image";
-import { generateTokens, GeneratedTokens } from "../../lib/auth";
-import {
+import { generateTokens } from "../../lib/auth";
+import type {
+  Auth,
   Context,
   UserInput,
   CreateUserInput,
@@ -70,7 +71,7 @@ const userResolvers = {
       _: unknown,
       { email, password }: { email: string; password: string },
       { connection }: Context
-    ): Promise<GeneratedTokens> {
+    ): Promise<Auth> {
       const user = await connection.getRepository(User).findOne({
         where: { email },
       });
@@ -115,7 +116,7 @@ const userResolvers = {
         communityInput,
       }: { userInput: CreateUserInput; communityInput: CreateCommunityInput },
       { connection, redis }: Context
-    ): Promise<Promise<{ auth: GeneratedTokens; community?: Community }>> {
+    ): Promise<Promise<{ auth: Auth; community?: Community }>> {
       const existingUser = await connection
         .getRepository(User)
         .findOne({ where: { email }, select: ["id"] });

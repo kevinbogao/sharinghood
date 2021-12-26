@@ -9,7 +9,8 @@ import { User, Request, Community } from "../entities";
 import sendMail from "../../lib/mail";
 import pushNotification from "../../lib/firebase";
 import { upload } from "../../lib/image";
-import { Context, TimeFrame, CreateRequestInput } from "../../lib/types";
+import { TimeFrame } from "../../lib/enums";
+import type { Context, CreateRequestInput } from "../../lib/types";
 
 const requestResolvers = {
   Query: {

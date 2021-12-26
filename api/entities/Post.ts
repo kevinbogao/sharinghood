@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { User, Thread, Booking, Community } from "./";
-import { ItemCondition } from "../../lib/types";
+import { ItemCondition } from "../../lib/enums";
 
 @Entity()
 export class Post extends BaseEntity {

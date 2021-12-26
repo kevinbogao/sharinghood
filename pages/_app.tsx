@@ -18,8 +18,7 @@ import { getMainDefinition } from "@apollo/client/utilities";
 import { TokenRefreshLink } from "apollo-link-token-refresh";
 import Navbar from "../components/Navbar";
 import NotificationBanner from "../components/NotificationBanner";
-import { Auth } from "../lib/types";
-import { AccessToken } from "../lib/auth";
+import type { Auth, AccessToken } from "../lib/types";
 
 const httpLink = createHttpLink({
   uri: process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT_HTTP!,

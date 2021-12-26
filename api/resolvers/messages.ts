@@ -3,7 +3,7 @@ import { withFilter } from "graphql-subscriptions";
 import { User, Message, Notification } from "../entities";
 import { pubsub } from "../../lib/redis";
 import pushNotification from "../../lib/firebase";
-import { Context, CreateMessageInput } from "../../lib/types";
+import type { Context, CreateMessageInput } from "../../lib/types";
 
 const NOTIFICATION_MESSAGE = "NOTIFICATION_MESSAGE";
 

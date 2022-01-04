@@ -39,15 +39,15 @@ export default function Register() {
     setError,
     formState: { errors },
   } = methods;
-  const accessToken = useReactiveVar(accessTokenVar);
+  // const accessToken = useReactiveVar(accessTokenVar);
   const createCommunityData = useReactiveVar(createCommunityDataVar);
   const [image, setImage] = useState<string | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    if (accessToken || !createCommunityData) router.back();
+    if (!createCommunityData) router.back();
     // eslint-disable-next-line
-  }, [accessToken, createCommunityData]);
+  }, [createCommunityData]);
 
   const { data } = useQuery<types.FindCommunityData, types.FindCommunityVars>(
     queries.FIND_COMMUNITY,

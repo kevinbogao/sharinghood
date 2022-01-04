@@ -8,11 +8,7 @@ import type { Context } from "../../lib/types";
 
 const activityResolvers = {
   Query: {
-    async totalActivities(
-      _: unknown,
-      __: unknown,
-      { user, connection }: Context
-    ) {
+    async totalActivities(_: never, __: never, { user, connection }: Context) {
       if (!user?.isAdmin) return new ForbiddenError("Forbidden");
 
       const [
@@ -61,7 +57,7 @@ const activityResolvers = {
       };
     },
     async communityActivities(
-      _: unknown,
+      _: never,
       { communityId }: { communityId: string },
       { user, loader }: Context,
       info: IGraphQLToolsResolveInfo

@@ -14,13 +14,15 @@ const bookingResolvers = {
     async createBooking(
       _: unknown,
       {
-        postId,
-        communityId,
-        status,
-        timeFrame,
-        dateNeed,
-        dateReturn,
-      }: CreateBookingInput,
+        bookingInput: {
+          postId,
+          status,
+          dateNeed,
+          timeFrame,
+          dateReturn,
+          communityId,
+        },
+      }: { bookingInput: CreateBookingInput },
       { user, connection }: Context
     ): Promise<Booking> {
       if (!user) throw new AuthenticationError("Not Authenticated");
@@ -38,16 +40,16 @@ const bookingResolvers = {
       if (!post) throw new UserInputError("Post not found");
 
       return await Booking.create({
-        status,
-        timeFrame,
         post,
         booker,
+        status,
+        timeFrame,
         communityId,
         ...(timeFrame === TimeFrame.SPECIFIC && { dateNeed, dateReturn }),
       }).save();
     },
     async updateBooking(
-      _: unknown,
+      _: never,
       {
         bookingInput: { status, bookingId, communityId, notificationId },
       }: { bookingInput: BookingInput },
@@ -58,7 +60,7 @@ const bookingResolvers = {
       const [booking, notification] = await Promise.all([
         connection.getRepository(Booking).findOne({
           where: { id: bookingId },
-          relations: ["post", "post.creator", "booker", "booker.tokens"],
+          relations: ["post", "booker", "booker.tokens"],
         }),
         connection.getRepository(Notification).findOne({
           where: { id: notificationId },
@@ -78,16 +80,12 @@ const bookingResolvers = {
         connection.manager.save(notification),
       ]);
 
-      const incrementedCount = notificationCount
-        ? Number(notificationCount) + 1
-        : 1;
-
       await redis.hset(
         `notifications:${booking.bookerId}`,
-        new Map([[`${communityId}`, incrementedCount]])
+        new Map([[`${communityId}`, +notificationCount! + 1]])
       );
 
-      const subject = `${booking.post.creator.name} has ${
+      const subject = `${user.userName} has ${
         status === BookingStatus.ACCEPTED ? "accepted" : "denied"
       } your booking on ${booking.post.title}`;
 

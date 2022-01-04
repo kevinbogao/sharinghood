@@ -13,3 +13,11 @@ export async function upload(image: string): Promise<string> {
   });
   return result.secure_url;
 }
+
+export async function destroy(imageUrl: string): Promise<any> {
+  const splitUrl = imageUrl.split("/");
+  const publicId = splitUrl[splitUrl.length - 1].split(".")[0];
+  return await cloudinary.v2.uploader.destroy(publicId, (err) => {
+    if (err) throw new Error(err.message);
+  });
+}

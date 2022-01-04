@@ -6,7 +6,7 @@ import type { Context, CreateThreadInput } from "../../lib/types";
 const threadResolvers = {
   Mutation: {
     async createThread(
-      _: unknown,
+      _: never,
       {
         threadInput: { content, isPost, parentId, communityId, recipientId },
       }: { threadInput: CreateThreadInput },

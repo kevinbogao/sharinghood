@@ -40,13 +40,13 @@ export class Post extends BaseEntity {
   public creatorId?: string;
 
   @ManyToOne(() => User, (creator) => creator.posts)
-  creator: User;
+  public creator: User;
 
   @OneToMany(() => Thread, (thread) => thread.post)
-  threads: Thread[];
+  public threads: Thread[];
 
   @OneToMany(() => Booking, (booking) => booking.post)
-  bookings: Booking[];
+  public bookings: Booking[];
 
   @ManyToMany(() => Community, (community) => community.posts)
   public communities: Community[];

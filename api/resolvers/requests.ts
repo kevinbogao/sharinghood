@@ -8,14 +8,14 @@ import moment from "moment";
 import { User, Request, Community } from "../entities";
 import sendMail from "../../lib/mail";
 import pushNotification from "../../lib/firebase";
-import { upload } from "../../lib/image";
+import { upload, destroy } from "../../lib/image";
 import { TimeFrame } from "../../lib/enums";
 import type { Context, CreateRequestInput } from "../../lib/types";
 
 const requestResolvers = {
   Query: {
     async request(
-      _: unknown,
+      _: never,
       { requestId }: { requestId: string },
       { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
@@ -32,7 +32,7 @@ const requestResolvers = {
       return request;
     },
     async requests(
-      _: unknown,
+      _: never,
       { communityId }: { communityId: string },
       { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
@@ -50,7 +50,7 @@ const requestResolvers = {
   },
   Mutation: {
     async createRequest(
-      _: unknown,
+      _: never,
       {
         requestInput: { title, desc, image, timeFrame, dateNeed, dateReturn },
         communityId,
@@ -121,7 +121,7 @@ const requestResolvers = {
       return newRequest;
     },
     async deleteRequest(
-      _: unknown,
+      _: never,
       { requestId }: { requestId: string },
       { user, connection }: Context
     ): Promise<boolean> {
@@ -134,7 +134,10 @@ const requestResolvers = {
       if (request.creatorId !== user.userId)
         throw new ForbiddenError("Unauthorized user");
 
-      await connection.getRepository(Request).remove(request);
+      await Promise.all([
+        destroy(request.imageUrl),
+        connection.getRepository(Request).remove(request),
+      ]);
       return true;
     },
   },

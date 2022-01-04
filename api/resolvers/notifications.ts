@@ -4,7 +4,7 @@ import {
   IGraphQLToolsResolveInfo,
 } from "apollo-server-micro";
 import bookingResolvers from "./bookings";
-import { Booking, Notification } from "../entities";
+import { Notification } from "../entities";
 import sendMail from "../../lib/mail";
 import pushNotification from "../../lib/firebase";
 import { NotificationType } from "../../lib/enums";
@@ -13,7 +13,7 @@ import type { Context, CreateNotificationInput } from "../../lib/types";
 const notificationResolvers = {
   Query: {
     async notification(
-      _: unknown,
+      _: never,
       { notificationId }: { notificationId: string },
       { user, connection, loader }: Context,
       info: IGraphQLToolsResolveInfo
@@ -33,7 +33,7 @@ const notificationResolvers = {
       return await connection.manager.save(notification);
     },
     async findNotification(
-      _: unknown,
+      _: never,
       {
         recipientId,
         communityId,
@@ -64,7 +64,7 @@ const notificationResolvers = {
       return notification;
     },
     async notifications(
-      _: unknown,
+      _: never,
       { communityId }: { communityId: string },
       { user, redis, loader }: Context,
       info: IGraphQLToolsResolveInfo
@@ -107,9 +107,15 @@ const notificationResolvers = {
           bookingInput,
         },
       }: { notificationInput: CreateNotificationInput },
-      { user, connection }: Context
+      ctx: Context
     ): Promise<Notification> {
+      const { user, redis, connection } = ctx;
       if (!user) throw new AuthenticationError("Not Authenticated");
+
+      const notificationCount = await redis.hget(
+        `notifications:${recipientId}`,
+        communityId
+      );
 
       const notification = new Notification();
       notification.type = type;
@@ -118,22 +124,16 @@ const notificationResolvers = {
       notification.communityId = communityId;
       notification.notifierId = recipientId;
 
-      let booking: Booking | undefined;
-      if (type === NotificationType.BOOKING && bookingInput) {
-        booking = await bookingResolvers.Mutation.createBooking(
-          {},
-          { ...bookingInput },
-          // @ts-ignore
-          { user, connection }
+      if (type === NotificationType.REQUEST && postId)
+        notification.postId = postId;
+      else if (type === NotificationType.BOOKING && bookingInput) {
+        const booking = await bookingResolvers.Mutation.createBooking(
+          undefined,
+          { bookingInput },
+          ctx
         );
         notification.booking = booking;
-      } else if (type === NotificationType.REQUEST && postId) {
-        notification.postId = postId;
-      }
 
-      const newNotification = await connection.manager.save(notification);
-
-      if (type === NotificationType.BOOKING && booking) {
         const subject = `${user.userName} has requested to book your ${booking.post.title}`;
         sendMail(
           "updateBooking",
@@ -145,9 +145,16 @@ const notificationResolvers = {
           },
           { to: booking.post.creator.email, subject }
         );
-
         pushNotification({ communityId }, subject, [booking.post.creator]);
       }
+
+      const [newNotification] = await Promise.all([
+        connection.manager.save(notification),
+        redis.hset(
+          `notifications:${recipientId}`,
+          new Map([[`${communityId}`, +notificationCount! + 1]])
+        ),
+      ]);
 
       return newNotification;
     },

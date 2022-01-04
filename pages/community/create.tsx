@@ -44,10 +44,6 @@ export default function CreateCommunity() {
       communityIdVar(createCommunity.id);
       router.push("/posts");
     },
-    // onError: ({ message }) => {
-    //   const errMsgArr = message.split(": ");
-    //   setErrors({ [errMsgArr[0]]: errMsgArr[1] });
-    // },
   });
 
   return (

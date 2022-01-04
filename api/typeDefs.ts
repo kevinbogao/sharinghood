@@ -74,6 +74,7 @@ export const typeDefs = gql`
     community: Community
     threads: [Thread]
     createdAt: String!
+    bookings: [Booking]
   }
 
   input PostInput {

@@ -56,9 +56,6 @@ export default function ItemDetails({
       if (createNotification.id)
         router.push(`/notifications/${createNotification.id}`);
     },
-    onError({ message }) {
-      console.log(message);
-    },
   });
 
   const [createThread] = useMutation<
@@ -205,7 +202,6 @@ export default function ItemDetails({
                   objectFit="cover"
                 />
               </div>
-
               <div className="new-thread-content">
                 <span>{member.name}</span>
                 <input

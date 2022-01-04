@@ -1,5 +1,4 @@
 import type { AppProps } from "next/app";
-import Head from "next/head";
 import jwtDecode from "jwt-decode";
 import { useEffect } from "react";
 import {
@@ -151,10 +150,6 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <ApolloProvider client={client}>
-      <Head>
-        <title>Sharinghood</title>
-        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-      </Head>
       <NotificationBanner />
       <Navbar />
       <div className="base-control">

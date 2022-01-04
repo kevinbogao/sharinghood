@@ -28,7 +28,7 @@ const messageResolvers = {
   },
   Mutation: {
     async createMessage(
-      _: unknown,
+      _: never,
       {
         messageInput: { content, communityId, recipientId, notificationId },
       }: { messageInput: CreateMessageInput },
@@ -63,16 +63,12 @@ const messageResolvers = {
 
       notification.notifierId = recipientId;
 
-      const incrementedCount = notificationCount
-        ? Number(notificationCount) + 1
-        : 1;
-
       const [newMessage] = await Promise.all([
         connection.manager.save(message),
         connection.manager.save(notification),
         await redis.hset(
           `notifications:${recipientId}`,
-          new Map([[`${communityId}`, incrementedCount]])
+          new Map([[`${communityId}`, +notificationCount! + 1]])
         ),
       ]);
 

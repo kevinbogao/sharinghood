@@ -48,6 +48,8 @@ export default function PostDetails() {
     },
   });
 
+  console.log(data);
+
   const [createNotification, { loading: mutationLoading }] = useMutation<
     types.CreateNotificationData,
     types.CreateNotificationVars

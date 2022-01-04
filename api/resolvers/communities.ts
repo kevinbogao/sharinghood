@@ -3,17 +3,18 @@ import {
   UserInputError,
   IGraphQLToolsResolveInfo,
 } from "apollo-server-micro";
+import sendMail from "../../lib/mail";
 import { Community, User } from "../entities";
 import type { Context, CreateCommunityInput } from "../../lib/types";
 
-export interface CommunityNotificationCount extends Community {
+export interface CommunityNotificationCount extends Partial<Community> {
   notificationCount: number;
 }
 
 const communityResolvers = {
   Query: {
     async findCommunity(
-      _: unknown,
+      _: never,
       { communityCode }: { communityCode: string },
       { connection }: Context
     ): Promise<Community | undefined> {
@@ -32,7 +33,7 @@ const communityResolvers = {
         .getOne();
     },
     async community(
-      _: unknown,
+      _: never,
       { communityId }: { communityId: string },
       { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
@@ -45,8 +46,8 @@ const communityResolvers = {
         .loadOne();
     },
     async communities(
-      _: unknown,
-      __: unknown,
+      _: never,
+      __: never,
       { user, redis, loader }: Context,
       info: IGraphQLToolsResolveInfo
     ): Promise<CommunityNotificationCount[]> {
@@ -68,15 +69,9 @@ const communityResolvers = {
         communityIds
       );
       const communities = userCommunities.map((community, idx) => {
-        return {
-          ...community,
-          notificationCount: notificationCount[idx]
-            ? Number(notificationCount[idx])
-            : 0,
-        };
+        return { ...community, notificationCount: +notificationCount[idx]! };
       });
 
-      // @ts-ignore
       return communities;
     },
   },
@@ -95,15 +90,30 @@ const communityResolvers = {
             .findOne({ where: { id: user?.userId } });
       if (!creator) throw new UserInputError("User not found");
 
-      return await Community.create({
+      const community = await Community.create({
         name,
         code,
         creator,
         members: [creator],
       }).save();
+
+      sendMail(
+        "createCommunity",
+        {
+          communityUrl: `${process.env.ORIGIN}/community/${community.code}`,
+          recipientId: creator.id,
+          unsubscribeToken: creator.unsubscribeToken,
+        },
+        {
+          to: creator.email,
+          subject: `Welcome tips for your new ${community.name} community`,
+        }
+      );
+
+      return community;
     },
     async joinCommunity(
-      _: unknown,
+      _: never,
       { communityId }: { communityId: string },
       { user, connection }: Context
     ): Promise<Community> {

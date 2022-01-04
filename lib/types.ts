@@ -1,30 +1,29 @@
 import { Connection } from "typeorm";
-import { AccessToken } from "./auth";
 import { Redis } from "ioredis";
 import { GraphQLDatabaseLoader } from "@mando75/typeorm-graphql-loader";
+import {
+  TimeFrame,
+  ItemCondition,
+  BookingStatus,
+  NotificationType,
+} from "./enums";
 
-export enum BookingStatus {
-  PENDING = "pending",
-  ACCEPTED = "accepted",
-  DECLINED = "declined",
+export interface RefreshToken {
+  userId: string;
+  tokenVersion: number;
+  iat: number;
+  exp: number;
 }
 
-export enum NotificationType {
-  CHAT = "chat",
-  BOOKING = "booking",
-  REQUEST = "request",
+export interface AccessToken extends Omit<RefreshToken, "tokenVersion"> {
+  userName: string;
+  email: string;
+  isAdmin?: boolean;
 }
 
-export enum TimeFrame {
-  ASAP = "asap",
-  RANDOM = "random",
-  SPECIFIC = "specific",
-}
-
-export enum ItemCondition {
-  NEW = "new",
-  USED = "used",
-  DAMAGED = "damaged",
+export interface Auth {
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface Context {
@@ -32,11 +31,6 @@ export interface Context {
   redis: Redis;
   loader: GraphQLDatabaseLoader;
   connection: Connection;
-}
-
-export interface Auth {
-  accessToken: string;
-  refreshToken: string;
 }
 
 export interface UserInput {

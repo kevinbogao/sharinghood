@@ -4,11 +4,9 @@ import { Moment } from "moment";
 import { DateRangePicker, FocusedInputShape } from "react-dates";
 import "react-dates/initialize";
 import "react-dates/lib/css/_datepicker.css";
-import { TimeFrame } from "../lib/types";
+import { TimeFrame } from "../lib/enums";
 
 interface DatePickerProps {
-  // timeFrame: TimeFrame;
-  // setTimeFrame(timeFrame: TimeFrame): void;
   dateNeed: Moment | null;
   setDateNeed(dateNeed: Moment): void;
   dateReturn: Moment | null;
@@ -16,10 +14,8 @@ interface DatePickerProps {
 }
 
 export default function DatePicker({
-  // timeFrame,
   dateNeed,
   dateReturn,
-  // setTimeFrame,
   setDateNeed,
   setDateReturn,
 }: DatePickerProps) {
@@ -54,7 +50,7 @@ export default function DatePicker({
         <option value={TimeFrame.RANDOM}>No time frame</option>
         <option value={TimeFrame.SPECIFIC}>Select time frame</option>
       </select>
-      {watch("timeFrame") === "specific" && (
+      {watch("timeFrame") === TimeFrame.SPECIFIC && (
         <>
           <p className="main-p">By when do you need it?</p>
           <DateRangePicker

@@ -1,8 +1,9 @@
-import type { NextApiRequest, NextApiResponse } from "next";
 import { getConnection } from "typeorm";
 import { User } from "../../api/entities";
-import { verifyToken, generateTokens, RefreshToken } from "../../lib/auth";
 import { prepareConnection } from ".";
+import { verifyToken, generateTokens } from "../../lib/auth";
+import type { RefreshToken } from "../../lib/types";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
   req: NextApiRequest,

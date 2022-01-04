@@ -9,12 +9,8 @@ import {
 import moment from "moment";
 import { transformImgUrl } from "../../lib/";
 import { queries, mutations } from "../../lib/gql";
-import {
-  types,
-  NotificationType,
-  BookingStatus,
-  TimeFrame,
-} from "../../lib/types";
+import { types } from "../../lib/types";
+import { TimeFrame, BookingStatus, NotificationType } from "../../lib/enums";
 import { communityIdVar, tokenPayloadVar } from "../_app";
 import { Container, Spinner } from "../../components/Container";
 

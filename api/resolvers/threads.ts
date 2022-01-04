@@ -1,12 +1,12 @@
 import { AuthenticationError, UserInputError } from "apollo-server-micro";
 import { User, Post, Request, Community, Thread } from "../entities";
 import pushNotification from "../../lib/firebase";
-import { Context, CreateThreadInput } from "../../lib/types";
+import type { Context, CreateThreadInput } from "../../lib/types";
 
 const threadResolvers = {
   Mutation: {
     async createThread(
-      _: unknown,
+      _: never,
       {
         threadInput: { content, isPost, parentId, communityId, recipientId },
       }: { threadInput: CreateThreadInput },

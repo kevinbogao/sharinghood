@@ -1,4 +1,6 @@
 import { useRef, useState, useEffect, RefObject } from "react";
+
+import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
@@ -15,8 +17,9 @@ import {
 export default function Navbar() {
   const router = useRouter();
   const node: RefObject<HTMLDivElement> | undefined = useRef(null);
-  const [isMobileView, setIsMobileView] = useState<boolean>(false);
-  const [isMenuActive, setIsMenuActive] = useState<boolean>(false);
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [isMenuActive, setIsMenuActive] = useState(false);
+  const [notificationCounts, setNotificationCounts] = useState(0);
   const accessToken = useReactiveVar(accessTokenVar);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
 
@@ -26,6 +29,13 @@ export default function Navbar() {
   >(queries.GET_COMMUNITY_AND_COMMUNITIES, {
     skip: !accessToken || !communityIdVar(),
     variables: { communityId: communityIdVar()! },
+    onCompleted({ communities }) {
+      const notificationsCount = communities.reduce(
+        (acc, curr) => acc + curr.notificationCount,
+        0
+      );
+      setNotificationCounts(notificationsCount);
+    },
     onError({ message }) {
       console.warn(message);
     },
@@ -67,6 +77,14 @@ export default function Navbar() {
 
   return (
     <div ref={node} className="nav-control">
+      <Head>
+        <title>
+          {notificationCounts > 0
+            ? `(${notificationCounts}) Sharinghood`
+            : "Sharinghood"}
+        </title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       <div className="nav-toggle">
         {accessToken && (
           <SVG className="hamburger-icon" icon="bars" onClick={toggleMenu} />
@@ -169,13 +187,6 @@ export default function Navbar() {
             </a>
           </Link>
         )}
-        <div className="nav-menu-item invite">
-          <Link href={`/community/${data?.community?.code}/link`}>
-            <a className="invite-btn" onClick={toggleMenu}>
-              Download Invitation
-            </a>
-          </Link>
-        </div>
         {isMobileView && (
           <>
             <Link href="/profile">
@@ -190,6 +201,13 @@ export default function Navbar() {
             </Link>
           </>
         )}
+        <div className="nav-menu-item invite">
+          <Link href={`/community/${data?.community?.code}/link`}>
+            <a className="invite-btn" onClick={toggleMenu}>
+              Download Invitation
+            </a>
+          </Link>
+        </div>
       </div>
       <style jsx>
         {`

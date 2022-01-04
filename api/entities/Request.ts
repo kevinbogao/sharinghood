@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { User, Thread, Community } from "./";
-import { TimeFrame } from "../../lib/types";
+import { TimeFrame } from "../../lib/enums";
 
 @Entity()
 export class Request extends BaseEntity {

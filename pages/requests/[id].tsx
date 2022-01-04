@@ -8,7 +8,7 @@ import { queries, mutations } from "../../lib/gql";
 import { communityIdVar, tokenPayloadVar } from "../_app";
 import { Container, SVG, Loader } from "../../components/Container";
 import ItemDetails from "../../components/ItemDetails";
-import { TimeFrame } from "../../lib/types";
+import { TimeFrame } from "../../lib/enums";
 
 export default function RequestDetails() {
   const router = useRouter();

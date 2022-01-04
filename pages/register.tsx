@@ -1,4 +1,4 @@
-import { useRouter, withRouter } from "next/router";
+import { useRouter } from "next/router";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
@@ -29,7 +29,7 @@ interface RegisterInputs {
   agreed: boolean;
 }
 
-export default withRouter(function Register() {
+export default function Register() {
   const router = useRouter();
   const methods = useForm<RegisterInputs>();
   const {
@@ -39,15 +39,15 @@ export default withRouter(function Register() {
     setError,
     formState: { errors },
   } = methods;
-  const accessToken = useReactiveVar(accessTokenVar);
+  // const accessToken = useReactiveVar(accessTokenVar);
   const createCommunityData = useReactiveVar(createCommunityDataVar);
   const [image, setImage] = useState<string | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    if (accessToken || !createCommunityData) router.back();
+    if (!createCommunityData) router.back();
     // eslint-disable-next-line
-  }, [accessToken, createCommunityData]);
+  }, [createCommunityData]);
 
   const { data } = useQuery<types.FindCommunityData, types.FindCommunityVars>(
     queries.FIND_COMMUNITY,
@@ -343,4 +343,4 @@ export default withRouter(function Register() {
       </style>
     </div>
   );
-});
+}

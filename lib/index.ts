@@ -1,5 +1,5 @@
-import { GraphQLErrors } from "@apollo/client/errors";
-import { UseFormSetError } from "react-hook-form";
+import type { GraphQLErrors } from "@apollo/client/errors";
+import type { UseFormSetError } from "react-hook-form";
 
 export function transformImgUrl(url: string, width: number): string {
   const splitUrl = url.split("upload");

@@ -26,9 +26,9 @@ export interface CreateAccountArgs extends FooterArgs {
 }
 
 export function createAccount({
-  confirmationUrl,
-  communityName,
   recipientId,
+  communityName,
+  confirmationUrl,
   unsubscribeToken,
 }: CreateAccountArgs): string {
   const footer = generateFooter(recipientId, unsubscribeToken);

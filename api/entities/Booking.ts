@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { User, Post, Community } from "./";
-import { TimeFrame, BookingStatus } from "../../lib/types";
+import { TimeFrame, BookingStatus } from "../../lib/enums";
 
 @Entity()
 export class Booking extends BaseEntity {

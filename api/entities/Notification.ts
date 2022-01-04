@@ -11,7 +11,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { User, Post, Community, Message, Booking } from "./";
-import { NotificationType } from "../../lib/types";
+import { NotificationType } from "../../lib/enums";
 
 @Entity()
 export class Notification extends BaseEntity {
@@ -57,10 +57,10 @@ export class Notification extends BaseEntity {
   public community: Community;
 
   @Column("uuid", { nullable: true })
-  public notifierId?: string | null;
+  public notifierId: string | null;
 
   @ManyToOne(() => User, (user) => user.notifications, { nullable: true })
-  public notifier: User;
+  public notifier: User | null;
 
   @OneToMany(() => Message, (message) => message.notification, {
     onDelete: "CASCADE",

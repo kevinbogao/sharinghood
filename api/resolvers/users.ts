@@ -11,8 +11,9 @@ import communityResolvers from "./communities";
 import { User, Community, Token } from "../entities";
 import sendMail from "../../lib/mail";
 import { upload } from "../../lib/image";
-import { generateTokens, GeneratedTokens } from "../../lib/auth";
-import {
+import { generateTokens } from "../../lib/auth";
+import type {
+  Auth,
   Context,
   UserInput,
   CreateUserInput,
@@ -22,7 +23,7 @@ import {
 const userResolvers = {
   Query: {
     async user(
-      _: unknown,
+      _: never,
       __: never,
       { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
@@ -39,7 +40,7 @@ const userResolvers = {
       return targetUser;
     },
     async validateResetLink(
-      _: unknown,
+      _: never,
       { resetKey }: { resetKey: string },
       { connection, redis }: Context
     ): Promise<boolean> {
@@ -51,7 +52,7 @@ const userResolvers = {
       return true;
     },
     async unsubscribeUser(
-      _: unknown,
+      _: never,
       { userId, token }: { userId: string; token: string },
       { connection }: Context
     ): Promise<boolean> {
@@ -67,10 +68,10 @@ const userResolvers = {
   },
   Mutation: {
     async login(
-      _: unknown,
+      _: never,
       { email, password }: { email: string; password: string },
       { connection }: Context
-    ): Promise<GeneratedTokens> {
+    ): Promise<Auth> {
       const user = await connection.getRepository(User).findOne({
         where: { email },
       });
@@ -83,7 +84,7 @@ const userResolvers = {
       return generateTokens(user);
     },
     async logout(
-      _: unknown,
+      _: never,
       __: never,
       { user, connection }: Context
     ): Promise<boolean> {
@@ -114,8 +115,9 @@ const userResolvers = {
         },
         communityInput,
       }: { userInput: CreateUserInput; communityInput: CreateCommunityInput },
-      { connection, redis }: Context
-    ): Promise<Promise<{ auth: GeneratedTokens; community?: Community }>> {
+      ctx: Context
+    ): Promise<Promise<{ auth: Auth; community?: Community }>> {
+      const { connection } = ctx;
       const existingUser = await connection
         .getRepository(User)
         .findOne({ where: { email }, select: ["id"] });
@@ -138,8 +140,9 @@ const userResolvers = {
       user.isNotified = isNotified;
       user.unsubscribeToken = unsubscribeToken;
 
+      let community: Community | undefined;
       if (communityId) {
-        const community = await connection
+        community = await connection
           .getRepository(Community)
           .findOne(communityId);
         if (!community) throw new ApolloError("Can't find community");
@@ -148,15 +151,24 @@ const userResolvers = {
       const newUser = await connection.manager.save(user);
       const { accessToken, refreshToken } = generateTokens(newUser);
 
-      let community: Community | undefined;
       if (!communityId) {
         community = await communityResolvers.Mutation.createCommunity(
           { newUser },
           { communityInput },
-          // @ts-ignore
-          { connection, redis }
+          ctx
         );
       }
+
+      sendMail(
+        "createAccount",
+        {
+          confirmationUrl: `${process.env.ORIGIN}/share`,
+          communityName: community?.name!,
+          recipientId: newUser.id,
+          unsubscribeToken,
+        },
+        { to: email, subject: "Welcome to Sharinghood" }
+      );
 
       return {
         auth: { accessToken, refreshToken },
@@ -164,7 +176,7 @@ const userResolvers = {
       };
     },
     async updateUser(
-      _: unknown,
+      _: never,
       {
         userInput: { name, image, desc, apartment, isNotified },
       }: { userInput: UserInput },
@@ -186,7 +198,7 @@ const userResolvers = {
       return await userRepository.save(targetUser);
     },
     async forgotPassword(
-      _: unknown,
+      _: never,
       { email }: { email: string },
       { connection, redis }: Context
     ): Promise<boolean> {
@@ -207,7 +219,7 @@ const userResolvers = {
       return true;
     },
     async resetPassword(
-      _: unknown,
+      _: never,
       { resetKey, password }: { resetKey: string; password: string },
       { connection, redis }: Context
     ): Promise<boolean> {
@@ -230,7 +242,7 @@ const userResolvers = {
       return true;
     },
     async addFcmToken(
-      _: unknown,
+      _: never,
       { fcmToken }: { fcmToken: string },
       { user, connection }: Context
     ): Promise<boolean> {

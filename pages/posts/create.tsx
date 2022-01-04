@@ -5,7 +5,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import ImageInput from "../../components/ImageInput";
 import { Container, Loader, InlineError } from "../../components/Container";
 import { types } from "../../lib/types";
-import { ItemCondition } from "../../lib/types";
+import { ItemCondition } from "../../lib/enums";
 import { queries, mutations } from "../../lib/gql";
 import { communityIdVar } from "../_app";
 

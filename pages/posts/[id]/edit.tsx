@@ -5,7 +5,8 @@ import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import Modal from "react-modal";
 import ImageInput from "../../../components/ImageInput";
 import { queries, mutations } from "../../../lib/gql";
-import { types, ItemCondition } from "../../../lib/types";
+import { types } from "../../../lib/types";
+import { ItemCondition } from "../../../lib/enums";
 import { tokenPayloadVar, communityIdVar } from "../../_app";
 import {
   Container,

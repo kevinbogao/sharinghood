@@ -6,7 +6,8 @@ import Modal from "react-modal";
 import moment from "moment";
 import { transformImgUrl } from "../lib";
 import { queries, mutations } from "../lib/gql";
-import { types, NotificationType } from "../lib/types";
+import { types } from "../lib/types";
+import { NotificationType } from "../lib/enums";
 import { Loader } from "./Container";
 
 type ItemType = "post" | "request";
@@ -54,9 +55,6 @@ export default function ItemDetails({
     onCompleted({ createNotification }) {
       if (createNotification.id)
         router.push(`/notifications/${createNotification.id}`);
-    },
-    onError({ message }) {
-      console.log(message);
     },
   });
 
@@ -204,7 +202,6 @@ export default function ItemDetails({
                   objectFit="cover"
                 />
               </div>
-
               <div className="new-thread-content">
                 <span>{member.name}</span>
                 <input

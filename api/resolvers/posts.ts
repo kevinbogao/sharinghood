@@ -1,38 +1,21 @@
 import {
+  ApolloError,
   UserInputError,
   ForbiddenError,
   AuthenticationError,
   IGraphQLToolsResolveInfo,
 } from "apollo-server-micro";
-import { Connection } from "typeorm";
 import notificationResolvers from "./notifications";
-import { Post, Community, Booking, Notification } from "../entities";
+import { User, Post, Community, Booking, Notification } from "../entities";
 import pushNotification from "../../lib/firebase";
-import { upload } from "../../lib/image";
-import {
-  Context,
-  PostInput,
-  CreatePostInput,
-  NotificationType,
-} from "../../lib/types";
-
-async function getPostByCreator(
-  postId: string,
-  userId: string,
-  connection: Connection
-): Promise<Post> {
-  const post = await connection.getRepository(Post).findOne({
-    where: { id: postId },
-  });
-  if (!post) throw new UserInputError("Post not found");
-  if (post.creatorId !== userId) throw new ForbiddenError("Unauthorized user");
-  return post;
-}
+import { upload, destroy } from "../../lib/image";
+import { NotificationType } from "../../lib/enums";
+import type { Context, PostInput, CreatePostInput } from "../../lib/types";
 
 const postResolvers = {
   Query: {
     async post(
-      _: unknown,
+      _: never,
       { postId }: { postId: string },
       { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
@@ -46,10 +29,16 @@ const postResolvers = {
         .loadOne();
 
       if (!post) throw new UserInputError("Post not found");
+
+      // const bookings = await Booking.find({
+      //   where: { postId: post.id, timeFrame: TimeFrame.SPECIFIC },
+      // });
+      // console.log(bookings);
+
       return post;
     },
     async posts(
-      _: unknown,
+      _: never,
       { communityId }: { communityId: string },
       { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
@@ -64,6 +53,7 @@ const postResolvers = {
             .leftJoin("post.communities", "community")
             .where("community.id = :id", { id: communityId })
         )
+        .order({ "post.createdAt": "DESC" })
         .loadMany();
 
       return posts;
@@ -71,38 +61,47 @@ const postResolvers = {
   },
   Mutation: {
     async createPost(
-      _: unknown,
+      _: never,
       {
         postInput: { title, desc, image, condition, isGiveaway, requesterId },
         communityId,
       }: { postInput: CreatePostInput; communityId: string },
-      { user, connection, redis, loader }: Context
+      ctx: Context
     ): Promise<Post> {
+      const { user, connection } = ctx;
+
       if (!user) throw new AuthenticationError("Not Authenticated");
-      const community = await connection
-        .getRepository(Community)
-        .createQueryBuilder("community")
-        .where("community.id = :communityId", { communityId })
-        .leftJoin("community.posts", "post")
-        .leftJoin("community.members", "member")
-        .leftJoin("member.tokens", "token")
-        .select(["community.id", "post.id", "member.id", "token.firebase"])
-        .getOne();
+
+      const [creator, community] = await Promise.all([
+        connection.getRepository(User).findOne({ where: { id: user.userId } }),
+        connection
+          .getRepository(Community)
+          .createQueryBuilder("community")
+          .where("community.id = :communityId", { communityId })
+          .leftJoin("community.posts", "post")
+          .leftJoin("community.members", "member")
+          .leftJoin("member.tokens", "token")
+          .select(["community.id", "post.id", "member.id", "token.firebase"])
+          .getOne(),
+      ]);
+      if (!creator) throw new UserInputError("user not found");
       if (!community) throw new UserInputError("Community not found");
 
       const imageUrl = await upload(image);
 
-      const post = new Post();
-      post.title = title;
-      post.desc = desc;
-      post.imageUrl = imageUrl;
-      post.condition = condition;
-      post.isGiveaway = isGiveaway;
-      post.creatorId = user.userId;
+      const post = await connection
+        .getRepository(Post)
+        .create({
+          title,
+          desc,
+          imageUrl,
+          condition,
+          isGiveaway,
+          creator,
+        })
+        .save();
 
-      const newPost = await connection.manager.save(post);
-
-      community.posts.push(newPost);
+      community.posts.push(post);
       await connection.manager.save(community);
 
       const receivers = community.members.filter(
@@ -116,16 +115,16 @@ const postResolvers = {
 
       if (requesterId) {
         await notificationResolvers.Mutation.createNotification(
-          {},
+          undefined,
           {
             notificationInput: {
               type: NotificationType.REQUEST,
-              postId: newPost.id,
+              postId: post.id,
               recipientId: requesterId,
               communityId,
             },
           },
-          { user, connection, redis, loader }
+          ctx
         );
 
         const requester = community.members.find(
@@ -139,17 +138,24 @@ const postResolvers = {
         );
       }
 
-      return newPost;
+      return post;
     },
     async updatePost(
-      _: unknown,
+      _: never,
       {
         postInput: { postId, title, desc, image, condition, isGiveaway },
       }: { postInput: PostInput },
       { user, connection }: Context
     ): Promise<Post> {
       if (!user) throw new AuthenticationError("Not Authenticated");
-      const post = await getPostByCreator(postId, user.userId, connection);
+      const post = await connection.getRepository(Post).findOne({
+        where: { id: postId },
+      });
+
+      if (!post) throw new UserInputError("Post not found");
+      if (post.creatorId !== user.userId)
+        throw new ForbiddenError("Unauthorized user");
+
       const imageUrl = image && (await upload(image));
       if (title) post.title = title;
       if (desc) post.desc = desc;
@@ -160,17 +166,28 @@ const postResolvers = {
       return await connection.manager.save(post);
     },
     async deletePost(
-      _: unknown,
+      _: never,
       { postId }: { postId: string },
       { user, connection }: Context
     ): Promise<boolean> {
       if (!user) throw new AuthenticationError("Not Authenticated");
-      const post = await getPostByCreator(postId, user.userId, connection);
-      await connection.getRepository(Post).remove(post);
+
+      const post = await connection.getRepository(Post).findOne({
+        where: { id: postId },
+      });
+
+      if (!post) throw new UserInputError("Post not found");
+      if (post.creatorId !== user.userId)
+        throw new ForbiddenError("Unauthorized user");
+
+      await Promise.all([
+        destroy(post.imageUrl),
+        connection.getRepository(Post).remove(post),
+      ]);
       return true;
     },
     async inactivatePost(
-      _: unknown,
+      _: never,
       { postId }: { postId: string },
       { user, connection }: Context
     ): Promise<boolean> {
@@ -178,7 +195,7 @@ const postResolvers = {
       const post = await connection
         .getRepository(Post)
         .findOne({ where: { id: postId }, relations: ["communities"] });
-      if (!post) throw new UserInputError("Post not found");
+      if (!post) throw new ApolloError("Post not found");
       if (post.creatorId !== user.userId)
         throw new ForbiddenError("Unauthorized user");
 
@@ -199,12 +216,17 @@ const postResolvers = {
       return true;
     },
     async addPostToCommunity(
-      _: unknown,
+      _: never,
       { postId, communityId }: { postId: string; communityId: string },
       { user, connection }: Context
     ): Promise<Community> {
       if (!user) throw new AuthenticationError("Not Authenticated");
-      const post = await getPostByCreator(postId, user.userId, connection);
+      const post = await connection
+        .getRepository(Post)
+        .findOne({ where: { id: postId } });
+      if (!post) throw new ApolloError("Post not found");
+      if (post.creatorId !== user.userId)
+        throw new ForbiddenError("Unauthorized user");
       const community = await connection
         .getRepository(Community)
         .findOne({ where: { id: communityId }, relations: ["posts"] });

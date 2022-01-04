@@ -198,6 +198,12 @@ export namespace queries {
         imageUrl
         condition
         isGiveaway
+        bookings {
+          id
+          timeFrame
+          dateNeed
+          dateReturn
+        }
         creator {
           id
           name
@@ -360,20 +366,18 @@ export namespace queries {
           name
           imageUrl
         }
-        # participants {
-        #   id
-        #   name
-        #   imageUrl
-        # }
         messages {
           id
           content
           creator {
             id
           }
-          # createdAt
+          createdAt
         }
-        # isRead
+        # Ensure notifier deletion
+        notifier {
+          id
+        }
       }
     }
   `;
@@ -743,37 +747,6 @@ export namespace mutations {
     mutation CreateNotification($notificationInput: NotificationInput) {
       createNotification(notificationInput: $notificationInput) {
         id
-        #   type
-        #   booking {
-        #     id
-        #     status
-        #     timeFrame
-        #     dateNeed
-        #     dateReturn
-        #     post {
-        #       id
-        #       title
-        #       imageUrl
-        #     }
-        #     booker {
-        #       id
-        #     }
-        #   }
-        #   creator {
-        #     id
-        #     name
-        #     imageUrl
-        #   }
-        #   recipient {
-        #     id
-        #     name
-        #     imageUrl
-        #   }
-        #   # isRead
-        #   # messages {
-        #   #   id
-        #   #   text
-        #   # }
       }
     }
   `;

@@ -1,12 +1,13 @@
-import { ApolloServer } from "apollo-server-micro";
+import { ApolloServer, AuthenticationError } from "apollo-server-micro";
 import { createConnection, getConnection } from "typeorm";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
+import { GraphQLDatabaseLoader } from "@mando75/typeorm-graphql-loader";
 import { typeDefs } from "../../api/typeDefs";
 import { resolvers } from "../../api/resolvers";
 import { entities } from "../../api/entities";
-import { verifyToken, AccessToken } from "../../lib/auth";
+import { verifyToken } from "../../lib/auth";
 import { redis } from "../../lib/redis";
-import { GraphQLDatabaseLoader } from "@mando75/typeorm-graphql-loader";
+import type { AccessToken } from "../../lib/types";
 
 let connectionReadyPromise: Promise<void> | null = null;
 
@@ -36,7 +37,12 @@ const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
   context: async ({ req, connection }: any) => {
-    if (connection) return;
+    if (connection) {
+      const user = verifyToken<AccessToken>(connection.context.accessToken);
+      if (!user) throw new AuthenticationError("Not Authenticated");
+      return user;
+    }
+
     const token = req.headers.authorization?.split(" ")[1] ?? "";
     const user = verifyToken<AccessToken>(token);
     await prepareConnection();

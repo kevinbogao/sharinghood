@@ -8,7 +8,7 @@ import { types } from "../../lib/types";
 import { transformImgUrl } from "../../lib";
 import { tokenPayloadVar } from "../_app";
 import { Container, SVG } from "../../components/Container";
-import { TimeFrame, BookingStatus } from "../../lib/types";
+import { TimeFrame, BookingStatus } from "../../lib/enums";
 
 const STATS_IDS = ["members", "posts", "requests", "bookings"];
 const ID_SET = new Set(["post", "creator", "booker"]);

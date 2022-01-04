@@ -36,7 +36,10 @@ export default function ImageInput({ type, image, setImage }: ImageInputProps) {
         type="file"
         {...register("image", {
           validate: {
-            notNull: () => type === "user" || image !== undefined || "err",
+            notNull: () =>
+              type === "user" ||
+              image !== undefined ||
+              "Please upload a picture of the item",
           },
         })}
         onChange={(e: ChangeEvent<HTMLInputElement>) => {

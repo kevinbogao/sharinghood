@@ -1,5 +1,5 @@
 import type { AppProps } from "next/app";
-import Head from "next/head";
+import jwtDecode from "jwt-decode";
 import { useEffect } from "react";
 import {
   split,
@@ -10,15 +10,14 @@ import {
   InMemoryCache,
   ApolloProvider,
 } from "@apollo/client";
+import { onError } from "@apollo/client/link/error";
 import { setContext } from "@apollo/client/link/context";
-import jwtDecode from "jwt-decode";
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { TokenRefreshLink } from "apollo-link-token-refresh";
 import Navbar from "../components/Navbar";
 import NotificationBanner from "../components/NotificationBanner";
-import { Auth } from "../lib/types";
-import { AccessToken } from "../lib/auth";
+import type { Auth, AccessToken } from "../lib/types";
 
 const httpLink = createHttpLink({
   uri: process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT_HTTP!,
@@ -48,7 +47,7 @@ const splitLink = process.browser
         options: {
           reconnect: true,
           connectionParams: () => ({
-            authToken: localStorage.getItem("@sharingplatform:accessToken"),
+            accessToken: localStorage.getItem("@sharinghood:accessToken"),
           }),
         },
       }),
@@ -106,6 +105,21 @@ const client = new ApolloClient({
         }
       },
     }),
+    onError(({ graphQLErrors, operation, forward }) => {
+      if (graphQLErrors) {
+        graphQLErrors.forEach((err) => {
+          if (err.extensions.code === "UNAUTHENTICATED") {
+            localStorage.removeItem("@sharinghood:accessToken");
+            localStorage.removeItem("@sharinghood:refreshToken");
+            accessTokenVar(null);
+            refreshTokenVar(null);
+            tokenPayloadVar(null);
+            return forward(operation);
+          }
+          return forward(operation);
+        });
+      }
+    }),
     splitLink,
   ]),
   cache,
@@ -136,10 +150,6 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <ApolloProvider client={client}>
-      <Head>
-        <title>Sharinghood</title>
-        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-      </Head>
       <NotificationBanner />
       <Navbar />
       <div className="base-control">

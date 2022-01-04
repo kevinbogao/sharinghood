@@ -47,7 +47,7 @@ export default async function sendMail<K extends keyof Mail>(
   args: Mail[K],
   { to, subject }: SendMailParams
 ) {
-  if (process.env.NODE_ENV === "production") return;
+  if (process.env.NODE_ENV !== "production") return;
   const accessToken = await oAuth2Client.getAccessToken();
   const html = <string>await MAIL_TEMPLATES[type](args);
 
@@ -65,7 +65,7 @@ export default async function sendMail<K extends keyof Mail>(
   });
 
   const info = await transport.sendMail({
-    from: '"Sharinghood" <sharinghood@gmail.com>',
+    from: `"Sharinghood" <${process.env.GMAIL_USERNAME}>`,
     to,
     subject,
     html,

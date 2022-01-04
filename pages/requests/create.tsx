@@ -6,7 +6,7 @@ import moment from "moment";
 import DatePicker from "../../components/DatePicker";
 import { types } from "../../lib/types";
 import { queries, mutations } from "../../lib/gql";
-import { TimeFrame } from "../../lib/types";
+import { TimeFrame } from "../../lib/enums";
 import { communityIdVar } from "../_app";
 import ImageInput from "../../components/ImageInput";
 import { Container, Loader, InlineError } from "../../components/Container";

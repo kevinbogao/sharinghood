@@ -13,7 +13,7 @@ export class Message extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   public id: string;
 
-  @Column("varchar", { length: 255 })
+  @Column("text")
   public content: string;
 
   @Column("uuid", { nullable: true })

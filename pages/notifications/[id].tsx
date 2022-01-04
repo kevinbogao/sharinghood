@@ -5,12 +5,8 @@ import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import moment from "moment";
 import { transformImgUrl } from "../../lib";
 import { queries, mutations, subscriptions } from "../../lib/gql";
-import {
-  types,
-  NotificationType,
-  TimeFrame,
-  BookingStatus,
-} from "../../lib/types";
+import { types } from "../../lib/types";
+import { TimeFrame, BookingStatus, NotificationType } from "../../lib/enums";
 import { tokenPayloadVar, communityIdVar } from "../_app";
 import { Container, Spinner, SVG } from "../../components/Container";
 
@@ -389,6 +385,7 @@ export default function NotificationDetails() {
                   flex: 1 1 0%;
                   overflow-y: auto;
                   padding: 10px 25px;
+                  list-style-type: none;
 
                   .received {
                     font-size: 17px;

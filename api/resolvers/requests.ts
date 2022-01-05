@@ -33,17 +33,23 @@ const requestResolvers = {
     },
     async requests(
       _: never,
-      { communityId }: { communityId: string },
+      {
+        offset,
+        limit,
+        communityId,
+      }: { offset: number; limit: number; communityId: string },
       { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
     ): Promise<Request[]> {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
-      const requests = await loader
+      const [requests] = await loader
         .loadEntity(Request, "request")
         .where("request.communityId = :communityId", { communityId })
         .info(info)
-        .loadMany();
+        .order({ "request.createdAt": "DESC" })
+        .paginate({ offset, limit })
+        .loadPaginated();
 
       return requests;
     },

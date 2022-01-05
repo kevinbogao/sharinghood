@@ -10,12 +10,12 @@ import { transformImgUrl } from "../../lib";
 
 export default function Requests() {
   const communityId = useReactiveVar(communityIdVar);
-  const { loading, error, data, client } = useQuery<
+  const { loading, error, data, client, fetchMore } = useQuery<
     types.RequestsData,
     types.RequestsVars
   >(queries.GET_REQUESTS, {
     skip: !communityId,
-    variables: { communityId: communityId! },
+    variables: { offset: 0, limit: 10, communityId: communityId! },
     onError: ({ message }) => {
       console.warn(message);
     },
@@ -65,6 +65,19 @@ export default function Requests() {
             </Link>
           </div>
         ))}
+        <button
+          onClick={() => {
+            fetchMore({
+              variables: {
+                offset: data?.requests.length,
+                limit: 10,
+                communityId: communityId!,
+              },
+            });
+          }}
+        >
+          More
+        </button>
         <style jsx>
           {`
             @import "../index.scss";

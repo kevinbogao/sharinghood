@@ -221,7 +221,7 @@ export const typeDefs = gql`
 
     # Request
     request(requestId: ID!): Request
-    requests(communityId: ID!): [Request]
+    requests(offset: Int!, limit: Int!, communityId: ID!): [Request]
 
     # Notification
     notification(notificationId: ID!): Notification

@@ -314,8 +314,8 @@ export namespace queries {
   `;
 
   export const GET_REQUESTS = gql`
-    query Requests($communityId: ID!) {
-      requests(communityId: $communityId) {
+    query Requests($offset: Int!, $limit: Int!, $communityId: ID!) {
+      requests(offset: $offset, limit: $limit, communityId: $communityId) {
         id
         title
         desc

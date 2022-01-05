@@ -5,6 +5,7 @@ import {
   split,
   makeVar,
   createHttpLink,
+  Reference,
   ApolloLink,
   ApolloClient,
   InMemoryCache,
@@ -64,6 +65,18 @@ const cache: InMemoryCache = new InMemoryCache({
         refreshToken: { read: () => refreshTokenVar() },
         tokenPayload: { read: () => tokenPayloadVar() },
         createCommunityDataVar: { read: () => createCommunityDataVar() },
+        requests: {
+          keyArgs: [],
+          merge(
+            existing: Reference[],
+            incoming: Reference[],
+            { args: { offset = 0 } }: any
+          ) {
+            const merged = existing ? existing.slice(0) : [];
+            incoming.forEach((e, i) => (merged[offset + i] = e));
+            return merged;
+          },
+        },
       },
     },
   },

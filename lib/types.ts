@@ -514,6 +514,8 @@ export namespace types {
   }
 
   export interface RequestsVars {
+    offset: number;
+    limit: number;
     communityId: string;
   }
 

@@ -39,13 +39,13 @@ export default function AccountPosts({ posts, router }: AccountPostsProps) {
           userCommunitiesCache.communities.forEach((community) => {
             const postsCache = cache.readQuery<PostsData, PostsVars>({
               query: queries.GET_POSTS,
-              variables: { communityId: community.id },
+              variables: { offset: 0, limit: 10, communityId: community.id },
             });
 
             if (postsCache) {
               cache.writeQuery<PostsData, PostsVars>({
                 query: queries.GET_POSTS,
-                variables: { communityId: community.id },
+                variables: { offset: 0, limit: 10, communityId: community.id },
                 data: {
                   posts: postsCache.posts.filter(
                     (post) => post.id !== selectedPost?.id

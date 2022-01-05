@@ -1,3 +1,4 @@
+import { useEffect, RefObject } from "react";
 import Link from "next/link";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import { Container } from "../../components/Container";
@@ -7,18 +8,45 @@ import { transformImgUrl } from "../../lib";
 import { communityIdVar } from "../_app";
 import type { PostsData, PostsVars } from "../../lib/types";
 
-export default function Posts() {
+interface PostsProps {
+  parent: RefObject<HTMLDivElement>;
+}
+
+export default function Posts({ parent }: PostsProps) {
   const communityId = useReactiveVar(communityIdVar);
-  const { loading, error, data, client } = useQuery<PostsData, PostsVars>(
-    queries.GET_POSTS,
-    {
-      skip: !communityId,
-      variables: { communityId: communityId! },
-      onError({ message }) {
-        console.warn(message);
-      },
+  const { loading, error, data, client, fetchMore } = useQuery<
+    PostsData,
+    PostsVars
+  >(queries.GET_POSTS, {
+    skip: !communityId,
+    variables: { offset: 0, limit: 10, communityId: communityId! },
+    onError({ message }) {
+      console.warn(message);
+    },
+  });
+
+  function onScroll() {
+    if (parent.current) {
+      const { scrollTop, scrollHeight, clientHeight } = parent.current;
+      if (scrollTop + clientHeight === scrollHeight) {
+        fetchMore({
+          variables: {
+            offset: data?.posts.length,
+            limit: 10,
+            communityId: communityIdVar()!,
+          },
+        });
+      }
     }
-  );
+  }
+
+  useEffect(() => {
+    if (parent?.current) {
+      parent.current.addEventListener("scroll", onScroll);
+    }
+
+    return () => parent?.current?.removeEventListener("scroll", onScroll);
+  }, [data]);
 
   return (
     <Container loading={loading} error={error}>

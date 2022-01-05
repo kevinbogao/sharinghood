@@ -41,12 +41,12 @@ export default function CreatePost() {
       const communityId = communityIdVar()!;
       const postsCache = cache.readQuery<PostsData, PostsVars>({
         query: queries.GET_POSTS,
-        variables: { communityId },
+        variables: { offset: 0, limit: 10, communityId },
       });
       if (data && postsCache) {
         cache.writeQuery<PostsData, PostsVars>({
           query: queries.GET_POSTS,
-          variables: { communityId },
+          variables: { offset: 0, limit: 10, communityId },
           data: { posts: [data.createPost, ...postsCache.posts] },
         });
       }

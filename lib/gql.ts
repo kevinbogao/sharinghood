@@ -234,8 +234,8 @@ export namespace queries {
   `;
 
   export const GET_POSTS = gql`
-    query Posts($communityId: ID!) {
-      posts(communityId: $communityId) {
+    query Posts($offset: Int!, $limit: Int!, $communityId: ID!) {
+      posts(offset: $offset, limit: $limit, communityId: $communityId) {
         id
         title
         imageUrl
@@ -383,8 +383,8 @@ export namespace queries {
   `;
 
   export const GET_NOTIFICATIONS = gql`
-    query GetNotifications($communityId: ID!) {
-      notifications(communityId: $communityId) {
+    query GetNotifications($offset: Int!, $limit: Int!, $communityId: ID!) {
+      notifications(offset: $offset, limit: $limit, communityId: $communityId) {
         id
         type
         booking {

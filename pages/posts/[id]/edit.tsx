@@ -126,13 +126,13 @@ export default function EditPost() {
       postAndCommunities?.communities.forEach((community) => {
         const postsCache = cache.readQuery<PostsData, PostsVars>({
           query: queries.GET_POSTS,
-          variables: { communityId: community.id },
+          variables: { offset: 0, limit: 10, communityId: community.id },
         });
 
         if (!postsCache) return;
         cache.writeQuery<PostsData, PostsVars>({
           query: queries.GET_POSTS,
-          variables: { communityId: community.id },
+          variables: { offset: 0, limit: 10, communityId: community.id },
           data: {
             posts: postsCache.posts.filter(
               (post) => post.id !== postAndCommunities.post.id
@@ -158,14 +158,22 @@ export default function EditPost() {
           });
 
           const postsCache = cache.readQuery<PostsData, PostsVars>({
-            variables: { communityId: data!.addPostToCommunity.id },
+            variables: {
+              offset: 0,
+              limit: 10,
+              communityId: data!.addPostToCommunity.id,
+            },
             query: queries.GET_POSTS,
           });
 
           if (postsCache && postAndCommunitiesCache) {
             cache.writeQuery<PostsData, PostsVars>({
               query: queries.GET_POSTS,
-              variables: { communityId: data!.addPostToCommunity.id },
+              variables: {
+                offset: 0,
+                limit: 10,
+                communityId: data!.addPostToCommunity.id,
+              },
               data: {
                 posts: [postAndCommunitiesCache.post, ...postsCache.posts],
               },

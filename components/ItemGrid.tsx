@@ -38,7 +38,7 @@ export default function ItemsGrid({
                 if (communityId)
                   client.query<PostsData, PostsVars>({
                     query: queries.GET_POSTS,
-                    variables: { communityId },
+                    variables: { offset: 0, limit: 10, communityId },
                   });
               }}
             >

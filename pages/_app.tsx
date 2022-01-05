@@ -1,6 +1,6 @@
 import type { AppProps } from "next/app";
 import jwtDecode from "jwt-decode";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   split,
   makeVar,
@@ -65,7 +65,31 @@ const cache: InMemoryCache = new InMemoryCache({
         refreshToken: { read: () => refreshTokenVar() },
         tokenPayload: { read: () => tokenPayloadVar() },
         createCommunityDataVar: { read: () => createCommunityDataVar() },
+        posts: {
+          keyArgs: [],
+          merge(
+            existing: Reference[],
+            incoming: Reference[],
+            { args: { offset = 0 } }: any
+          ) {
+            const merged = existing ? existing.slice(0) : [];
+            incoming.forEach((e, i) => (merged[offset + i] = e));
+            return merged;
+          },
+        },
         requests: {
+          keyArgs: [],
+          merge(
+            existing: Reference[],
+            incoming: Reference[],
+            { args: { offset = 0 } }: any
+          ) {
+            const merged = existing ? existing.slice(0) : [];
+            incoming.forEach((e, i) => (merged[offset + i] = e));
+            return merged;
+          },
+        },
+        notifications: {
           keyArgs: [],
           merge(
             existing: Reference[],
@@ -153,6 +177,8 @@ export const tokenPayloadVar = makeVar<AccessToken | null>(null);
 export const createCommunityDataVar = makeVar<CreateCommunityData | null>(null);
 
 export default function App({ Component, pageProps }: AppProps) {
+  const base = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const accessToken = localStorage.getItem("@sharinghood:accessToken");
     communityIdVar(localStorage.getItem("@sharinghood:communityId"));
@@ -165,8 +191,8 @@ export default function App({ Component, pageProps }: AppProps) {
     <ApolloProvider client={client}>
       <NotificationBanner />
       <Navbar />
-      <div className="base-control">
-        <Component {...pageProps} />
+      <div className="base-control" ref={base}>
+        <Component {...pageProps} parent={base} />
       </div>
       <style jsx global>
         {`

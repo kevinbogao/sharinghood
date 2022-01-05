@@ -8,7 +8,11 @@ import { Notification } from "../entities";
 import sendMail from "../../lib/mail";
 import pushNotification from "../../lib/firebase";
 import { NotificationType } from "../../lib/enums";
-import type { Context, CreateNotificationInput } from "../../lib/types";
+import type {
+  Context,
+  NotificationsVars,
+  CreateNotificationInput,
+} from "../../lib/types";
 
 const notificationResolvers = {
   Query: {
@@ -65,32 +69,32 @@ const notificationResolvers = {
     },
     async notifications(
       _: never,
-      { communityId }: { communityId: string },
+      { offset, limit, communityId }: NotificationsVars,
       { user, redis, loader }: Context,
       info: IGraphQLToolsResolveInfo
     ): Promise<Notification[]> {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
-      const [notifications] = await Promise.all([
-        loader
-          .loadEntity(Notification, "notification")
-          .info(info)
-          .ejectQueryBuilder((qb) =>
-            qb
-              .where("notification.communityId = :communityId", {
-                communityId,
-              })
-              .andWhere(
-                "notification.creatorId = :userId OR notification.recipientId = :userId",
-                {
-                  userId: user.userId,
-                }
-              )
-          )
-          .order({ "notification.updatedAt": "DESC" })
-          .loadMany(),
-        redis.hdel(`notifications:${user.userId}`, `${communityId}`),
-      ]);
+      const [notifications] = await loader
+        .loadEntity(Notification, "notification")
+        .info(info)
+        .ejectQueryBuilder((qb) =>
+          qb
+            .where("notification.communityId = :communityId", {
+              communityId,
+            })
+            .andWhere(
+              "notification.creatorId = :userId OR notification.recipientId = :userId",
+              {
+                userId: user.userId,
+              }
+            )
+        )
+        .order({ "notification.updatedAt": "DESC" })
+        .paginate({ offset, limit })
+        .loadPaginated();
+
+      await redis.hdel(`notifications:${user.userId}`, `${communityId}`);
 
       return notifications;
     },

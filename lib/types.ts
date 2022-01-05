@@ -443,6 +443,8 @@ export interface PostsData {
 }
 
 export interface PostsVars {
+  offset: number;
+  limit: number;
   communityId: string;
 }
 
@@ -567,6 +569,8 @@ export interface NotificationsData {
 }
 
 export interface NotificationsVars {
+  offset: number;
+  limit: number;
   communityId: string;
 }
 

@@ -19,20 +19,21 @@ import type {
   UpdateBookingVars,
   UserCommunitiesData,
 } from "../../lib/types";
+import { useEffect } from "react";
 
-export default function Notifications() {
+export default function Notifications(props: any) {
   const router = useRouter();
   const client = useApolloClient();
   const communityId = useReactiveVar(communityIdVar);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
 
-  const { loading, error, data } = useQuery<
+  const { loading, error, data, fetchMore } = useQuery<
     NotificationsData,
     NotificationsVars
   >(queries.GET_NOTIFICATIONS, {
     skip: !communityId,
     fetchPolicy: "network-only",
-    variables: { communityId: communityId! },
+    variables: { offset: 0, limit: 10, communityId: communityId! },
     onCompleted() {
       const communitiesCache = client.readQuery<UserCommunitiesData, void>({
         query: queries.GET_USER_COMMUNITIES,
@@ -332,6 +333,20 @@ export default function Notifications() {
         ) : (
           <p className="main-p full">You do not have any notifications yet</p>
         )}
+
+        <button
+          onClick={() => {
+            fetchMore({
+              variables: {
+                offset: data?.notifications.length,
+                limit: 10,
+                communityId: communityId!,
+              },
+            });
+          }}
+        >
+          More
+        </button>
         {mutationLoading && <Spinner cover />}
         <style jsx>
           {`

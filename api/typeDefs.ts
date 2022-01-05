@@ -77,6 +77,11 @@ export const typeDefs = gql`
     bookings: [Booking]
   }
 
+  type PaginatedPosts {
+    posts: [Post]
+    hasMore: Boolean
+  }
+
   input PostInput {
     postId: ID
     title: String
@@ -198,8 +203,8 @@ export const typeDefs = gql`
     id: ID
     name: String
     code: String
-    membersCount: Int
     postsCount: Int
+    membersCount: Int
     requestsCount: Int
     bookingsCount: Int
   }
@@ -217,7 +222,10 @@ export const typeDefs = gql`
 
     # Post
     post(postId: ID!): Post
-    posts(communityId: ID!): [Post]
+    # posts(communityId: ID!): [Post]
+    posts(offset: Int!, limit: Int!, communityId: ID!): [Post]
+    # postsMore(offset: Int!, limit: Int!): PaginatedPosts
+    postsMore: PaginatedPosts
 
     # Request
     request(requestId: ID!): Request
@@ -225,7 +233,8 @@ export const typeDefs = gql`
 
     # Notification
     notification(notificationId: ID!): Notification
-    notifications(communityId: ID!): [Notification]
+    # notifications(communityId: ID!): [Notification]
+    notifications(offset: Int!, limit: Int!, communityId: ID!): [Notification]
     findNotification(recipientId: ID!, communityId: ID!): Notification
 
     # Activity

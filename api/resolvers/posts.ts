@@ -10,7 +10,12 @@ import { User, Post, Community, Booking, Notification } from "../entities";
 import pushNotification from "../../lib/firebase";
 import { upload, destroy } from "../../lib/image";
 import { NotificationType } from "../../lib/enums";
-import type { Context, PostInput, CreatePostInput } from "../../lib/types";
+import type {
+  Context,
+  PostInput,
+  PostsVars,
+  CreatePostInput,
+} from "../../lib/types";
 
 const postResolvers = {
   Query: {
@@ -39,13 +44,13 @@ const postResolvers = {
     },
     async posts(
       _: never,
-      { communityId }: { communityId: string },
+      { offset, limit, communityId }: PostsVars,
       { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
     ): Promise<Post[]> {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
-      const posts = await loader
+      const [posts] = await loader
         .loadEntity(Post, "post")
         .info(info)
         .ejectQueryBuilder((qb) =>
@@ -54,9 +59,29 @@ const postResolvers = {
             .where("community.id = :id", { id: communityId })
         )
         .order({ "post.createdAt": "DESC" })
-        .loadMany();
+        .paginate({ offset, limit })
+        .loadPaginated();
 
       return posts;
+    },
+
+    async postsMore(
+      _: never,
+      __: never,
+      { loader }: Context,
+      info: IGraphQLToolsResolveInfo
+    ): Promise<any> {
+      const [posts] = await loader
+        .loadEntity(Post, "post")
+        .info(info, "posts")
+        .order({ "post.createdAt": "DESC" })
+        .paginate({ offset: 0, limit: 10 })
+        .loadPaginated();
+
+      return {
+        posts,
+        hasMore: true,
+      };
     },
   },
   Mutation: {

@@ -6,15 +6,25 @@ import Modal from "react-modal";
 import moment from "moment";
 import { transformImgUrl } from "../lib";
 import { queries, mutations } from "../lib/gql";
-import { types } from "../lib/types";
 import { NotificationType } from "../lib/enums";
 import { Loader } from "./Container";
+import type {
+  Post,
+  Request,
+  Community,
+  CreateThreadData,
+  CreateThreadVars,
+  FindNotificationData,
+  FindNotificationVars,
+  CreateNotificationData,
+  CreateNotificationVars,
+} from "../lib/types";
 
 type ItemType = "post" | "request";
 
 interface Item {
-  post: types.Post;
-  request: types.Request;
+  post: Post;
+  request: Request;
 }
 
 interface ItemDetailsProps {
@@ -22,7 +32,7 @@ interface ItemDetailsProps {
   item: Item[ItemType];
   userId: string;
   children: ReactNode;
-  community: types.Community;
+  community: Community;
 }
 
 export default function ItemDetails({
@@ -38,8 +48,8 @@ export default function ItemDetails({
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const [findNotification] = useLazyQuery<
-    types.FindNotificationData,
-    types.FindNotificationVars
+    FindNotificationData,
+    FindNotificationVars
   >(queries.FIND_NOTIFICATION, {
     fetchPolicy: "no-cache",
     onCompleted({ findNotification }) {
@@ -49,8 +59,8 @@ export default function ItemDetails({
   });
 
   const [createNotification, { loading: mutationLoading }] = useMutation<
-    types.CreateNotificationData,
-    types.CreateNotificationVars
+    CreateNotificationData,
+    CreateNotificationVars
   >(mutations.CREATE_NOTIFICATION, {
     onCompleted({ createNotification }) {
       if (createNotification.id)
@@ -58,37 +68,40 @@ export default function ItemDetails({
     },
   });
 
-  const [createThread] = useMutation<
-    types.CreateThreadData,
-    types.CreateThreadVars
-  >(mutations.CREATE_THREAD, {
-    update(cache, { data }) {
-      setComment("");
-      const query =
-        type === "post"
-          ? queries.GET_POST_DETAILS
-          : queries.GET_REQUEST_DETAILS;
-      const variables = { [`${type}Id`]: item.id, communityId: community.id };
-      const itemDetailsCache: any = cache.readQuery({
-        query,
-        variables,
-      });
-
-      if (itemDetailsCache) {
-        cache.writeQuery({
+  const [createThread] = useMutation<CreateThreadData, CreateThreadVars>(
+    mutations.CREATE_THREAD,
+    {
+      update(cache, { data }) {
+        setComment("");
+        const query =
+          type === "post"
+            ? queries.GET_POST_DETAILS
+            : queries.GET_REQUEST_DETAILS;
+        const variables = { [`${type}Id`]: item.id, communityId: community.id };
+        const itemDetailsCache: any = cache.readQuery({
           query,
           variables,
-          data: {
-            ...itemDetailsCache,
-            [type]: {
-              ...itemDetailsCache[type],
-              threads: [...itemDetailsCache[type].threads, data!.createThread],
-            },
-          },
         });
-      }
-    },
-  });
+
+        if (itemDetailsCache) {
+          cache.writeQuery({
+            query,
+            variables,
+            data: {
+              ...itemDetailsCache,
+              [type]: {
+                ...itemDetailsCache[type],
+                threads: [
+                  ...itemDetailsCache[type].threads,
+                  data!.createThread,
+                ],
+              },
+            },
+          });
+        }
+      },
+    }
+  );
 
   return (
     <>

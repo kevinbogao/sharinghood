@@ -1,7 +1,6 @@
 import { useRouter } from "next/router";
 import { useMutation, useLazyQuery } from "@apollo/client";
 import { useForm } from "react-hook-form";
-import { types } from "../../lib/types";
 import { queries, mutations } from "../../lib/gql";
 import { Loader, InlineError } from "../../components/Container";
 import {
@@ -9,6 +8,12 @@ import {
   accessTokenVar,
   createCommunityDataVar,
 } from "../_app";
+import type {
+  FindCommunityData,
+  FindCommunityVars,
+  CreateCommunityData,
+  CreateCommunityVars,
+} from "../../lib/types";
 
 interface CommunityInputs {
   code: string;
@@ -26,8 +31,8 @@ export default function CreateCommunity() {
   } = useForm<CommunityInputs>();
 
   const [community, { loading }] = useLazyQuery<
-    types.FindCommunityData,
-    types.FindCommunityVars
+    FindCommunityData,
+    FindCommunityVars
   >(queries.FIND_COMMUNITY, {
     onCompleted({ findCommunity }) {
       if (findCommunity) setError("code", { message: "Community code exists" });
@@ -36,8 +41,8 @@ export default function CreateCommunity() {
   });
 
   const [createCommunity, { loading: mutationLoading }] = useMutation<
-    types.CreateCommunityData,
-    types.CreateCommunityVars
+    CreateCommunityData,
+    CreateCommunityVars
   >(mutations.CREATE_COMMUNITY, {
     onCompleted: ({ createCommunity }) => {
       localStorage.setItem("@sharinghood:communityId", createCommunity.id);

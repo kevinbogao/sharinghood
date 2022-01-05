@@ -8,7 +8,6 @@ import {
   useReactiveVar,
   useApolloClient,
 } from "@apollo/client";
-import { types } from "../../../lib/types";
 import { queries, mutations } from "../../../lib/gql";
 import { Container, Loader } from "../../../components/Container";
 import {
@@ -16,6 +15,14 @@ import {
   tokenPayloadVar,
   createCommunityDataVar,
 } from "../../_app";
+import type {
+  Community,
+  FindCommunityData,
+  FindCommunityVars,
+  JoinCommunityData,
+  JoinCommunityVars,
+  UserCommunitiesData,
+} from "../../../lib/types";
 
 export default function CommunityInvite() {
   const router = useRouter();
@@ -25,39 +32,36 @@ export default function CommunityInvite() {
   const [isErrOpen, setIsErrOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
 
-  const { data, loading } = useQuery<
-    types.FindCommunityData,
-    types.FindCommunityVars
-  >(queries.FIND_COMMUNITY, {
-    skip: !router.query.code,
-    variables: { communityCode: router.query.code?.toString()! },
-    onCompleted({ findCommunity }) {
-      const isMember = findCommunity.members.some(
-        (member) => member.id === tokenPayload?.userId
-      );
-      if (isMember) {
-        communityIdVar(findCommunity.id);
-        localStorage.setItem("@sharinghood:communityId", findCommunity.id);
-        router.push("/posts");
-      }
-    },
-  });
+  const { data, loading } = useQuery<FindCommunityData, FindCommunityVars>(
+    queries.FIND_COMMUNITY,
+    {
+      skip: !router.query.code,
+      variables: { communityCode: router.query.code?.toString()! },
+      onCompleted({ findCommunity }) {
+        const isMember = findCommunity.members.some(
+          (member) => member.id === tokenPayload?.userId
+        );
+        if (isMember) {
+          communityIdVar(findCommunity.id);
+          localStorage.setItem("@sharinghood:communityId", findCommunity.id);
+          router.push("/posts");
+        }
+      },
+    }
+  );
 
   const [joinCommunity, { loading: mutationLoading }] = useMutation<
-    types.JoinCommunityData,
-    types.JoinCommunityVars
+    JoinCommunityData,
+    JoinCommunityVars
   >(mutations.JOIN_COMMUNITY, {
     update(cache, { data }) {
       if (!data) return;
-      const userCommunitiesCache = cache.readQuery<
-        types.UserCommunitiesData,
-        void
-      >({
+      const userCommunitiesCache = cache.readQuery<UserCommunitiesData, void>({
         query: queries.GET_USER_COMMUNITIES,
       });
 
       if (userCommunitiesCache) {
-        cache.writeQuery<types.UserCommunitiesData, void>({
+        cache.writeQuery<UserCommunitiesData, void>({
           query: queries.GET_USER_COMMUNITIES,
           data: {
             communities: [
@@ -74,14 +78,14 @@ export default function CommunityInvite() {
     },
   });
 
-  function handleJoinCommunity(community: types.Community): void {
+  function handleJoinCommunity(community: Community): void {
     if (tokenPayload) {
       const isMember = community.members.some(
         (member) => member.id === tokenPayload.userId
       );
-      const userCommunities = client.readQuery<types.UserCommunitiesData, void>(
-        { query: queries.GET_USER_COMMUNITIES }
-      );
+      const userCommunities = client.readQuery<UserCommunitiesData, void>({
+        query: queries.GET_USER_COMMUNITIES,
+      });
       if (isMember) {
         setErrMsg(`You are already a member of ${community.name}`);
         setIsErrOpen(true);

@@ -1,15 +1,15 @@
 import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client";
 import { queries } from "../../lib/gql";
-import { types } from "../../lib/types";
 import { Container } from "../../components/Container";
+import type { UnsubscribeUserData, UnsubscribeUserVars } from "../../lib/types";
 
 export default function Unsubscribe() {
   const router = useRouter();
   const { id, to } = router.query;
   const { loading, error, data } = useQuery<
-    types.UnsubscribeUserData,
-    types.UnsubscribeUserVars
+    UnsubscribeUserData,
+    UnsubscribeUserVars
   >(queries.UNSUBSCRIBE_USER, {
     skip: !id || !to,
     variables: { userId: id?.toString()!, token: to?.toString()! },

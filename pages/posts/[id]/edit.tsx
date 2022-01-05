@@ -5,7 +5,6 @@ import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import Modal from "react-modal";
 import ImageInput from "../../../components/ImageInput";
 import { queries, mutations } from "../../../lib/gql";
-import { types } from "../../../lib/types";
 import { ItemCondition } from "../../../lib/enums";
 import { tokenPayloadVar, communityIdVar } from "../../_app";
 import {
@@ -14,6 +13,21 @@ import {
   Loader,
   InlineError,
 } from "../../../components/Container";
+import type {
+  Community,
+  PostsData,
+  PostsVars,
+  DeletePostData,
+  DeletePostVars,
+  UpdatePostData,
+  UpdatePostVars,
+  PostDetailsData,
+  PostDetailsVars,
+  PostAndCommunitiesData,
+  PostAndCommunitiesVars,
+  AddPostToCommunityData,
+  AddPostToCommunityVars,
+} from "../../../lib/types";
 
 interface PostInputs {
   image: string;
@@ -32,7 +46,7 @@ export default function EditPost() {
     formState: { errors },
   } = methods;
   const [image, setImage] = useState<string | undefined>();
-  const [communityArr, setCommunityArr] = useState<types.Community[]>([]);
+  const [communityArr, setCommunityArr] = useState<Community[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const communityId = useReactiveVar(communityIdVar);
@@ -41,7 +55,7 @@ export default function EditPost() {
     loading,
     error,
     data: postAndCommunities,
-  } = useQuery<types.PostAndCommunitiesData, types.PostAndCommunitiesVars>(
+  } = useQuery<PostAndCommunitiesData, PostAndCommunitiesVars>(
     queries.GET_POST_AND_COMMUNITIES,
     {
       skip: !router.query.id,
@@ -65,13 +79,13 @@ export default function EditPost() {
   );
 
   const [updatePost, { loading: mutationLoading }] = useMutation<
-    types.UpdatePostData,
-    types.UpdatePostVars
+    UpdatePostData,
+    UpdatePostVars
   >(mutations.UPDATE_POST, {
     update(cache, { data }) {
       const postDetailsCache = cache.readQuery<
-        types.PostDetailsData,
-        types.PostDetailsVars
+        PostDetailsData,
+        PostDetailsVars
       >({
         query: queries.GET_POST_DETAILS,
         variables: {
@@ -81,7 +95,7 @@ export default function EditPost() {
       });
 
       if (postDetailsCache && data) {
-        cache.writeQuery<types.PostDetailsData, types.PostDetailsVars>({
+        cache.writeQuery<PostDetailsData, PostDetailsVars>({
           query: queries.GET_POST_DETAILS,
           data: {
             ...postDetailsCache,
@@ -105,18 +119,18 @@ export default function EditPost() {
   });
 
   const [deletePost, { loading: deletePostLoading }] = useMutation<
-    types.DeletePostData,
-    types.DeletePostVars
+    DeletePostData,
+    DeletePostVars
   >(mutations.DELETE_POST, {
     update(cache) {
       postAndCommunities?.communities.forEach((community) => {
-        const postsCache = cache.readQuery<types.PostsData, types.PostsVars>({
+        const postsCache = cache.readQuery<PostsData, PostsVars>({
           query: queries.GET_POSTS,
           variables: { communityId: community.id },
         });
 
         if (!postsCache) return;
-        cache.writeQuery<types.PostsData, types.PostsVars>({
+        cache.writeQuery<PostsData, PostsVars>({
           query: queries.GET_POSTS,
           variables: { communityId: community.id },
           data: {
@@ -131,25 +145,25 @@ export default function EditPost() {
   });
 
   const [addPostToCommunity, { loading: addPostToCommunityLoading }] =
-    useMutation<types.AddPostToCommunityData, types.AddPostToCommunityVars>(
+    useMutation<AddPostToCommunityData, AddPostToCommunityVars>(
       mutations.ADD_POST_TO_COMMUNITY,
       {
         update(cache, { data }) {
           const postAndCommunitiesCache = cache.readQuery<
-            types.PostAndCommunitiesData,
-            types.PostAndCommunitiesVars
+            PostAndCommunitiesData,
+            PostAndCommunitiesVars
           >({
             query: queries.GET_POST_AND_COMMUNITIES,
             variables: { postId: router.query.id?.toString()! },
           });
 
-          const postsCache = cache.readQuery<types.PostsData, types.PostsVars>({
+          const postsCache = cache.readQuery<PostsData, PostsVars>({
             variables: { communityId: data!.addPostToCommunity.id },
             query: queries.GET_POSTS,
           });
 
           if (postsCache && postAndCommunitiesCache) {
-            cache.writeQuery<types.PostsData, types.PostsVars>({
+            cache.writeQuery<PostsData, PostsVars>({
               query: queries.GET_POSTS,
               variables: { communityId: data!.addPostToCommunity.id },
               data: {

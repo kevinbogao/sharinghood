@@ -1,10 +1,8 @@
 import { useRef, useState, useEffect, RefObject } from "react";
-
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
-import { types } from "../lib/types";
 import { queries, mutations } from "../lib/gql";
 import { SVG } from "./Container";
 import {
@@ -13,6 +11,11 @@ import {
   refreshTokenVar,
   tokenPayloadVar,
 } from "../pages/_app";
+import type {
+  LogoutData,
+  CommunityAndCommunitiesData,
+  CommunityAndCommunitiesVars,
+} from "../lib/types";
 
 export default function Navbar() {
   const router = useRouter();
@@ -24,8 +27,8 @@ export default function Navbar() {
   const tokenPayload = useReactiveVar(tokenPayloadVar);
 
   const { data } = useQuery<
-    types.CommunityAndCommunitiesData,
-    types.CommunityAndCommunitiesVars
+    CommunityAndCommunitiesData,
+    CommunityAndCommunitiesVars
   >(queries.GET_COMMUNITY_AND_COMMUNITIES, {
     skip: !accessToken || !communityIdVar(),
     variables: { communityId: communityIdVar()! },
@@ -41,7 +44,7 @@ export default function Navbar() {
     },
   });
 
-  const [logout] = useMutation<types.LogoutData, void>(mutations.LOGOUT);
+  const [logout] = useMutation<LogoutData, void>(mutations.LOGOUT);
 
   function handleClickOutside(e: Event) {
     if (e.target instanceof Node && node?.current?.contains(e.target)) return;

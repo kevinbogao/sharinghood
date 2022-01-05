@@ -4,13 +4,18 @@ import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import { useForm, FormProvider } from "react-hook-form";
 import moment from "moment";
 import Modal from "react-modal";
-import { types } from "../../../lib/types";
 import { TimeFrame, BookingStatus, NotificationType } from "../../../lib/enums";
 import { queries, mutations } from "../../../lib/gql";
 import { communityIdVar, tokenPayloadVar } from "../../_app";
 import { Container, SVG, Icon, Loader } from "../../../components/Container";
 import DatePicker from "../../../components/DatePicker";
 import ItemDetails from "../../../components/ItemDetails";
+import type {
+  PostDetailsData,
+  PostDetailsVars,
+  CreateNotificationData,
+  CreateNotificationVars,
+} from "../../../lib/types";
 
 const CONDITIONS: Record<string, string> = {
   new: "New",
@@ -37,22 +42,20 @@ export default function PostDetails() {
   const [dateReturn, setDateReturn] = useState(moment());
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
-  const { loading, error, data } = useQuery<
-    types.PostDetailsData,
-    types.PostDetailsVars
-  >(queries.GET_POST_DETAILS, {
-    skip: !router.query.id || !communityId,
-    variables: {
-      postId: router.query.id?.toString()!,
-      communityId: communityId!,
-    },
-  });
-
-  console.log(data);
+  const { loading, error, data } = useQuery<PostDetailsData, PostDetailsVars>(
+    queries.GET_POST_DETAILS,
+    {
+      skip: !router.query.id || !communityId,
+      variables: {
+        postId: router.query.id?.toString()!,
+        communityId: communityId!,
+      },
+    }
+  );
 
   const [createNotification, { loading: mutationLoading }] = useMutation<
-    types.CreateNotificationData,
-    types.CreateNotificationVars
+    CreateNotificationData,
+    CreateNotificationVars
   >(mutations.CREATE_NOTIFICATION, {
     onCompleted({ createNotification }) {
       if (createNotification.id)

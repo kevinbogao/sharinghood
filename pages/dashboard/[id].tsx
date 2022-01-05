@@ -4,11 +4,16 @@ import { useRouter } from "next/router";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import moment, { Moment } from "moment";
 import { queries } from "../../lib/gql";
-import { types } from "../../lib/types";
 import { transformImgUrl } from "../../lib";
 import { tokenPayloadVar } from "../_app";
 import { Container, SVG } from "../../components/Container";
 import { TimeFrame, BookingStatus } from "../../lib/enums";
+import type {
+  Post,
+  User,
+  CommunityActivitiesData,
+  CommunityActivitiesVars,
+} from "../../lib/types";
 
 const STATS_IDS = ["members", "posts", "requests", "bookings"];
 const ID_SET = new Set(["post", "creator", "booker"]);
@@ -57,8 +62,8 @@ export default function CommunityActivities() {
   }, [tokenPayload]);
 
   const { loading, error, data } = useQuery<
-    types.CommunityActivitiesData,
-    types.CommunityActivitiesVars
+    CommunityActivitiesData,
+    CommunityActivitiesVars
   >(queries.GET_COMMUNITY_ACTIVITIES, {
     skip: !tokenPayload?.isAdmin || !router.query.id,
     variables: { communityId: router.query.id?.toString()! },
@@ -98,14 +103,14 @@ export default function CommunityActivities() {
   function findById(stat: any, key: string): void {
     if (USER_SET.has(key)) {
       const targetUser = data!.communityActivities.members.filter(
-        (member: types.User) => member.id === stat[key].id
+        (member: User) => member.id === stat[key].id
       );
       setSelectedId(targetUser[0].id);
       setSelectedStat("members");
       setSelectedStatActivities(data!.communityActivities["members"]);
     } else if (key === "post") {
       const targetPost = data!.communityActivities.posts.filter(
-        (post: types.Post) => post.id === stat[key].id
+        (post: Post) => post.id === stat[key].id
       );
       setSelectedId(targetPost[0].id);
       setSelectedStat("posts");

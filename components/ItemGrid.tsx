@@ -1,9 +1,14 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { useApolloClient } from "@apollo/client";
-import { types } from "../lib/types";
 import { queries } from "../lib/gql";
 import Members from "../components/Members";
+import type {
+  PostsData,
+  PostsVars,
+  RequestsData,
+  RequestsVars,
+} from "../lib/types";
 
 type Item = "post" | "request";
 
@@ -31,7 +36,7 @@ export default function ItemsGrid({
             <a
               onMouseOver={() => {
                 if (communityId)
-                  client.query<types.PostsData, types.PostsVars>({
+                  client.query<PostsData, PostsVars>({
                     query: queries.GET_POSTS,
                     variables: { communityId },
                   });
@@ -50,9 +55,9 @@ export default function ItemsGrid({
             <a
               onMouseOver={() => {
                 if (communityId)
-                  client.query<types.RequestsData, types.RequestsVars>({
+                  client.query<RequestsData, RequestsVars>({
                     query: queries.GET_REQUESTS,
-                    variables: { communityId },
+                    variables: { offset: 0, limit: 10, communityId },
                   });
               }}
             >

@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import { useMutation, useReactiveVar } from "@apollo/client";
-import { types } from "../../../lib/types";
 import { mutations } from "../../../lib/gql";
 import { InlineError, Loader } from "../../../components/Container";
 import { accessTokenVar } from "../../_app";
+import type {
+  ForgotPasswordData,
+  ForgotPasswordVars,
+} from "../../../lib/types";
 
 interface EmailInput {
   email: string;
@@ -31,8 +34,8 @@ export default function ForgotPassword() {
   }, [accessToken]);
 
   const [forgotPassword, { loading: mutationLoading }] = useMutation<
-    types.ForgotPasswordData,
-    types.ForgotPasswordVars
+    ForgotPasswordData,
+    ForgotPasswordVars
   >(mutations.FORGOT_PASSWORD, {
     onCompleted({ forgotPassword }) {
       if (forgotPassword) setSuccess(true);

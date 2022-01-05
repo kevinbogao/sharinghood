@@ -9,10 +9,16 @@ import {
 import moment from "moment";
 import { transformImgUrl } from "../../lib/";
 import { queries, mutations } from "../../lib/gql";
-import { types } from "../../lib/types";
 import { TimeFrame, BookingStatus, NotificationType } from "../../lib/enums";
 import { communityIdVar, tokenPayloadVar } from "../_app";
 import { Container, Spinner } from "../../components/Container";
+import type {
+  NotificationsData,
+  NotificationsVars,
+  UpdateBookingData,
+  UpdateBookingVars,
+  UserCommunitiesData,
+} from "../../lib/types";
 
 export default function Notifications() {
   const router = useRouter();
@@ -21,22 +27,19 @@ export default function Notifications() {
   const tokenPayload = useReactiveVar(tokenPayloadVar);
 
   const { loading, error, data } = useQuery<
-    types.NotificationsData,
-    types.NotificationsVars
+    NotificationsData,
+    NotificationsVars
   >(queries.GET_NOTIFICATIONS, {
     skip: !communityId,
     fetchPolicy: "network-only",
     variables: { communityId: communityId! },
     onCompleted() {
-      const communitiesCache = client.readQuery<
-        types.UserCommunitiesData,
-        void
-      >({
+      const communitiesCache = client.readQuery<UserCommunitiesData, void>({
         query: queries.GET_USER_COMMUNITIES,
       });
       if (!communitiesCache) return;
 
-      client.writeQuery<types.UserCommunitiesData, void>({
+      client.writeQuery<UserCommunitiesData, void>({
         query: queries.GET_USER_COMMUNITIES,
         data: {
           communities: communitiesCache.communities.map((community) =>
@@ -50,8 +53,8 @@ export default function Notifications() {
   });
 
   const [updateBooking, { loading: mutationLoading }] = useMutation<
-    types.UpdateBookingData,
-    types.UpdateBookingVars
+    UpdateBookingData,
+    UpdateBookingVars
   >(mutations.UPDATE_BOOKING, {
     onError({ message }) {
       console.log(message);

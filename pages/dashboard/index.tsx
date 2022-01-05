@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import { tokenPayloadVar } from "../_app";
-import { types } from "../../lib/types";
 import { queries } from "../../lib/gql";
 import { Container, SVG } from "../../components/Container";
+import type {
+  TotalActivitiesData,
+  CommunitiesActivities,
+} from "../../lib/types";
 
-type TKeys = keyof types.CommunitiesActivities;
+type TKeys = keyof CommunitiesActivities;
 
 const FORMATTED_KEYS: Record<TKeys, string> = {
   id: "Community ID",
@@ -24,10 +27,10 @@ export default function Dashboard() {
   const [sortOrder, setSortOrder] = useState(-1);
   const [selectedCol, setSelectedCol] = useState("id");
   const [communitiesActivities, setCommunitiesActivities] = useState<
-    types.CommunitiesActivities[]
+    CommunitiesActivities[]
   >([]);
 
-  const { loading, error, data } = useQuery<types.TotalActivitiesData, void>(
+  const { loading, error, data } = useQuery<TotalActivitiesData, void>(
     queries.GET_TOTAl_ACTIVITIES,
     {
       skip: !tokenPayload?.isAdmin,

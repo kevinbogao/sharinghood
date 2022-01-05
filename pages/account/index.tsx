@@ -2,11 +2,11 @@ import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { useRouter } from "next/router";
 import { useQuery, useMutation } from "@apollo/client";
-import { types } from "../../lib/types";
 import { queries, mutations } from "../../lib/gql";
 import { Container, Loader, InlineError } from "../../components/Container";
 import ImageInput from "../../components/ImageInput";
 import AccountPosts from "../../components/AccountPosts";
+import type { UserData, UpdateUserData, UpdateUserVars } from "../../lib/types";
 
 interface UserInputs {
   name: string;
@@ -27,24 +27,24 @@ export default function Account() {
     loading,
     data: userData,
     error,
-  } = useQuery<types.UserData, void>(queries.GET_USER, {
+  } = useQuery<UserData, void>(queries.GET_USER, {
     onCompleted({ user }) {
       setImage(user.imageUrl);
     },
   });
 
   const [updateUser, { loading: mutationLoading }] = useMutation<
-    types.UpdateUserData,
-    types.UpdateUserVars
+    UpdateUserData,
+    UpdateUserVars
   >(mutations.UPDATE_USER, {
     update(cache, { data }) {
       if (data?.updateUser) {
-        const userCache = cache.readQuery<types.UserData, void>({
+        const userCache = cache.readQuery<UserData, void>({
           query: queries.GET_USER,
         });
 
         if (userCache) {
-          cache.writeQuery<types.UserData, void>({
+          cache.writeQuery<UserData, void>({
             query: queries.GET_USER,
             data: {
               ...userCache,

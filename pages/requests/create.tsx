@@ -4,12 +4,17 @@ import { useMutation } from "@apollo/client";
 import { useForm, FormProvider } from "react-hook-form";
 import moment from "moment";
 import DatePicker from "../../components/DatePicker";
-import { types } from "../../lib/types";
 import { queries, mutations } from "../../lib/gql";
 import { TimeFrame } from "../../lib/enums";
 import { communityIdVar } from "../_app";
 import ImageInput from "../../components/ImageInput";
 import { Container, Loader, InlineError } from "../../components/Container";
+import type {
+  RequestsData,
+  RequestsVars,
+  CreateRequestData,
+  CreateRequestVars,
+} from "../../lib/types";
 
 interface RequestInputs {
   image?: string;
@@ -32,22 +37,19 @@ export default function CreateRequest() {
   const [dateNeed, setDateNeed] = useState(moment());
   const [dateReturn, setDateReturn] = useState(moment());
   const [createRequest, { loading: mutationLoading }] = useMutation<
-    types.CreateRequestData,
-    types.CreateRequestVars
+    CreateRequestData,
+    CreateRequestVars
   >(mutations.CREATE_REQUEST, {
     update(cache, { data }) {
       const communityId = communityIdVar()!;
-      const requestsCache = cache.readQuery<
-        types.RequestsData,
-        types.RequestsVars
-      >({
+      const requestsCache = cache.readQuery<RequestsData, RequestsVars>({
         query: queries.GET_REQUESTS,
-        variables: { communityId },
+        variables: { offset: 0, limit: 10, communityId },
       });
       if (requestsCache) {
-        cache.writeQuery<types.RequestsData, types.RequestsVars>({
+        cache.writeQuery<RequestsData, RequestsVars>({
           query: queries.GET_REQUESTS,
-          variables: { communityId },
+          variables: { offset: 0, limit: 10, communityId },
           data: { requests: [data!.createRequest, ...requestsCache.requests] },
         });
       }

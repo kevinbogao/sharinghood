@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, RefObject } from "react";
 import Image from "next/image";
 import { useQuery, useReactiveVar } from "@apollo/client";
-import { types } from "../lib/types";
 import { queries } from "../lib/gql";
 import { transformImgUrl } from "../lib";
 import { tokenPayloadVar, communityIdVar } from "../pages/_app";
 import { SVG } from "./Container";
+import type { CommunityData, CommunityVars } from "../lib/types";
 
 export default function Members() {
   const node: RefObject<HTMLDivElement> | undefined = useRef(null);
@@ -13,7 +13,7 @@ export default function Members() {
   const tokenPayload = useReactiveVar(tokenPayloadVar);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const { data } = useQuery<types.CommunityData, types.CommunityVars>(
+  const { data } = useQuery<CommunityData, CommunityVars>(
     queries.GET_COMMUNITY_AND_MEMBERS,
     {
       skip: !communityId,

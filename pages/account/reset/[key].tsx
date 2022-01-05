@@ -3,8 +3,13 @@ import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import { useQuery, useMutation } from "@apollo/client";
 import { queries, mutations } from "../../../lib/gql";
-import { types } from "../../../lib/types";
 import { Container, InlineError, Loader } from "../../../components/Container";
+import type {
+  ResetPasswordData,
+  ResetPasswordVars,
+  ValidateResetLinkData,
+  ValidateResetLinkVars,
+} from "../../../lib/types";
 
 interface PasswordInput {
   password: string;
@@ -21,16 +26,16 @@ export default function ResetPassword() {
   } = useForm<PasswordInput>();
   const [success, setSuccess] = useState(false);
   const { loading, error, data } = useQuery<
-    types.ValidateResetLinkData,
-    types.ValidateResetLinkVars
+    ValidateResetLinkData,
+    ValidateResetLinkVars
   >(queries.VALIDATE_RESET_LINK, {
     skip: !router.query.key,
     variables: { resetKey: router.query.key?.toString()! },
   });
 
   const [resetPassword, { loading: mutationLoading }] = useMutation<
-    types.ResetPasswordData,
-    types.ResetPasswordVars
+    ResetPasswordData,
+    ResetPasswordVars
   >(mutations.RESET_PASSWORD, {
     onCompleted({ resetPassword }) {
       if (resetPassword) setSuccess(true);

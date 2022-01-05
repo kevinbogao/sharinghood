@@ -3,10 +3,10 @@ import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import { useLazyQuery, useReactiveVar } from "@apollo/client";
 import Modal from "react-modal";
-import { types } from "../lib/types";
 import { queries } from "../lib/gql";
 import { Loader, InlineError } from "../components/Container";
 import { accessTokenVar, createCommunityDataVar } from "./_app";
+import type { FindCommunityData, FindCommunityVars } from "../lib/types";
 
 interface CodeInput {
   code: string;
@@ -28,8 +28,8 @@ export default function Home() {
   }, [router, accessToken]);
 
   const [community, { loading }] = useLazyQuery<
-    types.FindCommunityData,
-    types.FindCommunityVars
+    FindCommunityData,
+    FindCommunityVars
   >(queries.FIND_COMMUNITY, {
     onCompleted({ findCommunity }) {
       if (findCommunity) {

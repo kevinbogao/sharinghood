@@ -7,10 +7,17 @@ import {
   useReactiveVar,
 } from "@apollo/client";
 import { useForm } from "react-hook-form";
-import { types } from "../../lib/types";
 import { queries, mutations } from "../../lib/gql";
 import { Container, InlineError, Loader } from "../../components/Container";
 import { communityIdVar, tokenPayloadVar } from "../../pages/_app";
+import type {
+  Community,
+  FindCommunityData,
+  FindCommunityVars,
+  JoinCommunityData,
+  JoinCommunityVars,
+  UserCommunitiesData,
+} from "../../lib/types";
 
 interface CodeInput {
   code: string;
@@ -27,8 +34,9 @@ export default function Communities() {
   } = useForm<CodeInput>();
   const tokenPayload = useReactiveVar(tokenPayloadVar);
   const [isJoinCommunity, setIsJoinCommunity] = useState(false);
-  const [communityToJoin, setCommunityToJoin] =
-    useState<types.Community | null>(null);
+  const [communityToJoin, setCommunityToJoin] = useState<Community | null>(
+    null
+  );
 
   function selectCommunity(communityId: string): void {
     localStorage.setItem("@sharinghood:communityId", communityId);
@@ -36,13 +44,13 @@ export default function Communities() {
     router.push("/posts");
   }
 
-  const { loading, error, data } = useQuery<types.UserCommunitiesData, void>(
+  const { loading, error, data } = useQuery<UserCommunitiesData, void>(
     queries.GET_USER_COMMUNITIES
   );
 
   const [community, { loading: findCommunityLoading }] = useLazyQuery<
-    types.FindCommunityData,
-    types.FindCommunityVars
+    FindCommunityData,
+    FindCommunityVars
   >(queries.FIND_COMMUNITY, {
     fetchPolicy: "no-cache",
     onCompleted({ findCommunity }) {
@@ -66,20 +74,17 @@ export default function Communities() {
   });
 
   const [joinCommunity, { loading: mutationLoading }] = useMutation<
-    types.JoinCommunityData,
-    types.JoinCommunityVars
+    JoinCommunityData,
+    JoinCommunityVars
   >(mutations.JOIN_COMMUNITY, {
     update(cache, { data }) {
       if (!data) return;
-      const userCommunitiesCache = cache.readQuery<
-        types.UserCommunitiesData,
-        void
-      >({
+      const userCommunitiesCache = cache.readQuery<UserCommunitiesData, void>({
         query: queries.GET_USER_COMMUNITIES,
       });
 
       if (!userCommunitiesCache) return;
-      cache.writeQuery<types.UserCommunitiesData, void>({
+      cache.writeQuery<UserCommunitiesData, void>({
         query: queries.GET_USER_COMMUNITIES,
         data: {
           communities: [

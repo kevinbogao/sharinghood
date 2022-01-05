@@ -2,23 +2,23 @@ import Link from "next/link";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import { Container } from "../../components/Container";
 import ItemsGrid from "../../components/ItemGrid";
-import { types } from "../../lib/types";
 import { queries } from "../../lib/gql";
 import { transformImgUrl } from "../../lib";
 import { communityIdVar } from "../_app";
+import type { PostsData, PostsVars } from "../../lib/types";
 
 export default function Posts() {
   const communityId = useReactiveVar(communityIdVar);
-  const { loading, error, data, client } = useQuery<
-    types.PostsData,
-    types.PostsVars
-  >(queries.GET_POSTS, {
-    skip: !communityId,
-    variables: { communityId: communityId! },
-    onError({ message }) {
-      console.warn(message);
-    },
-  });
+  const { loading, error, data, client } = useQuery<PostsData, PostsVars>(
+    queries.GET_POSTS,
+    {
+      skip: !communityId,
+      variables: { communityId: communityId! },
+      onError({ message }) {
+        console.warn(message);
+      },
+    }
+  );
 
   return (
     <Container loading={loading} error={error}>

@@ -3,12 +3,19 @@ import { useRouter } from "next/router";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import moment from "moment";
 import Modal from "react-modal";
-import { types } from "../../lib/types";
 import { queries, mutations } from "../../lib/gql";
 import { communityIdVar, tokenPayloadVar } from "../_app";
 import { Container, SVG, Loader } from "../../components/Container";
 import ItemDetails from "../../components/ItemDetails";
 import { TimeFrame } from "../../lib/enums";
+import {
+  DeleteRequestData,
+  DeleteRequestVars,
+  RequestDetailsData,
+  RequestDetailsVars,
+  RequestsData,
+  RequestsVars,
+} from "../../lib/types";
 
 export default function RequestDetails() {
   const router = useRouter();
@@ -17,8 +24,8 @@ export default function RequestDetails() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { loading, error, data } = useQuery<
-    types.RequestDetailsData,
-    types.RequestDetailsVars
+    RequestDetailsData,
+    RequestDetailsVars
   >(queries.GET_REQUEST_DETAILS, {
     skip: !router.query.id,
     variables: {
@@ -28,22 +35,19 @@ export default function RequestDetails() {
   });
 
   const [deleteRequest, { loading: mutationLoading }] = useMutation<
-    types.DeleteRequestData,
-    types.DeleteRequestVars
+    DeleteRequestData,
+    DeleteRequestVars
   >(mutations.DELETE_REQUEST, {
     update(cache) {
-      const requestsCache = cache.readQuery<
-        types.RequestsData,
-        types.RequestsVars
-      >({
+      const requestsCache = cache.readQuery<RequestsData, RequestsVars>({
         query: queries.GET_REQUESTS,
-        variables: { communityId: communityId! },
+        variables: { offset: 0, limit: 10, communityId: communityId! },
       });
 
       if (!requestsCache) return;
-      cache.writeQuery<types.RequestsData, types.RequestsVars>({
+      cache.writeQuery<RequestsData, RequestsVars>({
         query: queries.GET_REQUESTS,
-        variables: { communityId: communityId! },
+        variables: { offset: 0, limit: 10, communityId: communityId! },
         data: {
           requests: requestsCache.requests.filter(
             (request) => request.id !== data?.request.id

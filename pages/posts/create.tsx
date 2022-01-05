@@ -4,10 +4,15 @@ import { useMutation } from "@apollo/client";
 import { useForm, FormProvider } from "react-hook-form";
 import ImageInput from "../../components/ImageInput";
 import { Container, Loader, InlineError } from "../../components/Container";
-import { types } from "../../lib/types";
 import { ItemCondition } from "../../lib/enums";
 import { queries, mutations } from "../../lib/gql";
 import { communityIdVar } from "../_app";
+import {
+  PostsData,
+  PostsVars,
+  CreatePostData,
+  CreatePostVars,
+} from "../../lib/types";
 
 interface PostInputs {
   image?: string;
@@ -29,17 +34,17 @@ export default function CreatePost() {
   } = methods;
   const [image, setImage] = useState<string | undefined>(undefined);
   const [createPost, { loading: mutationLoading }] = useMutation<
-    types.CreatePostData,
-    types.CreatePostVars
+    CreatePostData,
+    CreatePostVars
   >(mutations.CREATE_POST, {
     update(cache, { data }) {
       const communityId = communityIdVar()!;
-      const postsCache = cache.readQuery<types.PostsData, types.PostsVars>({
+      const postsCache = cache.readQuery<PostsData, PostsVars>({
         query: queries.GET_POSTS,
         variables: { communityId },
       });
       if (data && postsCache) {
-        cache.writeQuery<types.PostsData, types.PostsVars>({
+        cache.writeQuery<PostsData, PostsVars>({
           query: queries.GET_POSTS,
           variables: { communityId },
           data: { posts: [data.createPost, ...postsCache.posts] },

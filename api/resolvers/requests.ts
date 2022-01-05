@@ -10,7 +10,11 @@ import sendMail from "../../lib/mail";
 import pushNotification from "../../lib/firebase";
 import { upload, destroy } from "../../lib/image";
 import { TimeFrame } from "../../lib/enums";
-import type { Context, CreateRequestInput } from "../../lib/types";
+import type {
+  Context,
+  CreateRequestInput,
+  RequestsVars,
+} from "../../lib/types";
 
 const requestResolvers = {
   Query: {
@@ -33,11 +37,7 @@ const requestResolvers = {
     },
     async requests(
       _: never,
-      {
-        offset,
-        limit,
-        communityId,
-      }: { offset: number; limit: number; communityId: string },
+      { offset, limit, communityId }: RequestsVars,
       { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
     ): Promise<Request[]> {

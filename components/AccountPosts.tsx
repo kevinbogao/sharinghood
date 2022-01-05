@@ -4,43 +4,46 @@ import { useMutation } from "@apollo/client";
 import Modal from "react-modal";
 import { Loader } from "./Container";
 import { transformImgUrl } from "../lib";
-import { types } from "../lib/types";
 import { queries, mutations } from "../lib/gql";
+import type {
+  Post,
+  PostsData,
+  PostsVars,
+  InactivatePostData,
+  InactivatePostVars,
+  UserCommunitiesData,
+} from "../lib/types";
 
 interface AccountPostsProps {
-  posts: types.Post[];
+  posts: Post[];
   router: NextRouter;
 }
 
 export default function AccountPosts({ posts, router }: AccountPostsProps) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedPost, setSelectedPost] = useState<types.Post | null>(null);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [inactivatePost, { loading: mutationLoading }] = useMutation<
-    types.InactivatePostData,
-    types.InactivatePostVars
+    InactivatePostData,
+    InactivatePostVars
   >(mutations.INACTIVATE_POST, {
     update(cache, { data }) {
       if (data?.inactivatePost) {
-        const userCommunitiesCache = cache.readQuery<
-          types.UserCommunitiesData,
-          void
-        >({
-          query: queries.GET_USER_COMMUNITIES,
-        });
+        const userCommunitiesCache = cache.readQuery<UserCommunitiesData, void>(
+          {
+            query: queries.GET_USER_COMMUNITIES,
+          }
+        );
 
         if (userCommunitiesCache) {
           userCommunitiesCache.communities.forEach((community) => {
-            const postsCache = cache.readQuery<
-              types.PostsData,
-              types.PostsVars
-            >({
+            const postsCache = cache.readQuery<PostsData, PostsVars>({
               query: queries.GET_POSTS,
               variables: { communityId: community.id },
             });
 
             if (postsCache) {
-              cache.writeQuery<types.PostsData, types.PostsVars>({
+              cache.writeQuery<PostsData, PostsVars>({
                 query: queries.GET_POSTS,
                 variables: { communityId: community.id },
                 data: {

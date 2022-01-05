@@ -5,10 +5,17 @@ import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import moment from "moment";
 import { transformImgUrl } from "../../lib";
 import { queries, mutations, subscriptions } from "../../lib/gql";
-import { types } from "../../lib/types";
 import { TimeFrame, BookingStatus, NotificationType } from "../../lib/enums";
 import { tokenPayloadVar, communityIdVar } from "../_app";
 import { Container, Spinner, SVG } from "../../components/Container";
+import type {
+  NotificationData,
+  NotificationVars,
+  CreateMessageData,
+  CreateMessageVars,
+  UpdateBookingData,
+  UpdateBookingVars,
+} from "../../lib/types";
 
 export default function NotificationDetails() {
   const router = useRouter();
@@ -17,8 +24,8 @@ export default function NotificationDetails() {
   const communityId = useReactiveVar(communityIdVar);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
   const { subscribeToMore, loading, error, data } = useQuery<
-    types.NotificationData,
-    types.NotificationVars
+    NotificationData,
+    NotificationVars
   >(queries.GET_NOTIFICATION, {
     skip: !notificationId,
     fetchPolicy: "network-only",
@@ -26,8 +33,8 @@ export default function NotificationDetails() {
   });
 
   const [createMessage, { error: mutationError }] = useMutation<
-    types.CreateMessageData,
-    types.CreateMessageVars
+    CreateMessageData,
+    CreateMessageVars
   >(mutations.CREATE_MESSAGE, {
     onCompleted() {
       setText("");
@@ -35,8 +42,8 @@ export default function NotificationDetails() {
   });
 
   const [updateBooking, { loading: mutationLoading }] = useMutation<
-    types.UpdateBookingData,
-    types.UpdateBookingVars
+    UpdateBookingData,
+    UpdateBookingVars
   >(mutations.UPDATE_BOOKING, {
     onError({ message }) {
       console.warn(message);

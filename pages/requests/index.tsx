@@ -4,15 +4,15 @@ import { useQuery, useReactiveVar } from "@apollo/client";
 import { Container, SVG } from "../../components/Container";
 import ItemsGrid from "../../components/ItemGrid";
 import { communityIdVar } from "../_app";
-import { types } from "../../lib/types";
 import { queries } from "../../lib/gql";
 import { transformImgUrl } from "../../lib";
+import type { RequestsData, RequestsVars } from "../../lib/types";
 
 export default function Requests() {
   const communityId = useReactiveVar(communityIdVar);
   const { loading, error, data, client, fetchMore } = useQuery<
-    types.RequestsData,
-    types.RequestsVars
+    RequestsData,
+    RequestsVars
   >(queries.GET_REQUESTS, {
     skip: !communityId,
     variables: { offset: 0, limit: 10, communityId: communityId! },

@@ -4,16 +4,11 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/router";
 import { useMutation, useReactiveVar } from "@apollo/client";
 import jwtDecode from "jwt-decode";
-import { types } from "../lib/types";
 import { mutations } from "../lib/gql";
 import { accessTokenVar, refreshTokenVar, tokenPayloadVar } from "./_app";
 import { Loader, InlineError } from "../components/Container";
 import { handlerInputError } from "../lib";
-
-interface LoginInputs {
-  email: string;
-  password: string;
-}
+import type { LoginData, LoginVars } from "../lib/types";
 
 export default function Login() {
   const router = useRouter();
@@ -22,11 +17,11 @@ export default function Login() {
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<LoginInputs>();
+  } = useForm<LoginVars>();
   const accessToken = useReactiveVar(accessTokenVar);
   const [login, { loading: mutationLoading }] = useMutation<
-    types.LoginData,
-    types.LoginVars
+    LoginData,
+    LoginVars
   >(mutations.LOGIN, {
     onCompleted({ login }) {
       accessTokenVar(login.accessToken);
@@ -37,7 +32,7 @@ export default function Login() {
       router.push("/posts");
     },
     onError({ graphQLErrors }) {
-      handlerInputError<LoginInputs>(graphQLErrors, setError);
+      handlerInputError<LoginVars>(graphQLErrors, setError);
     },
   });
 

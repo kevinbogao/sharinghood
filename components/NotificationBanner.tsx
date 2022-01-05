@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { useMutation, useReactiveVar } from "@apollo/client";
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, isSupported } from "firebase/messaging";
-import { types } from "../lib/types";
 import { mutations } from "../lib/gql";
 import { accessTokenVar } from "../pages/_app";
 import { SVG } from "./Container";
+import type { AddFcmTokenData, AddFcmTokenVars } from "../lib/types";
 
 const firebaseConfig: Record<string, string> = {
   apiKey: "AIzaSyD5Qi78uPMJbZIdP4Xrso_Xgw_KkoUNIFc",
@@ -23,10 +23,9 @@ export default function NotificationBanner() {
   const accessToken = useReactiveVar(accessTokenVar);
   const [isBannerOn, setIsBannerOn] = useState(false);
 
-  const [addFcmToken] = useMutation<
-    types.AddFcmTokenData,
-    types.AddFcmTokenVars
-  >(mutations.ADD_FCM_TOKEN_TO_USER);
+  const [addFcmToken] = useMutation<AddFcmTokenData, AddFcmTokenVars>(
+    mutations.ADD_FCM_TOKEN_TO_USER
+  );
 
   useEffect(() => {
     (async () => {

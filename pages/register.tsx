@@ -8,7 +8,6 @@ import Modal from "react-modal";
 import ImageInput from "../components/ImageInput";
 import { InlineError, Loader, SVG } from "../components/Container";
 import Terms from "../components/Terms";
-import { types } from "../lib/types";
 import { transformImgUrl, handlerInputError } from "../lib";
 import { queries, mutations } from "../lib/gql";
 import {
@@ -17,6 +16,12 @@ import {
   tokenPayloadVar,
   createCommunityDataVar,
 } from "./_app";
+import type {
+  RegisterData,
+  RegisterVars,
+  FindCommunityData,
+  FindCommunityVars,
+} from "../lib/types";
 
 interface RegisterInputs {
   image?: string;
@@ -39,7 +44,6 @@ export default function Register() {
     setError,
     formState: { errors },
   } = methods;
-  // const accessToken = useReactiveVar(accessTokenVar);
   const createCommunityData = useReactiveVar(createCommunityDataVar);
   const [image, setImage] = useState<string | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,7 +53,7 @@ export default function Register() {
     // eslint-disable-next-line
   }, [createCommunityData]);
 
-  const { data } = useQuery<types.FindCommunityData, types.FindCommunityVars>(
+  const { data } = useQuery<FindCommunityData, FindCommunityVars>(
     queries.FIND_COMMUNITY,
     {
       skip: !createCommunityData?.communityCode,
@@ -58,8 +62,8 @@ export default function Register() {
   );
 
   const [register, { loading: mutationLoading }] = useMutation<
-    types.RegisterData,
-    types.RegisterVars
+    RegisterData,
+    RegisterVars
   >(mutations.REGISTER, {
     onCompleted({ register }) {
       accessTokenVar(register.auth.accessToken);

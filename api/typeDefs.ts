@@ -245,12 +245,12 @@ export const typeDefs = gql`
     # Notification
     notification(notificationId: ID!): Notification
     # notifications(offset: Int!, limit: Int!, communityId: ID!): [Notification]
+    findNotification(recipientId: ID!, communityId: ID!): Notification
     paginatedNotifications(
       offset: Int!
       limit: Int!
       communityId: ID!
-    ): [Notification]
-    findNotification(recipientId: ID!, communityId: ID!): Notification
+    ): PaginatedNotifications
 
     # Activity
     totalActivities: TotalActivities

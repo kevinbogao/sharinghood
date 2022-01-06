@@ -5,7 +5,6 @@ import {
   split,
   makeVar,
   createHttpLink,
-  Reference,
   ApolloLink,
   ApolloClient,
   InMemoryCache,
@@ -82,16 +81,14 @@ const cache: InMemoryCache = new InMemoryCache({
             };
           },
         },
-        notifications: {
+        paginatedNotifications: {
           keyArgs: [],
-          merge(
-            existing: Reference[],
-            incoming: Reference[],
-            { args: { offset = 0 } }: any
-          ) {
-            const merged = existing ? existing.slice(0) : [];
-            incoming.forEach((e, i) => (merged[offset + i] = e));
-            return merged;
+          merge(existing, incoming) {
+            const notifications = existing?.notifications || [];
+            return {
+              ...incoming,
+              notifications: [...notifications, ...incoming.notifications],
+            };
           },
         },
       },

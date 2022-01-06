@@ -10,8 +10,8 @@ import pushNotification from "../../lib/firebase";
 import { NotificationType } from "../../lib/enums";
 import type {
   Context,
-  NotificationsVars,
   CreateNotificationInput,
+  PaginatedNotificationsVars,
 } from "../../lib/types";
 
 const notificationResolvers = {
@@ -67,40 +67,9 @@ const notificationResolvers = {
 
       return notification;
     },
-    //     async notifications(
-    //       _: never,
-    //       { offset, limit, communityId }: NotificationsVars,
-    //       { user, redis, loader }: Context,
-    //       info: IGraphQLToolsResolveInfo
-    //     ): Promise<Notification[]> {
-    //       if (!user) throw new AuthenticationError("Not Authenticated");
-
-    //       const [notifications] = await loader
-    //         .loadEntity(Notification, "notification")
-    //         .info(info)
-    //         .ejectQueryBuilder((qb) =>
-    //           qb
-    //             .where("notification.communityId = :communityId", {
-    //               communityId,
-    //             })
-    //             .andWhere(
-    //               "notification.creatorId = :userId OR notification.recipientId = :userId",
-    //               {
-    //                 userId: user.userId,
-    //               }
-    //             )
-    //         )
-    //         .order({ "notification.updatedAt": "DESC" })
-    //         .paginate({ offset, limit })
-    //         .loadPaginated();
-
-    //       await redis.hdel(`notifications:${user.userId}`, `${communityId}`);
-
-    //       return notifications;
-    //     },
     async paginatedNotifications(
       _: never,
-      { offset, limit, communityId }: NotificationsVars,
+      { offset, limit, communityId }: PaginatedNotificationsVars,
       { user, redis, loader }: Context,
       info: IGraphQLToolsResolveInfo
     ): Promise<{ notifications: Notification[]; hasMore: boolean }> {

@@ -427,57 +427,6 @@ export namespace queries {
     }
   `;
 
-  export const GET_NOTIFICATIONS = gql`
-    query GetNotifications($offset: Int!, $limit: Int!, $communityId: ID!) {
-      notifications(offset: $offset, limit: $limit, communityId: $communityId) {
-        id
-        type
-        booking {
-          id
-          status
-          timeFrame
-          dateNeed
-          dateReturn
-          post {
-            id
-            title
-            imageUrl
-          }
-          booker {
-            id
-          }
-        }
-        post {
-          id
-          creator {
-            id
-            name
-          }
-        }
-        creator {
-          id
-          name
-          imageUrl
-        }
-        recipient {
-          id
-          name
-          imageUrl
-        }
-        notifier {
-          id
-        }
-        community {
-          id
-        }
-        # messages {
-        #   id
-        #   text
-        # }
-      }
-    }
-  `;
-
   export const GET_PAGINATED_NOTIFICATIONS = gql`
     query GetPaginatedNotifications(
       $offset: Int!

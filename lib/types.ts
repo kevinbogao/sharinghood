@@ -569,12 +569,15 @@ export interface NotificationVars {
   notificationId: string;
 }
 
-/// GET_NOTIFICATIONS
-export interface NotificationsData {
-  notifications: Notification[];
+/// GET_PAGINATED_NOTIFICATIONS
+export interface PaginatedNotificationsData {
+  paginatedNotifications: {
+    notifications: Notification[];
+    hasMore: boolean;
+  };
 }
 
-export interface NotificationsVars {
+export interface PaginatedNotificationsVars {
   offset: number;
   limit: number;
   communityId: string;

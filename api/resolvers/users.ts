@@ -20,7 +20,7 @@ import type {
   CreateCommunityInput,
 } from "../../lib/types";
 
-const userResolvers = {
+export default {
   Query: {
     async user(
       _: never,
@@ -261,5 +261,3 @@ const userResolvers = {
     },
   },
 };
-
-export default userResolvers;

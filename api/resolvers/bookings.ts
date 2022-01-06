@@ -9,7 +9,7 @@ import type {
   CreateBookingInput,
 } from "../../lib/types";
 
-const bookingResolvers = {
+export default {
   Mutation: {
     async createBooking(
       _: unknown,
@@ -105,5 +105,3 @@ const bookingResolvers = {
     },
   },
 };
-
-export default bookingResolvers;

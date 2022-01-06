@@ -9,7 +9,7 @@ import activityResolvers from "./activities";
 import communityResolvers from "./communities";
 import notificationResolvers from "./notifications";
 
-export const resolvers = merge(
+export default merge(
   userResolvers,
   postResolvers,
   threadResolvers,

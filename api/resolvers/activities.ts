@@ -6,7 +6,7 @@ import {
 import { User, Post, Request, Booking, Community } from "../entities";
 import type { Context } from "../../lib/types";
 
-const activityResolvers = {
+export default {
   Query: {
     async totalActivities(_: never, __: never, { user, connection }: Context) {
       if (!user?.isAdmin) return new ForbiddenError("Forbidden");
@@ -75,5 +75,3 @@ const activityResolvers = {
     },
   },
 };
-
-export default activityResolvers;

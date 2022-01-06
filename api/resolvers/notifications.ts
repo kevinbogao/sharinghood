@@ -14,7 +14,7 @@ import type {
   PaginatedNotificationsVars,
 } from "../../lib/types";
 
-const notificationResolvers = {
+export default {
   Query: {
     async notification(
       _: never,
@@ -160,5 +160,3 @@ const notificationResolvers = {
     },
   },
 };
-
-export default notificationResolvers;

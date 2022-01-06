@@ -3,7 +3,7 @@ import { User, Post, Request, Community, Thread } from "../entities";
 import pushNotification from "../../lib/firebase";
 import type { Context, CreateThreadInput } from "../../lib/types";
 
-const threadResolvers = {
+export default {
   Mutation: {
     async createThread(
       _: never,
@@ -57,5 +57,3 @@ const threadResolvers = {
     },
   },
 };
-
-export default threadResolvers;

@@ -11,7 +11,7 @@ export interface CommunityNotificationCount extends Partial<Community> {
   notificationCount: number;
 }
 
-const communityResolvers = {
+export default {
   Query: {
     async findCommunity(
       _: never,
@@ -133,5 +133,3 @@ const communityResolvers = {
     },
   },
 };
-
-export default communityResolvers;

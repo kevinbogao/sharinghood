@@ -20,7 +20,7 @@ export {
   Token,
 };
 
-export const entities = [
+export default [
   Community,
   User,
   Post,

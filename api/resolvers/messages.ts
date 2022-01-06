@@ -16,7 +16,7 @@ interface MessageSubscriptionPayload {
   notificationMessage: Message;
 }
 
-const messageResolvers = {
+export default {
   Subscription: {
     notificationMessage: {
       subscribe: withFilter(
@@ -90,5 +90,3 @@ const messageResolvers = {
     },
   },
 };
-
-export default messageResolvers;

@@ -122,73 +122,6 @@ export namespace queries {
   ///
   /// POST
   ///
-  // export const GET_POST = gql`
-  //   query Post($postId: ID!) {
-  //     post(postId: $postId) {
-  //       id
-  //       title
-  //       desc
-  //       imageUrl
-  //       condition
-  //       isGiveaway
-  //       creator {
-  //         id
-  //         name
-  //         imageUrl
-  //         # apartment
-  //         # createdAt
-  //       }
-  //       # threads {
-  //       #   id
-  //       #   content
-  //       #   poster {
-  //       #     id
-  //       #   }
-  //       #   community {
-  //       #     id
-  //       #   }
-  //       # }
-  //     }
-  //   }
-  // `;
-
-  // export const GET_POST_DETAILS = gql`
-  //   query GetPostDetails($postId: ID!) {
-  //     post(postId: $postId) {
-  //       id
-  //       title
-  //       desc
-  //       imageUrl
-  //       condition
-  //       isGiveaway
-  //       creator {
-  //         id
-  //         name
-  //         imageUrl
-  //         apartment
-  //         # createdAt
-  //       }
-  //       #   threads {
-  //       #     id
-  //       #     content
-  //       #     poster {
-  //       #       id
-  //       #     }
-  //       #     community {
-  //       #       id
-  //       #     }
-  //       #   }
-  //     }
-  //     community(communityId: $communityId) @client {
-  //       members {
-  //         id
-  //         name
-  //         imageUrl
-  //       }
-  //     }
-  //   }
-  // `;
-
   export const GET_POST_DETAILS = gql`
     query GetPostDetails($postId: ID!, $communityId: ID!) {
       post(postId: $postId) {
@@ -232,20 +165,6 @@ export namespace queries {
       }
     }
   `;
-
-  // export const GET_POSTS = gql`
-  //   query Posts($offset: Int!, $limit: Int!, $communityId: ID!) {
-  //     posts(offset: $offset, limit: $limit, communityId: $communityId) {
-  //       id
-  //       title
-  //       imageUrl
-  //       creator {
-  //         id
-  //         name
-  //       }
-  //     }
-  //   }
-  // `;
 
   export const GET_PAGINATED_POSTS = gql`
     query PaginatedPosts($offset: Int!, $limit: Int!, $communityId: ID!) {
@@ -329,23 +248,6 @@ export namespace queries {
           id
           name
           imageUrl
-        }
-      }
-    }
-  `;
-
-  export const GET_REQUESTS = gql`
-    query Requests($offset: Int!, $limit: Int!, $communityId: ID!) {
-      requests(offset: $offset, limit: $limit, communityId: $communityId) {
-        id
-        title
-        desc
-        imageUrl
-        timeFrame
-        dateNeed
-        creator {
-          id
-          name
         }
       }
     }

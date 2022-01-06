@@ -17,7 +17,7 @@ import type {
   PaginatedPostsVars,
 } from "../../lib/types";
 
-const postResolvers = {
+export default {
   Query: {
     async post(
       _: never,
@@ -242,5 +242,3 @@ const postResolvers = {
     },
   },
 };
-
-export default postResolvers;

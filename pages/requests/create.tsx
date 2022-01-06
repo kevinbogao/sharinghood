@@ -51,7 +51,7 @@ export default function CreateRequest() {
       });
       if (requestsCache) {
         cache.writeQuery<PaginatedRequestsData, PaginatedRequestsVars>({
-          query: queries.GET_REQUESTS,
+          query: queries.GET_PAGINATED_REQUESTS,
           variables: { offset: 0, limit: 10, communityId },
           data: {
             paginatedRequests: {

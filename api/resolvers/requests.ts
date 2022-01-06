@@ -16,7 +16,7 @@ import type {
   PaginatedRequestsVars,
 } from "../../lib/types";
 
-const requestResolvers = {
+export default {
   Query: {
     async request(
       _: never,
@@ -148,5 +148,3 @@ const requestResolvers = {
     },
   },
 };
-
-export default requestResolvers;

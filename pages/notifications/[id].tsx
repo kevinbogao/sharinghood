@@ -55,7 +55,6 @@ export default function NotificationDetails() {
     const unsubscribe = subscribeToMore({
       document: subscriptions.MESSAGES_SUBSCRIPTION,
       variables: { notificationId: notificationId?.toString()! },
-      // @ts-ignore
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
         return {

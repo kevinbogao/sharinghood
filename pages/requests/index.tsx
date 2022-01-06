@@ -36,11 +36,24 @@ export default function Requests({ parent }: RequestsProps) {
       const { scrollTop, scrollHeight, clientHeight } = parent.current;
       if (scrollTop + clientHeight === scrollHeight) {
         if (!data?.paginatedRequests.hasMore) return;
-        fetchMore({
+        fetchMore<PaginatedRequestsData, PaginatedRequestsVars>({
           variables: {
             offset: data?.paginatedRequests.requests.length,
             limit: 10,
-            communityId: communityIdVar()!,
+          },
+          updateQuery(prev, { fetchMoreResult }) {
+            if (!fetchMoreResult) return prev;
+            return {
+              ...prev,
+              paginatedRequests: {
+                ...prev.paginatedRequests,
+                requests: [
+                  ...prev.paginatedRequests.requests,
+                  ...fetchMoreResult.paginatedRequests.requests,
+                ],
+                hasMore: fetchMoreResult.paginatedRequests.hasMore,
+              },
+            };
           },
         });
       }
@@ -48,11 +61,17 @@ export default function Requests({ parent }: RequestsProps) {
   }
 
   useEffect(() => {
-    if (parent?.current) {
-      parent.current.addEventListener("scroll", onScroll);
+    let node: HTMLDivElement | null = null;
+
+    if (parent.current) {
+      node = parent.current;
+      node.addEventListener("scroll", onScroll);
     }
 
-    return () => parent?.current?.removeEventListener("scroll", onScroll);
+    return () => {
+      if (node) node.removeEventListener("scroll", onScroll);
+    };
+    // eslint-disable-next-line
   }, [data]);
 
   return (

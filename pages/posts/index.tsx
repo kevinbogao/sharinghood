@@ -32,11 +32,24 @@ export default function Posts({ parent }: PostsProps) {
       const { scrollTop, scrollHeight, clientHeight } = parent.current;
       if (scrollTop + clientHeight === scrollHeight) {
         if (!data?.paginatedPosts.hasMore) return;
-        fetchMore({
+        fetchMore<PaginatedPostsData, PaginatedPostsVars>({
           variables: {
             offset: data?.paginatedPosts.posts.length,
             limit: 10,
-            communityId: communityIdVar()!,
+          },
+          updateQuery(prev, { fetchMoreResult }) {
+            if (!fetchMoreResult) return prev;
+            return {
+              ...prev,
+              paginatedPosts: {
+                ...prev.paginatedPosts,
+                posts: [
+                  ...prev.paginatedPosts.posts,
+                  ...fetchMoreResult.paginatedPosts.posts,
+                ],
+                hasMore: fetchMoreResult.paginatedPosts.hasMore,
+              },
+            };
           },
         });
       }
@@ -44,11 +57,17 @@ export default function Posts({ parent }: PostsProps) {
   }
 
   useEffect(() => {
-    if (parent?.current) {
-      parent.current.addEventListener("scroll", onScroll);
+    let node: HTMLDivElement | null = null;
+
+    if (parent.current) {
+      node = parent.current;
+      node.addEventListener("scroll", onScroll);
     }
 
-    return () => parent?.current?.removeEventListener("scroll", onScroll);
+    return () => {
+      if (node) node.removeEventListener("scroll", onScroll);
+    };
+    // eslint-disable-next-line
   }, [data]);
 
   return (

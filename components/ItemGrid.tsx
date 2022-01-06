@@ -62,14 +62,14 @@ export default function ItemsGrid({
 
   useEffect(() => {
     const count = calcItemCount();
-
     setItemsCount(count > 10 ? count : 10);
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
     window.addEventListener("resize", handleWindowResize);
-
     return () => window.removeEventListener("resize", handleWindowResize);
+    // eslint-disable-next-line
   }, []);
 
   return (

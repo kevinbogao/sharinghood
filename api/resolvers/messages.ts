@@ -76,7 +76,7 @@ export default {
         notificationId,
         notificationMessage: {
           id: newMessage.id,
-          content: newMessage.id,
+          content: newMessage.content,
           creator: { id: newMessage.creatorId },
           createdAt: newMessage.createdAt,
         },

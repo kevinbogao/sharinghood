@@ -17,9 +17,6 @@ export namespace queries {
         apartment
         isAdmin
         isNotified
-        # communities {
-        #   id
-        # }
         posts {
           id
           title
@@ -38,20 +35,6 @@ export namespace queries {
   ///
   /// COMMUNITY
   ///
-  // export const GET_COMMUNITY = gql`
-  //   query GetCommunity($communityCode: String!) {
-  //     community(communityCode: $communityCode) {
-  //       id
-  //       name
-  //       code
-  //       members {
-  //         id
-  //         imageUrl
-  //       }
-  //     }
-  //   }
-  // `;
-
   export const FIND_COMMUNITY = gql`
     query FindCommunity($communityCode: String!) {
       findCommunity(communityCode: $communityCode) {
@@ -281,7 +264,11 @@ export namespace queries {
   /// NOTIFICATION
   ///
   export const GET_NOTIFICATION = gql`
-    query GetNotification($notificationId: ID!) {
+    query GetNotification(
+      $notificationId: ID!
+      $msgOffset: Int
+      $msgLimit: Int
+    ) {
       notification(notificationId: $notificationId) {
         id
         type
@@ -313,13 +300,16 @@ export namespace queries {
           name
           imageUrl
         }
-        messages {
-          id
-          content
-          creator {
+        paginatedMessages(offset: $msgOffset, limit: $msgLimit) {
+          messages {
             id
+            content
+            creator {
+              id
+            }
+            createdAt
           }
-          createdAt
+          hasMore
         }
         # Ensure notifier deletion
         notifier {
@@ -381,10 +371,12 @@ export namespace queries {
           community {
             id
           }
-          # messages {
-          #   id
-          #   text
-          # }
+          paginatedMessages(offset: 0, limit: 1) {
+            messages {
+              id
+              content
+            }
+          }
         }
         hasMore
       }

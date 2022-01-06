@@ -168,7 +168,7 @@ export default gql`
     creator: User!
     recipient: User!
     notifier: User
-    messages: [Message]
+    paginatedMessages(offset: Int, limit: Int): PaginatedMessages
     community: Community
   }
 
@@ -191,6 +191,11 @@ export default gql`
     creator: User!
     notification: Notification
     createdAt: String!
+  }
+
+  type PaginatedMessages {
+    messages: [Message]
+    hasMore: Boolean
   }
 
   input MessageInput {
@@ -244,7 +249,6 @@ export default gql`
 
     # Notification
     notification(notificationId: ID!): Notification
-    # notifications(offset: Int!, limit: Int!, communityId: ID!): [Notification]
     findNotification(recipientId: ID!, communityId: ID!): Notification
     paginatedNotifications(
       offset: Int!

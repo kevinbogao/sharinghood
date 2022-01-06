@@ -38,7 +38,6 @@ export default function Notifications({ parent }: NotificationsProps) {
     const { clientHeight } = parent.current;
     const rows = Math.floor(clientHeight / 146) + 3;
     setItemsCount(rows > 10 ? rows : 10);
-
     // eslint-disable-next-line
   }, []);
 
@@ -181,13 +180,9 @@ export default function Notifications({ parent }: NotificationsProps) {
                         <p className="title name">{receiver.name}</p>
                       </div>
                       <div className="message-text">
-                        {notification.messages?.length > 0 ? (
+                        {notification.paginatedMessages.messages?.length > 0 ? (
                           <p className="text">
-                            {
-                              notification.messages[
-                                notification.messages.length - 1
-                              ].content
-                            }
+                            {notification.paginatedMessages.messages[0].content}
                           </p>
                         ) : (
                           <p className="text">

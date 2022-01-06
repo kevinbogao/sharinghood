@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
@@ -18,18 +18,23 @@ import type {
 } from "../../lib/types";
 
 export default function NotificationDetails() {
+  const messages = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const notificationId = router.query.id;
   const [text, setText] = useState("");
+  const [itemsCount, setItemsCount] = useState(0);
   const communityId = useReactiveVar(communityIdVar);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
-  const { subscribeToMore, loading, error, data } = useQuery<
+  const { subscribeToMore, loading, error, data, fetchMore } = useQuery<
     NotificationData,
     NotificationVars
   >(queries.GET_NOTIFICATION, {
     skip: !notificationId,
-    fetchPolicy: "network-only",
-    variables: { notificationId: notificationId?.toString()! },
+    variables: {
+      notificationId: notificationId?.toString()!,
+      msgOffset: 0,
+      msgLimit: itemsCount,
+    },
   });
 
   const [createMessage, { error: mutationError }] = useMutation<
@@ -50,22 +55,89 @@ export default function NotificationDetails() {
     },
   });
 
+  useEffect(() => {
+    if (messages.current) {
+      const { clientHeight } = messages.current;
+      const rows = Math.ceil(clientHeight / 46) + 5;
+      setItemsCount(rows);
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  function onScroll() {
+    if (messages.current) {
+      const { scrollTop } = messages.current;
+
+      if (scrollTop === 0) {
+        if (!data?.notification.paginatedMessages.hasMore) return;
+        fetchMore<NotificationData, NotificationVars>({
+          variables: {
+            msgOffset: data?.notification.paginatedMessages.messages.length,
+            msgLimit: 10,
+          },
+          updateQuery(prev, { fetchMoreResult }) {
+            if (!fetchMoreResult) return prev;
+            return {
+              ...prev,
+
+              notification: {
+                ...prev.notification,
+                paginatedMessages: {
+                  ...prev.notification.paginatedMessages,
+                  messages: [
+                    ...prev.notification.paginatedMessages.messages,
+                    ...fetchMoreResult.notification.paginatedMessages.messages,
+                  ],
+                  hasMore:
+                    fetchMoreResult.notification.paginatedMessages.hasMore,
+                },
+              },
+            };
+          },
+        });
+      }
+    }
+  }
+
+  useEffect(() => {
+    let node: HTMLDivElement | null = null;
+
+    if (messages.current) {
+      node = messages.current;
+      node.addEventListener("scroll", onScroll);
+    }
+
+    return () => {
+      if (node) node.removeEventListener("scroll", onScroll);
+    };
+    // eslint-disable-next-line
+  }, [data]);
+
   // Subscribe to new messages
   useEffect(() => {
     const unsubscribe = subscribeToMore({
       document: subscriptions.MESSAGES_SUBSCRIPTION,
       variables: { notificationId: notificationId?.toString()! },
+      // @ts-ignore
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
+
+        // Scroll to bottom
+        if (messages.current)
+          messages.current.scrollTop = messages.current.scrollHeight;
+
         return {
           ...prev,
           notification: {
             ...prev.notification,
-            messages: [
-              ...prev.notification.messages,
-              // @ts-ignore
-              subscriptionData.data.notificationMessage,
-            ],
+            paginatedMessages: {
+              ...prev.notification.paginatedMessages,
+              messages: [
+                // @ts-ignore
+                subscriptionData.data.notificationMessage,
+                ...prev.notification.paginatedMessages.messages,
+              ],
+            },
           },
         };
       },
@@ -250,9 +322,9 @@ export default function NotificationDetails() {
             )}
         </div>
         <div className="notification-chat">
-          <ul className="chat-content">
-            {data?.notification.messages.map((message) => (
-              <li
+          <div className="chat-content" ref={messages}>
+            {data?.notification.paginatedMessages.messages.map((message) => (
+              <p
                 key={message.id}
                 className={
                   message.creator.id === tokenPayload?.userId
@@ -261,9 +333,23 @@ export default function NotificationDetails() {
                 }
               >
                 {message.content}
-              </li>
+              </p>
             ))}
-          </ul>
+            {/* <ul> */}
+            {/*   {data?.notification.paginatedMessages.messages.map((message) => ( */}
+            {/*     <li */}
+            {/*       key={message.id} */}
+            {/*       className={ */}
+            {/*         message.creator.id === tokenPayload?.userId */}
+            {/*           ? "send" */}
+            {/*           : "received" */}
+            {/*       } */}
+            {/*     > */}
+            {/*       {message.content} */}
+            {/*     </li> */}
+            {/*   ))} */}
+            {/* </ul> */}
+          </div>
           <div className="chat-input">
             <input
               type="text"
@@ -389,16 +475,17 @@ export default function NotificationDetails() {
 
                 .chat-content {
                   flex: 1 1 0%;
+                  display: flex;
                   overflow-y: auto;
                   padding: 10px 25px;
                   list-style-type: none;
+                  flex-direction: column-reverse;
 
                   .received {
                     font-size: 17px;
-                    margin: 5px auto;
+                    margin: 5px auto 5px 0;
                     padding: 7px 15px;
                     clear: both;
-                    float: left;
                     line-height: 1.3;
                     max-width: 230px;
                     color: $black;
@@ -408,10 +495,10 @@ export default function NotificationDetails() {
 
                   .send {
                     font-size: 17px;
-                    margin: 5px auto;
+                    margin-right: 0;
+                    margin: 5px 0 5px auto;
                     padding: 7px 15px;
                     clear: both;
-                    float: right;
                     line-height: 1.3;
                     max-width: 230px;
                     color: $background;

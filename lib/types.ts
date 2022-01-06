@@ -174,7 +174,10 @@ export interface Notification {
   post?: Post;
   booking?: Booking;
   community: Community;
-  messages: Message[];
+  paginatedMessages: {
+    messages: Message[];
+    hasMore: boolean;
+  };
   creator: User;
   recipient: User;
   notifier: User;
@@ -241,13 +244,9 @@ export interface CommunityActivities {
   name: string;
   code: string;
   zipCode: string;
-  // usersCount?: number;
-  // postsCount?: number;
-  // requestsCount?: number;
-  // bookingsCount?: number;
+  posts: Post[];
   creator: User;
   members: User[];
-  posts: Post[];
   requests: Request[];
   bookings: Booking[];
 }
@@ -567,6 +566,8 @@ export interface NotificationData {
 
 export interface NotificationVars {
   notificationId: string;
+  msgOffset: number;
+  msgLimit: number;
 }
 
 /// GET_PAGINATED_NOTIFICATIONS

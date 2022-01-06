@@ -4,7 +4,7 @@ import {
   IGraphQLToolsResolveInfo,
 } from "apollo-server-micro";
 import bookingResolvers from "./bookings";
-import { Notification } from "../entities";
+import { Notification, Message } from "../entities";
 import sendMail from "../../lib/mail";
 import pushNotification from "../../lib/firebase";
 import { NotificationType } from "../../lib/enums";
@@ -15,6 +15,26 @@ import type {
 } from "../../lib/types";
 
 export default {
+  Notification: {
+    async paginatedMessages(
+      notification: Notification,
+      { offset, limit }: { offset: number; limit: number },
+      { loader }: Context,
+      info: IGraphQLToolsResolveInfo
+    ) {
+      const [messages, totalCount] = await loader
+        .loadEntity(Message, "message")
+        .info(info, "messages")
+        .where("message.notificationId = :notificationId", {
+          notificationId: notification.id,
+        })
+        .order({ "message.createdAt": "DESC" })
+        .paginate({ offset, limit })
+        .loadPaginated();
+
+      return { messages, hasMore: offset + limit < totalCount };
+    },
+  },
   Query: {
     async notification(
       _: never,

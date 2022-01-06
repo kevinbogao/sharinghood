@@ -437,12 +437,15 @@ export interface PostDetailsVars {
   communityId: string;
 }
 
-/// GET_POSTS
-export interface PostsData {
-  posts: Post[];
+/// GET_PAGINATED_POSTS
+export interface PaginatedPostsData {
+  paginatedPosts: {
+    posts: Post[];
+    hasMore: boolean;
+  };
 }
 
-export interface PostsVars {
+export interface PaginatedPostsVars {
   offset: number;
   limit: number;
   communityId: string;
@@ -509,12 +512,15 @@ export interface InactivatePostVars {
 /* REQUEST */
 ///
 
-/// GET_REQUESTS
-export interface RequestsData {
-  requests: Request[];
+/// GET_PAGINATED_REQUESTS
+export interface PaginatedRequestsData {
+  paginatedRequests: {
+    requests: Request[];
+    hasMore: boolean;
+  };
 }
 
-export interface RequestsVars {
+export interface PaginatedRequestsVars {
   offset: number;
   limit: number;
   communityId: string;

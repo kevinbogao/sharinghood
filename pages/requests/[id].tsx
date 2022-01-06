@@ -8,13 +8,13 @@ import { communityIdVar, tokenPayloadVar } from "../_app";
 import { Container, SVG, Loader } from "../../components/Container";
 import ItemDetails from "../../components/ItemDetails";
 import { TimeFrame } from "../../lib/enums";
-import {
+import type {
   DeleteRequestData,
   DeleteRequestVars,
   RequestDetailsData,
   RequestDetailsVars,
-  RequestsData,
-  RequestsVars,
+  PaginatedRequestsData,
+  PaginatedRequestsVars,
 } from "../../lib/types";
 
 export default function RequestDetails() {
@@ -39,21 +39,28 @@ export default function RequestDetails() {
     DeleteRequestVars
   >(mutations.DELETE_REQUEST, {
     update(cache) {
-      const requestsCache = cache.readQuery<RequestsData, RequestsVars>({
-        query: queries.GET_REQUESTS,
+      const requestsCache = cache.readQuery<
+        PaginatedRequestsData,
+        PaginatedRequestsVars
+      >({
+        query: queries.GET_PAGINATED_REQUESTS,
         variables: { offset: 0, limit: 10, communityId: communityId! },
       });
 
-      if (!requestsCache) return;
-      cache.writeQuery<RequestsData, RequestsVars>({
-        query: queries.GET_REQUESTS,
-        variables: { offset: 0, limit: 10, communityId: communityId! },
-        data: {
-          requests: requestsCache.requests.filter(
-            (request) => request.id !== data?.request.id
-          ),
-        },
-      });
+      if (requestsCache) {
+        cache.writeQuery<PaginatedRequestsData, PaginatedRequestsVars>({
+          query: queries.GET_REQUESTS,
+          variables: { offset: 0, limit: 10, communityId: communityId! },
+          data: {
+            paginatedRequests: {
+              ...requestsCache.paginatedRequests,
+              requests: requestsCache.paginatedRequests.requests.filter(
+                (request) => request.id !== data?.request.id
+              ),
+            },
+          },
+        });
+      }
       router.push("/requests");
     },
   });

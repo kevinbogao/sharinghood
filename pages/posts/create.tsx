@@ -7,11 +7,11 @@ import { Container, Loader, InlineError } from "../../components/Container";
 import { ItemCondition } from "../../lib/enums";
 import { queries, mutations } from "../../lib/gql";
 import { communityIdVar } from "../_app";
-import {
-  PostsData,
-  PostsVars,
+import type {
   CreatePostData,
   CreatePostVars,
+  PaginatedPostsData,
+  PaginatedPostsVars,
 } from "../../lib/types";
 
 interface PostInputs {
@@ -39,15 +39,23 @@ export default function CreatePost() {
   >(mutations.CREATE_POST, {
     update(cache, { data }) {
       const communityId = communityIdVar()!;
-      const postsCache = cache.readQuery<PostsData, PostsVars>({
-        query: queries.GET_POSTS,
+      const postsCache = cache.readQuery<
+        PaginatedPostsData,
+        PaginatedPostsVars
+      >({
+        query: queries.GET_PAGINATED_POSTS,
         variables: { offset: 0, limit: 10, communityId },
       });
       if (data && postsCache) {
-        cache.writeQuery<PostsData, PostsVars>({
-          query: queries.GET_POSTS,
+        cache.writeQuery<PaginatedPostsData, PaginatedPostsVars>({
+          query: queries.GET_PAGINATED_POSTS,
           variables: { offset: 0, limit: 10, communityId },
-          data: { posts: [data.createPost, ...postsCache.posts] },
+          data: {
+            paginatedPosts: {
+              ...postsCache.paginatedPosts,
+              posts: [data.createPost, ...postsCache.paginatedPosts.posts],
+            },
+          },
         });
       }
       router.push("/posts");

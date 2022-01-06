@@ -1,3 +1,4 @@
+import { useState, useEffect, RefObject } from "react";
 import Link from "next/link";
 import moment from "moment";
 import { useQuery, useReactiveVar } from "@apollo/client";
@@ -6,25 +7,64 @@ import ItemsGrid from "../../components/ItemGrid";
 import { communityIdVar } from "../_app";
 import { queries } from "../../lib/gql";
 import { transformImgUrl } from "../../lib";
-import type { RequestsData, RequestsVars } from "../../lib/types";
+import type {
+  PaginatedRequestsData,
+  PaginatedRequestsVars,
+} from "../../lib/types";
 
-export default function Requests() {
+interface RequestsProps {
+  parent: RefObject<HTMLDivElement>;
+}
+
+export default function Requests({ parent }: RequestsProps) {
   const communityId = useReactiveVar(communityIdVar);
-  const { loading, error, data, client, fetchMore } = useQuery<
-    RequestsData,
-    RequestsVars
-  >(queries.GET_REQUESTS, {
+  const [itemsCount, setItemsCount] = useState(0);
+
+  const { loading, error, data, client, refetch, fetchMore } = useQuery<
+    PaginatedRequestsData,
+    PaginatedRequestsVars
+  >(queries.GET_PAGINATED_REQUESTS, {
     skip: !communityId,
-    variables: { offset: 0, limit: 10, communityId: communityId! },
+    variables: { offset: 0, limit: itemsCount, communityId: communityId! },
     onError: ({ message }) => {
       console.warn(message);
     },
   });
 
+  function onScroll() {
+    if (parent.current) {
+      const { scrollTop, scrollHeight, clientHeight } = parent.current;
+      if (scrollTop + clientHeight === scrollHeight) {
+        if (!data?.paginatedRequests.hasMore) return;
+        fetchMore({
+          variables: {
+            offset: data?.paginatedRequests.requests.length,
+            limit: 10,
+            communityId: communityIdVar()!,
+          },
+        });
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (parent?.current) {
+      parent.current.addEventListener("scroll", onScroll);
+    }
+
+    return () => parent?.current?.removeEventListener("scroll", onScroll);
+  }, [data]);
+
   return (
     <Container loading={loading} error={error}>
-      <ItemsGrid type="request" communityId={communityId!}>
-        {data?.requests.map((request) => (
+      <ItemsGrid
+        type="request"
+        refetch={refetch}
+        communityId={communityId!}
+        itemsCount={itemsCount}
+        setItemsCount={setItemsCount}
+      >
+        {data?.paginatedRequests.requests.map((request) => (
           <div key={request.id} className="item-card">
             <Link href={`/requests/${request.id}`}>
               <a
@@ -65,19 +105,6 @@ export default function Requests() {
             </Link>
           </div>
         ))}
-        <button
-          onClick={() => {
-            fetchMore({
-              variables: {
-                offset: data?.requests.length,
-                limit: 10,
-                communityId: communityId!,
-              },
-            });
-          }}
-        >
-          More
-        </button>
         <style jsx>
           {`
             @import "../index.scss";

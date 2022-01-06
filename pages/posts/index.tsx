@@ -1,4 +1,4 @@
-import { useEffect, RefObject } from "react";
+import { useState, useEffect, RefObject } from "react";
 import Link from "next/link";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import { Container } from "../../components/Container";
@@ -6,7 +6,7 @@ import ItemsGrid from "../../components/ItemGrid";
 import { queries } from "../../lib/gql";
 import { transformImgUrl } from "../../lib";
 import { communityIdVar } from "../_app";
-import type { PostsData, PostsVars } from "../../lib/types";
+import type { PaginatedPostsData, PaginatedPostsVars } from "../../lib/types";
 
 interface PostsProps {
   parent: RefObject<HTMLDivElement>;
@@ -14,12 +14,14 @@ interface PostsProps {
 
 export default function Posts({ parent }: PostsProps) {
   const communityId = useReactiveVar(communityIdVar);
-  const { loading, error, data, client, fetchMore } = useQuery<
-    PostsData,
-    PostsVars
-  >(queries.GET_POSTS, {
-    skip: !communityId,
-    variables: { offset: 0, limit: 10, communityId: communityId! },
+  const [itemsCount, setItemsCount] = useState(0);
+
+  const { loading, error, data, client, refetch, fetchMore } = useQuery<
+    PaginatedPostsData,
+    PaginatedPostsVars
+  >(queries.GET_PAGINATED_POSTS, {
+    skip: !communityId || itemsCount === 0,
+    variables: { offset: 0, limit: itemsCount, communityId: communityId! },
     onError({ message }) {
       console.warn(message);
     },
@@ -29,9 +31,10 @@ export default function Posts({ parent }: PostsProps) {
     if (parent.current) {
       const { scrollTop, scrollHeight, clientHeight } = parent.current;
       if (scrollTop + clientHeight === scrollHeight) {
+        if (!data?.paginatedPosts.hasMore) return;
         fetchMore({
           variables: {
-            offset: data?.posts.length,
+            offset: data?.paginatedPosts.posts.length,
             limit: 10,
             communityId: communityIdVar()!,
           },
@@ -50,8 +53,14 @@ export default function Posts({ parent }: PostsProps) {
 
   return (
     <Container loading={loading} error={error}>
-      <ItemsGrid type="post" communityId={communityId!}>
-        {data?.posts?.map((post) => (
+      <ItemsGrid
+        type="post"
+        refetch={refetch}
+        communityId={communityId!}
+        itemsCount={itemsCount}
+        setItemsCount={setItemsCount}
+      >
+        {data?.paginatedPosts?.posts?.map((post) => (
           <div key={post.id} className="item-card">
             <Link href={`/posts/${post.id}`}>
               <a

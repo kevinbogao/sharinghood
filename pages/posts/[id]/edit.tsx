@@ -15,14 +15,14 @@ import {
 } from "../../../components/Container";
 import type {
   Community,
-  PostsData,
-  PostsVars,
   DeletePostData,
   DeletePostVars,
   UpdatePostData,
   UpdatePostVars,
   PostDetailsData,
   PostDetailsVars,
+  PaginatedPostsData,
+  PaginatedPostsVars,
   PostAndCommunitiesData,
   PostAndCommunitiesVars,
   AddPostToCommunityData,
@@ -124,21 +124,28 @@ export default function EditPost() {
   >(mutations.DELETE_POST, {
     update(cache) {
       postAndCommunities?.communities.forEach((community) => {
-        const postsCache = cache.readQuery<PostsData, PostsVars>({
-          query: queries.GET_POSTS,
+        const postsCache = cache.readQuery<
+          PaginatedPostsData,
+          PaginatedPostsVars
+        >({
+          query: queries.GET_PAGINATED_POSTS,
           variables: { offset: 0, limit: 10, communityId: community.id },
         });
 
-        if (!postsCache) return;
-        cache.writeQuery<PostsData, PostsVars>({
-          query: queries.GET_POSTS,
-          variables: { offset: 0, limit: 10, communityId: community.id },
-          data: {
-            posts: postsCache.posts.filter(
-              (post) => post.id !== postAndCommunities.post.id
-            ),
-          },
-        });
+        if (postsCache) {
+          cache.writeQuery<PaginatedPostsData, PaginatedPostsVars>({
+            query: queries.GET_PAGINATED_POSTS,
+            variables: { offset: 0, limit: 10, communityId: community.id },
+            data: {
+              paginatedPosts: {
+                ...postsCache.paginatedPosts,
+                posts: postsCache.paginatedPosts.posts.filter(
+                  (post) => post.id !== postAndCommunities.post.id
+                ),
+              },
+            },
+          });
+        }
       });
       router.push("/posts");
     },
@@ -157,25 +164,34 @@ export default function EditPost() {
             variables: { postId: router.query.id?.toString()! },
           });
 
-          const postsCache = cache.readQuery<PostsData, PostsVars>({
+          const postsCache = cache.readQuery<
+            PaginatedPostsData,
+            PaginatedPostsVars
+          >({
             variables: {
               offset: 0,
               limit: 10,
               communityId: data!.addPostToCommunity.id,
             },
-            query: queries.GET_POSTS,
+            query: queries.GET_PAGINATED_POSTS,
           });
 
           if (postsCache && postAndCommunitiesCache) {
-            cache.writeQuery<PostsData, PostsVars>({
-              query: queries.GET_POSTS,
+            cache.writeQuery<PaginatedPostsData, PaginatedPostsVars>({
+              query: queries.GET_PAGINATED_POSTS,
               variables: {
                 offset: 0,
                 limit: 10,
                 communityId: data!.addPostToCommunity.id,
               },
               data: {
-                posts: [postAndCommunitiesCache.post, ...postsCache.posts],
+                paginatedPosts: {
+                  ...postsCache.paginatedPosts,
+                  posts: [
+                    postAndCommunitiesCache.post,
+                    ...postsCache.paginatedPosts.posts,
+                  ],
+                },
               },
             });
           }

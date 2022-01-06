@@ -7,8 +7,8 @@ import { transformImgUrl } from "../lib";
 import { queries, mutations } from "../lib/gql";
 import type {
   Post,
-  PostsData,
-  PostsVars,
+  PaginatedPostsData,
+  PaginatedPostsVars,
   InactivatePostData,
   InactivatePostVars,
   UserCommunitiesData,
@@ -30,26 +30,30 @@ export default function AccountPosts({ posts, router }: AccountPostsProps) {
     update(cache, { data }) {
       if (data?.inactivatePost) {
         const userCommunitiesCache = cache.readQuery<UserCommunitiesData, void>(
-          {
-            query: queries.GET_USER_COMMUNITIES,
-          }
+          { query: queries.GET_USER_COMMUNITIES }
         );
 
         if (userCommunitiesCache) {
           userCommunitiesCache.communities.forEach((community) => {
-            const postsCache = cache.readQuery<PostsData, PostsVars>({
-              query: queries.GET_POSTS,
+            const postsCache = cache.readQuery<
+              PaginatedPostsData,
+              PaginatedPostsVars
+            >({
+              query: queries.GET_PAGINATED_POSTS,
               variables: { offset: 0, limit: 10, communityId: community.id },
             });
 
             if (postsCache) {
-              cache.writeQuery<PostsData, PostsVars>({
-                query: queries.GET_POSTS,
+              cache.writeQuery<PaginatedPostsData, PaginatedPostsVars>({
+                query: queries.GET_PAGINATED_POSTS,
                 variables: { offset: 0, limit: 10, communityId: community.id },
                 data: {
-                  posts: postsCache.posts.filter(
-                    (post) => post.id !== selectedPost?.id
-                  ),
+                  paginatedPosts: {
+                    ...postsCache.paginatedPosts,
+                    posts: postsCache.paginatedPosts.posts.filter(
+                      (post) => post.id !== selectedPost?.id
+                    ),
+                  },
                 },
               });
             }

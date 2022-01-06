@@ -10,10 +10,10 @@ import { communityIdVar } from "../_app";
 import ImageInput from "../../components/ImageInput";
 import { Container, Loader, InlineError } from "../../components/Container";
 import type {
-  RequestsData,
-  RequestsVars,
   CreateRequestData,
   CreateRequestVars,
+  PaginatedRequestsData,
+  PaginatedRequestsVars,
 } from "../../lib/types";
 
 interface RequestInputs {
@@ -42,15 +42,26 @@ export default function CreateRequest() {
   >(mutations.CREATE_REQUEST, {
     update(cache, { data }) {
       const communityId = communityIdVar()!;
-      const requestsCache = cache.readQuery<RequestsData, RequestsVars>({
-        query: queries.GET_REQUESTS,
+      const requestsCache = cache.readQuery<
+        PaginatedRequestsData,
+        PaginatedRequestsVars
+      >({
+        query: queries.GET_PAGINATED_REQUESTS,
         variables: { offset: 0, limit: 10, communityId },
       });
       if (requestsCache) {
-        cache.writeQuery<RequestsData, RequestsVars>({
+        cache.writeQuery<PaginatedRequestsData, PaginatedRequestsVars>({
           query: queries.GET_REQUESTS,
           variables: { offset: 0, limit: 10, communityId },
-          data: { requests: [data!.createRequest, ...requestsCache.requests] },
+          data: {
+            paginatedRequests: {
+              ...requestsCache.paginatedRequests,
+              requests: [
+                data!.createRequest,
+                ...requestsCache.paginatedRequests.requests,
+              ],
+            },
+          },
         });
       }
       router.push("/requests");

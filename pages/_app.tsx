@@ -65,28 +65,21 @@ const cache: InMemoryCache = new InMemoryCache({
         refreshToken: { read: () => refreshTokenVar() },
         tokenPayload: { read: () => tokenPayloadVar() },
         createCommunityDataVar: { read: () => createCommunityDataVar() },
-        posts: {
+        paginatedPosts: {
           keyArgs: [],
-          merge(
-            existing: Reference[],
-            incoming: Reference[],
-            { args: { offset = 0 } }: any
-          ) {
-            const merged = existing ? existing.slice(0) : [];
-            incoming.forEach((e, i) => (merged[offset + i] = e));
-            return merged;
+          merge(existing, incoming) {
+            const posts = existing?.posts || [];
+            return { ...incoming, posts: [...posts, ...incoming.posts] };
           },
         },
-        requests: {
+        paginatedRequests: {
           keyArgs: [],
-          merge(
-            existing: Reference[],
-            incoming: Reference[],
-            { args: { offset = 0 } }: any
-          ) {
-            const merged = existing ? existing.slice(0) : [];
-            incoming.forEach((e, i) => (merged[offset + i] = e));
-            return merged;
+          merge(existing, incoming) {
+            const requests = existing?.requests || [];
+            return {
+              ...incoming,
+              requests: [...requests, ...incoming.requests],
+            };
           },
         },
         notifications: {

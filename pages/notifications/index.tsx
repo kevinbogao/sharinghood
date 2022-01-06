@@ -19,9 +19,8 @@ import type {
   UpdateBookingVars,
   UserCommunitiesData,
 } from "../../lib/types";
-import { useEffect } from "react";
 
-export default function Notifications(props: any) {
+export default function Notifications() {
   const router = useRouter();
   const client = useApolloClient();
   const communityId = useReactiveVar(communityIdVar);

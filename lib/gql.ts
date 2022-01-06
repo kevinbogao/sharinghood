@@ -233,16 +233,37 @@ export namespace queries {
     }
   `;
 
-  export const GET_POSTS = gql`
-    query Posts($offset: Int!, $limit: Int!, $communityId: ID!) {
-      posts(offset: $offset, limit: $limit, communityId: $communityId) {
-        id
-        title
-        imageUrl
-        creator {
+  // export const GET_POSTS = gql`
+  //   query Posts($offset: Int!, $limit: Int!, $communityId: ID!) {
+  //     posts(offset: $offset, limit: $limit, communityId: $communityId) {
+  //       id
+  //       title
+  //       imageUrl
+  //       creator {
+  //         id
+  //         name
+  //       }
+  //     }
+  //   }
+  // `;
+
+  export const GET_PAGINATED_POSTS = gql`
+    query PaginatedPosts($offset: Int!, $limit: Int!, $communityId: ID!) {
+      paginatedPosts(
+        offset: $offset
+        limit: $limit
+        communityId: $communityId
+      ) {
+        posts {
           id
-          name
+          title
+          imageUrl
+          creator {
+            id
+            name
+          }
         }
+        hasMore
       }
     }
   `;
@@ -326,6 +347,30 @@ export namespace queries {
           id
           name
         }
+      }
+    }
+  `;
+
+  export const GET_PAGINATED_REQUESTS = gql`
+    query PaginatedRequests($offset: Int!, $limit: Int!, $communityId: ID!) {
+      paginatedRequests(
+        offset: $offset
+        limit: $limit
+        communityId: $communityId
+      ) {
+        requests {
+          id
+          title
+          desc
+          imageUrl
+          timeFrame
+          dateNeed
+          creator {
+            id
+            name
+          }
+        }
+        hasMore
       }
     }
   `;
@@ -429,6 +474,68 @@ export namespace queries {
         #   id
         #   text
         # }
+      }
+    }
+  `;
+
+  export const GET_PAGINATED_NOTIFICATIONS = gql`
+    query GetPaginatedNotifications(
+      $offset: Int!
+      $limit: Int!
+      $communityId: ID!
+    ) {
+      paginatedNotifications(
+        offset: $offset
+        limit: $limit
+        communityId: $communityId
+      ) {
+        notifications {
+          id
+          type
+          booking {
+            id
+            status
+            timeFrame
+            dateNeed
+            dateReturn
+            post {
+              id
+              title
+              imageUrl
+            }
+            booker {
+              id
+            }
+          }
+          post {
+            id
+            creator {
+              id
+              name
+            }
+          }
+          creator {
+            id
+            name
+            imageUrl
+          }
+          recipient {
+            id
+            name
+            imageUrl
+          }
+          notifier {
+            id
+          }
+          community {
+            id
+          }
+          # messages {
+          #   id
+          #   text
+          # }
+        }
+        hasMore
       }
     }
   `;

@@ -1,32 +1,79 @@
-import { ReactNode } from "react";
+import { useEffect, useRef, ReactNode, Children } from "react";
 import Link from "next/link";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient, ApolloQueryResult } from "@apollo/client";
 import { queries } from "../lib/gql";
 import Members from "../components/Members";
 import type {
-  PostsData,
-  PostsVars,
-  RequestsData,
-  RequestsVars,
+  PaginatedPostsData,
+  PaginatedPostsVars,
+  PaginatedRequestsData,
+  PaginatedRequestsVars,
 } from "../lib/types";
+
+const MD_WIDTH = 768;
 
 type Item = "post" | "request";
 
 interface ItemsGridProps {
   type: Item;
+  refetch(): Promise<ApolloQueryResult<any>>;
   children: ReactNode;
   communityId: string;
+  itemsCount: number;
+  setItemsCount(itemsCount: number): void;
 }
 
 export default function ItemsGrid({
   type,
+  refetch,
   children,
   communityId,
+  itemsCount,
+  setItemsCount,
 }: ItemsGridProps) {
   const client = useApolloClient();
+  const grid = useRef<HTMLDivElement>(null);
+
+  function calcItemCount(): number {
+    if (!grid.current) return -1;
+
+    const { clientHeight, clientWidth } = grid.current;
+    const windowWidth = window.innerWidth;
+    const cols = Math.floor(
+      windowWidth > MD_WIDTH ? clientWidth / 200 : clientWidth / 230
+    );
+    const rows =
+      Math.ceil(
+        windowWidth > MD_WIDTH ? clientHeight / 250 : clientHeight / 274
+      ) + 1;
+
+    return cols * rows;
+  }
+
+  function handleWindowResize(): void {
+    const count = calcItemCount();
+    const currCount = Children.count(children) - 1;
+
+    if (count > currCount) {
+      setItemsCount(count);
+      refetch();
+    }
+  }
+
+  useEffect(() => {
+    const count = calcItemCount();
+
+    setItemsCount(count > 10 ? count : 10);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("resize", handleWindowResize);
+
+    return () => window.removeEventListener("resize", handleWindowResize);
+  }, []);
 
   return (
-    <div className="items-control">
+    <div className="items-control" ref={grid}>
       <div className="items-switch">
         <button
           type="button"
@@ -36,9 +83,13 @@ export default function ItemsGrid({
             <a
               onMouseOver={() => {
                 if (communityId)
-                  client.query<PostsData, PostsVars>({
-                    query: queries.GET_POSTS,
-                    variables: { offset: 0, limit: 10, communityId },
+                  client.query<PaginatedPostsData, PaginatedPostsVars>({
+                    query: queries.GET_PAGINATED_POSTS,
+                    variables: {
+                      offset: 0,
+                      limit: itemsCount,
+                      communityId: communityId!,
+                    },
                   });
               }}
             >
@@ -55,9 +106,13 @@ export default function ItemsGrid({
             <a
               onMouseOver={() => {
                 if (communityId)
-                  client.query<RequestsData, RequestsVars>({
-                    query: queries.GET_REQUESTS,
-                    variables: { offset: 0, limit: 10, communityId },
+                  client.query<PaginatedRequestsData, PaginatedRequestsVars>({
+                    query: queries.GET_PAGINATED_REQUESTS,
+                    variables: {
+                      offset: 0,
+                      limit: itemsCount,
+                      communityId: communityId!,
+                    },
                   });
               }}
             >

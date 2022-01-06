@@ -13,7 +13,7 @@ import { TimeFrame } from "../../lib/enums";
 import type {
   Context,
   CreateRequestInput,
-  RequestsVars,
+  PaginatedRequestsVars,
 } from "../../lib/types";
 
 const requestResolvers = {
@@ -35,23 +35,23 @@ const requestResolvers = {
       if (!request) throw new UserInputError("Request not found");
       return request;
     },
-    async requests(
+    async paginatedRequests(
       _: never,
-      { offset, limit, communityId }: RequestsVars,
+      { offset, limit, communityId }: PaginatedRequestsVars,
       { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
-    ): Promise<Request[]> {
+    ): Promise<{ requests: Request[]; hasMore: boolean }> {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
-      const [requests] = await loader
+      const [requests, totalCount] = await loader
         .loadEntity(Request, "request")
+        .info(info, "requests")
         .where("request.communityId = :communityId", { communityId })
-        .info(info)
         .order({ "request.createdAt": "DESC" })
         .paginate({ offset, limit })
         .loadPaginated();
 
-      return requests;
+      return { requests, hasMore: offset + limit < totalCount };
     },
   },
   Mutation: {

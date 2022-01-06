@@ -13,8 +13,8 @@ import { NotificationType } from "../../lib/enums";
 import type {
   Context,
   PostInput,
-  PostsVars,
   CreatePostInput,
+  PaginatedPostsVars,
 } from "../../lib/types";
 
 const postResolvers = {
@@ -42,17 +42,17 @@ const postResolvers = {
 
       return post;
     },
-    async posts(
+    async paginatedPosts(
       _: never,
-      { offset, limit, communityId }: PostsVars,
+      { offset, limit, communityId }: PaginatedPostsVars,
       { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
-    ): Promise<Post[]> {
+    ): Promise<{ posts: Post[]; hasMore: boolean }> {
       if (!user) throw new AuthenticationError("Not Authenticated");
 
-      const [posts] = await loader
+      const [posts, totalCount] = await loader
         .loadEntity(Post, "post")
-        .info(info)
+        .info(info, "posts")
         .ejectQueryBuilder((qb) =>
           qb
             .leftJoin("post.communities", "community")
@@ -62,26 +62,7 @@ const postResolvers = {
         .paginate({ offset, limit })
         .loadPaginated();
 
-      return posts;
-    },
-
-    async postsMore(
-      _: never,
-      __: never,
-      { loader }: Context,
-      info: IGraphQLToolsResolveInfo
-    ): Promise<any> {
-      const [posts] = await loader
-        .loadEntity(Post, "post")
-        .info(info, "posts")
-        .order({ "post.createdAt": "DESC" })
-        .paginate({ offset: 0, limit: 10 })
-        .loadPaginated();
-
-      return {
-        posts,
-        hasMore: true,
-      };
+      return { posts, hasMore: offset + limit < totalCount };
     },
   },
   Mutation: {

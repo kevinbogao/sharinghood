@@ -107,6 +107,11 @@ export const typeDefs = gql`
     createdAt: String!
   }
 
+  type PaginatedRequests {
+    requests: [Request]
+    hasMore: Boolean
+  }
+
   input RequestInput {
     title: String!
     desc: String!
@@ -167,6 +172,11 @@ export const typeDefs = gql`
     community: Community
   }
 
+  type PaginatedNotifications {
+    notifications: [Notification]
+    hasMore: Boolean
+  }
+
   input NotificationInput {
     type: String!
     recipientId: ID!
@@ -222,19 +232,24 @@ export const typeDefs = gql`
 
     # Post
     post(postId: ID!): Post
-    # posts(communityId: ID!): [Post]
-    posts(offset: Int!, limit: Int!, communityId: ID!): [Post]
-    # postsMore(offset: Int!, limit: Int!): PaginatedPosts
-    postsMore: PaginatedPosts
+    paginatedPosts(offset: Int!, limit: Int!, communityId: ID!): PaginatedPosts
 
     # Request
     request(requestId: ID!): Request
-    requests(offset: Int!, limit: Int!, communityId: ID!): [Request]
+    paginatedRequests(
+      offset: Int!
+      limit: Int!
+      communityId: ID!
+    ): PaginatedRequests
 
     # Notification
     notification(notificationId: ID!): Notification
-    # notifications(communityId: ID!): [Notification]
-    notifications(offset: Int!, limit: Int!, communityId: ID!): [Notification]
+    # notifications(offset: Int!, limit: Int!, communityId: ID!): [Notification]
+    paginatedNotifications(
+      offset: Int!
+      limit: Int!
+      communityId: ID!
+    ): [Notification]
     findNotification(recipientId: ID!, communityId: ID!): Notification
 
     # Activity

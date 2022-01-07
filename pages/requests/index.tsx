@@ -19,14 +19,14 @@ interface RequestsProps {
 
 export default function Requests({ parent }: RequestsProps) {
   const communityId = useReactiveVar(communityIdVar);
-  const [itemsCount, setItemsCount] = useState(0);
+  const [limit, setLimit] = useState(0);
 
   const { loading, error, data, client, refetch, fetchMore } = useQuery<
     PaginatedRequestsData,
     PaginatedRequestsVars
   >(queries.GET_PAGINATED_REQUESTS, {
     skip: !communityId,
-    variables: { offset: 0, limit: itemsCount, communityId: communityId! },
+    variables: { offset: 0, limit, communityId: communityId! },
     onError: ({ message }) => {
       console.warn(message);
     },
@@ -79,10 +79,10 @@ export default function Requests({ parent }: RequestsProps) {
     <Container loading={loading} error={error}>
       <ItemsGrid
         type="request"
+        limit={limit}
+        setLimit={setLimit}
         refetch={refetch}
         communityId={communityId!}
-        itemsCount={itemsCount}
-        setItemsCount={setItemsCount}
       >
         {data?.paginatedRequests.requests.map((request) => (
           <div key={request.id} className="item-card">

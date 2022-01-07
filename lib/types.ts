@@ -152,11 +152,50 @@ export interface Community {
   zipCode: string;
   password?: string;
   creator: User;
-  members: User[];
   posts: Post[];
+  members: User[];
   requests: Request[];
   bookings: Booking[];
   notificationCount: number;
+}
+export type PaginatedPosts = {
+  posts: Post[];
+  hasMore: boolean;
+  totalCount: number;
+};
+
+export type PaginatedUsers = {
+  users: User[];
+  hasMore: boolean;
+  totalCount: number;
+};
+
+export type PaginatedRequests = {
+  requests: Request[];
+  hasMore: boolean;
+  totalCount: number;
+};
+
+export type PaginatedBookings = {
+  bookings: Booking[];
+  hasMore: boolean;
+  totalCount: number;
+};
+
+export interface Activities {
+  paginatedPosts: PaginatedPosts;
+  paginatedMembers: PaginatedUsers;
+  paginatedRequests: PaginatedRequests;
+  paginatedBookings: PaginatedBookings;
+}
+
+export interface CommunityActivities extends Activities {
+  __typename: string;
+  id: string;
+  name: string;
+  code: string;
+  zipCode: string;
+  creator: User;
 }
 
 export interface Message {
@@ -239,24 +278,12 @@ export interface User {
   createdAt: Date;
 }
 
-export interface CommunityActivities {
-  id: string;
-  name: string;
-  code: string;
-  zipCode: string;
-  posts: Post[];
-  creator: User;
-  members: User[];
-  requests: Request[];
-  bookings: Booking[];
-}
-
 export interface CommunitiesActivities {
   id: string;
   name: string;
   code: string;
-  membersCount: number;
   postsCount: number;
+  membersCount: number;
   requestsCount: number;
   bookingsCount: number;
 }
@@ -652,11 +679,24 @@ export interface TotalActivitiesData {
   totalActivities: TotalActivities;
 }
 
+export interface TotalActivitiesVars {
+  offset: number;
+  limit: number;
+}
+
 /// GET_COMMUNITY_ACTIVITIES
 export interface CommunityActivitiesData {
-  communityActivities: Community;
+  communityActivities: CommunityActivities;
 }
 
 export interface CommunityActivitiesVars {
   communityId: string;
+  postsOffset: number;
+  postsLimit: number;
+  membersOffset: number;
+  membersLimit: number;
+  requestsOffset: number;
+  requestsLimit: number;
+  bookingsOffset: number;
+  bookingsLimit: number;
 }

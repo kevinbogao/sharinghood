@@ -23,6 +23,12 @@ export default gql`
     posts: [Post]
   }
 
+  type PaginatedUsers {
+    users: [User]
+    hasMore: Boolean
+    totalCount: Int
+  }
+
   input UserInput {
     name: String
     email: String
@@ -80,6 +86,7 @@ export default gql`
   type PaginatedPosts {
     posts: [Post]
     hasMore: Boolean
+    totalCount: Int
   }
 
   input PostInput {
@@ -110,6 +117,7 @@ export default gql`
   type PaginatedRequests {
     requests: [Request]
     hasMore: Boolean
+    totalCount: Int
   }
 
   input RequestInput {
@@ -148,6 +156,11 @@ export default gql`
     dateReturn: String
   }
 
+  type PaginatedBookings {
+    bookings: [Booking]
+    hasMore: Boolean
+    totalCount: Int
+  }
   input BookingInput {
     postId: ID
     bookingId: ID
@@ -218,10 +231,16 @@ export default gql`
     id: ID
     name: String
     code: String
+    zipCode: String
+    creator: User
     postsCount: Int
     membersCount: Int
     requestsCount: Int
     bookingsCount: Int
+    paginatedPosts(offset: Int!, limit: Int!): PaginatedPosts
+    paginatedMembers(offset: Int!, limit: Int!): PaginatedUsers
+    paginatedRequests(offset: Int!, limit: Int!): PaginatedRequests
+    paginatedBookings(offset: Int!, limit: Int!): PaginatedBookings
   }
 
   type Query {
@@ -257,8 +276,8 @@ export default gql`
     ): PaginatedNotifications
 
     # Activity
-    totalActivities: TotalActivities
-    communityActivities(communityId: ID!): Community
+    totalActivities(offset: Int!, limit: Int!): TotalActivities
+    communityActivities(communityId: ID!): CommunityActivities
   }
 
   type Mutation {

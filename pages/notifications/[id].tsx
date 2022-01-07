@@ -22,7 +22,7 @@ export default function NotificationDetails() {
   const router = useRouter();
   const notificationId = router.query.id;
   const [text, setText] = useState("");
-  const [itemsCount, setItemsCount] = useState(0);
+  const [limit, setLimit] = useState(0);
   const communityId = useReactiveVar(communityIdVar);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
   const { subscribeToMore, loading, error, data, fetchMore } = useQuery<
@@ -33,7 +33,7 @@ export default function NotificationDetails() {
     variables: {
       notificationId: notificationId?.toString()!,
       msgOffset: 0,
-      msgLimit: itemsCount,
+      msgLimit: limit,
     },
   });
 
@@ -59,7 +59,7 @@ export default function NotificationDetails() {
     if (messages.current) {
       const { clientHeight } = messages.current;
       const rows = Math.ceil(clientHeight / 46) + 5;
-      setItemsCount(rows);
+      setLimit(rows);
     }
     // eslint-disable-next-line
   }, []);
@@ -335,20 +335,6 @@ export default function NotificationDetails() {
                 {message.content}
               </p>
             ))}
-            {/* <ul> */}
-            {/*   {data?.notification.paginatedMessages.messages.map((message) => ( */}
-            {/*     <li */}
-            {/*       key={message.id} */}
-            {/*       className={ */}
-            {/*         message.creator.id === tokenPayload?.userId */}
-            {/*           ? "send" */}
-            {/*           : "received" */}
-            {/*       } */}
-            {/*     > */}
-            {/*       {message.content} */}
-            {/*     </li> */}
-            {/*   ))} */}
-            {/* </ul> */}
           </div>
           <div className="chat-input">
             <input

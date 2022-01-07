@@ -19,20 +19,14 @@ export default async function handler(
 
   const user = await connection.getRepository(User).findOne({
     where: { id: tokenPayload.userId },
-    select: ["id", "tokenVersion"],
   });
 
   if (!user || user.tokenVersion !== tokenPayload.tokenVersion)
     return res.status(500).json({ error: "Please login again" });
 
-  const { accessToken, refreshToken } = generateTokens(user);
+  const tokens = generateTokens(user);
 
-  res.status(200).json({
-    tokens: {
-      accessToken,
-      refreshToken,
-    },
-  });
+  res.status(200).json({ tokens });
 
   user.lastLogin = new Date();
   await connection.manager.save(user);

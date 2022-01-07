@@ -1,24 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect, RefObject } from "react";
+import moment, { Moment } from "moment";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useQuery, useReactiveVar } from "@apollo/client";
-import moment, { Moment } from "moment";
 import { queries } from "../../lib/gql";
-import { transformImgUrl } from "../../lib";
 import { tokenPayloadVar } from "../_app";
 import { Container, SVG } from "../../components/Container";
 import { TimeFrame, BookingStatus } from "../../lib/enums";
 import type {
-  Post,
-  User,
   CommunityActivitiesData,
   CommunityActivitiesVars,
 } from "../../lib/types";
+import { transformImgUrl } from "../../lib";
 
-const STATS_IDS = ["members", "posts", "requests", "bookings"];
-const ID_SET = new Set(["post", "creator", "booker"]);
-const DATE_SET = new Set(["createdAt", "dateNeed", "dateReturn", "lastLogin"]);
-const USER_SET = new Set(["creator", "booker"]);
+const IDS = ["post", "creator", "booker"];
+const IGNORED_KEYS = ["__typename", "timeFrame"];
+const USER_TYPES = ["creator", "booker"];
+const DATES = ["createdAt", "dateNeed", "dateReturn", "lastLogin"];
+const BOOKING_STATUS: Record<string, string> = {
+  [BookingStatus.PENDING]: "Pending",
+  [BookingStatus.ACCEPTED]: "Accepted",
+  [BookingStatus.DECLINED]: "Denied",
+};
 const FORMATTED_KEYS: Record<string, string> = {
   id: "ID",
   post: "Post ID",
@@ -39,46 +42,146 @@ const FORMATTED_KEYS: Record<string, string> = {
   lastLogin: "Last Login",
 };
 
-const BOOKING_STATUS: Record<BookingStatus, string> = {
-  [BookingStatus.PENDING]: "Pending",
-  [BookingStatus.ACCEPTED]: "Accepted",
-  [BookingStatus.DECLINED]: "Denied",
+type ActivityKey =
+  | "paginatedMembers"
+  | "paginatedPosts"
+  | "paginatedRequests"
+  | "paginatedBookings";
+
+const SELECTOR: Record<ActivityKey, string> = {
+  paginatedMembers: "users",
+  paginatedPosts: "posts",
+  paginatedRequests: "requests",
+  paginatedBookings: "bookings",
 };
 
-export default function CommunityActivities() {
+interface CommunityDashboardProps {
+  parent: RefObject<HTMLDivElement>;
+}
+
+export default function CommunityDashboard({
+  parent,
+}: CommunityDashboardProps) {
   const router = useRouter();
+  const table = useRef<HTMLDivElement>(null);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const [limit, setLimit] = useState(10);
   const [sortOrder, setSortOrder] = useState(-1);
   const [selectedId, setSelectedId] = useState("");
   const [selectedCol, setSelectedCol] = useState("id");
-  const [selectedStat, setSelectedStat] = useState("members");
-  const [selectedStatActivities, setSelectedStatActivities] = useState<
-    Array<any>
-  >([]);
+  const [selectedKey, setSelectedKey] =
+    useState<ActivityKey>("paginatedMembers");
+  const [selectedActivity, setSelectedActivity] = useState<any>();
 
   useEffect(() => {
     if (!tokenPayload?.isAdmin) router.replace("/posts");
     // eslint-disable-next-line
   }, [tokenPayload]);
 
-  const { loading, error, data } = useQuery<
+  useEffect(() => {
+    if (parent.current) {
+      const { clientHeight } = parent.current;
+      const rows = Math.floor((clientHeight - 136 - 40) / 44) + 5;
+      setLimit(rows > 10 ? rows : 10);
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  const { loading, error, data, fetchMore } = useQuery<
     CommunityActivitiesData,
     CommunityActivitiesVars
   >(queries.GET_COMMUNITY_ACTIVITIES, {
     skip: !tokenPayload?.isAdmin || !router.query.id,
-    variables: { communityId: router.query.id?.toString()! },
+    variables: {
+      communityId: router.query.id?.toString()!,
+      postsOffset: 0,
+      postsLimit: limit,
+      membersOffset: 0,
+      membersLimit: limit,
+      requestsOffset: 0,
+      requestsLimit: limit,
+      bookingsOffset: 0,
+      bookingsLimit: limit,
+    },
     onCompleted({ communityActivities }) {
-      setSelectedStatActivities(communityActivities["members"]);
+      setSelectedActivity(communityActivities[selectedKey]);
     },
     onError({ message }) {
       console.log(message);
     },
   });
 
+  const QUERY_VARIABLES = {
+    postsLimit: 0,
+    membersLimit: 0,
+    requestsLimit: 0,
+    bookingsLimit: 0,
+  };
+
+  function onScroll() {
+    if (table.current) {
+      const { scrollTop, scrollHeight, clientHeight } = table.current;
+      if (scrollTop + clientHeight === scrollHeight) {
+        if (!data?.communityActivities[selectedKey].hasMore) return;
+
+        const entity = SELECTOR[selectedKey];
+        const offset = `${entity}Offset`;
+        const limit = `${entity}Limit`;
+
+        fetchMore({
+          variables: {
+            ...QUERY_VARIABLES,
+            // @ts-ignore
+            [offset]: data?.communityActivities[selectedKey][entity].length,
+            [limit]: 10,
+          },
+
+          // @ts-ignore
+          updateQuery(prev, { fetchMoreResult }) {
+            if (!fetchMoreResult) return prev;
+
+            return {
+              ...prev,
+              communityActivities: {
+                ...prev.communityActivities,
+                [selectedKey]: {
+                  ...prev.communityActivities[selectedKey],
+                  [entity]: [
+                    // @ts-ignore
+                    ...prev.communityActivities[selectedKey][entity],
+                    // @ts-ignore
+                    ...fetchMoreResult.communityActivities[selectedKey][entity],
+                  ],
+                  hasMore:
+                    fetchMoreResult.communityActivities[selectedKey].hasMore,
+                },
+              },
+            };
+          },
+        });
+      }
+    }
+  }
+
+  useEffect(() => {
+    let node: HTMLDivElement | null = null;
+
+    if (table.current) {
+      node = table.current;
+      node.addEventListener("scroll", onScroll);
+    }
+
+    return () => {
+      if (node) node.removeEventListener("scroll", onScroll);
+    };
+    // eslint-disable-next-line
+  }, [data, selectedKey]);
+
   function sortColumns(column: string): void {
-    const stats = selectedStatActivities.slice();
+    const stats = selectedActivity[SELECTOR[selectedKey]].slice();
+
     if (typeof stats[0][column] === "string") {
-      stats.sort((a, b) => {
+      stats.sort((a: any, b: any) => {
         const elemA = a[column].toUpperCase();
         const elemB = b[column].toUpperCase();
         if (elemA < elemB) return sortOrder * -1;
@@ -86,35 +189,35 @@ export default function CommunityActivities() {
         return 0;
       });
     }
-    stats.sort((a, b) => sortOrder * (a[column] - b[column]));
-    setSelectedStatActivities(stats);
+    stats.sort((a: any, b: any) => sortOrder * (a[column] - b[column]));
+    setSelectedActivity({ ...setSelectedKey, [SELECTOR[selectedKey]]: stats });
     setSelectedCol(column);
     setSortOrder(sortOrder * -1);
   }
 
-  function formatTime(timeFrame: TimeFrame, timeString: Date): string | Moment {
+  function formatDate(timeFrame: TimeFrame, timeString: Date): string | Moment {
     if (timeFrame === TimeFrame.ASAP) return "ASAP";
     else if (timeFrame === TimeFrame.RANDOM) return "N/A";
     return moment(+timeString).format("MMM DD HH:mm");
   }
 
-  // Find selected item in its associated array by id and set it as selected id in state,
-  // & set its stat type as selected
-  function findById(stat: any, key: string): void {
-    if (USER_SET.has(key)) {
-      const targetUser = data!.communityActivities.members.filter(
-        (member: User) => member.id === stat[key].id
+  function findById(entity: any, key: string): void {
+    if (USER_TYPES.includes(key)) {
+      const user = data!.communityActivities.paginatedMembers.users.find(
+        (user) => user.id === entity[key].id
       );
-      setSelectedId(targetUser[0].id);
-      setSelectedStat("members");
-      setSelectedStatActivities(data!.communityActivities["members"]);
+      if (!user) return;
+      setSelectedId(user.id);
+      setSelectedKey("paginatedMembers");
+      setSelectedActivity(data!.communityActivities.paginatedMembers);
     } else if (key === "post") {
-      const targetPost = data!.communityActivities.posts.filter(
-        (post: Post) => post.id === stat[key].id
+      const post = data!.communityActivities.paginatedPosts.posts.find(
+        (post) => post.id === entity[key].id
       );
-      setSelectedId(targetPost[0].id);
-      setSelectedStat("posts");
-      setSelectedStatActivities(data!.communityActivities["posts"]);
+      if (!post) return;
+      setSelectedId(post.id);
+      setSelectedKey("paginatedPosts");
+      setSelectedActivity(data!.communityActivities.paginatedPosts);
     }
   }
 
@@ -134,172 +237,187 @@ export default function CommunityActivities() {
           </div>
           <div className="dashboard-header grey">
             <div className="dashboard-overview-stats">
-              {STATS_IDS.map((stat) => (
+              {Object.entries(SELECTOR).map(([key, value]) => (
                 <div
-                  key={stat}
+                  key={key}
                   className={`stat-clickable ${
-                    selectedStat === stat && "active"
+                    selectedKey === key && "active"
                   }`}
-                  onClick={() => {
-                    setSelectedStat(stat);
-                    //  @ts-ignore
-                    setSelectedStatActivities(data?.communityActivities[stat]);
-                  }}
                   role="presentation"
+                  onClick={() => {
+                    setSelectedKey(key as ActivityKey);
+                    setSelectedActivity(
+                      data?.communityActivities[key as ActivityKey]
+                    );
+                  }}
                 >
-                  {/* @ts-ignore */}
-                  <h2>{data?.communityActivities[stat].length}</h2>
-                  <h4>Total {stat.charAt(0).toUpperCase() + stat.slice(1)}</h4>
+                  <h2>
+                    {data?.communityActivities[key as ActivityKey].totalCount}
+                  </h2>
+                  <h4>
+                    Total {value.charAt(0).toUpperCase() + value.slice(1)}
+                  </h4>
                 </div>
               ))}
             </div>
           </div>
         </div>
-        <table>
-          <tbody>
-            <tr className="dashboard-table-header">
-              {Object.keys(
-                selectedStatActivities.length && selectedStatActivities[0]
-              )
-                .filter((key) => key !== "__typename" && key !== "timeFrame")
-                .map((key) => (
-                  <th key={key} onClick={() => sortColumns(key)}>
-                    <div className="tr-title">
-                      {FORMATTED_KEYS[key]}{" "}
-                      {selectedCol === key && (
-                        <SVG
-                          className="dashboard-sort-icons"
-                          icon={sortOrder === -1 ? "angleUp" : "angleDown"}
-                        />
-                      )}
-                    </div>
-                  </th>
-                ))}
-            </tr>
-            {selectedStatActivities.map((stat) => (
-              <tr
-                key={stat.id}
-                className={`dashboard-table-row ${
-                  stat.id === selectedId ? "selected" : undefined
-                }`}
-              >
-                {Object.keys(stat)
-                  .filter((key) => key !== "__typename" && key !== "timeFrame")
-                  .map((key) => (
-                    <td
-                      key={key}
-                      onClick={() => findById(stat, key)}
-                      className={ID_SET.has(key) ? "id" : undefined}
-                      role="presentation"
-                    >
-                      {key === "imageUrl" ? (
-                        <div className="item-img">
-                          <Image
-                            alt="profile pic"
-                            src={
-                              stat[key]
-                                ? transformImgUrl(stat[key], 150)
-                                : "/profile-img.png"
-                            }
-                            layout="fill"
-                            objectFit="cover"
-                          />
+        <div className="dashboard-table" ref={table}>
+          <table>
+            <thead>
+              <tr className="dashboard-table-header">
+                {selectedActivity &&
+                  selectedActivity[SELECTOR[selectedKey]][0] &&
+                  Object.keys(selectedActivity[SELECTOR[selectedKey]][0])
+                    .filter((key) => !IGNORED_KEYS.includes(key))
+                    .map((key) => (
+                      <th key={key} onClick={() => sortColumns(key)}>
+                        <div className="tr-title">
+                          {FORMATTED_KEYS[key]}{" "}
+                          {selectedCol === key && (
+                            <SVG
+                              className="dashboard-sort-icons"
+                              icon={sortOrder === -1 ? "angleUp" : "angleDown"}
+                            />
+                          )}
                         </div>
-                      ) : key === "id" ? (
-                        `...${stat[key].slice(19)}`
-                      ) : key === "status" ? (
-                        BOOKING_STATUS[stat[key] as BookingStatus]
-                      ) : ID_SET.has(key) ? (
-                        `...${stat[key].id.slice(19)}`
-                      ) : DATE_SET.has(key) ? (
-                        formatTime(stat.timeFrame, stat[key])
-                      ) : (
-                        stat[key].toString()
-                      )}
-                    </td>
-                  ))}
+                      </th>
+                    ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-        <style jsx>
-          {`
-            @import "../index.scss";
+            </thead>
+            <tbody>
+              {selectedActivity &&
+                selectedActivity[SELECTOR[selectedKey]] &&
+                selectedActivity[SELECTOR[selectedKey]].map((entity: any) => (
+                  <tr
+                    key={entity.id}
+                    className={`dashboard-table-row ${
+                      entity.id === selectedId ? "selected" : undefined
+                    }`}
+                  >
+                    {Object.keys(entity)
+                      .filter((key) => !IGNORED_KEYS.includes(key))
+                      .map((key) => (
+                        <td
+                          key={key}
+                          onClick={() => findById(entity, key)}
+                          className={IDS.includes(key) ? "id" : undefined}
+                          role="presentation"
+                        >
+                          {key === "imageUrl" ? (
+                            <div className="item-img">
+                              <Image
+                                alt="profile pic"
+                                src={
+                                  entity[key]
+                                    ? transformImgUrl(entity[key], 150)
+                                    : "/profile-img.png"
+                                }
+                                layout="fill"
+                                objectFit="cover"
+                              />
+                            </div>
+                          ) : key === "id" ? (
+                            `...${entity[key].slice(19)}`
+                          ) : key === "status" ? (
+                            BOOKING_STATUS[entity[key]]
+                          ) : IDS.includes(key) ? (
+                            `...${entity[key].id.slice(19)}`
+                          ) : DATES.includes(key) ? (
+                            formatDate(entity.timeFrame, entity[key])
+                          ) : (
+                            entity[key].toString()
+                          )}
+                        </td>
+                      ))}
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <style jsx>
+        {`
+          @import "../index.scss";
 
-            .dashboard-control {
-              margin: 0 auto auto auto;
-              width: 100vw;
+          .dashboard-control {
+            margin: 0 auto auto auto;
+            width: 100vw;
+            display: flex;
+            height: 100%;
+            flex-direction: column;
 
-              h1,
-              h2,
-              h3,
-              h4 {
-                margin: 2px;
-                font-weight: bold;
-                letter-spacing: 1px;
-              }
+            h1,
+            h2,
+            h3,
+            h4 {
+              margin: 2px;
+              font-weight: bold;
+              letter-spacing: 1px;
+            }
 
-              .dashboard-overview {
-                margin: 0 auto;
-                text-align: center;
+            .dashboard-overview {
+              text-align: center;
 
-                .dashboard-header {
-                  width: 100vw;
+              .dashboard-header {
+                &.orange {
+                  background: $orange;
+                }
 
-                  &.orange {
-                    background: $orange;
+                &.grey {
+                  background: $grey-200;
+                }
+
+                .dashboard-overview-highlight {
+                  margin: auto;
+                  color: $background;
+                  padding: 10px 0px;
+                  width: $xl-max-width;
+
+                  @include lg {
+                    width: 90vw;
                   }
 
-                  &.grey {
-                    background: $grey-200;
+                  @include sm {
+                    width: 100vw;
+                  }
+                }
+
+                .dashboard-overview-stats {
+                  margin: auto;
+                  display: flex;
+                  flex-wrap: wrap;
+                  justify-content: space-around;
+                  align-items: center;
+                  width: $xl-max-width;
+
+                  @include lg {
+                    width: 90vw;
                   }
 
-                  .dashboard-overview-highlight {
-                    margin: auto;
-                    color: $background;
-                    padding: 10px 0px;
-                    width: $xl-max-width;
-
-                    @include lg {
-                      width: 90vw;
-                    }
-
-                    @include sm {
-                      width: 100vw;
-                    }
+                  @include sm {
+                    width: 100vw;
                   }
 
-                  .dashboard-overview-stats {
-                    margin: auto;
-                    display: flex;
-                    flex-wrap: wrap;
-                    justify-content: space-around;
-                    align-items: center;
-                    width: $xl-max-width;
+                  .stat-clickable {
+                    flex: 1;
+                    cursor: pointer;
+                    background-color: $grey-200;
+                    color: $orange;
+                    padding: 5px 0px;
 
-                    @include lg {
-                      width: 90vw;
-                    }
-
-                    @include sm {
-                      width: 100vw;
-                    }
-
-                    .stat-clickable {
-                      flex: 1;
-                      cursor: pointer;
-                      background-color: $grey-200;
-                      color: $orange;
-                      padding: 5px 0px;
-
-                      &.active {
-                        background-color: $orange;
-                        color: $white;
-                      }
+                    &.active {
+                      background-color: $orange;
+                      color: $white;
                     }
                   }
                 }
               }
+            }
+
+            .dashboard-table {
+              flex: 1 1 0%;
+              overflow-y: scroll;
 
               table {
                 text-align: center;
@@ -319,6 +437,9 @@ export default function CommunityActivities() {
               .dashboard-table-header {
                 height: 40px;
                 background-color: white;
+                position: sticky;
+                z-index: 1;
+                top: 0;
 
                 &:hover {
                   cursor: pointer;
@@ -327,7 +448,7 @@ export default function CommunityActivities() {
               }
 
               tr {
-                height: 30px;
+                height: 44px;
                 background-color: white;
 
                 &.selected {
@@ -352,6 +473,7 @@ export default function CommunityActivities() {
               th {
                 color: #000;
                 align-items: center;
+                position: sticky;
 
                 .tr-title {
                   display: flex;
@@ -380,25 +502,23 @@ export default function CommunityActivities() {
                   width: 40px;
                   height: 40px;
                   position: relative;
-                  background-size: cover;
-                  background-position: center;
                 }
               }
             }
-          `}
-        </style>
-        <style jsx global>
-          {`
-            .dashboard-sort-icons {
-              color: #000;
-              width: 11px;
-              right: 0px;
-              margin-left: 6px;
-              cursor: pointer;
-            }
-          `}
-        </style>
-      </div>
+          }
+        `}
+      </style>
+      <style jsx global>
+        {`
+          .dashboard-sort-icons {
+            color: #000;
+            width: 11px;
+            right: 0px;
+            margin-left: 6px;
+            cursor: pointer;
+          }
+        `}
+      </style>
     </Container>
   );
 }

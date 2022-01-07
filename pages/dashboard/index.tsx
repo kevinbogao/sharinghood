@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, RefObject } from "react";
 import { useRouter } from "next/router";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import { tokenPayloadVar } from "../_app";
@@ -6,6 +6,7 @@ import { queries } from "../../lib/gql";
 import { Container, SVG } from "../../components/Container";
 import type {
   TotalActivitiesData,
+  TotalActivitiesVars,
   CommunitiesActivities,
 } from "../../lib/types";
 
@@ -21,29 +22,93 @@ const FORMATTED_KEYS: Record<TKeys, string> = {
   bookingsCount: "Bookings",
 };
 
-export default function Dashboard() {
+interface DashboardProps {
+  parent: RefObject<HTMLDivElement>;
+}
+
+export default function Dashboard({ parent }: DashboardProps) {
   const router = useRouter();
+  const table = useRef<HTMLDivElement>(null);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
+  const [limit, setLimit] = useState(10);
   const [sortOrder, setSortOrder] = useState(-1);
   const [selectedCol, setSelectedCol] = useState("id");
   const [communitiesActivities, setCommunitiesActivities] = useState<
     CommunitiesActivities[]
   >([]);
 
-  const { loading, error, data } = useQuery<TotalActivitiesData, void>(
-    queries.GET_TOTAl_ACTIVITIES,
-    {
-      skip: !tokenPayload?.isAdmin,
-      onCompleted({ totalActivities }) {
-        setCommunitiesActivities(totalActivities.communitiesActivities);
-      },
-    }
-  );
+  const { loading, error, data, fetchMore } = useQuery<
+    TotalActivitiesData,
+    TotalActivitiesVars
+  >(queries.GET_TOTAl_ACTIVITIES, {
+    skip: !tokenPayload?.isAdmin,
+    variables: { offset: 0, limit },
+    onCompleted({ totalActivities }) {
+      setCommunitiesActivities(totalActivities.communitiesActivities);
+    },
+  });
 
   useEffect(() => {
     if (!tokenPayload?.isAdmin) router.replace("/posts");
     // eslint-disable-next-line
   }, [tokenPayload]);
+
+  useEffect(() => {
+    if (parent.current) {
+      const { clientHeight } = parent.current;
+      const rows = Math.floor((clientHeight - 136 - 40) / 44) + 5;
+      setLimit(rows > 10 ? rows : 10);
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  function onScroll() {
+    if (table.current) {
+      const { scrollTop, scrollHeight, clientHeight } = table.current;
+
+      const hasMore =
+        data!.totalActivities.communitiesActivities.length <
+        data!.totalActivities.totalCommunitiesCount;
+
+      if (scrollTop + clientHeight === scrollHeight) {
+        if (!hasMore) return;
+        fetchMore<TotalActivitiesData, TotalActivitiesVars>({
+          variables: {
+            offset: data!.totalActivities.communitiesActivities.length,
+            limit: 10,
+          },
+
+          updateQuery(prev, { fetchMoreResult }) {
+            if (!fetchMoreResult) return prev;
+            return {
+              ...prev,
+              totalActivities: {
+                ...prev.totalActivities,
+                communitiesActivities: [
+                  ...prev.totalActivities.communitiesActivities,
+                  ...fetchMoreResult.totalActivities.communitiesActivities,
+                ],
+              },
+            };
+          },
+        });
+      }
+    }
+  }
+
+  useEffect(() => {
+    let node: HTMLDivElement | null = null;
+
+    if (table.current) {
+      node = table.current;
+      node.addEventListener("scroll", onScroll);
+    }
+
+    return () => {
+      if (node) node.removeEventListener("scroll", onScroll);
+    };
+    // eslint-disable-next-line
+  }, [data]);
 
   function sortColumns(column: TKeys): void {
     const stats = communitiesActivities.slice();
@@ -68,8 +133,6 @@ export default function Dashboard() {
     setSelectedCol(column);
     setSortOrder(sortOrder * -1);
   }
-
-  console.log(data);
 
   return (
     <Container auth={false} loading={loading} error={error}>
@@ -100,50 +163,54 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-        <table>
-          <thead>
-            <tr className="dashboard-table-header">
+        <div className="dashboard-table" ref={table}>
+          <table>
+            <thead>
+              <tr className="dashboard-table-header">
+                {communitiesActivities.length
+                  ? Object.keys(communitiesActivities[0])
+                      .filter((key) => key !== "__typename")
+                      .map((key) => (
+                        <th key={key} onClick={() => sortColumns(key as TKeys)}>
+                          <div className="tr-title">
+                            {FORMATTED_KEYS[key as TKeys]}{" "}
+                            {selectedCol === key && (
+                              <SVG
+                                className="dashboard-sort-icons"
+                                icon={
+                                  sortOrder === -1 ? "angleUp" : "angleDown"
+                                }
+                              />
+                            )}
+                          </div>
+                        </th>
+                      ))
+                  : null}
+              </tr>
+            </thead>
+            <tbody>
               {communitiesActivities.length
-                ? Object.keys(communitiesActivities[0])
-                    .filter((key) => key !== "__typename")
-                    .map((key) => (
-                      <th key={key} onClick={() => sortColumns(key as TKeys)}>
-                        <div className="tr-title">
-                          {FORMATTED_KEYS[key as TKeys]}{" "}
-                          {selectedCol === key && (
-                            <SVG
-                              className="dashboard-sort-icons"
-                              icon={sortOrder === -1 ? "angleUp" : "angleDown"}
-                            />
-                          )}
-                        </div>
-                      </th>
-                    ))
+                ? communitiesActivities.map((communityActivities) => (
+                    <tr
+                      key={communityActivities.id}
+                      className="dashboard-table-row"
+                      onClick={() =>
+                        router.push(`/dashboard/${communityActivities.id}`)
+                      }
+                    >
+                      <td>{communityActivities.id}</td>
+                      <td>{communityActivities.name}</td>
+                      <td>{communityActivities.code}</td>
+                      <td>{communityActivities.membersCount}</td>
+                      <td>{communityActivities.postsCount}</td>
+                      <td>{communityActivities.requestsCount}</td>
+                      <td>{communityActivities.bookingsCount}</td>
+                    </tr>
+                  ))
                 : null}
-            </tr>
-          </thead>
-          <tbody>
-            {communitiesActivities.length
-              ? communitiesActivities.map((communityActivities) => (
-                  <tr
-                    key={communityActivities.id}
-                    className="dashboard-table-row"
-                    onClick={() =>
-                      router.push(`/dashboard/${communityActivities.id}`)
-                    }
-                  >
-                    <td>{communityActivities.id}</td>
-                    <td>{communityActivities.name}</td>
-                    <td>{communityActivities.code}</td>
-                    <td>{communityActivities.membersCount}</td>
-                    <td>{communityActivities.postsCount}</td>
-                    <td>{communityActivities.requestsCount}</td>
-                    <td>{communityActivities.bookingsCount}</td>
-                  </tr>
-                ))
-              : null}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
         <style jsx>
           {`
             @import "../index.scss";
@@ -151,6 +218,9 @@ export default function Dashboard() {
             .dashboard-control {
               margin: 0 auto auto auto;
               width: 100vw;
+              display: flex;
+              height: 100%;
+              flex-direction: column;
 
               h1,
               h2,
@@ -203,57 +273,65 @@ export default function Dashboard() {
                 }
               }
 
-              table {
-                width: $xl-max-width;
+              .dashboard-table {
+                flex: 1 1 0%;
+                overflow-y: scroll;
 
-                @include lg {
-                  width: 90vw;
+                table {
+                  width: $xl-max-width;
+
+                  @include lg {
+                    width: 90vw;
+                  }
+
+                  @include sm {
+                    width: 100vw;
+                  }
+
+                  text-align: center;
+                  margin: 0px auto;
+                  border-collapse: collapse;
                 }
 
-                @include sm {
-                  width: 100vw;
-                }
-
-                text-align: center;
-                margin: 0px auto;
-                border-collapse: collapse;
-              }
-
-              .dashboard-table-header {
-                height: 40px;
-                background-color: white;
-
-                &:hover {
-                  background-color: white;
-                }
-              }
-
-              tr {
-                height: 30px;
-                background-color: white;
-                cursor: pointer;
-
-                &:hover {
-                  background-color: $grey-200;
-                }
-              }
-
-              th {
-                align-items: center;
-
-                .tr-title {
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                }
-              }
-
-              td {
-                align-items: center;
-
-                img {
-                  width: 40px;
+                .dashboard-table-header {
                   height: 40px;
+                  background-color: white;
+                  position: sticky;
+                  z-index: 1;
+                  top: 0;
+
+                  &:hover {
+                    background-color: white;
+                  }
+                }
+
+                tr {
+                  height: 40px;
+                  background-color: white;
+                  cursor: pointer;
+
+                  &:hover {
+                    background-color: $grey-200;
+                  }
+                }
+
+                th {
+                  align-items: center;
+
+                  .tr-title {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  }
+                }
+
+                td {
+                  align-items: center;
+
+                  img {
+                    width: 40px;
+                    height: 40px;
+                  }
                 }
               }
             }

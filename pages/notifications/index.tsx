@@ -28,16 +28,16 @@ interface NotificationsProps {
 export default function Notifications({ parent }: NotificationsProps) {
   const router = useRouter();
   const client = useApolloClient();
+  const [limit, setLimit] = useState(0);
   const communityId = useReactiveVar(communityIdVar);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
-  const [itemsCount, setItemsCount] = useState(0);
 
   useEffect(() => {
     if (!parent.current) return;
 
     const { clientHeight } = parent.current;
     const rows = Math.floor(clientHeight / 146) + 3;
-    setItemsCount(rows > 10 ? rows : 10);
+    setLimit(rows > 10 ? rows : 10);
     // eslint-disable-next-line
   }, []);
 
@@ -47,7 +47,7 @@ export default function Notifications({ parent }: NotificationsProps) {
   >(queries.GET_PAGINATED_NOTIFICATIONS, {
     fetchPolicy: "network-only",
     skip: !communityId,
-    variables: { offset: 0, limit: itemsCount, communityId: communityId! },
+    variables: { offset: 0, limit, communityId: communityId! },
     onCompleted() {
       const communitiesCache = client.readQuery<UserCommunitiesData, void>({
         query: queries.GET_USER_COMMUNITIES,

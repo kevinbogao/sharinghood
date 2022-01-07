@@ -15,14 +15,14 @@ interface PostsProps {
 
 export default function Posts({ parent }: PostsProps) {
   const communityId = useReactiveVar(communityIdVar);
-  const [itemsCount, setItemsCount] = useState(0);
+  const [limit, setLimit] = useState(0);
 
   const { loading, error, data, client, refetch, fetchMore } = useQuery<
     PaginatedPostsData,
     PaginatedPostsVars
   >(queries.GET_PAGINATED_POSTS, {
-    skip: !communityId || itemsCount === 0,
-    variables: { offset: 0, limit: itemsCount, communityId: communityId! },
+    skip: !communityId || limit === 0,
+    variables: { offset: 0, limit, communityId: communityId! },
     onError({ message }) {
       console.warn(message);
     },
@@ -75,10 +75,10 @@ export default function Posts({ parent }: PostsProps) {
     <Container loading={loading} error={error}>
       <ItemsGrid
         type="post"
+        limit={limit}
+        setLimit={setLimit}
         refetch={refetch}
         communityId={communityId!}
-        itemsCount={itemsCount}
-        setItemsCount={setItemsCount}
       >
         {data?.paginatedPosts?.posts?.map((post) => (
           <div key={post.id} className="item-card">

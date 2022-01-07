@@ -395,8 +395,8 @@ export namespace queries {
   /// ACTIVITY
   ///
   export const GET_TOTAl_ACTIVITIES = gql`
-    query GetTotalActivities {
-      totalActivities {
+    query GetTotalActivities($offset: Int!, $limit: Int!) {
+      totalActivities(offset: $offset, limit: $limit) {
         totalCommunitiesCount
         totalUsersCount
         totalPostsCount
@@ -416,7 +416,17 @@ export namespace queries {
   `;
 
   export const GET_COMMUNITY_ACTIVITIES = gql`
-    query CommunityActivities($communityId: ID!) {
+    query CommunityActivities(
+      $communityId: ID!
+      $postsOffset: Int!
+      $postsLimit: Int!
+      $membersOffset: Int!
+      $membersLimit: Int!
+      $requestsOffset: Int!
+      $requestsLimit: Int!
+      $bookingsOffset: Int!
+      $bookingsLimit: Int!
+    ) {
       communityActivities(communityId: $communityId) {
         id
         name
@@ -425,52 +435,68 @@ export namespace queries {
         creator {
           id
         }
-        members {
-          id
-          name
-          email
-          imageUrl
-          isNotified
-          createdAt
-          lastLogin
+        paginatedPosts(offset: $postsOffset, limit: $postsLimit) {
+          posts {
+            id
+            title
+            desc
+            condition
+            imageUrl
+            isGiveaway
+            creator {
+              id
+            }
+            createdAt
+          }
+          hasMore
+          totalCount
         }
-        posts {
-          id
-          title
-          desc
-          condition
-          imageUrl
-          isGiveaway
-          creator {
+        paginatedMembers(offset: $membersOffset, limit: $membersLimit) {
+          users {
             id
+            name
+            email
+            imageUrl
+            isNotified
+            createdAt
+            lastLogin
           }
-          createdAt
+          hasMore
+          totalCount
         }
-        requests {
-          id
-          title
-          desc
-          timeFrame
-          dateNeed
-          dateReturn
-          imageUrl
-          creator {
+        paginatedRequests(offset: $requestsOffset, limit: $requestsLimit) {
+          requests {
             id
+            title
+            desc
+            timeFrame
+            dateNeed
+            dateReturn
+            imageUrl
+            creator {
+              id
+            }
+            createdAt
           }
-          createdAt
+          hasMore
+          totalCount
         }
-        bookings {
-          id
-          post {
+        paginatedBookings(offset: $bookingsOffset, limit: $bookingsLimit) {
+          bookings {
             id
+            post {
+              id
+            }
+            status
+            timeFrame
+            dateNeed
+            dateReturn
+            booker {
+              id
+            }
           }
-          status
-          timeFrame
-          dateNeed
-          dateReturn
-          booker {
-            id
-          }
+          hasMore
+          totalCount
         }
       }
     }

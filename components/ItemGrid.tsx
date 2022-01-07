@@ -16,25 +16,25 @@ type Item = "post" | "request";
 
 interface ItemsGridProps {
   type: Item;
+  limit: number;
+  setLimit(limit: number): void;
   refetch(): Promise<ApolloQueryResult<any>>;
   children: ReactNode;
   communityId: string;
-  itemsCount: number;
-  setItemsCount(itemsCount: number): void;
 }
 
 export default function ItemsGrid({
   type,
+  limit,
+  setLimit,
   refetch,
   children,
   communityId,
-  itemsCount,
-  setItemsCount,
 }: ItemsGridProps) {
   const client = useApolloClient();
   const grid = useRef<HTMLDivElement>(null);
 
-  function calcItemCount(): number {
+  function calcLimit(): number {
     if (!grid.current) return -1;
 
     const { clientHeight, clientWidth } = grid.current;
@@ -51,18 +51,18 @@ export default function ItemsGrid({
   }
 
   function handleWindowResize(): void {
-    const count = calcItemCount();
+    const count = calcLimit();
     const currCount = Children.count(children) - 1;
 
     if (count > currCount) {
-      setItemsCount(count);
+      setLimit(count);
       refetch();
     }
   }
 
   useEffect(() => {
-    const count = calcItemCount();
-    setItemsCount(count > 10 ? count : 10);
+    const count = calcLimit();
+    setLimit(count > 10 ? count : 10);
     // eslint-disable-next-line
   }, []);
 
@@ -87,7 +87,7 @@ export default function ItemsGrid({
                     query: queries.GET_PAGINATED_POSTS,
                     variables: {
                       offset: 0,
-                      limit: itemsCount,
+                      limit,
                       communityId: communityId!,
                     },
                   });
@@ -110,7 +110,7 @@ export default function ItemsGrid({
                     query: queries.GET_PAGINATED_REQUESTS,
                     variables: {
                       offset: 0,
-                      limit: itemsCount,
+                      limit,
                       communityId: communityId!,
                     },
                   });

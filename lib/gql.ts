@@ -15,7 +15,6 @@ export namespace queries {
         name
         email
         apartment
-        isAdmin
         isNotified
         posts {
           id

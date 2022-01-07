@@ -28,7 +28,6 @@ export class User extends BaseEntity {
   @Column("varchar", { length: 255 })
   public name: string;
 
-  @ConfigureLoader({ ignore: true })
   @Column("varchar", { length: 255, unique: true })
   public email: string;
 

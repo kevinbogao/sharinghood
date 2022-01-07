@@ -1,4 +1,5 @@
 import { useState, useEffect, RefObject } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import { Container } from "../../components/Container";
@@ -90,15 +91,14 @@ export default function Posts({ parent }: PostsProps) {
                   });
                 }}
               >
-                <div
-                  className="item-img"
-                  style={{
-                    backgroundImage: `url(${transformImgUrl(
-                      post.imageUrl,
-                      300
-                    )})`,
-                  }}
-                />
+                <div className="item-img">
+                  <Image
+                    alt="profile pic"
+                    src={transformImgUrl(post.imageUrl, 300)}
+                    layout="fill"
+                    objectFit="cover"
+                  />
+                </div>
                 <div className="item-info">
                   <p className="item-title">{post.title}</p>
                   <p>by {post.creator.name}</p>
@@ -120,8 +120,7 @@ export default function Posts({ parent }: PostsProps) {
               .item-img {
                 width: 160px;
                 height: 136px;
-                background-size: cover;
-                background-position: center;
+                position: relative;
 
                 @include md {
                   width: 190px;

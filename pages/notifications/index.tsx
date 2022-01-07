@@ -47,7 +47,6 @@ export default function Notifications({ parent }: NotificationsProps) {
   >(queries.GET_PAGINATED_NOTIFICATIONS, {
     fetchPolicy: "network-only",
     skip: !communityId,
-
     variables: { offset: 0, limit: itemsCount, communityId: communityId! },
     onCompleted() {
       const communitiesCache = client.readQuery<UserCommunitiesData, void>({
@@ -201,15 +200,17 @@ export default function Notifications({ parent }: NotificationsProps) {
                           notification.notifier?.id === user.id && "unread"
                         }`}
                       >
-                        <div
-                          className="noti-img"
-                          style={{
-                            backgroundImage: `url(${transformImgUrl(
+                        <div className="noti-img">
+                          <Image
+                            alt="profile pic"
+                            src={transformImgUrl(
                               notification.booking.post.imageUrl,
                               300
-                            )})`,
-                          }}
-                        />
+                            )}
+                            layout="fill"
+                            objectFit="cover"
+                          />
+                        </div>
                       </div>
                     </div>
                     <div className="item-info">
@@ -338,46 +339,49 @@ export default function Notifications({ parent }: NotificationsProps) {
                     </div>
                   </>
                 ) : (
-                  notification.post?.creator.id !== user.id && (
-                    <>
-                      <div className="left-img">
-                        <div
-                          className={`noti-img-border ${
-                            notification.notifier?.id === user.id && "unread"
-                          }`}
-                        >
-                          <div className="noti-img">
-                            <Image
-                              alt="profile pic"
-                              src={
-                                receiver.imageUrl
-                                  ? transformImgUrl(receiver.imageUrl, 300)
-                                  : "/profile-img.png"
-                              }
-                              layout="fill"
-                              objectFit="cover"
-                            />
-                          </div>
+                  <>
+                    <div className="left-img">
+                      <div
+                        className={`noti-img-border ${
+                          notification.notifier?.id === user.id && "unread"
+                        }`}
+                      >
+                        <div className="noti-img">
+                          <Image
+                            alt="profile pic"
+                            src={transformImgUrl(
+                              notification.post!.imageUrl,
+                              300
+                            )}
+                            layout="fill"
+                            objectFit="cover"
+                          />
                         </div>
                       </div>
-                      <div className="item-info">
-                        <div className="item-status">
+                    </div>
+                    <div className="item-info">
+                      <div className="item-status">
+                        {notification.post?.creator.id === user.id ? (
                           <p className="title">
-                            {notification?.post?.creator.name} uploaded a item
-                            for your request!
+                            You uploaded an item for {receiver.name}&apos;
+                            request!
                           </p>
-                        </div>
-                        <div className="item-btns">
-                          <button
-                            type="button"
-                            className="noti-btn status request"
-                          >
-                            Request now
-                          </button>
-                        </div>
+                        ) : (
+                          <p className="title">
+                            {receiver.name} uploaded an item for your request!
+                          </p>
+                        )}
                       </div>
-                    </>
-                  )
+                      <div className="item-btns">
+                        <button
+                          type="button"
+                          className="noti-btn status request"
+                        >
+                          Request now
+                        </button>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             );
@@ -447,8 +451,6 @@ export default function Notifications({ parent }: NotificationsProps) {
                 height: 90px;
                 width: 90px;
                 border-radius: 50%;
-                background-size: cover;
-                background-position: center;
                 position: relative;
                 overflow: hidden;
 

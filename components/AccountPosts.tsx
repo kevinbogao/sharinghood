@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Image from "next/image";
 import { NextRouter } from "next/router";
 import { useMutation } from "@apollo/client";
 import Modal from "react-modal";
@@ -81,12 +82,14 @@ export default function AccountPosts({ posts, router }: AccountPostsProps) {
       <div className="user-posts">
         {posts.map((post) => (
           <div key={post.id} className="post-instance">
-            <div
-              className={`post-img ${isEditing ? "editing" : undefined}`}
-              style={{
-                backgroundImage: `url(${transformImgUrl(post.imageUrl, 250)})`,
-              }}
-            />
+            <div className={`post-img ${isEditing ? "editing" : undefined}`}>
+              <Image
+                alt="Item pic"
+                src={transformImgUrl(post.imageUrl, 250)}
+                layout="fill"
+                objectFit="cover"
+              />
+            </div>
             <p>{post.title}</p>
             <div className={`post-img-btn ${isEditing ? "active" : undefined}`}>
               <button
@@ -212,8 +215,7 @@ export default function AccountPosts({ posts, router }: AccountPostsProps) {
                 margin: 0 5px 10px 0;
                 width: 160px;
                 height: 136px;
-                background-size: cover;
-                background-position: center;
+                position: relative;
 
                 &.editing {
                   -webkit-filter: grayscale(100%);

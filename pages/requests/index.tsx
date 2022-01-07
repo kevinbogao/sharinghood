@@ -1,5 +1,6 @@
 import { useState, useEffect, RefObject } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import moment from "moment";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import { Container, SVG } from "../../components/Container";
@@ -97,15 +98,14 @@ export default function Requests({ parent }: RequestsProps) {
                   });
                 }}
               >
-                <div
-                  className="item-img"
-                  style={{
-                    backgroundImage: `url(${transformImgUrl(
-                      request.imageUrl,
-                      300
-                    )})`,
-                  }}
-                />
+                <div className="item-img">
+                  <Image
+                    alt="profile pic"
+                    src={transformImgUrl(request.imageUrl, 300)}
+                    layout="fill"
+                    objectFit="cover"
+                  />
+                </div>
                 <div className="item-info">
                   <p className="item-title">{request.title}</p>
                   <p>by {request.creator.name}</p>
@@ -153,8 +153,7 @@ export default function Requests({ parent }: RequestsProps) {
               .item-img {
                 width: 160px;
                 height: 136px;
-                background-size: cover;
-                background-position: center;
+                position: relative;
 
                 @include md {
                   width: 190px;

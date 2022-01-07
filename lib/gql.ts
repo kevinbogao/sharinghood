@@ -349,6 +349,7 @@ export namespace queries {
           }
           post {
             id
+            imageUrl
             creator {
               id
               name

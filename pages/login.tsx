@@ -45,12 +45,12 @@ export default function Login() {
     <div className="login-control">
       <p className="main-p">Login and start sharing!</p>
       <form
-        onSubmit={handleSubmit((data) => {
+        onSubmit={handleSubmit((form) => {
           if (Object.keys(errors).length === 0) {
             login({
               variables: {
-                email: data.email.toLowerCase(),
-                password: data.password,
+                email: form.email.toLowerCase(),
+                password: form.password,
               },
             });
           }

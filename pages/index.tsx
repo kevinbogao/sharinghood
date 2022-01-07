@@ -8,7 +8,7 @@ import { Loader, InlineError } from "../components/Container";
 import { accessTokenVar, createCommunityDataVar } from "./_app";
 import type { FindCommunityData, FindCommunityVars } from "../lib/types";
 
-interface CodeInput {
+interface HomeInput {
   code: string;
 }
 
@@ -19,7 +19,7 @@ export default function Home() {
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<CodeInput>();
+  } = useForm<HomeInput>();
   const accessToken = useReactiveVar(accessTokenVar);
   const [isCreate, setIsCreate] = useState(false);
 
@@ -82,9 +82,9 @@ export default function Home() {
           </button>
         ) : (
           <form
-            onSubmit={handleSubmit((data) => {
+            onSubmit={handleSubmit((form) => {
               if (Object.keys(errors).length === 0) {
-                community({ variables: { communityCode: data.code } });
+                community({ variables: { communityCode: form.code } });
               }
             })}
           >

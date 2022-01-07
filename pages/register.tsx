@@ -23,7 +23,7 @@ import type {
   FindCommunityVars,
 } from "../lib/types";
 
-interface RegisterInputs {
+interface RegisterInput {
   image?: string;
   name: string;
   apartment: string;
@@ -36,7 +36,7 @@ interface RegisterInputs {
 
 export default function Register() {
   const router = useRouter();
-  const methods = useForm<RegisterInputs>();
+  const methods = useForm<RegisterInput>();
   const {
     register: registerInput,
     watch,
@@ -66,6 +66,7 @@ export default function Register() {
     RegisterVars
   >(mutations.REGISTER, {
     onCompleted({ register }) {
+      createCommunityDataVar(null);
       accessTokenVar(register.auth.accessToken);
       refreshTokenVar(register.auth.refreshToken);
       tokenPayloadVar(jwtDecode(register.auth.accessToken));
@@ -80,7 +81,7 @@ export default function Register() {
       router.push("/communities");
     },
     onError({ graphQLErrors }) {
-      handlerInputError<RegisterInputs>(graphQLErrors, setError);
+      handlerInputError<RegisterInput>(graphQLErrors, setError);
     },
   });
 
@@ -114,18 +115,17 @@ export default function Register() {
       <p className="main-p mid">How would you like to be called?</p>
       <FormProvider {...methods}>
         <form
-          onSubmit={handleSubmit((data) => {
+          onSubmit={handleSubmit((form) => {
             if (Object.keys(errors).length === 0) {
               register({
                 variables: {
                   userInput: {
-                    name: data.name,
-                    email: data.email.toLowerCase(),
-                    password: data.password,
+                    name: form.name,
+                    email: form.email.toLowerCase(),
+                    password: form.password,
                     image,
-                    apartment: data.apartment,
-                    isNotified: data.isNotified,
-                    // isCreator: createCommunityData!.isCreator,
+                    apartment: form.apartment,
+                    isNotified: form.isNotified,
                     communityId: createCommunityData!.communityId,
                   },
                   ...(createCommunityData!.isCreator && {

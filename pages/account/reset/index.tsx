@@ -10,7 +10,7 @@ import type {
   ForgotPasswordVars,
 } from "../../../lib/types";
 
-interface EmailInput {
+interface ForgotPasswordInput {
   email: string;
 }
 
@@ -21,7 +21,7 @@ export default function ForgotPassword() {
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<EmailInput>();
+  } = useForm<ForgotPasswordInput>();
   const accessToken = useReactiveVar(accessTokenVar);
   const [isReSend, setIsReSend] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -81,9 +81,9 @@ export default function ForgotPassword() {
           </p>
           <p className="main-p">Enter your email</p>
           <form
-            onSubmit={handleSubmit((data) => {
+            onSubmit={handleSubmit((form) => {
               if (Object.keys(errors).length === 0) {
-                const email = data.email.toLowerCase();
+                const email = form.email.toLowerCase();
                 setEnteredEmail(email);
                 forgotPassword({ variables: { email } });
               }

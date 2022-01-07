@@ -15,7 +15,7 @@ import type {
   CreateCommunityVars,
 } from "../../lib/types";
 
-interface CommunityInputs {
+interface CreateCommunityInput {
   code: string;
   zipCode: string;
   communityName: string;
@@ -28,7 +28,7 @@ export default function CreateCommunity() {
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<CommunityInputs>();
+  } = useForm<CreateCommunityInput>();
 
   const [community, { loading }] = useLazyQuery<
     FindCommunityData,
@@ -59,25 +59,25 @@ export default function CreateCommunity() {
       </p>
       <p className="main-p mid">Give your community a name</p>
       <form
-        onSubmit={handleSubmit((data) => {
+        onSubmit={handleSubmit((form) => {
           if (Object.keys(errors).length === 0) {
             createCommunityDataVar({
               isCreator: true,
-              communityName: data.communityName,
-              communityCode: data.code,
-              communityZipCode: data.zipCode,
+              communityName: form.communityName,
+              communityCode: form.code,
+              communityZipCode: form.zipCode,
             });
             if (accessTokenVar())
               createCommunity({
                 variables: {
                   communityInput: {
-                    name: data.communityName,
-                    code: data.code,
-                    zipCode: data.zipCode,
+                    name: form.communityName,
+                    code: form.code,
+                    zipCode: form.zipCode,
                   },
                 },
               });
-            else community({ variables: { communityCode: data.code } });
+            else community({ variables: { communityCode: form.code } });
           }
         })}
       >

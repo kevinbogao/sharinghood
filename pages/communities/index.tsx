@@ -19,7 +19,7 @@ import type {
   UserCommunitiesData,
 } from "../../lib/types";
 
-interface CodeInput {
+interface CommunitiesInput {
   code: string;
 }
 
@@ -31,7 +31,7 @@ export default function Communities() {
     setError,
     clearErrors,
     formState: { errors },
-  } = useForm<CodeInput>();
+  } = useForm<CommunitiesInput>();
   const tokenPayload = useReactiveVar(tokenPayloadVar);
   const [isJoinCommunity, setIsJoinCommunity] = useState(false);
   const [communityToJoin, setCommunityToJoin] = useState<Community | null>(
@@ -144,9 +144,9 @@ export default function Communities() {
             <button
               className="main-btn block"
               type="button"
-              onClick={handleSubmit((data) => {
+              onClick={handleSubmit((form) => {
                 if (Object.keys(errors).length === 0)
-                  community({ variables: { communityCode: data.code } });
+                  community({ variables: { communityCode: form.code } });
               })}
             >
               {findCommunityLoading ? <Loader /> : "Find community"}

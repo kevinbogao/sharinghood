@@ -29,13 +29,13 @@ const CONDITION_ICONS: Record<string, Icon> = {
   damaged: "exclamationTriangle",
 };
 
-interface BookingInputs {
+interface PostDetailsInput {
   timeFrame: TimeFrame;
 }
 
 export default function PostDetails() {
   const router = useRouter();
-  const methods = useForm<BookingInputs>();
+  const methods = useForm<PostDetailsInput>();
   const communityId = useReactiveVar(communityIdVar);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
   const [dateNeed, setDateNeed] = useState(moment());
@@ -126,16 +126,16 @@ export default function PostDetails() {
               <button
                 className="main-btn modal"
                 type="submit"
-                onClick={methods.handleSubmit((formData) => {
+                onClick={methods.handleSubmit((form) => {
                   createNotification({
                     variables: {
                       notificationInput: {
                         bookingInput: {
                           postId: router.query.id!.toString(),
-                          timeFrame: formData.timeFrame,
+                          timeFrame: form.timeFrame,
                           communityId: communityId!,
                           status: BookingStatus.PENDING,
-                          ...(formData.timeFrame === TimeFrame.SPECIFIC && {
+                          ...(form.timeFrame === TimeFrame.SPECIFIC && {
                             dateNeed: moment(dateNeed).toDate(),
                             dateReturn: moment(dateReturn).toDate(),
                           }),

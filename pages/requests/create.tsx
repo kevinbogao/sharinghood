@@ -16,7 +16,7 @@ import type {
   PaginatedRequestsVars,
 } from "../../lib/types";
 
-interface RequestInputs {
+interface CreateRequestInput {
   image?: string;
   title: string;
   desc: string;
@@ -26,7 +26,7 @@ interface RequestInputs {
 
 export default function CreateRequest() {
   const router = useRouter();
-  const methods = useForm<RequestInputs>();
+  const methods = useForm<CreateRequestInput>();
   const {
     register,
     handleSubmit,
@@ -79,16 +79,16 @@ export default function CreateRequest() {
       <div className="request-control">
         <FormProvider {...methods}>
           <form
-            onSubmit={handleSubmit((data) => {
+            onSubmit={handleSubmit((form) => {
               if (Object.keys(errors).length === 0 && image) {
                 createRequest({
                   variables: {
                     requestInput: {
-                      title: data.title,
-                      desc: data.desc,
+                      title: form.title,
+                      desc: form.desc,
                       image,
-                      timeFrame: data.timeFrame,
-                      ...(data.timeFrame === TimeFrame.SPECIFIC && {
+                      timeFrame: form.timeFrame,
+                      ...(form.timeFrame === TimeFrame.SPECIFIC && {
                         dateNeed: moment(dateNeed).toDate(),
                         dateReturn: moment(dateReturn).toDate(),
                       }),

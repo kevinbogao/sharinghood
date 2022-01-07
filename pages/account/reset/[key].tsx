@@ -11,7 +11,7 @@ import type {
   ValidateResetLinkVars,
 } from "../../../lib/types";
 
-interface PasswordInput {
+interface ResetPasswordInput {
   password: string;
   confirmPassword: string;
 }
@@ -23,7 +23,7 @@ export default function ResetPassword() {
     watch,
     handleSubmit,
     formState: { errors },
-  } = useForm<PasswordInput>();
+  } = useForm<ResetPasswordInput>();
   const [success, setSuccess] = useState(false);
   const { loading, error, data } = useQuery<
     ValidateResetLinkData,
@@ -73,12 +73,12 @@ export default function ResetPassword() {
                   Please check your email to recover your account.
                 </p>
                 <form
-                  onSubmit={handleSubmit((data) => {
+                  onSubmit={handleSubmit((form) => {
                     if (Object.keys(errors).length === 0) {
                       resetPassword({
                         variables: {
                           resetKey: router.query.key?.toString()!,
-                          password: data.password,
+                          password: form.password,
                         },
                       });
                     }

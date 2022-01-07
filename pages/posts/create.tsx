@@ -14,7 +14,7 @@ import type {
   PaginatedPostsVars,
 } from "../../lib/types";
 
-interface PostInputs {
+interface CreatePostInput {
   image?: string;
   title: string;
   desc: string;
@@ -25,7 +25,7 @@ interface PostInputs {
 
 export default function CreatePost() {
   const router = useRouter();
-  const methods = useForm<PostInputs>();
+  const methods = useForm<CreatePostInput>();
   const {
     register,
     handleSubmit,
@@ -73,16 +73,16 @@ export default function CreatePost() {
       <div className="share-control">
         <FormProvider {...methods}>
           <form
-            onSubmit={handleSubmit((data) => {
+            onSubmit={handleSubmit((form) => {
               if (Object.keys(errors).length === 0 && image) {
                 createPost({
                   variables: {
                     postInput: {
-                      title: data.title,
-                      desc: data.desc,
+                      title: form.title,
+                      desc: form.desc,
                       image,
-                      condition: data.condition,
-                      isGiveaway: data.isGiveaway,
+                      condition: form.condition,
+                      isGiveaway: form.isGiveaway,
                       ...(router.query?.requesterId && {
                         requesterId: router.query.requesterId.toString(),
                       }),

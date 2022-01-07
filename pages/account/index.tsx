@@ -8,7 +8,7 @@ import ImageInput from "../../components/ImageInput";
 import AccountPosts from "../../components/AccountPosts";
 import type { UserData, UpdateUserData, UpdateUserVars } from "../../lib/types";
 
-interface UserInputs {
+interface AccountInput {
   name: string;
   apartment: string;
   isNotified: boolean;
@@ -16,18 +16,14 @@ interface UserInputs {
 
 export default function Account() {
   const router = useRouter();
-  const methods = useForm<UserInputs>();
+  const methods = useForm<AccountInput>();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = methods;
   const [image, setImage] = useState<string | undefined>();
-  const {
-    loading,
-    data: userData,
-    error,
-  } = useQuery<UserData, void>(queries.GET_USER, {
+  const { loading, data, error } = useQuery<UserData, void>(queries.GET_USER, {
     onCompleted({ user }) {
       setImage(user.imageUrl);
     },
@@ -62,13 +58,13 @@ export default function Account() {
       <div className="profile-control">
         <FormProvider {...methods}>
           <form
-            onSubmit={handleSubmit((data) => {
-              const user = userData?.user;
+            onSubmit={handleSubmit((form) => {
+              const user = data?.user;
               if (
-                user?.name === data.name &&
+                user?.name === form.name &&
                 user?.imageUrl === image &&
-                user?.apartment === data.apartment &&
-                user?.isNotified === data.isNotified
+                user?.apartment === form.apartment &&
+                user?.isNotified === form.isNotified
               )
                 router.push("/posts");
               else {
@@ -76,13 +72,15 @@ export default function Account() {
                   updateUser({
                     variables: {
                       userInput: {
-                        ...(user?.name !== data.name && { name: data.name }),
-                        ...(image && user?.imageUrl !== image && { image }),
-                        ...(user?.apartment !== data.apartment && {
-                          apartment: data.apartment,
+                        ...(user?.name !== form.name && {
+                          name: form.name,
                         }),
-                        ...(user?.isNotified !== data.isNotified && {
-                          isNotified: data.isNotified,
+                        ...(image && user?.imageUrl !== image && { image }),
+                        ...(user?.apartment !== form.apartment && {
+                          apartment: form.apartment,
+                        }),
+                        ...(user?.isNotified !== form.isNotified && {
+                          isNotified: form.isNotified,
                         }),
                       },
                     },
@@ -97,26 +95,26 @@ export default function Account() {
               Pictures increase trust by 80%. Feel free to make your profile
               more trustworthy by uploading a picture.
             </p>
-            {userData && userData?.user.posts.length > 0 && (
-              <AccountPosts posts={userData.user.posts} router={router} />
+            {data && data?.user.posts.length > 0 && (
+              <AccountPosts posts={data.user.posts} router={router} />
             )}
             <p className="main-p">Your name</p>
             <input
               className="main-input"
-              defaultValue={userData?.user.name}
+              defaultValue={data?.user.name}
               {...register("name", { required: "User name cannot be empty" })}
             />
             {errors.name && <InlineError text={errors.name.message!} />}
             <p className="main-p">Email address</p>
             <input
               className="main-input"
-              defaultValue={userData?.user.email}
+              defaultValue={data?.user.email}
               disabled
             />
             <p className="main-p">Where can the neighbours find you?</p>
             <input
               className="main-input"
-              defaultValue={userData?.user.apartment}
+              defaultValue={data?.user.apartment}
               {...register("apartment", {
                 required: "Apartment cannot be empty",
               })}
@@ -129,7 +127,7 @@ export default function Account() {
               <label className="switch">
                 <input
                   type="checkbox"
-                  defaultChecked={userData?.user.isNotified}
+                  defaultChecked={data?.user.isNotified}
                   {...register("isNotified")}
                 />
                 <span className="slider"></span>

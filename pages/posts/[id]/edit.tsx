@@ -29,7 +29,7 @@ import type {
   AddPostToCommunityVars,
 } from "../../../lib/types";
 
-interface PostInputs {
+interface EditPostInput {
   image: string;
   desc: string;
   title: string;
@@ -39,7 +39,7 @@ interface PostInputs {
 
 export default function EditPost() {
   const router = useRouter();
-  const methods = useForm<PostInputs>();
+  const methods = useForm<EditPostInput>();
   const {
     register,
     handleSubmit,
@@ -242,9 +242,9 @@ export default function EditPost() {
       <div className="edit-post-control">
         <FormProvider {...methods}>
           <form
-            onSubmit={handleSubmit((data) => {
+            onSubmit={handleSubmit((form) => {
               const post = postAndCommunities?.post;
-              const { desc, title, condition, isGiveaway } = data;
+              const { desc, title, condition, isGiveaway } = form;
               if (
                 post?.desc === desc &&
                 post?.title == title &&

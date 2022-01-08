@@ -1,6 +1,6 @@
 import { useEffect, useRef, ReactNode, Children } from "react";
 import Link from "next/link";
-import { useApolloClient, ApolloQueryResult } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
 import { queries } from "../lib/gql";
 import Members from "../components/Members";
 import type {
@@ -9,30 +9,26 @@ import type {
   PaginatedRequestsData,
   PaginatedRequestsVars,
 } from "../lib/types";
-
-const MD_WIDTH = 768;
+import { MD_WIDTH, ITEMS_LIMIT } from "../lib/const";
 
 type Item = "post" | "request";
 
 interface ItemsGridProps {
   type: Item;
-  limit: number;
-  setLimit(limit: number): void;
-  refetch(): Promise<ApolloQueryResult<any>>;
   children: ReactNode;
   communityId: string;
+  fetchMore(...args: any): any;
 }
 
 export default function ItemsGrid({
   type,
-  limit,
-  setLimit,
-  refetch,
   children,
+  fetchMore,
   communityId,
 }: ItemsGridProps) {
   const client = useApolloClient();
   const grid = useRef<HTMLDivElement>(null);
+  const offset = Children.count(children) - 1;
 
   function calcLimit(): number {
     if (!grid.current) return -1;
@@ -50,27 +46,51 @@ export default function ItemsGrid({
     return cols * rows;
   }
 
-  function handleWindowResize(): void {
-    const count = calcLimit();
-    const currCount = Children.count(children) - 1;
+  function getMore(fetchMore: any): void {
+    const limit = calcLimit() - offset;
+    if (limit < 0) return;
 
-    if (count > currCount) {
-      setLimit(count);
-      refetch();
-    }
+    const items = `${type}s`;
+    const paginatedItems = `paginated${
+      items.charAt(0).toUpperCase() + items.slice(1)
+    }`;
+
+    fetchMore({
+      variables: { offset, limit },
+      updateQuery(prev: any, { fetchMoreResult }: any) {
+        if (!fetchMoreResult) return prev;
+        return {
+          ...prev,
+          [paginatedItems]: {
+            ...prev[paginatedItems],
+            [items]: [
+              ...prev[paginatedItems][items],
+              ...fetchMoreResult[paginatedItems][items],
+            ],
+            hasMore: fetchMoreResult[paginatedItems].hasMore,
+          },
+        };
+      },
+    });
   }
 
   useEffect(() => {
-    const count = calcLimit();
-    setLimit(count > 10 ? count : 10);
+    if (!communityId) return;
+    getMore(fetchMore);
+
     // eslint-disable-next-line
-  }, []);
+  }, [communityId]);
+
+  function handleWindowResize(): void {
+    const limit = calcLimit() - offset;
+    if (limit > 0) getMore(fetchMore);
+  }
 
   useEffect(() => {
     window.addEventListener("resize", handleWindowResize);
     return () => window.removeEventListener("resize", handleWindowResize);
     // eslint-disable-next-line
-  }, []);
+  }, [offset]);
 
   return (
     <div className="items-control" ref={grid}>
@@ -87,7 +107,7 @@ export default function ItemsGrid({
                     query: queries.GET_PAGINATED_POSTS,
                     variables: {
                       offset: 0,
-                      limit,
+                      limit: ITEMS_LIMIT,
                       communityId: communityId!,
                     },
                   });
@@ -110,7 +130,7 @@ export default function ItemsGrid({
                     query: queries.GET_PAGINATED_REQUESTS,
                     variables: {
                       offset: 0,
-                      limit,
+                      limit: ITEMS_LIMIT,
                       communityId: communityId!,
                     },
                   });

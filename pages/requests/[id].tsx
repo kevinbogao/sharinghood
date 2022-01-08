@@ -8,6 +8,7 @@ import { communityIdVar, tokenPayloadVar } from "../_app";
 import { Container, SVG, Loader } from "../../components/Container";
 import ItemDetails from "../../components/ItemDetails";
 import { TimeFrame } from "../../lib/enums";
+import { ITEMS_LIMIT, THREADS_LIMIT } from "../../lib/const";
 import type {
   DeleteRequestData,
   DeleteRequestVars,
@@ -23,7 +24,7 @@ export default function RequestDetails() {
   const tokenPayload = useReactiveVar(tokenPayloadVar);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { loading, error, data } = useQuery<
+  const { loading, error, data, fetchMore } = useQuery<
     RequestDetailsData,
     RequestDetailsVars
   >(queries.GET_REQUEST_DETAILS, {
@@ -31,6 +32,8 @@ export default function RequestDetails() {
     variables: {
       requestId: router.query.id?.toString()!,
       communityId: communityId!,
+      threadsOffset: 0,
+      threadsLimit: THREADS_LIMIT,
     },
   });
 
@@ -44,13 +47,17 @@ export default function RequestDetails() {
         PaginatedRequestsVars
       >({
         query: queries.GET_PAGINATED_REQUESTS,
-        variables: { offset: 0, limit: 10, communityId: communityId! },
+        variables: { offset: 0, limit: ITEMS_LIMIT, communityId: communityId! },
       });
 
       if (requestsCache) {
         cache.writeQuery<PaginatedRequestsData, PaginatedRequestsVars>({
           query: queries.GET_PAGINATED_REQUESTS,
-          variables: { offset: 0, limit: 10, communityId: communityId! },
+          variables: {
+            offset: 0,
+            limit: ITEMS_LIMIT,
+            communityId: communityId!,
+          },
           data: {
             paginatedRequests: {
               ...requestsCache.paginatedRequests,
@@ -74,6 +81,7 @@ export default function RequestDetails() {
             item={data.request}
             userId={tokenPayload.userId}
             community={data.community!}
+            fetchMore={fetchMore}
           >
             <div className="item-desc">
               <h3>{data.request.title}</h3>

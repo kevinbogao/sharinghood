@@ -5,7 +5,7 @@ import {
   IGraphQLToolsResolveInfo,
 } from "apollo-server-micro";
 import moment from "moment";
-import { User, Request, Community } from "../entities";
+import { User, Request, Community, Thread } from "../entities";
 import sendMail from "../../lib/mail";
 import pushNotification from "../../lib/firebase";
 import { upload, destroy } from "../../lib/image";
@@ -17,6 +17,32 @@ import type {
 } from "../../lib/types";
 
 export default {
+  Request: {
+    async paginatedThreads(
+      request: Request,
+      {
+        offset,
+        limit,
+        communityId,
+      }: { offset: number; limit: number; communityId: string },
+      { loader }: Context,
+      info: IGraphQLToolsResolveInfo
+    ) {
+      const [threads, totalCount] = await loader
+        .loadEntity(Thread, "thread")
+        .info(info, "threads")
+        .ejectQueryBuilder((qb) =>
+          qb
+            .where("thread.requestId = :requestId", { requestId: request.id })
+            .andWhere("thread.communityId = :communityId", { communityId })
+        )
+        .order({ "thread.createdAt": "DESC" })
+        .paginate({ offset, limit })
+        .loadPaginated();
+
+      return { threads, hasMore: offset + limit < totalCount, totalCount };
+    },
+  },
   Query: {
     async request(
       _: never,

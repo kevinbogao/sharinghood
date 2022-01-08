@@ -13,6 +13,7 @@ import {
   Loader,
   InlineError,
 } from "../../../components/Container";
+import { ITEMS_LIMIT, THREADS_LIMIT } from "../../../lib/const";
 import type {
   Community,
   DeletePostData,
@@ -91,6 +92,8 @@ export default function EditPost() {
         variables: {
           postId: postAndCommunities!.post.id,
           communityId: communityId!,
+          threadsOffset: 0,
+          threadsLimit: THREADS_LIMIT,
         },
       });
 
@@ -129,13 +132,21 @@ export default function EditPost() {
           PaginatedPostsVars
         >({
           query: queries.GET_PAGINATED_POSTS,
-          variables: { offset: 0, limit: 10, communityId: community.id },
+          variables: {
+            offset: 0,
+            limit: ITEMS_LIMIT,
+            communityId: community.id,
+          },
         });
 
         if (postsCache) {
           cache.writeQuery<PaginatedPostsData, PaginatedPostsVars>({
             query: queries.GET_PAGINATED_POSTS,
-            variables: { offset: 0, limit: 10, communityId: community.id },
+            variables: {
+              offset: 0,
+              limit: ITEMS_LIMIT,
+              communityId: community.id,
+            },
             data: {
               paginatedPosts: {
                 ...postsCache.paginatedPosts,
@@ -168,12 +179,12 @@ export default function EditPost() {
             PaginatedPostsData,
             PaginatedPostsVars
           >({
+            query: queries.GET_PAGINATED_POSTS,
             variables: {
               offset: 0,
-              limit: 10,
+              limit: ITEMS_LIMIT,
               communityId: data!.addPostToCommunity.id,
             },
-            query: queries.GET_PAGINATED_POSTS,
           });
 
           if (postsCache && postAndCommunitiesCache) {
@@ -181,7 +192,7 @@ export default function EditPost() {
               query: queries.GET_PAGINATED_POSTS,
               variables: {
                 offset: 0,
-                limit: 10,
+                limit: ITEMS_LIMIT,
                 communityId: data!.addPostToCommunity.id,
               },
               data: {

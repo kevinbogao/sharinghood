@@ -8,6 +8,7 @@ import { transformImgUrl } from "../lib";
 import { queries, mutations } from "../lib/gql";
 import { NotificationType } from "../lib/enums";
 import { Loader } from "./Container";
+import { THREADS_LIMIT } from "../lib/const";
 import type {
   Post,
   Request,
@@ -33,6 +34,7 @@ interface ItemDetailsProps {
   userId: string;
   children: ReactNode;
   community: Community;
+  fetchMore(args: any): any;
 }
 
 export default function ItemDetails({
@@ -41,6 +43,7 @@ export default function ItemDetails({
   userId,
   community,
   children,
+  fetchMore,
 }: ItemDetailsProps) {
   const router = useRouter();
   const client = useApolloClient();
@@ -77,7 +80,12 @@ export default function ItemDetails({
           type === "post"
             ? queries.GET_POST_DETAILS
             : queries.GET_REQUEST_DETAILS;
-        const variables = { [`${type}Id`]: item.id, communityId: community.id };
+        const variables = {
+          [`${type}Id`]: item.id,
+          communityId: community.id,
+          threadsOffset: 0,
+          threadsLimit: THREADS_LIMIT,
+        };
         const itemDetailsCache: any = cache.readQuery({
           query,
           variables,
@@ -91,10 +99,13 @@ export default function ItemDetails({
               ...itemDetailsCache,
               [type]: {
                 ...itemDetailsCache[type],
-                threads: [
-                  ...itemDetailsCache[type].threads,
-                  data!.createThread,
-                ],
+                paginatedThreads: {
+                  ...itemDetailsCache[type].paginatedThreads,
+                  threads: [
+                    data!.createThread,
+                    ...itemDetailsCache[type].paginatedThreads.threads,
+                  ],
+                },
               },
             },
           });
@@ -166,23 +177,57 @@ export default function ItemDetails({
           </div>
         </div>
       </div>
+      {item.paginatedThreads.hasMore && (
+        <div className="load-more">
+          <button
+            onClick={() => {
+              fetchMore({
+                variables: {
+                  threadsOffset: item.paginatedThreads.threads.length,
+                  threadsLimit: 5,
+                },
+                updateQuery(prev: any, { fetchMoreResult }: any) {
+                  if (!fetchMoreResult) return prev;
+                  return {
+                    ...prev,
+                    [type]: {
+                      ...prev[type],
+                      paginatedThreads: {
+                        ...prev[type].paginatedThreads,
+                        threads: [
+                          ...prev[type].paginatedThreads.threads,
+                          ...fetchMoreResult[type].paginatedThreads.threads,
+                        ],
+                        hasMore: fetchMoreResult[type].paginatedThreads.hasMore,
+                      },
+                    },
+                  };
+                },
+              });
+            }}
+          >
+            Load older threads
+          </button>
+        </div>
+      )}
       <div className="item-separator" />
       <div className="threads-container">
-        {item.threads
-          .filter((thread) => thread.community.id === community.id)
+        {item.paginatedThreads.threads
+          .slice()
+          .reverse()
           .map((thread) => (
             <Fragment key={thread.id}>
               <div className="thread-control">
                 {community.members
                   .filter((member) => member.id === thread.creator.id)
-                  .map((member) => (
-                    <Fragment key={member.id}>
+                  .map((creator) => (
+                    <Fragment key={creator.id}>
                       <div className="member-img">
                         <Image
                           alt="profile pic"
                           src={
-                            member.imageUrl
-                              ? transformImgUrl(member.imageUrl, 200)
+                            creator.imageUrl
+                              ? transformImgUrl(creator.imageUrl, 200)
                               : "/profile-img.png"
                           }
                           layout="fill"
@@ -190,7 +235,7 @@ export default function ItemDetails({
                         />
                       </div>
                       <div className="thread-content">
-                        <span>{member.name}</span>
+                        <span>{creator.name}</span>
                         <p>{thread.content}</p>
                       </div>
                     </Fragment>
@@ -281,6 +326,25 @@ export default function ItemDetails({
       <style jsx>
         {`
           @import "../pages/index.scss";
+
+          .load-more {
+            display: flex;
+
+            button {
+              margin: 10px auto;
+              border: none;
+              color: $orange;
+              text-align: center;
+              background: $background;
+              font-size: 17px;
+              text-decoration: underline;
+              font-weight: bold;
+
+              &:hover {
+                cursor: pointer;
+              }
+            }
+          }
 
           .item-content {
             display: flex;
@@ -450,6 +514,7 @@ export default function ItemDetails({
               width: 100%;
               display: flex;
               flex-direction: column;
+              margin-bottom: 20px;
 
               .main-p {
                 margin: initial;

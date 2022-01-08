@@ -78,7 +78,11 @@ export default gql`
     isGiveaway: Boolean!
     creator: User
     community: Community
-    threads: [Thread]
+    paginatedThreads(
+      offset: Int!
+      limit: Int!
+      communityId: ID!
+    ): PaginatedThreads
     createdAt: String!
     bookings: [Booking]
   }
@@ -110,7 +114,11 @@ export default gql`
     dateReturn: String
     creator: User!
     community: Community
-    threads: [Thread]
+    paginatedThreads(
+      offset: Int!
+      limit: Int!
+      communityId: ID!
+    ): PaginatedThreads
     createdAt: String!
   }
 
@@ -135,6 +143,12 @@ export default gql`
     content: String!
     creator: User!
     community: Community!
+  }
+
+  type PaginatedThreads {
+    threads: [Thread]
+    hasMore: Boolean
+    totalCount: Int
   }
 
   input ThreadInput {

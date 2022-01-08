@@ -6,7 +6,14 @@ import {
   IGraphQLToolsResolveInfo,
 } from "apollo-server-micro";
 import notificationResolvers from "./notifications";
-import { User, Post, Community, Booking, Notification } from "../entities";
+import {
+  User,
+  Post,
+  Community,
+  Booking,
+  Notification,
+  Thread,
+} from "../entities";
 import pushNotification from "../../lib/firebase";
 import { upload, destroy } from "../../lib/image";
 import { NotificationType } from "../../lib/enums";
@@ -18,6 +25,32 @@ import type {
 } from "../../lib/types";
 
 export default {
+  Post: {
+    async paginatedThreads(
+      post: Post,
+      {
+        offset,
+        limit,
+        communityId,
+      }: { offset: number; limit: number; communityId: string },
+      { loader }: Context,
+      info: IGraphQLToolsResolveInfo
+    ) {
+      const [threads, totalCount] = await loader
+        .loadEntity(Thread, "thread")
+        .info(info, "threads")
+        .ejectQueryBuilder((qb) =>
+          qb
+            .where("thread.postId = :postId", { postId: post.id })
+            .andWhere("thread.communityId = :communityId", { communityId })
+        )
+        .order({ "thread.createdAt": "DESC" })
+        .paginate({ offset, limit })
+        .loadPaginated();
+
+      return { threads, hasMore: offset + limit < totalCount, totalCount };
+    },
+  },
   Query: {
     async post(
       _: never,

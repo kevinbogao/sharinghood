@@ -14,6 +14,7 @@ import type {
   InactivatePostVars,
   UserCommunitiesData,
 } from "../lib/types";
+import { ITEMS_LIMIT } from "../lib/const";
 
 interface AccountPostsProps {
   posts: Post[];
@@ -41,13 +42,21 @@ export default function AccountPosts({ posts, router }: AccountPostsProps) {
               PaginatedPostsVars
             >({
               query: queries.GET_PAGINATED_POSTS,
-              variables: { offset: 0, limit: 10, communityId: community.id },
+              variables: {
+                offset: 0,
+                limit: ITEMS_LIMIT,
+                communityId: community.id,
+              },
             });
 
             if (postsCache) {
               cache.writeQuery<PaginatedPostsData, PaginatedPostsVars>({
                 query: queries.GET_PAGINATED_POSTS,
-                variables: { offset: 0, limit: 10, communityId: community.id },
+                variables: {
+                  offset: 0,
+                  limit: ITEMS_LIMIT,
+                  communityId: community.id,
+                },
                 data: {
                   paginatedPosts: {
                     ...postsCache.paginatedPosts,

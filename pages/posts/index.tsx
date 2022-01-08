@@ -1,4 +1,4 @@
-import { useState, useEffect, RefObject } from "react";
+import { useEffect, RefObject } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useQuery, useReactiveVar } from "@apollo/client";
@@ -7,7 +7,13 @@ import ItemsGrid from "../../components/ItemGrid";
 import { queries } from "../../lib/gql";
 import { transformImgUrl } from "../../lib";
 import { communityIdVar } from "../_app";
-import type { PaginatedPostsData, PaginatedPostsVars } from "../../lib/types";
+import { ITEMS_LIMIT, THREADS_LIMIT } from "../../lib/const";
+import type {
+  PostDetailsData,
+  PostDetailsVars,
+  PaginatedPostsData,
+  PaginatedPostsVars,
+} from "../../lib/types";
 
 interface PostsProps {
   parent: RefObject<HTMLDivElement>;
@@ -15,14 +21,13 @@ interface PostsProps {
 
 export default function Posts({ parent }: PostsProps) {
   const communityId = useReactiveVar(communityIdVar);
-  const [limit, setLimit] = useState(0);
 
-  const { loading, error, data, client, refetch, fetchMore } = useQuery<
+  const { loading, error, data, client, fetchMore } = useQuery<
     PaginatedPostsData,
     PaginatedPostsVars
   >(queries.GET_PAGINATED_POSTS, {
-    skip: !communityId || limit === 0,
-    variables: { offset: 0, limit, communityId: communityId! },
+    skip: !communityId,
+    variables: { offset: 0, limit: ITEMS_LIMIT, communityId: communityId! },
     onError({ message }) {
       console.warn(message);
     },
@@ -73,21 +78,20 @@ export default function Posts({ parent }: PostsProps) {
 
   return (
     <Container loading={loading} error={error}>
-      <ItemsGrid
-        type="post"
-        limit={limit}
-        setLimit={setLimit}
-        refetch={refetch}
-        communityId={communityId!}
-      >
+      <ItemsGrid type="post" fetchMore={fetchMore} communityId={communityId!}>
         {data?.paginatedPosts?.posts?.map((post) => (
           <div key={post.id} className="item-card">
             <Link href={`/posts/${post.id}`}>
               <a
                 onMouseOver={() => {
-                  client.query({
+                  client.query<PostDetailsData, PostDetailsVars>({
                     query: queries.GET_POST_DETAILS,
-                    variables: { postId: post.id, communityId: communityId! },
+                    variables: {
+                      postId: post.id,
+                      communityId: communityId!,
+                      threadsOffset: 0,
+                      threadsLimit: THREADS_LIMIT,
+                    },
                   });
                 }}
               >

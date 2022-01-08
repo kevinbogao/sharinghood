@@ -46,7 +46,7 @@ export default function NotificationBanner() {
       }
     })();
     // eslint-disable-next-line
-  }, [accessToken, isBannerOn]);
+  }, [accessToken]);
 
   return isBannerOn ? (
     <div className="request-notification">

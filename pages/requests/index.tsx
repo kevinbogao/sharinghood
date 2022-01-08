@@ -1,4 +1,4 @@
-import { useState, useEffect, RefObject } from "react";
+import { useEffect, RefObject } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import moment from "moment";
@@ -8,7 +8,10 @@ import ItemsGrid from "../../components/ItemGrid";
 import { communityIdVar } from "../_app";
 import { queries } from "../../lib/gql";
 import { transformImgUrl } from "../../lib";
+import { ITEMS_LIMIT, THREADS_LIMIT } from "../../lib/const";
 import type {
+  RequestDetailsData,
+  RequestDetailsVars,
   PaginatedRequestsData,
   PaginatedRequestsVars,
 } from "../../lib/types";
@@ -19,14 +22,13 @@ interface RequestsProps {
 
 export default function Requests({ parent }: RequestsProps) {
   const communityId = useReactiveVar(communityIdVar);
-  const [limit, setLimit] = useState(0);
 
-  const { loading, error, data, client, refetch, fetchMore } = useQuery<
+  const { loading, error, data, client, fetchMore } = useQuery<
     PaginatedRequestsData,
     PaginatedRequestsVars
   >(queries.GET_PAGINATED_REQUESTS, {
     skip: !communityId,
-    variables: { offset: 0, limit, communityId: communityId! },
+    variables: { offset: 0, limit: ITEMS_LIMIT, communityId: communityId! },
     onError: ({ message }) => {
       console.warn(message);
     },
@@ -79,9 +81,7 @@ export default function Requests({ parent }: RequestsProps) {
     <Container loading={loading} error={error}>
       <ItemsGrid
         type="request"
-        limit={limit}
-        setLimit={setLimit}
-        refetch={refetch}
+        fetchMore={fetchMore}
         communityId={communityId!}
       >
         {data?.paginatedRequests.requests.map((request) => (
@@ -89,11 +89,13 @@ export default function Requests({ parent }: RequestsProps) {
             <Link href={`/requests/${request.id}`}>
               <a
                 onMouseOver={() => {
-                  client.query({
+                  client.query<RequestDetailsData, RequestDetailsVars>({
                     query: queries.GET_REQUEST_DETAILS,
                     variables: {
                       requestId: request.id,
                       communityId: communityId!,
+                      threadsOffset: 0,
+                      threadsLimit: THREADS_LIMIT,
                     },
                   });
                 }}

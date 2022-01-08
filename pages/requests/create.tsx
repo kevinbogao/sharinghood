@@ -9,6 +9,7 @@ import { TimeFrame } from "../../lib/enums";
 import { communityIdVar } from "../_app";
 import ImageInput from "../../components/ImageInput";
 import { Container, Loader, InlineError } from "../../components/Container";
+import { ITEMS_LIMIT } from "../../lib/const";
 import type {
   CreateRequestData,
   CreateRequestVars,
@@ -47,12 +48,12 @@ export default function CreateRequest() {
         PaginatedRequestsVars
       >({
         query: queries.GET_PAGINATED_REQUESTS,
-        variables: { offset: 0, limit: 10, communityId },
+        variables: { offset: 0, limit: ITEMS_LIMIT, communityId },
       });
       if (requestsCache) {
         cache.writeQuery<PaginatedRequestsData, PaginatedRequestsVars>({
           query: queries.GET_PAGINATED_REQUESTS,
-          variables: { offset: 0, limit: 10, communityId },
+          variables: { offset: 0, limit: ITEMS_LIMIT, communityId },
           data: {
             paginatedRequests: {
               ...requestsCache.paginatedRequests,

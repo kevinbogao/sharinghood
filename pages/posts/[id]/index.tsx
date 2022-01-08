@@ -10,6 +10,7 @@ import { communityIdVar, tokenPayloadVar } from "../../_app";
 import { Container, SVG, Icon, Loader } from "../../../components/Container";
 import DatePicker from "../../../components/DatePicker";
 import ItemDetails from "../../../components/ItemDetails";
+import { THREADS_LIMIT } from "../../../lib/const";
 import type {
   PostDetailsData,
   PostDetailsVars,
@@ -42,16 +43,18 @@ export default function PostDetails() {
   const [dateReturn, setDateReturn] = useState(moment());
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
-  const { loading, error, data } = useQuery<PostDetailsData, PostDetailsVars>(
-    queries.GET_POST_DETAILS,
-    {
-      skip: !router.query.id || !communityId,
-      variables: {
-        postId: router.query.id?.toString()!,
-        communityId: communityId!,
-      },
-    }
-  );
+  const { loading, error, data, fetchMore } = useQuery<
+    PostDetailsData,
+    PostDetailsVars
+  >(queries.GET_POST_DETAILS, {
+    skip: !router.query.id || !communityId,
+    variables: {
+      postId: router.query.id?.toString()!,
+      communityId: communityId!,
+      threadsOffset: 0,
+      threadsLimit: THREADS_LIMIT,
+    },
+  });
 
   const [createNotification, { loading: mutationLoading }] = useMutation<
     CreateNotificationData,
@@ -75,6 +78,7 @@ export default function PostDetails() {
             item={data.post}
             userId={tokenPayload.userId}
             community={data.community!}
+            fetchMore={fetchMore}
           >
             <div className="item-desc">
               <h3>{data.post.title}</h3>

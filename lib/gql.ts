@@ -105,7 +105,12 @@ export namespace queries {
   /// POST
   ///
   export const GET_POST_DETAILS = gql`
-    query GetPostDetails($postId: ID!, $communityId: ID!) {
+    query GetPostDetails(
+      $postId: ID!
+      $communityId: ID!
+      $threadsOffset: Int!
+      $threadsLimit: Int!
+    ) {
       post(postId: $postId) {
         id
         title
@@ -124,17 +129,21 @@ export namespace queries {
           name
           imageUrl
           apartment
-          # createdAt
+          createdAt
         }
-        threads {
-          id
-          content
-          creator {
+        paginatedThreads(
+          offset: $threadsOffset
+          limit: $threadsLimit
+          communityId: $communityId
+        ) {
+          threads {
             id
+            content
+            creator {
+              id
+            }
           }
-          community {
-            id
-          }
+          hasMore
         }
       }
       community(communityId: $communityId) {
@@ -197,7 +206,12 @@ export namespace queries {
   /// REQUEST
   ///
   export const GET_REQUEST_DETAILS = gql`
-    query GetRequestDetails($requestId: ID!, $communityId: ID!) {
+    query GetRequestDetails(
+      $requestId: ID!
+      $communityId: ID!
+      $threadsOffset: Int!
+      $threadsLimit: Int!
+    ) {
       request(requestId: $requestId) {
         id
         title
@@ -213,14 +227,17 @@ export namespace queries {
           apartment
           createdAt
         }
-        threads {
-          id
-          content
-          creator {
+        paginatedThreads(
+          offset: $threadsOffset
+          limit: $threadsLimit
+          communityId: $communityId
+        ) {
+          threads {
             id
-          }
-          community {
-            id
+            content
+            creator {
+              id
+            }
           }
         }
       }

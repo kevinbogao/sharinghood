@@ -182,6 +182,22 @@ export type PaginatedBookings = {
   totalCount: number;
 };
 
+export type PaginatedThreads = {
+  threads: Thread[];
+  hasMore: boolean;
+  totalCount: number;
+};
+
+export type PaginatedMessages = {
+  messages: Message[];
+  hasMore: boolean;
+};
+
+export type PaginatedNotifications = {
+  notifications: Notification[];
+  hasMore: boolean;
+};
+
 export interface Activities {
   paginatedPosts: PaginatedPosts;
   paginatedMembers: PaginatedUsers;
@@ -213,10 +229,7 @@ export interface Notification {
   post?: Post;
   booking?: Booking;
   community: Community;
-  paginatedMessages: {
-    messages: Message[];
-    hasMore: boolean;
-  };
+  paginatedMessages: PaginatedMessages;
   creator: User;
   recipient: User;
   notifier: User;
@@ -231,7 +244,7 @@ export interface Post {
   imageUrl: string;
   isGiveaway: boolean;
   creator: User;
-  threads: Thread[];
+  paginatedThreads: PaginatedThreads;
   bookings: Booking[];
 }
 
@@ -245,7 +258,7 @@ export interface Request {
   dateNeed: Date;
   dateReturn: Date;
   creator: User;
-  threads: Thread[];
+  paginatedThreads: PaginatedThreads;
 }
 
 export interface Thread {
@@ -461,14 +474,13 @@ export interface PostDetailsData {
 export interface PostDetailsVars {
   postId: string;
   communityId: string;
+  threadsOffset: number;
+  threadsLimit: number;
 }
 
 /// GET_PAGINATED_POSTS
 export interface PaginatedPostsData {
-  paginatedPosts: {
-    posts: Post[];
-    hasMore: boolean;
-  };
+  paginatedPosts: PaginatedPosts;
 }
 
 export interface PaginatedPostsVars {
@@ -540,10 +552,7 @@ export interface InactivatePostVars {
 
 /// GET_PAGINATED_REQUESTS
 export interface PaginatedRequestsData {
-  paginatedRequests: {
-    requests: Request[];
-    hasMore: boolean;
-  };
+  paginatedRequests: PaginatedRequests;
 }
 
 export interface PaginatedRequestsVars {
@@ -561,6 +570,8 @@ export interface RequestDetailsData {
 export interface RequestDetailsVars {
   requestId: string;
   communityId: string;
+  threadsOffset: number;
+  threadsLimit: number;
 }
 
 /// CREATE_REQUEST
@@ -599,10 +610,7 @@ export interface NotificationVars {
 
 /// GET_PAGINATED_NOTIFICATIONS
 export interface PaginatedNotificationsData {
-  paginatedNotifications: {
-    notifications: Notification[];
-    hasMore: boolean;
-  };
+  paginatedNotifications: PaginatedNotifications;
 }
 
 export interface PaginatedNotificationsVars {

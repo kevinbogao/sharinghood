@@ -7,6 +7,7 @@ import { Container, Loader, InlineError } from "../../components/Container";
 import { ItemCondition } from "../../lib/enums";
 import { queries, mutations } from "../../lib/gql";
 import { communityIdVar } from "../_app";
+import { ITEMS_LIMIT } from "../../lib/const";
 import type {
   CreatePostData,
   CreatePostVars,
@@ -44,12 +45,12 @@ export default function CreatePost() {
         PaginatedPostsVars
       >({
         query: queries.GET_PAGINATED_POSTS,
-        variables: { offset: 0, limit: 10, communityId },
+        variables: { offset: 0, limit: ITEMS_LIMIT, communityId },
       });
       if (data && postsCache) {
         cache.writeQuery<PaginatedPostsData, PaginatedPostsVars>({
           query: queries.GET_PAGINATED_POSTS,
-          variables: { offset: 0, limit: 10, communityId },
+          variables: { offset: 0, limit: ITEMS_LIMIT, communityId },
           data: {
             paginatedPosts: {
               ...postsCache.paginatedPosts,

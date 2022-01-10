@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
+import {
+  useQuery,
+  useMutation,
+  useReactiveVar,
+  NetworkStatus,
+} from "@apollo/client";
 import { useForm, FormProvider } from "react-hook-form";
 import moment from "moment";
 import Modal from "react-modal";
@@ -43,10 +48,11 @@ export default function PostDetails() {
   const [dateReturn, setDateReturn] = useState(moment());
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
-  const { loading, error, data, fetchMore } = useQuery<
+  const { loading, error, data, fetchMore, networkStatus } = useQuery<
     PostDetailsData,
     PostDetailsVars
   >(queries.GET_POST_DETAILS, {
+    notifyOnNetworkStatusChange: true,
     skip: !router.query.id || !communityId,
     variables: {
       postId: router.query.id?.toString()!,
@@ -70,7 +76,10 @@ export default function PostDetails() {
   });
 
   return (
-    <Container loading={loading} error={error}>
+    <Container
+      loading={loading && networkStatus === NetworkStatus.loading}
+      error={error}
+    >
       {data?.post && tokenPayload && (
         <div className="item-control">
           <ItemDetails
@@ -79,6 +88,7 @@ export default function PostDetails() {
             userId={tokenPayload.userId}
             community={data.community!}
             fetchMore={fetchMore}
+            networkStatus={networkStatus}
           >
             <div className="item-desc">
               <h3>{data.post.title}</h3>

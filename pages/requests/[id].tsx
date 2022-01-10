@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
+import {
+  useQuery,
+  useMutation,
+  useReactiveVar,
+  NetworkStatus,
+} from "@apollo/client";
 import moment from "moment";
 import Modal from "react-modal";
 import { queries, mutations } from "../../lib/gql";
@@ -24,10 +29,11 @@ export default function RequestDetails() {
   const tokenPayload = useReactiveVar(tokenPayloadVar);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { loading, error, data, fetchMore } = useQuery<
+  const { loading, error, data, fetchMore, networkStatus } = useQuery<
     RequestDetailsData,
     RequestDetailsVars
   >(queries.GET_REQUEST_DETAILS, {
+    notifyOnNetworkStatusChange: true,
     skip: !router.query.id,
     variables: {
       requestId: router.query.id?.toString()!,
@@ -73,7 +79,10 @@ export default function RequestDetails() {
   });
 
   return (
-    <Container loading={loading} error={error}>
+    <Container
+      loading={loading && networkStatus === NetworkStatus.loading}
+      error={error}
+    >
       {data?.request && tokenPayload && (
         <div className="item-control">
           <ItemDetails
@@ -82,6 +91,7 @@ export default function RequestDetails() {
             userId={tokenPayload.userId}
             community={data.community!}
             fetchMore={fetchMore}
+            networkStatus={networkStatus}
           >
             <div className="item-desc">
               <h3>{data.request.title}</h3>

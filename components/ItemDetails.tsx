@@ -1,7 +1,12 @@
 import { useState, ReactNode, Fragment } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useMutation, useLazyQuery, useApolloClient } from "@apollo/client";
+import {
+  useMutation,
+  useLazyQuery,
+  useApolloClient,
+  NetworkStatus,
+} from "@apollo/client";
 import Modal from "react-modal";
 import moment from "moment";
 import { transformImgUrl } from "../lib";
@@ -35,6 +40,7 @@ interface ItemDetailsProps {
   children: ReactNode;
   community: Community;
   fetchMore(args: any): any;
+  networkStatus: NetworkStatus;
 }
 
 export default function ItemDetails({
@@ -44,6 +50,7 @@ export default function ItemDetails({
   community,
   children,
   fetchMore,
+  networkStatus,
 }: ItemDetailsProps) {
   const router = useRouter();
   const client = useApolloClient();
@@ -193,12 +200,11 @@ export default function ItemDetails({
                     [type]: {
                       ...prev[type],
                       paginatedThreads: {
-                        ...prev[type].paginatedThreads,
+                        ...fetchMoreResult[type].paginatedThreads,
                         threads: [
                           ...prev[type].paginatedThreads.threads,
                           ...fetchMoreResult[type].paginatedThreads.threads,
                         ],
-                        hasMore: fetchMoreResult[type].paginatedThreads.hasMore,
                       },
                     },
                   };
@@ -206,7 +212,11 @@ export default function ItemDetails({
               });
             }}
           >
-            Load older threads
+            {networkStatus === NetworkStatus.fetchMore ? (
+              <Loader orange />
+            ) : (
+              "Load older threads"
+            )}
           </button>
         </div>
       )}
@@ -331,7 +341,7 @@ export default function ItemDetails({
             display: flex;
 
             button {
-              margin: 10px auto;
+              margin: 10px auto 19px auto;
               border: none;
               color: $orange;
               text-align: center;

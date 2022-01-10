@@ -49,12 +49,11 @@ export default function Requests({ parent }: RequestsProps) {
             return {
               ...prev,
               paginatedRequests: {
-                ...prev.paginatedRequests,
+                ...fetchMoreResult.paginatedRequests,
                 requests: [
                   ...prev.paginatedRequests.requests,
                   ...fetchMoreResult.paginatedRequests.requests,
                 ],
-                hasMore: fetchMoreResult.paginatedRequests.hasMore,
               },
             };
           },
@@ -126,71 +125,71 @@ export default function Requests({ parent }: RequestsProps) {
             </Link>
           </div>
         ))}
-        <style jsx>
-          {`
-            @import "../index.scss";
-
-            .item-card {
-              background: $grey-100;
-              margin: 20px 10px;
-              padding: 10px;
-              cursor: pointer;
-
-              &:hover {
-                background: $grey-200;
-              }
-
-              p {
-                color: $black;
-                font-size: 14px;
-                width: 160px;
-
-                &.item-title {
-                  margin-top: 10px;
-                  margin-bottom: 5px;
-                  font-size: 18px;
-                }
-              }
-
-              .item-img {
-                width: 160px;
-                height: 136px;
-                position: relative;
-
-                @include md {
-                  width: 190px;
-                  height: 160px;
-                }
-
-                @include sm {
-                  width: 250px;
-                  height: 200px;
-                }
-              }
-
-              .item-needed-on {
-                margin-top: 5px;
-                display: flex;
-                align-items: center;
-                font-size: 15px;
-                color: $beige;
-
-                span {
-                  font-size: 14px;
-                  margin-left: 6px;
-                }
-              }
-            }
-          `}
-        </style>
-        <style jsx global>
-          {`
-            .clock-icon {
-              width: 14px;
-            }
-          `}
-        </style>
       </ItemsGrid>
+      <style jsx>
+        {`
+          @import "../index.scss";
+
+          .item-card {
+            background: $grey-100;
+            margin: 20px 10px;
+            padding: 10px;
+            cursor: pointer;
+
+            &:hover {
+              background: $grey-200;
+            }
+
+            p {
+              color: $black;
+              font-size: 14px;
+              width: 160px;
+
+              &.item-title {
+                margin-top: 10px;
+                margin-bottom: 5px;
+                font-size: 18px;
+              }
+            }
+
+            .item-img {
+              width: 160px;
+              height: 136px;
+              position: relative;
+
+              @include md {
+                width: 190px;
+                height: 160px;
+              }
+
+              @include sm {
+                width: 250px;
+                height: 200px;
+              }
+            }
+
+            .item-needed-on {
+              margin-top: 5px;
+              display: flex;
+              align-items: center;
+              font-size: 15px;
+              color: $beige;
+
+              span {
+                font-size: 14px;
+                margin-left: 6px;
+              }
+            }
+          }
+        `}
+      </style>
+      <style jsx global>
+        {`
+          .clock-icon {
+            width: 14px;
+          }
+        `}
+      </style>
     </Container>
   );
 }

@@ -239,6 +239,7 @@ export namespace queries {
               id
             }
           }
+          hasMore
         }
       }
       community(communityId: $communityId) {

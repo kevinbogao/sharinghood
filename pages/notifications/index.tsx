@@ -83,12 +83,11 @@ export default function Notifications({ parent }: NotificationsProps) {
             return {
               ...prev,
               paginatedNotifications: {
-                ...prev.paginatedNotifications,
+                ...fetchMoreResult.paginatedNotifications,
                 notifications: [
                   ...prev.paginatedNotifications.notifications,
                   ...fetchMoreResult.paginatedNotifications.notifications,
                 ],
-                hasMore: fetchMoreResult.paginatedNotifications.hasMore,
               },
             };
           },

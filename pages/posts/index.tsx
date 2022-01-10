@@ -45,15 +45,15 @@ export default function Posts({ parent }: PostsProps) {
           },
           updateQuery(prev, { fetchMoreResult }) {
             if (!fetchMoreResult) return prev;
+
             return {
               ...prev,
               paginatedPosts: {
-                ...prev.paginatedPosts,
+                ...fetchMoreResult.paginatedPosts,
                 posts: [
                   ...prev.paginatedPosts.posts,
                   ...fetchMoreResult.paginatedPosts.posts,
                 ],
-                hasMore: fetchMoreResult.paginatedPosts.hasMore,
               },
             };
           },
@@ -111,51 +111,51 @@ export default function Posts({ parent }: PostsProps) {
             </Link>
           </div>
         ))}
-        <style jsx>
-          {`
-            @import "../index.scss";
+      </ItemsGrid>
+      <style jsx>
+        {`
+          @import "../index.scss";
 
-            .item-card {
-              background: $grey-100;
-              margin: 20px 10px;
-              padding: 10px;
-              cursor: pointer;
+          .item-card {
+            background: $grey-100;
+            margin: 20px 10px;
+            padding: 10px;
+            cursor: pointer;
 
-              .item-img {
-                width: 160px;
-                height: 136px;
-                position: relative;
+            .item-img {
+              width: 160px;
+              height: 136px;
+              position: relative;
 
-                @include md {
-                  width: 190px;
-                  height: 160px;
-                }
-
-                @include sm {
-                  width: 250px;
-                  height: 200px;
-                }
+              @include md {
+                width: 190px;
+                height: 160px;
               }
 
-              &:hover {
-                background: $grey-200;
-              }
-
-              p {
-                color: $black;
-                font-size: 14px;
-                width: 160px;
-
-                &.item-title {
-                  margin-top: 10px;
-                  margin-bottom: 5px;
-                  font-size: 18px;
-                }
+              @include sm {
+                width: 250px;
+                height: 200px;
               }
             }
-          `}
-        </style>
-      </ItemsGrid>
+
+            &:hover {
+              background: $grey-200;
+            }
+
+            p {
+              color: $black;
+              font-size: 14px;
+              width: 160px;
+
+              &.item-title {
+                margin-top: 10px;
+                margin-bottom: 5px;
+                font-size: 18px;
+              }
+            }
+          }
+        `}
+      </style>
     </Container>
   );
 }

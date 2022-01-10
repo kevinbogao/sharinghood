@@ -28,7 +28,6 @@ export default function ItemsGrid({
 }: ItemsGridProps) {
   const client = useApolloClient();
   const grid = useRef<HTMLDivElement>(null);
-  const offset = Children.count(children) - 1;
 
   function calcLimit(): number {
     if (!grid.current) return -1;
@@ -46,10 +45,7 @@ export default function ItemsGrid({
     return cols * rows;
   }
 
-  function getMore(fetchMore: any): void {
-    const limit = calcLimit() - offset;
-    if (limit < 0) return;
-
+  function getMore(fetchMore: any, offset: number, limit: number): void {
     const items = `${type}s`;
     const paginatedItems = `paginated${
       items.charAt(0).toUpperCase() + items.slice(1)
@@ -62,12 +58,11 @@ export default function ItemsGrid({
         return {
           ...prev,
           [paginatedItems]: {
-            ...prev[paginatedItems],
+            ...fetchMoreResult[paginatedItems],
             [items]: [
               ...prev[paginatedItems][items],
               ...fetchMoreResult[paginatedItems][items],
             ],
-            hasMore: fetchMoreResult[paginatedItems].hasMore,
           },
         };
       },
@@ -76,21 +71,26 @@ export default function ItemsGrid({
 
   useEffect(() => {
     if (!communityId) return;
-    getMore(fetchMore);
 
+    const offset = Children.count(children);
+    const limit = calcLimit() - offset;
+
+    if (limit > 0) getMore(fetchMore, offset, limit);
     // eslint-disable-next-line
   }, [communityId]);
 
-  function handleWindowResize(): void {
-    const limit = calcLimit() - offset;
-    if (limit > 0) getMore(fetchMore);
-  }
-
   useEffect(() => {
+    function handleWindowResize(): void {
+      const offset = Children.count(children);
+      const limit = calcLimit() - offset;
+
+      if (limit > 0) getMore(fetchMore, offset, limit);
+    }
+
     window.addEventListener("resize", handleWindowResize);
     return () => window.removeEventListener("resize", handleWindowResize);
     // eslint-disable-next-line
-  }, [offset]);
+  }, [children]);
 
   return (
     <div className="items-control" ref={grid}>

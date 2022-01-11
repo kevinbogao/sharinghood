@@ -6,15 +6,15 @@ import moment from "moment";
 import { transformImgUrl } from "../../lib";
 import { queries, mutations, subscriptions } from "../../lib/gql";
 import { tokenPayloadVar, communityIdVar } from "../_app";
-import { TimeFrame, NotificationType } from "../../lib/enums";
+import UpdateBooking from "../../components/UpdateBooking";
 import { Container, SVG } from "../../components/Container";
+import { TimeFrame, NotificationType } from "../../lib/enums";
 import type {
   NotificationData,
   NotificationVars,
   CreateMessageData,
   CreateMessageVars,
 } from "../../lib/types";
-import UpdateBooking from "../../components/UpdateBooking";
 
 export default function NotificationDetails() {
   const messages = useRef<HTMLDivElement>(null);
@@ -222,14 +222,11 @@ export default function NotificationDetails() {
                     </span>
                   )}
                 </div>
-
-                <div className="booking-btns">
-                  <UpdateBooking
-                    userId={tokenPayload.userId}
-                    communityId={communityId}
-                    notification={data?.notification}
-                  />
-                </div>
+                <UpdateBooking
+                  userId={tokenPayload.userId}
+                  communityId={communityId}
+                  notification={data?.notification}
+                />
               </div>
             )}
         </div>
@@ -356,8 +353,9 @@ export default function NotificationDetails() {
                   flex-direction: column;
                   justify-content: space-evenly;
 
-                  .booking-btns {
-                    width: 195px;
+                  .item-btns {
+                    display: flex;
+                    justify-content: space-evenly;
                   }
                 }
               }

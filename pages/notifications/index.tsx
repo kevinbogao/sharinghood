@@ -1,21 +1,15 @@
 import { useState, useEffect, RefObject } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import {
-  useQuery,
-  useMutation,
-  useReactiveVar,
-  useApolloClient,
-} from "@apollo/client";
+import { useQuery, useReactiveVar, useApolloClient } from "@apollo/client";
 import moment from "moment";
 import { transformImgUrl } from "../../lib/";
-import { queries, mutations } from "../../lib/gql";
-import { TimeFrame, BookingStatus, NotificationType } from "../../lib/enums";
+import { queries } from "../../lib/gql";
 import { communityIdVar, tokenPayloadVar } from "../_app";
-import { Container, Spinner } from "../../components/Container";
+import UpdateBooking from "../../components/UpdateBooking";
+import { Container } from "../../components/Container";
+import { TimeFrame, NotificationType } from "../../lib/enums";
 import type {
-  UpdateBookingData,
-  UpdateBookingVars,
   UserCommunitiesData,
   PaginatedNotificationsData,
   PaginatedNotificationsVars,
@@ -45,7 +39,6 @@ export default function Notifications({ parent }: NotificationsProps) {
     PaginatedNotificationsData,
     PaginatedNotificationsVars
   >(queries.GET_PAGINATED_NOTIFICATIONS, {
-    fetchPolicy: "network-only",
     skip: !communityId,
     variables: { offset: 0, limit, communityId: communityId! },
     onCompleted() {
@@ -109,15 +102,6 @@ export default function Notifications({ parent }: NotificationsProps) {
     };
     // eslint-disable-next-line
   }, [data]);
-
-  const [updateBooking, { loading: mutationLoading }] = useMutation<
-    UpdateBookingData,
-    UpdateBookingVars
-  >(mutations.UPDATE_BOOKING, {
-    onError({ message }) {
-      console.log(message);
-    },
-  });
 
   return (
     <Container loading={loading || !communityId} error={error}>
@@ -242,99 +226,11 @@ export default function Notifications({ parent }: NotificationsProps) {
                           </span>
                         )}
                       </div>
-                      <div className="item-btns">
-                        {notification.booking.booker.id === user.id ? (
-                          <>
-                            {notification.booking.status ===
-                            BookingStatus.PENDING ? (
-                              <button
-                                type="button"
-                                className="noti-btn status pending"
-                              >
-                                Pending
-                              </button>
-                            ) : notification.booking.status ===
-                              BookingStatus.ACCEPTED ? (
-                              <button
-                                type="button"
-                                className="noti-btn status accept"
-                              >
-                                Accepted
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                className="noti-btn status deny"
-                              >
-                                Denied
-                              </button>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            {notification.booking.status ===
-                            BookingStatus.PENDING ? (
-                              <>
-                                <button
-                                  type="button"
-                                  className="noti-btn accept"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    updateBooking({
-                                      variables: {
-                                        bookingInput: {
-                                          status: BookingStatus.ACCEPTED,
-                                          bookingId: notification.booking!.id,
-                                          communityId: communityId!,
-                                          notificationId: notification.id,
-                                        },
-                                      },
-                                    });
-                                  }}
-                                >
-                                  Accept
-                                </button>
-                                <button
-                                  type="button"
-                                  className="noti-btn deny"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    updateBooking({
-                                      variables: {
-                                        bookingInput: {
-                                          status: BookingStatus.DECLINED,
-                                          bookingId: notification.booking!.id,
-                                          communityId: communityId!,
-                                          notificationId: notification.id,
-                                        },
-                                      },
-                                    });
-                                  }}
-                                >
-                                  Deny
-                                </button>
-                              </>
-                            ) : notification.booking.status ===
-                              BookingStatus.ACCEPTED ? (
-                              <button
-                                type="button"
-                                className="noti-btn status accept"
-                              >
-                                Accepted
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                className="noti-btn status deny"
-                              >
-                                Denied
-                              </button>
-                            )}
-                          </>
-                        )}
-                      </div>
+                      <UpdateBooking
+                        userId={user.id}
+                        communityId={communityId}
+                        notification={notification}
+                      />
                     </div>
                   </>
                 ) : (
@@ -391,7 +287,6 @@ export default function Notifications({ parent }: NotificationsProps) {
           <p className="main-p full">You do not have any notifications yet</p>
         </div>
       )}
-      {mutationLoading && <Spinner cover />}
       <style jsx>
         {`
           @import "../index.scss";

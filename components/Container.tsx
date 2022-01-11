@@ -33,129 +33,86 @@ export function Container({
     // eslint-disable-next-line
   }, [acc, com]);
 
-  return loading ? <Spinner /> : <>{children}</>;
+  return loading ? <Loader center color="orange" /> : <>{children}</>;
 }
 
-export function Spinner({ cover }: { cover?: boolean }) {
+interface LoaderProps {
+  center?: boolean;
+  small?: boolean;
+  color?: "red" | "green" | "orange";
+}
+
+export function Loader({ center, small, color }: LoaderProps) {
   return (
-    <div className={`loading-control ${cover && "foreground"}`}>
-      <div className="lds-ring">
-        <div />
-        <div />
-        <div />
-        <div />
+    <div className={`${center ? "center" : undefined}`}>
+      <div className={`lds-ellipsis ${small ? "small" : undefined}`}>
+        <div className={color ?? ""}></div>
+        <div className={color ?? ""}></div>
+        <div className={color ?? ""}></div>
+        <div className={color ?? ""}></div>
       </div>
+
       <style jsx>
         {`
           @import "../pages/index.scss";
 
-          .loading-control {
+          .center {
             position: absolute;
             top: 50%;
             left: 50%;
             -ms-transform: translate(-50%, -50%);
             transform: translate(-50%, -50%);
             z-index: 9000;
-
-            &.foreground {
-              padding: 5000px;
-              background: rgba(0, 0, 0, 0.25);
-            }
-
-            .lds-ring {
-              display: inline-block;
-              position: relative;
-              width: 80px;
-              height: 80px;
-            }
-
-            .lds-ring div {
-              box-sizing: border-box;
-              display: block;
-              position: absolute;
-              width: 64px;
-              height: 64px;
-              margin: 8px;
-              border: 8px solid $orange;
-              border-radius: 50%;
-              animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-              border-color: $orange transparent transparent transparent;
-            }
-
-            .lds-ring div:nth-child(1) {
-              animation-delay: -0.45s;
-            }
-
-            .lds-ring div:nth-child(2) {
-              animation-delay: -0.3s;
-            }
-
-            .lds-ring div:nth-child(3) {
-              animation-delay: -0.15s;
-            }
-
-            @keyframes lds-ring {
-              0% {
-                transform: rotate(0deg);
-              }
-
-              100% {
-                transform: rotate(360deg);
-              }
-            }
           }
-        `}
-      </style>
-    </div>
-  );
-}
-
-export function Loader({ orange }: { orange?: boolean }) {
-  return (
-    <div className="lds-ellipsis">
-      <div className={orange ? "orange" : undefined}></div>
-      <div className={orange ? "orange" : undefined}></div>
-      <div className={orange ? "orange" : undefined}></div>
-      <div className={orange ? "orange" : undefined}></div>
-      <style jsx>
-        {`
-          @import "../pages/index.scss";
 
           .lds-ellipsis {
             display: inline-block;
             position: relative;
             width: 80px;
-            height: 17px;
+            height: 13px;
           }
+
           .lds-ellipsis div {
             position: absolute;
-            top: 2px;
             width: 13px;
             height: 13px;
             border-radius: 50%;
             background: #fff;
             animation-timing-function: cubic-bezier(0, 1, 1, 0);
 
+            &.red {
+              background: rgba(176, 0, 0, 0.6);
+            }
+
+            &.green {
+              background: rgba(3, 173, 0, 0.6);
+            }
+
             &.orange {
               background: $orange;
             }
           }
+
           .lds-ellipsis div:nth-child(1) {
             left: 8px;
             animation: lds-ellipsis1 0.6s infinite;
           }
+
           .lds-ellipsis div:nth-child(2) {
             left: 8px;
             animation: lds-ellipsis2 0.6s infinite;
           }
+
           .lds-ellipsis div:nth-child(3) {
             left: 32px;
             animation: lds-ellipsis2 0.6s infinite;
           }
+
           .lds-ellipsis div:nth-child(4) {
             left: 56px;
             animation: lds-ellipsis3 0.6s infinite;
           }
+
           @keyframes lds-ellipsis1 {
             0% {
               transform: scale(0);
@@ -164,6 +121,7 @@ export function Loader({ orange }: { orange?: boolean }) {
               transform: scale(1);
             }
           }
+
           @keyframes lds-ellipsis3 {
             0% {
               transform: scale(1);
@@ -172,6 +130,7 @@ export function Loader({ orange }: { orange?: boolean }) {
               transform: scale(0);
             }
           }
+
           @keyframes lds-ellipsis2 {
             0% {
               transform: translate(0, 0);
@@ -179,6 +138,12 @@ export function Loader({ orange }: { orange?: boolean }) {
             100% {
               transform: translate(24px, 0);
             }
+          }
+
+          .small {
+            top: 1px;
+            left: 1px;
+            transform: scale(0.75);
           }
         `}
       </style>

@@ -213,7 +213,7 @@ export default function ItemDetails({
             }}
           >
             {networkStatus === NetworkStatus.fetchMore ? (
-              <Loader orange />
+              <Loader color="orange" />
             ) : (
               "Load older threads"
             )}

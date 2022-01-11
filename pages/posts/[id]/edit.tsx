@@ -7,12 +7,7 @@ import ImageInput from "../../../components/ImageInput";
 import { queries, mutations } from "../../../lib/gql";
 import { ItemCondition } from "../../../lib/enums";
 import { tokenPayloadVar, communityIdVar } from "../../_app";
-import {
-  Container,
-  Spinner,
-  Loader,
-  InlineError,
-} from "../../../components/Container";
+import { Loader, Container, InlineError } from "../../../components/Container";
 import { ITEMS_LIMIT, THREADS_LIMIT } from "../../../lib/const";
 import type {
   Community,
@@ -49,7 +44,9 @@ export default function EditPost() {
   const [image, setImage] = useState<string | undefined>();
   const [communityArr, setCommunityArr] = useState<Community[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [selCommunityId, setSelCommunityId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+
   const communityId = useReactiveVar(communityIdVar);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
   const {
@@ -167,6 +164,7 @@ export default function EditPost() {
       mutations.ADD_POST_TO_COMMUNITY,
       {
         update(cache, { data }) {
+          setSelCommunityId(null);
           const postAndCommunitiesCache = cache.readQuery<
             PostAndCommunitiesData,
             PostAndCommunitiesVars
@@ -361,6 +359,7 @@ export default function EditPost() {
               className="main-btn modal beige"
               onClick={(e) => {
                 e.preventDefault();
+                setSelCommunityId(community.id);
                 addPostToCommunity({
                   variables: {
                     postId: postAndCommunities!.post.id,
@@ -369,7 +368,11 @@ export default function EditPost() {
                 });
               }}
             >
-              {community.name}
+              {addPostToCommunityLoading && selCommunityId === community.id ? (
+                <Loader />
+              ) : (
+                `${community.name}`
+              )}
             </button>
           ))}
           <button
@@ -408,7 +411,6 @@ export default function EditPost() {
             No
           </button>
         </Modal>
-        {addPostToCommunityLoading && <Spinner cover />}
         <style jsx>
           {`
             @import "../../index.scss";

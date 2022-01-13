@@ -1,6 +1,6 @@
 import { User } from "../../api/entities";
-import { prepareConnection } from ".";
 import { verifyToken, generateTokens } from "../../lib/auth";
+import { prepareConnection } from "../../lib/db";
 import type { RefreshToken } from "../../lib/types";
 import type { NextApiRequest, NextApiResponse } from "next";
 

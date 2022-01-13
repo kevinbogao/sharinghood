@@ -35,31 +35,46 @@ import type { AccessToken } from "../../lib/types";
 //   return connectionReadyPromise;
 // }
 
-let connectionReadyPromise: Promise<Connection> | null = null;
-
-export const prepareConnection = () => {
-  if (!connectionReadyPromise) {
-    connectionReadyPromise = (async () => {
-      try {
-        const staleConnection = getConnection();
-        await staleConnection.close();
-      } catch (_) {}
-
-      const connection = await createConnection({
-        type: "postgres",
-        url: process.env.DATABASE_URL!,
-        ssl: { rejectUnauthorized: false },
-        synchronize: process.env.NODE_ENV !== "production",
-        entities,
-        namingStrategy: new SnakeNamingStrategy(),
-      });
-
-      return connection;
-    })();
+async function connectDB(): Promise<Connection> {
+  try {
+    return getConnection();
+  } catch (_) {
+    return await createConnection({
+      type: "postgres",
+      url: process.env.DATABASE_URL!,
+      ssl: { rejectUnauthorized: false },
+      synchronize: process.env.NODE_ENV !== "production",
+      entities,
+      namingStrategy: new SnakeNamingStrategy(),
+    });
   }
+}
 
-  return connectionReadyPromise;
-};
+// let connectionReadyPromise: Promise<Connection> | null = null;
+
+// export const prepareConnection = () => {
+//   if (!connectionReadyPromise) {
+//     connectionReadyPromise = (async () => {
+//       try {
+//         const staleConnection = getConnection();
+//         await staleConnection.close();
+//       } catch (_) {}
+
+//       const connection = await createConnection({
+//         type: "postgres",
+//         url: process.env.DATABASE_URL!,
+//         ssl: { rejectUnauthorized: false },
+//         synchronize: process.env.NODE_ENV !== "production",
+//         entities,
+//         namingStrategy: new SnakeNamingStrategy(),
+//       });
+
+//       return connection;
+//     })();
+//   }
+
+//   return connectionReadyPromise;
+// };
 
 const apolloServer = new ApolloServer({
   typeDefs,
@@ -73,8 +88,7 @@ const apolloServer = new ApolloServer({
 
     const token = req.headers.authorization?.split(" ")[1] ?? "";
     const user = verifyToken<AccessToken>(token);
-    // await prepareConnection();
-    const dbConnection = await prepareConnection();
+    const dbConnection = await connectDB();
     const loader = new GraphQLDatabaseLoader(dbConnection);
     return { user, connection: dbConnection, redis, loader };
   },

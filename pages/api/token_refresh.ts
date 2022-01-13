@@ -1,6 +1,5 @@
-import { getConnection } from "typeorm";
 import { User } from "../../api/entities";
-import { prepareConnection } from ".";
+import { connectDB } from ".";
 import { verifyToken, generateTokens } from "../../lib/auth";
 import type { RefreshToken } from "../../lib/types";
 import type { NextApiRequest, NextApiResponse } from "next";
@@ -9,8 +8,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  await prepareConnection();
-  const connection = getConnection();
+  const connection = await connectDB();
+  // await prepareConnection();
+  // const connection = getConnection();
 
   const token = req.headers.authorization?.split(" ")[1] ?? "";
   if (!token) res.status(500).json({ error: "Refresh token not provided" });

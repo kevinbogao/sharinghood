@@ -1,4 +1,5 @@
 import {
+  Index,
   Entity,
   Column,
   OneToMany,
@@ -17,6 +18,7 @@ export class Post extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   public id: string;
 
+  @Index()
   @Column("varchar", { length: 255 })
   public title: string;
 

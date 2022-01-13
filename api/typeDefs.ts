@@ -270,6 +270,7 @@ export default gql`
 
     # Post
     post(postId: ID!): Post
+    findPost(input: String!): Boolean
     paginatedPosts(offset: Int!, limit: Int!, communityId: ID!): PaginatedPosts
 
     # Request

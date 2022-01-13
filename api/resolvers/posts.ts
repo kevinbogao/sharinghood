@@ -97,6 +97,19 @@ export default {
 
       return { posts, hasMore: offset + limit < totalCount };
     },
+    async findPost(
+      _: never,
+      { input }: { input: string },
+      { connection }: Context
+    ): Promise<Post[]> {
+      return await connection
+        .getRepository(Post)
+        .createQueryBuilder()
+        .where("title ILIKE :searchQuery", {
+          searchQuery: `%${input}%`,
+        })
+        .getMany();
+    },
   },
   Mutation: {
     async createPost(

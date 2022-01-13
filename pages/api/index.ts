@@ -35,7 +35,7 @@ import type { AccessToken } from "../../lib/types";
 //   return connectionReadyPromise;
 // }
 
-async function connectDB(): Promise<Connection> {
+export async function connectDB(): Promise<Connection> {
   try {
     return getConnection();
   } catch (_) {

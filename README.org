@@ -260,6 +260,7 @@ NEXT_PUBLIC_GRAPHQL_ENDPOINT_WS=ws://localhost:3000/api
    All the resolvers, apart from the ~community~ /query/ and the ~createcommunity~ /mutation/, are protected from unauthrised access. The ~accesstoken~ is send to the server from the client and is validated; its contents is passed as context to subsequent resolvers. An ~AuthenticationError~ is thrown should the validation fails.
 
 ** PostgreSQL
+   #+html: <p align="center"><img src="./diagram.png" /></p>
    All essential data are stored on a [[https://www.postgresql.org/][PostgreSQL]] database server.
 
 ** Redis

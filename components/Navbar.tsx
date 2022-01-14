@@ -23,6 +23,7 @@ export default function Navbar() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [isMenuActive, setIsMenuActive] = useState(false);
   const [notificationCounts, setNotificationCounts] = useState(0);
+  const communityId = useReactiveVar(communityIdVar);
   const accessToken = useReactiveVar(accessTokenVar);
   const tokenPayload = useReactiveVar(tokenPayloadVar);
 
@@ -30,8 +31,8 @@ export default function Navbar() {
     CommunityAndCommunitiesData,
     CommunityAndCommunitiesVars
   >(queries.GET_COMMUNITY_AND_COMMUNITIES, {
-    skip: !accessToken || !communityIdVar(),
-    variables: { communityId: communityIdVar()! },
+    skip: !accessToken || !communityId,
+    variables: { communityId: communityId! },
     onCompleted({ communities }) {
       const notificationsCount = communities.reduce(
         (acc, curr) => acc + curr.notificationCount,
@@ -96,14 +97,14 @@ export default function Navbar() {
       <div className="nav-logo">
         {data?.communities.find(
           (community) =>
-            community.id !== communityIdVar() && community.notificationCount > 0
+            community.id !== communityId && community.notificationCount > 0
         ) && <span className="communities-unread" />}
         <Link href={accessToken ? "/posts" : "/"}>
           <a>
             <h1>{data?.community?.name || "Sharinghood"}</h1>
           </a>
         </Link>
-        {communityIdVar() && (
+        {communityId && (
           <SVG
             className="caret-icon"
             icon="caretDown"
@@ -132,7 +133,7 @@ export default function Navbar() {
                     onClick={() => router.push("/notifications")}
                   />
                   {data?.communities
-                    ?.filter((community) => community.id === communityIdVar())
+                    ?.filter((community) => community.id === communityId)
                     .map(
                       (community, idx) =>
                         community.notificationCount > 0 && (
@@ -148,13 +149,11 @@ export default function Navbar() {
                 icon="signOut"
                 onClick={() => {
                   setTimeout(() => {
-                    localStorage.removeItem("@sharinghood:communityId");
                     localStorage.removeItem("@sharinghood:accessToken");
                     localStorage.removeItem("@sharinghood:refreshToken");
                     accessTokenVar(null);
                     refreshTokenVar(null);
                     tokenPayloadVar(null);
-                    communityIdVar(null);
                   }, 0);
                   logout();
                 }}

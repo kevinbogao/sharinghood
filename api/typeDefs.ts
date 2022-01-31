@@ -10,7 +10,7 @@ export default gql`
   type User {
     id: ID!
     name: String!
-    email: String!
+    email: String
     imageUrl: String
     desc: String
     apartment: String

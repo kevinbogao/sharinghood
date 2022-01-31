@@ -20,7 +20,9 @@ const apolloServer = new ApolloServer({
     const token = req.headers.authorization?.split(" ")[1] ?? "";
     const user = verifyToken<AccessToken>(token);
     const dbConnection = await prepareConnection();
-    const loader = new GraphQLDatabaseLoader(dbConnection);
+    const loader = new GraphQLDatabaseLoader(dbConnection, {
+      maxQueryDepth: 2,
+    });
     return { user, connection: dbConnection, redis, loader };
   },
   subscriptions: { path: "/api" },

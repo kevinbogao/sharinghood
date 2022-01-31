@@ -1,4 +1,5 @@
 import {
+  Index,
   Entity,
   Column,
   OneToMany,
@@ -20,9 +21,11 @@ export class Community extends BaseEntity {
   @Column("varchar", { length: 255, unique: true })
   public name: string;
 
+  @Index({ unique: true })
   @Column("varchar", { length: 255, unique: true })
   public code: string;
 
+  @Index()
   @Column("varchar", { length: 255, nullable: true })
   public zipCode: string;
 
@@ -51,7 +54,6 @@ export class Community extends BaseEntity {
   @JoinTable()
   public members: User[];
 
-  // @ManyToMany(() => Post, { cascade: true })
   @ManyToMany(() => Post, (post) => post.communities)
   @JoinTable()
   public posts: Post[];

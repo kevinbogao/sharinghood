@@ -1,5 +1,6 @@
 import { ConfigureLoader } from "@mando75/typeorm-graphql-loader";
 import {
+  Index,
   Entity,
   Column,
   OneToMany,
@@ -19,6 +20,7 @@ import {
   Community,
   Notification,
 } from "./";
+import type { Context } from "../../lib/types";
 
 @Entity()
 export class User extends BaseEntity {
@@ -28,6 +30,8 @@ export class User extends BaseEntity {
   @Column("varchar", { length: 255 })
   public name: string;
 
+  @ConfigureLoader({ ignore: (context: Context) => !context?.user?.isAdmin })
+  @Index({ unique: true })
   @Column("varchar", { length: 255, unique: true })
   public email: string;
 
@@ -47,7 +51,6 @@ export class User extends BaseEntity {
   @Column("bool", { default: false })
   public isNotified: boolean;
 
-  @ConfigureLoader({ ignore: true })
   @Column("bool", { default: false })
   public isAdmin: boolean;
 
@@ -57,7 +60,6 @@ export class User extends BaseEntity {
   @Column("integer", { default: 0 })
   public tokenVersion: number;
 
-  @ConfigureLoader({ ignore: true })
   @Column("varchar", { length: 255, unique: true })
   public unsubscribeToken: string;
 
@@ -82,7 +84,6 @@ export class User extends BaseEntity {
   @OneToMany(() => Message, (message) => message.creator)
   public messages: Booking[];
 
-  @ConfigureLoader({ ignore: true })
   @OneToMany(() => Token, (token) => token.owner)
   public tokens: Token[];
 

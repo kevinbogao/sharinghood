@@ -33,6 +33,7 @@ export default {
         .loadEntity(User, "user")
         .where("user.id = :id", { id: user.userId })
         .info(info)
+        .selectFields(["email"])
         .loadOne();
 
       if (!targetUser) throw new UserInputError("User not found");

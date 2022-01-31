@@ -29,7 +29,7 @@ export default {
     async paginatedMembers(
       communityActivities: CommunityActivities,
       { offset, limit }: { offset: number; limit: number },
-      { loader }: Context,
+      { user, loader }: Context,
       info: IGraphQLToolsResolveInfo
     ): Promise<{ users: User[]; hasMore: boolean; totalCount?: number }> {
       if (limit === 0) return { users: [], hasMore: true };
@@ -44,6 +44,7 @@ export default {
         )
         .order({ "user.createdAt": "DESC" })
         .paginate({ offset, limit })
+        .context({ user })
         .loadPaginated();
 
       return { users, hasMore: offset + limit < totalCount, totalCount };

@@ -1,0 +1,4 @@
+export enum SocketEventTypeEnum {
+  JOIN_CHANNEL = "JOIN_CHANNEL",
+  NOTIFICATION_MESSAGE = "NOTIFICATION_MESSAGE",
+}

@@ -1,0 +1,225 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum ItemConditionEnum {
+  NEW
+  USED
+  DAMAGED
+}
+
+enum BookingStatusEnum {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum TimeFrameEnum {
+  ASAP
+  RANDOM
+  SPECIFIC
+}
+
+enum NotificationTypeEnum {
+  CHAT
+  BOOKING
+  REQUEST
+}
+
+model User {
+  id                String    @id @default(cuid())
+  name              String    @unique @db.VarChar(255)
+  email             String    @unique @db.VarChar(255)
+  password          String    @db.VarChar(255)
+  description       String?   @db.VarChar(255)
+  apartment         String?
+  image_url         String?   @db.VarChar(255)
+  last_login        DateTime?
+  created_at        DateTime  @default(now())
+  is_notified       Boolean   @default(false)
+  unsubscribe_token String    @unique @db.VarChar(255)
+  updated_at        DateTime  @updatedAt
+
+  posts                 Post[]
+  created_communities   Community[]
+  communities           UsersOnCommunities[]
+  Thread                Thread[]
+  bookings              Booking[]
+  requests              Request[]
+  createdNotifications  Notification[]       @relation("createdNotifications")
+  receivedNotifications Notification[]       @relation("receivedNotifications")
+  notifiedNotifications Notification[]       @relation("notifiedNotifications")
+  messages              Message[]
+
+  @@map("users")
+}
+
+model Community {
+  id         String   @id @default(cuid())
+  name       String   @unique @db.VarChar(255)
+  code       String   @unique @db.VarChar(255)
+  zip_code   String?
+  password   String?
+  creator_id String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  creator       User                 @relation(fields: [creator_id], references: [id])
+  users         UsersOnCommunities[]
+  posts         PostsOnCommunities[]
+  threads       Thread[]
+  bookings      Booking[]
+  requests      Request[]
+  notifications Notification[]
+
+  @@map("communities")
+}
+
+model UsersOnCommunities {
+  user_id      String
+  community_id String
+  assigned_at  DateTime @default(now())
+
+  user      User      @relation(fields: [user_id], references: [id])
+  community Community @relation(fields: [community_id], references: [id])
+
+  @@id([community_id, user_id])
+  @@map("community_members")
+}
+
+model PostsOnCommunities {
+  post_id      String
+  community_id String
+  assigned_at  DateTime @default(now())
+
+  post      Post      @relation(fields: [post_id], references: [id])
+  community Community @relation(fields: [community_id], references: [id])
+
+  @@unique([community_id, post_id])
+  @@map("community_posts")
+}
+
+model Post {
+  id          String            @id @default(cuid())
+  title       String
+  description String
+  condition   ItemConditionEnum
+  image_url   String
+  is_giveaway Boolean
+  creator_id  String
+  created_at  DateTime          @default(now())
+  updated_at  DateTime          @updatedAt
+
+  creator       User                 @relation(fields: [creator_id], references: [id])
+  communities   PostsOnCommunities[]
+  threads       Thread[]
+  bookings      Booking[]
+  notifications Notification[]
+
+  @@map("posts")
+}
+
+model Thread {
+  id           String   @id @default(cuid())
+  content      String
+  post_id      String?
+  request_id   String?
+  creator_id   String
+  community_id String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  post      Post?     @relation(fields: [post_id], references: [id])
+  request   Request?  @relation(fields: [request_id], references: [id])
+  creator   User      @relation(fields: [creator_id], references: [id])
+  community Community @relation(fields: [community_id], references: [id])
+
+  @@map("threads")
+}
+
+model Booking {
+  id           String            @id @default(cuid())
+  status       BookingStatusEnum
+  time_frame   TimeFrameEnum
+  date_need    DateTime?
+  date_return  DateTime?
+  post_id      String
+  booker_id    String
+  community_id String
+  created_at   DateTime          @default(now())
+  updated_at   DateTime          @updatedAt
+
+  post         Post          @relation(fields: [post_id], references: [id])
+  booker       User          @relation(fields: [booker_id], references: [id])
+  community    Community     @relation(fields: [community_id], references: [id])
+  notification Notification?
+
+  @@map("bookings")
+}
+
+model Request {
+  id           String        @id @default(cuid())
+  title        String
+  description  String
+  image_url    String
+  time_frame   TimeFrameEnum
+  date_need    DateTime?
+  date_return  DateTime?
+  creator_id   String
+  community_id String
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
+
+  creator   User      @relation(fields: [creator_id], references: [id])
+  community Community @relation(fields: [community_id], references: [id])
+  threads   Thread[]
+
+  @@map("requests")
+}
+
+model Notification {
+  id           String               @id @default(cuid())
+  type         NotificationTypeEnum
+  post_id      String?
+  booking_id   String?              @unique
+  community_id String
+  creator_id   String
+  recipient_id String
+  notifier_id  String?
+  modified_at  DateTime             @default(now())
+  created_at   DateTime             @default(now())
+  updated_at   DateTime             @updatedAt
+
+  post      Post?     @relation(fields: [post_id], references: [id])
+  booking   Booking?  @relation(fields: [booking_id], references: [id])
+  community Community @relation(fields: [community_id], references: [id])
+  creator   User      @relation("createdNotifications", fields: [creator_id], references: [id])
+  recipient User      @relation("receivedNotifications", fields: [recipient_id], references: [id])
+  notifier  User?     @relation("notifiedNotifications", fields: [notifier_id], references: [id])
+  messages  Message[]
+
+  @@map("notifications")
+}
+
+model Message {
+  id              String   @id @default(cuid())
+  content         String
+  creator_id      String
+  notification_id String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  creator      User         @relation(fields: [creator_id], references: [id])
+  notification Notification @relation(fields: [notification_id], references: [id])
+
+  @@map("message")
+}
